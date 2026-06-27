@@ -12,6 +12,7 @@ import Reels from '@/pages/Reels';
 import Rods from '@/pages/Rods';
 import ImportExport from '@/pages/ImportExport';
 import About from '@/pages/About';
+import Settings from '@/pages/Settings';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -47,6 +48,7 @@ const AuthenticatedApp = () => {
         <Route path="/rods" element={<Rods />} />
         <Route path="/import-export" element={<ImportExport />} />
         <Route path="/about" element={<About />} />
+        <Route path="/settings" element={<Settings />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

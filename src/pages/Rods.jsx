@@ -10,6 +10,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import { triggerAutosave } from "@/lib/cloudAutosave";
 
 const conditionColor = {
   "New": "bg-emerald-100 text-emerald-700",
@@ -126,6 +127,7 @@ export default function Rods() {
       setFormOpen(false);
       setEditing(null);
       await load();
+      triggerAutosave();
     } catch (e) {
       toast.error(e.message || "Failed to save");
     } finally {
@@ -148,6 +150,7 @@ export default function Rods() {
       toast.success("Rod deleted");
       setDeleteTarget(null);
       await load();
+      triggerAutosave();
     } catch (e) {
       toast.error("Failed to delete");
     }
