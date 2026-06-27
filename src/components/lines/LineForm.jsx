@@ -14,6 +14,7 @@ import { Loader2 } from "lucide-react";
 const SPECIES = ["Trout", "Salmon", "Steelhead", "Bass", "Pike", "Saltwater", "Gar", "Muskie", "Anything", "Other"];
 const TYPES = ["Tip", "Body", "Head", "Integrated", "Shooting", "WF", "Running", "Sinking", "System", "Other"];
 const CONDITIONS = ["New", "Brand New", "Like New", "Good", "Fair", "Poor"];
+const DEFAULT_BRANDS = ["Rio", "Cortland", "Scientific Anglers", "Sage", "3M", "Airflo", "Wulff"];
 
 const empty = {
   species: "Trout", brand: "", model: "", type: "Head", description: "",
@@ -74,7 +75,7 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
                 required 
               />
               <datalist id="brandList">
-                {existingBrands.map((brand, idx) => (
+                {(existingBrands.length > 0 ? existingBrands : DEFAULT_BRANDS).map((brand, idx) => (
                   <option key={idx} value={brand} />
                 ))}
               </datalist>
