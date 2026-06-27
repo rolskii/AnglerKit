@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/select";
 import { Plus, Search, Loader2, Waves } from "lucide-react";
 import LineCard from "@/components/lines/LineCard";
+import LineDetailDialog from "@/components/lines/LineDetailDialog";
 import LineForm from "@/components/lines/LineForm";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -25,6 +26,7 @@ export default function Lines() {
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [viewTarget, setViewTarget] = useState(null);
 
   const load = async () => {
     setLoading(true);
@@ -132,12 +134,49 @@ export default function Lines() {
           <p>No lines found. Add your first one!</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((line) => (
-            <LineCard key={line.id} line={line} onEdit={(l) => { setEditing(l); setFormOpen(true); }} onDelete={setDeleteTarget} />
-          ))}
+        <div className="overflow-x-auto rounded-lg border border-border">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/50 text-muted-foreground">
+              <tr>
+                <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Species</th>
+                <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Brand</th>
+                <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Model</th>
+                <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Type</th>
+                <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Line Wt</th>
+                <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Grain Wt</th>
+                <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Colour</th>
+                <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Condition</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((line) => (
+                <tr
+                  key={line.id}
+                  onClick={() => setViewTarget(line)}
+                  className="border-t border-border cursor-pointer hover:bg-accent/50 transition-colors"
+                >
+                  <td className="px-3 py-2.5 whitespace-nowrap">{line.species || "—"}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap font-medium">{line.brand || "—"}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">{line.model || "—"}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">{line.type || "—"}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">{line.line_weight || "—"}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">{line.grain_weight || "—"}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">{line.colour || "—"}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">{line.condition || "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
+
+      <LineDetailDialog
+        open={!!viewTarget}
+        onOpenChange={(o) => !o && setViewTarget(null)}
+        line={viewTarget}
+        onEdit={(l) => { setViewTarget(null); setEditing(l); setFormOpen(true); }}
+        onDelete={(l) => { setViewTarget(null); setDeleteTarget(l); }}
+      />
 
       <LineForm
         open={formOpen}
