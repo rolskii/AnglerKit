@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
-import { Fish, RotateCw, Waves, LogOut, Menu, X } from "lucide-react";
+import { Fish, LogOut, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 
 const navItems = [
-  { to: "/lines", label: "Fly Lines", icon: Waves },
-  { to: "/reels", label: "Reels", icon: RotateCw },
-  { to: "/rods", label: "Fly Rods", icon: Fish },
+  { to: "/lines", label: "Fly Lines" },
+  { to: "/reels", label: "Reels" },
+  { to: "/rods", label: "Fly Rods" },
 ];
 
 export default function Layout() {
@@ -27,14 +27,13 @@ export default function Layout() {
               to={item.to}
               onClick={() => setOpen(false)}
               className={({ isActive }) =>
-                `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                `flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                   isActive
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                 }`
               }
             >
-              <item.icon className="w-4 h-4" />
               {item.label}
             </NavLink>
           </li>
