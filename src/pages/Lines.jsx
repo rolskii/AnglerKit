@@ -52,7 +52,7 @@ export default function Lines() {
     return lines.filter((l) => {
       const q = search.toLowerCase();
       const matchesSearch = !q ||
-        [l.brand, l.model, l.type, l.colour, l.reel, l.rod, l.description].some(
+        [l.species, l.brand, l.model, l.type, l.colour, l.reel, l.rod, l.description].some(
           (v) => v && v.toLowerCase().includes(q)
         );
       const matchesSpecies = speciesFilter === "all" || l.species === speciesFilter;
