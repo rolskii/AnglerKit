@@ -13,10 +13,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2 } from "lucide-react";
 import ImageUpload from "@/components/ImageUpload";
 
-const SPECIES = ["Trout", "Salmon", "Steelhead", "Bass", "Pike", "Saltwater", "Gar", "Muskie", "Anything", "Other"];
-const TYPES = ["Tip", "Body", "Head", "Integrated", "Shooting", "WF", "Running", "Sinking", "System", "Other"];
-const CONDITIONS = ["New", "Brand New", "Like New", "Good", "Fair", "Poor"];
-const DEFAULT_BRANDS = ["Rio", "Cortland", "Scientific Anglers", "Sage", "3M", "Airflo", "Wulff"];
+const SPECIES = ["Trout", "Salmon", "Steelhead", "Bass", "Pike", "Saltwater", "Gar", "Muskie", "Anything", "Other"].sort((a, b) => a.localeCompare(b));
+const TYPES = ["Tip", "Body", "Head", "Integrated", "Shooting", "WF", "Running", "Sinking", "System", "Other"].sort((a, b) => a.localeCompare(b));
+const CONDITIONS = ["New", "Brand New", "Like New", "Good", "Fair", "Poor"].sort((a, b) => a.localeCompare(b));
+const DEFAULT_BRANDS = ["Rio", "Cortland", "Scientific Anglers", "Sage", "3M", "Airflo", "Wulff"].sort((a, b) => a.localeCompare(b));
 
 const empty = {
   species: "Trout", brand: "", model: "", type: "Head", description: "",
@@ -31,7 +31,7 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
   const filteredBrands = form.brand
     ? (existingBrands.length > 0 ? existingBrands : DEFAULT_BRANDS).filter(b =>
         b.toLowerCase().includes(form.brand.toLowerCase())
-      )
+      ).sort((a, b) => a.localeCompare(b))
     : [];
 
   useEffect(() => {
@@ -40,12 +40,12 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
-  const speciesOptions = form.species && !SPECIES.includes(form.species)
+  const speciesOptions = (form.species && !SPECIES.includes(form.species)
     ? [...SPECIES, form.species]
-    : SPECIES;
-  const typeOptions = form.type && !TYPES.includes(form.type)
+    : SPECIES).sort((a, b) => a.localeCompare(b));
+  const typeOptions = (form.type && !TYPES.includes(form.type)
     ? [...TYPES, form.type]
-    : TYPES;
+    : TYPES).sort((a, b) => a.localeCompare(b));
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -153,7 +153,7 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
                 <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="_none">None</SelectItem>
-                  {reels.map((r) => <SelectItem key={r.id} value={r.name}>{r.name}</SelectItem>)}
+                  {[...reels].sort((a, b) => a.name.localeCompare(b.name)).map((r) => <SelectItem key={r.id} value={r.name}>{r.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -173,7 +173,7 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
                 <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="_none">None</SelectItem>
-                  {rods.map((r) => <SelectItem key={r.id} value={r.name}>{r.name}</SelectItem>)}
+                  {[...rods].sort((a, b) => a.name.localeCompare(b.name)).map((r) => <SelectItem key={r.id} value={r.name}>{r.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
