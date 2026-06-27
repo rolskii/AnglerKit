@@ -15,6 +15,9 @@ const conditionColor = {
 export default function ReelCard({ reel, lineCount, spooledLines, onEdit, onDelete }) {
   return (
     <Card className="p-4 flex flex-col gap-3">
+      {reel.image_url && (
+        <img src={reel.image_url} alt={reel.name} className="w-full h-40 object-cover rounded-md" />
+      )}
       <div className="flex items-start justify-between gap-2">
         <div>
           <h3 className="font-heading font-semibold">{reel.name}</h3>

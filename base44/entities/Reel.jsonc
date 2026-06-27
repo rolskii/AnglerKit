@@ -25,6 +25,10 @@
         "Poor"
       ]
     },
+    "image_url": {
+      "type": "string",
+      "description": "Photo of the reel"
+    },
     "notes": {
       "type": "string"
     }

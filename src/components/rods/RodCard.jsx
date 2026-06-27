@@ -15,6 +15,9 @@ const conditionColor = {
 export default function RodCard({ rod, lineCount, pairedLines, onEdit, onDelete }) {
   return (
     <Card className="p-4 flex flex-col gap-3">
+      {rod.image_url && (
+        <img src={rod.image_url} alt={rod.name} className="w-full h-40 object-cover rounded-md" />
+      )}
       <div className="flex items-start justify-between gap-2">
         <div>
           <h3 className="font-heading font-semibold">{rod.name}</h3>

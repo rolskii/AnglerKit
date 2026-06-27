@@ -80,6 +80,10 @@
       "default": false,
       "description": "Whether this line is on a spare spool (not on a reel)"
     },
+    "image_url": {
+      "type": "string",
+      "description": "Photo of the line"
+    },
     "notes": {
       "type": "string"
     }

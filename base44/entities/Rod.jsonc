@@ -43,6 +43,10 @@
         "Poor"
       ]
     },
+    "image_url": {
+      "type": "string",
+      "description": "Photo of the rod"
+    },
     "notes": {
       "type": "string"
     }

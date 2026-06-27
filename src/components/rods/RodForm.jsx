@@ -10,11 +10,12 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
+import ImageUpload from "@/components/ImageUpload";
 
 const TYPES = ["Single Hand", "Switch", "Spey", "Other"];
 const MATERIALS = ["Carbon", "Cane", "Fiberglass", "Other"];
 const CONDITIONS = ["New", "Like New", "Good", "Fair", "Poor"];
-const empty = { name: "", brand: "", length: "", line_weight: "", type: "Single Hand", material: "Carbon", condition: "Good", notes: "" };
+const empty = { name: "", brand: "", length: "", line_weight: "", type: "Single Hand", material: "Carbon", condition: "Good", notes: "", image_url: "" };
 
 export default function RodForm({ open, onOpenChange, onSubmit, initial, loading }) {
   const [form, setForm] = useState(empty);
@@ -90,6 +91,10 @@ export default function RodForm({ open, onOpenChange, onSubmit, initial, loading
           <div className="space-y-1.5">
             <Label>Notes</Label>
             <Textarea value={form.notes} onChange={(e) => set("notes", e.target.value)} rows={2} />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Photo</Label>
+            <ImageUpload value={form.image_url || ""} onChange={(v) => set("image_url", v)} />
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>

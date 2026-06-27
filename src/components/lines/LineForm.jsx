@@ -11,6 +11,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2 } from "lucide-react";
+import ImageUpload from "@/components/ImageUpload";
 
 const SPECIES = ["Trout", "Salmon", "Steelhead", "Bass", "Pike", "Saltwater", "Gar", "Muskie", "Anything", "Other"];
 const TYPES = ["Tip", "Body", "Head", "Integrated", "Shooting", "WF", "Running", "Sinking", "System", "Other"];
@@ -20,7 +21,7 @@ const DEFAULT_BRANDS = ["Rio", "Cortland", "Scientific Anglers", "Sage", "3M", "
 const empty = {
   species: "Trout", brand: "", model: "", type: "Head", description: "",
   line_weight: "", grain_weight: "", head_length: "", total_length: "",
-  colour: "", condition: "Good", reel: "", rod: "", spooled: false, notes: "",
+  colour: "", condition: "Good", reel: "", rod: "", spooled: false, notes: "", image_url: "",
 };
 
 export default function LineForm({ open, onOpenChange, onSubmit, initial, reels, rods, loading, existingBrands = [] }) {
@@ -179,6 +180,10 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
             <div className="space-y-1.5 col-span-2">
               <Label>Notes</Label>
               <Textarea value={form.notes} onChange={(e) => set("notes", e.target.value)} rows={2} />
+            </div>
+            <div className="space-y-1.5 col-span-2">
+              <Label>Photo</Label>
+              <ImageUpload value={form.image_url || ""} onChange={(v) => set("image_url", v)} />
             </div>
           </div>
           <DialogFooter>
