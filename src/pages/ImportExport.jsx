@@ -82,7 +82,7 @@ Rod,Sage X 10' 7wt,Sage,,,,,,,10 ft,7,Single Hand,Carbon,,,,Good,,,,Great dry fl
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "flyfish-sample-import.txt";
+    a.download = "flyfish-sample-import.csv";
     a.click();
     URL.revokeObjectURL(url);
     toast.success("Sample file downloaded");
