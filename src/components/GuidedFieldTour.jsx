@@ -6,8 +6,6 @@ export default function GuidedFieldTour({ steps, active, onClose }) {
   const [step, setStep] = useState(0);
   const [rect, setRect] = useState(null);
   const [ready, setReady] = useState(false);
-  const [popSize, setPopSize] = useState({ w: 288, h: 120 });
-  const popRef = useRef(null);
   const rafRef = useRef(null);
 
   // Reset when the tour starts
@@ -19,13 +17,12 @@ export default function GuidedFieldTour({ steps, active, onClose }) {
     }
   }, [active]);
 
-  // Measure the current field's position synchronously
+  // Measure the current field's position and scroll it into view
   const measure = () => {
     const el = steps[step]?.ref?.current;
-    if (el) setRect(el.getBoundingClientRect());
-    if (popRef.current) {
-      const r = popRef.current.getBoundingClientRect();
-      setPopSize({ w: r.width, h: r.height });
+    if (el) {
+      el.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      setRect(el.getBoundingClientRect());
     }
   };
 
@@ -38,7 +35,7 @@ export default function GuidedFieldTour({ steps, active, onClose }) {
     }, 350);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active, step]);
+  }, [active]);
 
   // Re-measure immediately whenever the step changes (after we're ready)
   useLayoutEffect(() => {
@@ -51,7 +48,10 @@ export default function GuidedFieldTour({ steps, active, onClose }) {
     if (!active) return;
     const onScroll = () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      rafRef.current = requestAnimationFrame(measure);
+      rafRef.current = requestAnimationFrame(() => {
+        const el = steps[step]?.ref?.current;
+        if (el) setRect(el.getBoundingClientRect());
+      });
     };
     window.addEventListener("scroll", onScroll, true);
     window.addEventListener("resize", onScroll);
@@ -63,50 +63,47 @@ export default function GuidedFieldTour({ steps, active, onClose }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active, step, ready]);
 
-  // Advance to a given step and measure that field immediately
+  // Advance to a given step, scroll it into view, and measure
   const goTo = (newStep) => {
     const clamped = Math.max(0, Math.min(newStep, steps.length - 1));
     setStep(clamped);
     const el = steps[clamped]?.ref?.current;
-    if (el) setRect(el.getBoundingClientRect());
+    if (el) {
+      el.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      setRect(el.getBoundingClientRect());
+    }
   };
 
-  if (!active || !ready || !rect) return null;
+  if (!active || !ready) return null;
   const current = steps[step];
   if (!current) return null;
   const isLast = step === steps.length - 1;
   const isFirst = step === 0;
 
-  const gap = 10;
-  let popoverTop = rect.top - popSize.h - gap;
-  if (popoverTop < 12) popoverTop = rect.bottom + gap;
-  let popoverLeft = rect.left + rect.width / 2 - popSize.w / 2;
-  popoverLeft = Math.max(12, Math.min(popoverLeft, window.innerWidth - popSize.w - 12));
-  popoverTop = Math.max(12, Math.min(popoverTop, window.innerHeight - popSize.h - 12));
-
-  return createPortal(
+  return (
     <>
-      <div className="fixed inset-0 z-[55] pointer-events-none">
-        <div
-          className="absolute rounded-md ring-2 ring-primary shadow-[0_0_0_9999px_rgba(0,0,0,0.45)] transition-all duration-200"
-          style={{ top: rect.top - 4, left: rect.left - 4, width: rect.width + 8, height: rect.height + 8 }}
-        />
-      </div>
-      <div
-        ref={popRef}
-        className="fixed z-[60] w-72 rounded-lg border border-border bg-popover text-popover-foreground shadow-xl p-3 transition-all duration-200"
-        style={{ top: popoverTop, left: popoverLeft }}
-      >
+      {/* Spotlight overlay — portaled, no buttons, pointer-events-none */}
+      {rect && createPortal(
+        <div className="fixed inset-0 z-[55] pointer-events-none">
+          <div
+            className="absolute rounded-md ring-2 ring-primary shadow-[0_0_0_9999px_rgba(0,0,0,0.45)] transition-all duration-200"
+            style={{ top: rect.top - 4, left: rect.left - 4, width: rect.width + 8, height: rect.height + 8 }}
+          />
+        </div>,
+        document.body
+      )}
+      {/* Tour bar — inside the dialog so button clicks work reliably */}
+      <div className="sticky bottom-0 z-10 mt-4 bg-popover border border-border rounded-lg p-3 shadow-lg">
         <div className="flex items-start justify-between gap-2">
-          <div>
-            <p className="text-sm font-semibold">{current.title}</p>
-            <p className="text-xs text-muted-foreground mt-1">{current.description}</p>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold truncate">{current.title}</p>
+            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{current.description}</p>
           </div>
-          <button type="button" onClick={onClose} className="text-muted-foreground hover:text-foreground shrink-0">
+          <button type="button" onClick={onClose} className="text-muted-foreground hover:text-foreground shrink-0 p-1">
             <X className="w-4 h-4" />
           </button>
         </div>
-        <div className="flex items-center justify-between mt-3">
+        <div className="flex items-center justify-between mt-2">
           <span className="text-xs text-muted-foreground">{step + 1} / {steps.length}</span>
           <div className="flex gap-1.5">
             {!isFirst && (
@@ -138,7 +135,6 @@ export default function GuidedFieldTour({ steps, active, onClose }) {
           </div>
         </div>
       </div>
-    </>,
-    document.body
+    </>
   );
 }
