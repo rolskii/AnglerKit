@@ -39,9 +39,6 @@ export default function ReelCard({ reel, lineCount, spooledLines, onEdit, onDele
       <div className="flex flex-col gap-2 border-t border-border pt-3">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium">Currently Spooled with:</span>
-          <Badge variant="secondary" className="text-xs">
-            {lineCount || 0} line{(lineCount || 0) !== 1 ? "s" : ""}
-          </Badge>
         </div>
         {spooledLines && spooledLines.length > 0 ? (
           <ul className="space-y-1.5">
