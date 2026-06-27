@@ -11,6 +11,9 @@
         "Bass",
         "Pike",
         "Saltwater",
+        "Gar",
+        "Muskie",
+        "Anything",
         "Other"
       ]
     },
@@ -28,6 +31,10 @@
         "Head",
         "Integrated",
         "Shooting",
+        "WF",
+        "Running",
+        "Sinking",
+        "System",
         "Other"
       ]
     },
@@ -53,6 +60,7 @@
       "type": "string",
       "enum": [
         "New",
+        "Brand New",
         "Like New",
         "Good",
         "Fair",

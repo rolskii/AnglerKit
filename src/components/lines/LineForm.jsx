@@ -11,9 +11,9 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 
-const SPECIES = ["Trout", "Salmon", "Steelhead", "Bass", "Pike", "Saltwater", "Other"];
-const TYPES = ["Tip", "Body", "Head", "Integrated", "Shooting", "Other"];
-const CONDITIONS = ["New", "Like New", "Good", "Fair", "Poor"];
+const SPECIES = ["Trout", "Salmon", "Steelhead", "Bass", "Pike", "Saltwater", "Gar", "Muskie", "Anything", "Other"];
+const TYPES = ["Tip", "Body", "Head", "Integrated", "Shooting", "WF", "Running", "Sinking", "System", "Other"];
+const CONDITIONS = ["New", "Brand New", "Like New", "Good", "Fair", "Poor"];
 
 const empty = {
   species: "Trout", brand: "", model: "", type: "Head", description: "",
