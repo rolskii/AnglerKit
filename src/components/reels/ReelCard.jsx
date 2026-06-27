@@ -41,11 +41,22 @@ export default function ReelCard({ reel, lineCount, spooledLines, onEdit, onDele
           <span className="text-sm font-medium">Currently Spooled with:</span>
         </div>
         {spooledLines && spooledLines.length > 0 ? (
-          <ul className="space-y-1.5">
+          <ul className="space-y-3">
             {spooledLines.map((l) => (
-              <li key={l.id} className="text-sm flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                <span className="font-medium">{l.brand} {l.model}{l.type ? ` ${l.type}` : ""}{l.line_weight ? ` ${l.line_weight}` : ""}</span>
-                {l.species && <span className="text-muted-foreground text-xs">- {l.species}</span>}
+              <li key={l.id} className="text-sm border border-border rounded-md p-2.5 bg-muted/30">
+                <div className="font-medium mb-1.5">
+                  {l.brand} {l.model}{l.type ? ` ${l.type}` : ""}{l.line_weight ? ` ${l.line_weight}` : ""}{l.species ? ` - ${l.species}` : ""}
+                </div>
+                <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+                  <LineDetail label="Grain Wt" value={l.grain_weight} />
+                  <LineDetail label="Head Length" value={l.head_length} />
+                  <LineDetail label="Total Length" value={l.total_length} />
+                  <LineDetail label="Colour" value={l.colour} />
+                  <LineDetail label="Condition" value={l.condition} />
+                  <LineDetail label="Paired Rod" value={l.rod} />
+                </div>
+                {l.description && <p className="text-xs text-muted-foreground mt-1.5">{l.description}</p>}
+                {l.notes && <p className="text-xs text-muted-foreground italic mt-1">{l.notes}</p>}
               </li>
             ))}
           </ul>
@@ -73,6 +84,15 @@ function Detail({ label, value }) {
     <div className="flex justify-between gap-2">
       <span className="text-muted-foreground">{label}</span>
       <span className="font-medium text-right truncate">{value || "—"}</span>
+    </div>
+  );
+}
+
+function LineDetail({ label, value }) {
+  return (
+    <div className="flex justify-between gap-2">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="font-medium text-right truncate">{value != null && value !== "" ? value : "—"}</span>
     </div>
   );
 }
