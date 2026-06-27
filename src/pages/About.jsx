@@ -17,14 +17,10 @@ export default function About() {
 
       <div className="prose prose-sm max-w-none text-foreground/90 space-y-4">
         <p>
-          The Stripping Basket is your ultimate fly fishing gear manager — built to help you organize
-          your lines, rods, and reels so you're always ready for your next perfect cast.
+          The Stripping Basket is your fly fishing line manager — built to help you organize your lines as well as keeping track of your rods and reels so you're always ready for your next outing.
         </p>
         <p>
-          Keep a detailed inventory of every piece of equipment in your collection, track
-          condition and specifications, and pair lines with the rods and reels they belong on.
-          Whether you're chasing trout on a quiet stream or swinging for steelhead, The Stripping Basket
-          keeps your gear in order.
+          Keep a detailed inventory of every piece of equipment in your collection, track condition and specifications, and pair lines with the rods and reels they belong on. Whether you're chasing Trout on a quiet stream or stripping for GT's, The Stripping Basket will keep your fly fishing adventures in order.
         </p>
       </div>
 
