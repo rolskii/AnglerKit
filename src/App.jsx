@@ -10,6 +10,7 @@ import Layout from '@/components/Layout';
 import Lines from '@/pages/Lines';
 import Reels from '@/pages/Reels';
 import Rods from '@/pages/Rods';
+import ImportExport from '@/pages/ImportExport';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -43,6 +44,7 @@ const AuthenticatedApp = () => {
         <Route path="/lines" element={<Lines />} />
         <Route path="/reels" element={<Reels />} />
         <Route path="/rods" element={<Rods />} />
+        <Route path="/import-export" element={<ImportExport />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
