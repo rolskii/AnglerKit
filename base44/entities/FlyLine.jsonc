@@ -1,0 +1,78 @@
+{
+  "name": "FlyLine",
+  "type": "object",
+  "properties": {
+    "species": {
+      "type": "string",
+      "enum": [
+        "Trout",
+        "Salmon",
+        "Steelhead",
+        "Bass",
+        "Pike",
+        "Saltwater",
+        "Other"
+      ]
+    },
+    "brand": {
+      "type": "string"
+    },
+    "model": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "Tip",
+        "Body",
+        "Head",
+        "Integrated",
+        "Shooting",
+        "Other"
+      ]
+    },
+    "description": {
+      "type": "string"
+    },
+    "line_weight": {
+      "type": "string"
+    },
+    "grain_weight": {
+      "type": "number"
+    },
+    "head_length": {
+      "type": "number"
+    },
+    "total_length": {
+      "type": "number"
+    },
+    "colour": {
+      "type": "string"
+    },
+    "condition": {
+      "type": "string",
+      "enum": [
+        "New",
+        "Like New",
+        "Good",
+        "Fair",
+        "Poor"
+      ]
+    },
+    "reel": {
+      "type": "string",
+      "description": "Reel this line is on"
+    },
+    "rod": {
+      "type": "string",
+      "description": "Rod this line is paired with"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "brand",
+    "model"
+  ]
+}

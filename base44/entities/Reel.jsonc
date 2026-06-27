@@ -1,0 +1,35 @@
+{
+  "name": "Reel",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Reel name/description"
+    },
+    "brand": {
+      "type": "string"
+    },
+    "model": {
+      "type": "string"
+    },
+    "size": {
+      "type": "string"
+    },
+    "condition": {
+      "type": "string",
+      "enum": [
+        "New",
+        "Like New",
+        "Good",
+        "Fair",
+        "Poor"
+      ]
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

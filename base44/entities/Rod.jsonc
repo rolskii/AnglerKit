@@ -1,0 +1,53 @@
+{
+  "name": "Rod",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Rod name/description"
+    },
+    "brand": {
+      "type": "string"
+    },
+    "length": {
+      "type": "string"
+    },
+    "line_weight": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "Single Hand",
+        "Switch",
+        "Spey",
+        "Other"
+      ]
+    },
+    "material": {
+      "type": "string",
+      "enum": [
+        "Carbon",
+        "Cane",
+        "Fiberglass",
+        "Other"
+      ]
+    },
+    "condition": {
+      "type": "string",
+      "enum": [
+        "New",
+        "Like New",
+        "Good",
+        "Fair",
+        "Poor"
+      ]
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}
