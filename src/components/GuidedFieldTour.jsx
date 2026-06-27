@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
+import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -69,7 +70,7 @@ export default function GuidedFieldTour({ steps, active, onClose }) {
   let popoverLeft = rect.left + rect.width / 2 - popSize.w / 2;
   popoverLeft = Math.max(12, Math.min(popoverLeft, window.innerWidth - popSize.w - 12));
 
-  return (
+  return createPortal(
     <>
       <div className="fixed inset-0 z-[55] pointer-events-none">
         <div
@@ -109,6 +110,7 @@ export default function GuidedFieldTour({ steps, active, onClose }) {
           </div>
         </div>
       </div>
-    </>
+    </>,
+    document.body
   );
 }
