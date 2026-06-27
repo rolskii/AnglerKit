@@ -6,7 +6,7 @@ import { base44 } from "@/api/base44Client";
 import TroutIcon from "@/components/TroutIcon";
 
 const navItems = [
-  { to: "/lines", label: "Fly Lines" },
+  { to: "/lines", label: "Lines" },
   { to: "/reels", label: "Reels" },
   { to: "/rods", label: "Fly Rods" },
 ];
