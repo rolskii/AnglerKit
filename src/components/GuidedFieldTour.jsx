@@ -17,13 +17,25 @@ export default function GuidedFieldTour({ steps, active, onClose }) {
     }
   }, [active]);
 
-  // Measure the current field's position and scroll it into view
-  const measure = () => {
-    const el = steps[step]?.ref?.current;
-    if (el) {
-      el.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  // Scroll the field into view (instant) then measure in the next frame
+  const scrollAndMeasure = (idx) => {
+    const el = steps[idx]?.ref?.current;
+    if (!el) return;
+    el.scrollIntoView({ block: "nearest" }); // instant — no animation
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(() => {
       setRect(el.getBoundingClientRect());
-    }
+    });
+  };
+
+  // Measure only (no scroll) — used by the scroll/resize listener
+  const measureOnly = () => {
+    const el = steps[step]?.ref?.current;
+    if (!el) return;
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(() => {
+      setRect(el.getBoundingClientRect());
+    });
   };
 
   // Initial delay so the dialog open animation settles before measuring
@@ -31,47 +43,36 @@ export default function GuidedFieldTour({ steps, active, onClose }) {
     if (!active) return;
     const t = setTimeout(() => {
       setReady(true);
-      measure();
     }, 350);
     return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active]);
 
-  // Re-measure immediately whenever the step changes (after we're ready)
+  // Scroll + measure whenever the step changes (after we're ready)
   useLayoutEffect(() => {
-    if (ready) measure();
+    if (ready) scrollAndMeasure(step);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, step]);
 
   // Keep the spotlight aligned if the dialog scrolls or the viewport resizes
   useEffect(() => {
     if (!active) return;
-    const onScroll = () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      rafRef.current = requestAnimationFrame(() => {
-        const el = steps[step]?.ref?.current;
-        if (el) setRect(el.getBoundingClientRect());
-      });
-    };
-    window.addEventListener("scroll", onScroll, true);
-    window.addEventListener("resize", onScroll);
+    window.addEventListener("scroll", measureOnly, true);
+    window.addEventListener("resize", measureOnly);
     return () => {
-      window.removeEventListener("scroll", onScroll, true);
-      window.removeEventListener("resize", onScroll);
+      window.removeEventListener("scroll", measureOnly, true);
+      window.removeEventListener("resize", measureOnly);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active, step, ready]);
 
-  // Advance to a given step, scroll it into view, and measure
+  // Advance to a given step
   const goTo = (newStep) => {
     const clamped = Math.max(0, Math.min(newStep, steps.length - 1));
     setStep(clamped);
-    const el = steps[clamped]?.ref?.current;
-    if (el) {
-      el.scrollIntoView({ block: "nearest", behavior: "smooth" });
-      setRect(el.getBoundingClientRect());
-    }
+    // scrollAndMeasure will fire via the useLayoutEffect on step change,
+    // but call it directly too for immediacy
+    scrollAndMeasure(clamped);
   };
 
   if (!active || !ready) return null;
@@ -86,7 +87,7 @@ export default function GuidedFieldTour({ steps, active, onClose }) {
       {rect && createPortal(
         <div className="fixed inset-0 z-[55] pointer-events-none">
           <div
-            className="absolute rounded-md ring-2 ring-primary shadow-[0_0_0_9999px_rgba(0,0,0,0.45)] transition-all duration-200"
+            className="absolute rounded-md ring-2 ring-primary shadow-[0_0_0_9999px_rgba(0,0,0,0.45)] transition-all duration-150"
             style={{ top: rect.top - 4, left: rect.left - 4, width: rect.width + 8, height: rect.height + 8 }}
           />
         </div>,
