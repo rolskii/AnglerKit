@@ -2,9 +2,6 @@ import React, { useEffect, useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
 import { Plus, Search, Loader2, Waves, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import LineCard from "@/components/lines/LineCard";
 import LineDetailDialog from "@/components/lines/LineDetailDialog";
@@ -21,7 +18,6 @@ export default function Lines() {
   const [rods, setRods] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [speciesFilter, setSpeciesFilter] = useState("all");
   const [sortBy, setSortBy] = useState("species");
   const [sortDir, setSortDir] = useState("asc");
   const [formOpen, setFormOpen] = useState(false);
@@ -50,11 +46,6 @@ export default function Lines() {
 
   useEffect(() => { load(); }, []);
 
-  const speciesOptions = useMemo(
-    () => [...new Set(lines.map((l) => l.species).filter(Boolean))].sort(),
-    [lines]
-  );
-
   const filtered = useMemo(() => {
     const result = lines.filter((l) => {
       const q = search.toLowerCase();
@@ -62,8 +53,7 @@ export default function Lines() {
         [l.species, l.brand, l.model, l.type, l.colour, l.reel, l.rod, l.description].some(
           (v) => v && v.toLowerCase().includes(q)
         );
-      const matchesSpecies = speciesFilter === "all" || l.species === speciesFilter;
-      return matchesSearch && matchesSpecies;
+      return matchesSearch;
     });
     const dir = sortDir === "asc" ? 1 : -1;
     return result.sort((a, b) => {
@@ -75,7 +65,7 @@ export default function Lines() {
       if (typeof av === "number" && typeof bv === "number") return (av - bv) * dir;
       return String(av).localeCompare(String(bv)) * dir;
     });
-  }, [lines, search, speciesFilter, sortBy, sortDir]);
+  }, [lines, search, sortBy, sortDir]);
 
   const toggleSort = (field) => {
     if (sortBy === field) {
@@ -141,15 +131,6 @@ export default function Lines() {
             className="pl-9"
           />
         </div>
-        <Select value={speciesFilter} onValueChange={setSpeciesFilter}>
-          <SelectTrigger className="sm:w-48"><SelectValue placeholder="All species" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All species</SelectItem>
-            {speciesOptions.map((s) => (
-              <SelectItem key={s} value={s}>{s}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
       </div>
 
       {loading ? (
