@@ -52,7 +52,7 @@ export default function Layout() {
             <TroutIcon className="w-7 h-7 text-primary-foreground" />
           </div>
           <div>
-            <p className="font-heading font-semibold leading-tight">Fly Fish</p>
+            <p className="font-heading font-semibold leading-tight">FlyFish Inventory</p>
             <p className="text-xs text-muted-foreground">Line Manager</p>
           </div>
         </div>
