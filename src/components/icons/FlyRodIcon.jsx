@@ -12,20 +12,21 @@ export default function FlyRodIcon({ className = "" }) {
       className={className}
       aria-hidden="true"
     >
-      {/* Rod blank, tapering from butt to tip */}
-      <path d="M4 20 L20 4" />
-      {/* Tip point */}
-      <circle cx="20" cy="4" r="0.6" fill="currentColor" stroke="none" />
-      {/* Stripping guide (largest) near the butt */}
-      <ellipse cx="7.5" cy="16.5" rx="1.1" ry="0.5" transform="rotate(-45 7.5 16.5)" />
-      {/* Snake guides along the blank */}
-      <ellipse cx="10.5" cy="13.5" rx="0.9" ry="0.4" transform="rotate(-45 10.5 13.5)" />
-      <ellipse cx="13.5" cy="10.5" rx="0.9" ry="0.4" transform="rotate(-45 13.5 10.5)" />
-      <ellipse cx="16.5" cy="7.5" rx="0.9" ry="0.4" transform="rotate(-45 16.5 7.5)" />
-      {/* Reel seat / handle at the butt */}
-      <rect x="2.2" y="18.2" width="3.2" height="3.2" rx="0.6" transform="rotate(-45 3.8 19.8)" />
-      {/* Cork grip rings */}
-      <line x1="3.2" y1="19.8" x2="4.4" y2="21" />
+      {/* Rod blank, flexed into a classic arc (butt lower-left, tip upper-right) */}
+      <path d="M3 19 Q 9 6 20 4" />
+      {/* Tip */}
+      <circle cx="20" cy="4" r="0.7" fill="currentColor" stroke="none" />
+      {/* Cork grip at the butt */}
+      <path d="M3 19 L 5.2 20.4" />
+      <path d="M4.2 17.6 L 6.4 19" />
+      {/* Reel seat just above the grip */}
+      <line x1="5" y1="17" x2="6.6" y2="18" />
+      {/* A couple of guides along the blank */}
+      <circle cx="9" cy="10.5" r="0.7" />
+      <circle cx="13.5" cy="7.5" r="0.7" />
+      <circle cx="17" cy="5.6" r="0.7" />
+      {/* Fly line coming off the tip, curving down */}
+      <path d="M20 4.5 Q 18 9 14 11" />
     </svg>
   );
 }
