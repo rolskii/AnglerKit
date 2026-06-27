@@ -1,0 +1,147 @@
+import React, { useEffect, useState } from "react";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Loader2 } from "lucide-react";
+
+const SPECIES = ["Trout", "Salmon", "Steelhead", "Bass", "Pike", "Saltwater", "Other"];
+const TYPES = ["Tip", "Body", "Head", "Integrated", "Shooting", "Other"];
+const CONDITIONS = ["New", "Like New", "Good", "Fair", "Poor"];
+
+const empty = {
+  species: "Trout", brand: "", model: "", type: "Head", description: "",
+  line_weight: "", grain_weight: "", head_length: "", total_length: "",
+  colour: "", condition: "Good", reel: "", rod: "", notes: "",
+};
+
+export default function LineForm({ open, onOpenChange, onSubmit, initial, reels, rods, loading }) {
+  const [form, setForm] = useState(empty);
+
+  useEffect(() => {
+    setForm(initial ? { ...empty, ...initial } : empty);
+  }, [initial, open]);
+
+  const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const payload = {
+      ...form,
+      grain_weight: form.grain_weight ? Number(form.grain_weight) : null,
+      head_length: form.head_length ? Number(form.head_length) : null,
+      total_length: form.total_length ? Number(form.total_length) : null,
+    };
+    onSubmit(payload);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>{initial ? "Edit Fly Line" : "Add Fly Line"}</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label>Species</Label>
+              <Select value={form.species} onValueChange={(v) => set("species", v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {SPECIES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Brand</Label>
+              <Input value={form.brand} onChange={(e) => set("brand", e.target.value)} required />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Model</Label>
+              <Input value={form.model} onChange={(e) => set("model", e.target.value)} required />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Type</Label>
+              <Select value={form.type} onValueChange={(v) => set("type", v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5 col-span-2">
+              <Label>Description</Label>
+              <Input value={form.description} onChange={(e) => set("description", e.target.value)} placeholder="Floating, Sink, etc." />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Line Weight</Label>
+              <Input value={form.line_weight} onChange={(e) => set("line_weight", e.target.value)} placeholder="6, 4/5, n/a" />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Grain Weight</Label>
+              <Input type="number" value={form.grain_weight} onChange={(e) => set("grain_weight", e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Head Length (ft)</Label>
+              <Input type="number" value={form.head_length} onChange={(e) => set("head_length", e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Total Length (ft)</Label>
+              <Input type="number" value={form.total_length} onChange={(e) => set("total_length", e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Colour</Label>
+              <Input value={form.colour} onChange={(e) => set("colour", e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Condition</Label>
+              <Select value={form.condition} onValueChange={(v) => set("condition", v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {CONDITIONS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Reel</Label>
+              <Select value={form.reel || "_none"} onValueChange={(v) => set("reel", v === "_none" ? "" : v)}>
+                <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="_none">None</SelectItem>
+                  {reels.map((r) => <SelectItem key={r.id} value={r.name}>{r.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Rod</Label>
+              <Select value={form.rod || "_none"} onValueChange={(v) => set("rod", v === "_none" ? "" : v)}>
+                <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="_none">None</SelectItem>
+                  {rods.map((r) => <SelectItem key={r.id} value={r.name}>{r.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5 col-span-2">
+              <Label>Notes</Label>
+              <Textarea value={form.notes} onChange={(e) => set("notes", e.target.value)} rows={2} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+            <Button type="submit" disabled={loading}>
+              {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              {initial ? "Save changes" : "Add line"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
