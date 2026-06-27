@@ -48,7 +48,7 @@ export default function Layout() {
       <aside className="hidden md:flex fixed inset-y-0 left-0 w-64 flex-col border-r border-border bg-sidebar p-4">
         <div className="flex items-center gap-2 px-2 py-3 mb-4">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <img src="https://media.base44.com/images/public/6a3f2458eb55a5d860886e35/118c69a31_Trout.png" alt="FlyFishBud" className="w-5 h-5 object-contain [filter:invert(1)]" />
+            <img src="https://media.base44.com/images/public/6a3f2458eb55a5d860886e35/118c69a31_Trout.png" alt="FlyFishBud" className="w-5 h-5 object-contain [filter:invert(1)] [mix-blend-mode:screen]" />
           </div>
           <div>
             <p className="font-heading font-semibold leading-tight">FlyFishBud</p>
@@ -68,7 +68,7 @@ export default function Layout() {
       <header className="md:hidden sticky top-0 z-30 flex items-center justify-between border-b border-border bg-sidebar px-4 py-3">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <img src="https://media.base44.com/images/public/6a3f2458eb55a5d860886e35/118c69a31_Trout.png" alt="FlyFishBud" className="w-4 h-4 object-contain [filter:invert(1)]" />
+            <img src="https://media.base44.com/images/public/6a3f2458eb55a5d860886e35/118c69a31_Trout.png" alt="FlyFishBud" className="w-4 h-4 object-contain [filter:invert(1)] [mix-blend-mode:screen]" />
           </div>
           <span className="font-heading font-semibold">FlyFishBud</span>
         </div>
