@@ -48,6 +48,11 @@ export default function Lines() {
 
   useEffect(() => { load(); }, []);
 
+  const speciesOptions = useMemo(
+    () => [...new Set(lines.map((l) => l.species).filter(Boolean))].sort(),
+    [lines]
+  );
+
   const filtered = useMemo(() => {
     return lines.filter((l) => {
       const q = search.toLowerCase();
@@ -119,7 +124,7 @@ export default function Lines() {
           <SelectTrigger className="sm:w-48"><SelectValue placeholder="All species" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All species</SelectItem>
-            {["Trout", "Salmon", "Steelhead", "Bass", "Pike", "Saltwater", "Other"].map((s) => (
+            {speciesOptions.map((s) => (
               <SelectItem key={s} value={s}>{s}</SelectItem>
             ))}
           </SelectContent>
