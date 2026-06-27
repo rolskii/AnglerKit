@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Search, Loader2, RotateCw, Pencil, Trash2 } from "lucide-react";
 import ReelForm from "@/components/reels/ReelForm";
+import ReelDetailDialog from "@/components/reels/ReelDetailDialog";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -27,6 +28,7 @@ export default function Reels() {
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [viewTarget, setViewTarget] = useState(null);
 
   const load = async () => {
     setLoading(true);
@@ -136,7 +138,7 @@ export default function Reels() {
             </thead>
             <tbody>
               {filtered.map((reel) => (
-                <tr key={reel.id} className="border-t border-border hover:bg-accent/50 transition-colors">
+                <tr key={reel.id} onClick={() => setViewTarget(reel)} className="border-t border-border cursor-pointer hover:bg-accent/50 transition-colors">
                   <td className="px-3 py-2.5 whitespace-nowrap font-medium">{reel.name || "—"}</td>
                   <td className="px-3 py-2.5 whitespace-nowrap">{reel.brand || "—"}</td>
                   <td className="px-3 py-2.5 whitespace-nowrap">{reel.model || "—"}</td>
@@ -149,7 +151,7 @@ export default function Reels() {
                     ) : "—"}
                   </td>
                   <td className="px-3 py-2.5 whitespace-nowrap">{linesByReel[reel.name] || 0}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap text-right">
+                  <td className="px-3 py-2.5 whitespace-nowrap text-right" onClick={(e) => e.stopPropagation()}>
                     <div className="flex justify-end gap-1">
                       <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => { setEditing(reel); setFormOpen(true); }}>
                         <Pencil className="w-3.5 h-3.5" />
@@ -165,6 +167,15 @@ export default function Reels() {
           </table>
         </div>
       )}
+
+      <ReelDetailDialog
+        open={!!viewTarget}
+        onOpenChange={(o) => !o && setViewTarget(null)}
+        reel={viewTarget}
+        lineCount={viewTarget ? linesByReel[viewTarget.name] || 0 : 0}
+        onEdit={(r) => { setViewTarget(null); setEditing(r); setFormOpen(true); }}
+        onDelete={(r) => { setViewTarget(null); setDeleteTarget(r); }}
+      />
 
       <ReelForm open={formOpen} onOpenChange={setFormOpen} onSubmit={handleSave} initial={editing} loading={saving} />
 
