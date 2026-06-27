@@ -65,31 +65,18 @@ export default function ImportExport() {
     const content = `Fly Fish Inventory - Sample Import File
 =========================================
 
-Use a spreadsheet-style format (CSV) to import your data. Each
-collection has a header row of column names, followed by one row
-per record. Separate columns with commas. Save as a .csv file
+Each row is one item in your inventory. Use the "Type" column to
+say whether the row is a Line, Reel, or Rod. Fill in the columns
+that apply to that item; leave the rest blank. Save as a .csv file
 (or .txt with comma-separated values) and import it.
 
-============================================================
-FLY LINES  (import into: FlyLine)
-============================================================
-species,brand,model,type,description,line_weight,grain_weight,head_length,total_length,colour,condition,reel,rod,notes
-Trout,Scientific Anglers,Mastery Trout,WF,Floating,5,140,40,90,Olive,New,,,
-Steelhead,RIO,Outbound Short,Sinking,Sink tip,8,300,30,100,Blue,Good,Lamson Liquid,,
-
-============================================================
-REELS  (import into: Reel)
-============================================================
-name,brand,model,size,condition,notes
-Lamson Liquid,Lamson,Liquid 3,3+,New,
-Hatch Finatic,Hatch,Finatic 5,5+,Like New,Backup reel
-
-============================================================
-RODS  (import into: Rod)
-============================================================
-name,brand,length,line_weight,type,material,condition,notes
-Orvis Clearwater 9' 5wt,Orvis,9 ft,5,Single Hand,Carbon,New,
-Sage X 10' 7wt,Sage,10 ft,7,Single Hand,Carbon,Good,Great dry fly rod
+Type,Name,Brand,Model,Species,Line Wt,Grain Wt,Head Length,Total Length,Length,Type/Style,Material,Size,Colour,Condition,Reel,Rod,Description,Notes
+Line,,Scientific Anglers,Mastery Trout,Trout,5,140,40,90,,WF,,,,Olive,New,,,Floating,
+Line,,RIO,Outbound Short,Steelhead,8,300,30,100,,Sinking,,,,Blue,Good,Lamson Liquid,,Sink tip,
+Reel,Lamson Liquid,Lamson,Liquid 3,,,,,,,,,,,,3+,,New,,,,,
+Reel,Hatch Finatic,Hatch,Finatic 5,,,,,,,,,,,,5+,,Like New,,,,,Backup reel
+Rod,Orvis Clearwater 9' 5wt,Orvis,,,,,,,9 ft,5,Single Hand,Carbon,,,,New,,,,
+Rod,Sage X 10' 7wt,Sage,,,,,,,10 ft,7,Single Hand,Carbon,,,,Good,,,,Great dry fly rod
 `;
     const blob = new Blob([content], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
