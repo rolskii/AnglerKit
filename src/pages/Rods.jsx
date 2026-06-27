@@ -2,10 +2,9 @@ import React, { useEffect, useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Loader2, Fish, Pencil, Trash2 } from "lucide-react";
+import { Plus, Search, Loader2, Waves, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import RodForm from "@/components/rods/RodForm";
+import RodDetailDialog from "@/components/rods/RodDetailDialog";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -25,10 +24,13 @@ export default function Rods() {
   const [lines, setLines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState("name");
+  const [sortDir, setSortDir] = useState("asc");
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [viewTarget, setViewTarget] = useState(null);
 
   const load = async () => {
     setLoading(true);
@@ -58,12 +60,32 @@ export default function Rods() {
     return map;
   }, [lines]);
 
+  const pairedLinesByRod = useMemo(() => {
+    const map = {};
+    lines.forEach((l) => {
+      if (l.rod) {
+        if (!map[l.rod]) map[l.rod] = [];
+        map[l.rod].push(l);
+      }
+    });
+    return map;
+  }, [lines]);
+
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
-    return rods.filter((r) =>
+    const result = rods.filter((r) =>
       !q || [r.name, r.brand, r.length, r.line_weight, r.type, r.material].some((v) => v && v.toLowerCase().includes(q))
     );
-  }, [rods, search]);
+    const dir = sortDir === "asc" ? 1 : -1;
+    return result.sort((a, b) => {
+      const av = a[sortBy];
+      const bv = b[sortBy];
+      if (av == null && bv == null) return 0;
+      if (av == null) return 1;
+      if (bv == null) return -1;
+      return String(av).localeCompare(String(bv)) * dir;
+    });
+  }, [rods, search, sortBy, sortDir]);
 
   const handleSave = async (payload) => {
     setSaving(true);
@@ -82,6 +104,15 @@ export default function Rods() {
       toast.error(e.message || "Failed to save");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const toggleSort = (field) => {
+    if (sortBy === field) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortBy(field);
+      setSortDir("asc");
     }
   };
 
@@ -119,46 +150,55 @@ export default function Rods() {
         <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-muted-foreground" /></div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-20 text-muted-foreground">
-          <Fish className="w-12 h-12 mx-auto mb-3 opacity-40" />
+          <Waves className="w-12 h-12 mx-auto mb-3 opacity-40" />
           <p>No rods found. Add your first one!</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((rod) => (
-            <Card key={rod.id} className="p-4 flex flex-col gap-3 hover:shadow-md transition-shadow">
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <h3 className="font-heading font-semibold">{rod.name}</h3>
-                  <p className="text-sm text-muted-foreground mt-0.5">
-                    {[rod.brand, rod.length, rod.line_weight ? `${rod.line_weight}wt` : null].filter(Boolean).join(" · ") || "—"}
-                  </p>
-                </div>
-                {rod.condition && (
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${conditionColor[rod.condition] || "bg-muted text-muted-foreground"}`}>
-                    {rod.condition}
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center gap-2 flex-wrap">
-                {rod.type && <Badge variant="secondary" className="text-xs">{rod.type}</Badge>}
-                {rod.material && <Badge variant="outline" className="text-xs">{rod.material}</Badge>}
-                <Badge variant="secondary" className="text-xs">
-                  {linesByRod[rod.name] || 0} line{(linesByRod[rod.name] || 0) !== 1 ? "s" : ""}
-                </Badge>
-              </div>
-              {rod.notes && <p className="text-xs text-muted-foreground italic">{rod.notes}</p>}
-              <div className="flex gap-2 mt-auto pt-1">
-                <Button size="sm" variant="outline" className="flex-1" onClick={() => { setEditing(rod); setFormOpen(true); }}>
-                  <Pencil className="w-3.5 h-3.5 mr-1.5" /> Edit
-                </Button>
-                <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => setDeleteTarget(rod)}>
-                  <Trash2 className="w-3.5 h-3.5" />
-                </Button>
-              </div>
-            </Card>
-          ))}
+        <div className="overflow-x-auto rounded-lg border border-border">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/50 text-muted-foreground">
+              <tr>
+                <SortHeader label="Name" field="name" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Brand" field="brand" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Length" field="length" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Line Wt" field="line_weight" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Type" field="type" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Material" field="material" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Condition" field="condition" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((rod) => (
+                <tr key={rod.id} onClick={() => setViewTarget(rod)} className="border-t border-border cursor-pointer hover:bg-accent/50 transition-colors">
+                  <td className="px-3 py-2.5 whitespace-nowrap font-medium">{rod.name || "—"}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">{rod.brand || "—"}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">{rod.length || "—"}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">{rod.line_weight || "—"}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">{rod.type || "—"}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">{rod.material || "—"}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">
+                    {rod.condition ? (
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${conditionColor[rod.condition] || "bg-muted text-muted-foreground"}`}>
+                        {rod.condition}
+                      </span>
+                    ) : "—"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
+
+      <RodDetailDialog
+        open={!!viewTarget}
+        onOpenChange={(o) => !o && setViewTarget(null)}
+        rod={viewTarget}
+        lineCount={viewTarget ? linesByRod[viewTarget.name] || 0 : 0}
+        pairedLines={viewTarget ? pairedLinesByRod[viewTarget.name] || [] : []}
+        onEdit={(r) => { setViewTarget(null); setEditing(r); setFormOpen(true); }}
+        onDelete={(r) => { setViewTarget(null); setDeleteTarget(r); }}
+      />
 
       <RodForm open={formOpen} onOpenChange={setFormOpen} onSubmit={handleSave} initial={editing} loading={saving} />
 
@@ -179,5 +219,24 @@ export default function Rods() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+  );
+}
+
+function SortHeader({ label, field, sortBy, sortDir, onSort }) {
+  const active = sortBy === field;
+  return (
+    <th
+      className="text-left font-medium px-3 py-2.5 whitespace-nowrap cursor-pointer select-none hover:text-foreground"
+      onClick={() => onSort(field)}
+    >
+      <span className="inline-flex items-center gap-1">
+        {label}
+        {active ? (
+          sortDir === "asc" ? <ArrowUp className="w-3.5 h-3.5" /> : <ArrowDown className="w-3.5 h-3.5" />
+        ) : (
+          <ArrowUpDown className="w-3.5 h-3.5 opacity-40" />
+        )}
+      </span>
+    </th>
   );
 }
