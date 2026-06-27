@@ -62,49 +62,104 @@ export default function ImportExport() {
   };
 
   const handleDownloadSample = () => {
-    const sample = {
-      FlyLine: [
-        {
-          species: "Trout",
-          brand: "Scientific Anglers",
-          model: "Mastery Trout",
-          type: "WF",
-          description: "Floating",
-          line_weight: "5",
-          grain_weight: 140,
-          head_length: 40,
-          total_length: 90,
-          colour: "Olive",
-          condition: "New",
-          reel: "",
-          rod: "",
-          notes: "",
-        },
-      ],
-      Reel: [
-        {
-          name: "Lamson Liquid",
-          brand: "Lamson",
-          model: "Liquid 3",
-          size: "3+",
-          condition: "New",
-          notes: "",
-        },
-      ],
-      Rod: [
-        {
-          name: "Orvis Clearwater 9' 5wt",
-          brand: "Orvis",
-          length: "9 ft",
-          line_weight: "5",
-          type: "Single Hand",
-          material: "Carbon",
-          condition: "New",
-          notes: "",
-        },
-      ],
-    };
-    const blob = new Blob([JSON.stringify(sample, null, 2)], { type: "text/plain" });
+    const content = `Fly Fish Inventory - Sample Import File
+=========================================
+
+This file shows the format to use when importing your fly fishing
+inventory. Each section below lists the fields for one collection
+(Lines, Reels, Rods) with an example value for each field.
+
+To import, create a JSON file with one section per collection you
+want to import. Each section is a list of records. Only the fields
+you want to fill in are required; leave others empty ("").
+
+------------------------------------------------------------
+FLY LINES  (collection key: "FlyLine")
+------------------------------------------------------------
+species        Example: Trout
+brand          Example: Scientific Anglers        (required)
+model          Example: Mastery Trout             (required)
+type           Example: WF
+description    Example: Floating
+line_weight    Example: 5
+grain_weight   Example: 140          (number)
+head_length    Example: 40           (number)
+total_length   Example: 90           (number)
+colour         Example: Olive
+condition      Example: New
+reel           Example: Lamson Liquid  (name of the reel it's spooled on)
+rod            Example: Orvis Clearwater  (name of the rod it's paired with)
+notes          Example: 
+
+------------------------------------------------------------
+REELS  (collection key: "Reel")
+------------------------------------------------------------
+name           Example: Lamson Liquid            (required)
+brand          Example: Lamson
+model          Example: Liquid 3
+size           Example: 3+
+condition      Example: New
+notes          Example: 
+
+------------------------------------------------------------
+RODS  (collection key: "Rod")
+------------------------------------------------------------
+name           Example: Orvis Clearwater 9' 5wt   (required)
+brand          Example: Orvis
+length         Example: 9 ft
+line_weight    Example: 5
+type           Example: Single Hand
+material       Example: Carbon
+condition      Example: New
+notes          Example: 
+
+------------------------------------------------------------
+EXAMPLE IMPORT FILE (copy this into a .json file to import)
+------------------------------------------------------------
+{
+  "FlyLine": [
+    {
+      "species": "Trout",
+      "brand": "Scientific Anglers",
+      "model": "Mastery Trout",
+      "type": "WF",
+      "description": "Floating",
+      "line_weight": "5",
+      "grain_weight": 140,
+      "head_length": 40,
+      "total_length": 90,
+      "colour": "Olive",
+      "condition": "New",
+      "reel": "",
+      "rod": "",
+      "notes": ""
+    }
+  ],
+  "Reel": [
+    {
+      "name": "Lamson Liquid",
+      "brand": "Lamson",
+      "model": "Liquid 3",
+      "size": "3+",
+      "condition": "New",
+      "notes": ""
+    }
+  ],
+  "Rod": [
+    {
+      "name": "Orvis Clearwater 9' 5wt",
+      "brand": "Orvis",
+      "length": "9 ft",
+      "line_weight": "5",
+      "type": "Single Hand",
+      "material": "Carbon",
+      "condition": "New",
+      "notes": ""
+    }
+  ]
+}
+`;
+    const blob = new Blob([content], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
