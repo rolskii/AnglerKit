@@ -44,10 +44,8 @@ export default function ReelCard({ reel, lineCount, spooledLines, onEdit, onDele
           <ul className="space-y-1.5">
             {spooledLines.map((l) => (
               <li key={l.id} className="text-sm flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                <span className="font-medium">{l.brand} {l.model}</span>
-                {l.line_weight && <Badge variant="outline" className="text-xs">{l.line_weight}</Badge>}
-                {l.type && <span className="text-muted-foreground text-xs">· {l.type}</span>}
-                {l.species && <span className="text-muted-foreground text-xs">· {l.species}</span>}
+                <span className="font-medium">{l.brand} {l.model}{l.type ? ` ${l.type}` : ""}{l.line_weight ? ` ${l.line_weight}` : ""}</span>
+                {l.species && <span className="text-muted-foreground text-xs">- {l.species}</span>}
               </li>
             ))}
           </ul>
