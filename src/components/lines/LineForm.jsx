@@ -24,6 +24,13 @@ const empty = {
 
 export default function LineForm({ open, onOpenChange, onSubmit, initial, reels, rods, loading, existingBrands = [] }) {
   const [form, setForm] = useState(empty);
+  const [showBrandDropdown, setShowBrandDropdown] = useState(false);
+  
+  const filteredBrands = form.brand
+    ? (existingBrands.length > 0 ? existingBrands : DEFAULT_BRANDS).filter(b =>
+        b.toLowerCase().includes(form.brand.toLowerCase())
+      )
+    : [];
 
   useEffect(() => {
     setForm(initial ? { ...empty, ...initial } : empty);
@@ -51,11 +58,6 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
 
   return (
     <>
-      <datalist id="brandList">
-        {(existingBrands.length > 0 ? existingBrands : DEFAULT_BRANDS).map((brand, idx) => (
-          <option key={idx} value={brand} />
-        ))}
-      </datalist>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -72,16 +74,30 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 relative">
                 <Label>Brand</Label>
                 <input 
                   type="text"
-                  list="brandList" 
                   value={form.brand} 
-                  onChange={(e) => set("brand", e.target.value)}
+                  onChange={(e) => { set("brand", e.target.value); setShowBrandDropdown(true); }}
+                  onFocus={() => setShowBrandDropdown(true)}
+                  onBlur={() => setTimeout(() => setShowBrandDropdown(false), 200)}
                   className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                   required 
                 />
+                {showBrandDropdown && filteredBrands.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-input rounded-md shadow-md z-10 max-h-48 overflow-y-auto">
+                    {filteredBrands.map((brand, idx) => (
+                      <div
+                        key={idx}
+                        onClick={() => { set("brand", brand); setShowBrandDropdown(false); }}
+                        className="px-3 py-2 cursor-pointer hover:bg-accent transition-colors"
+                      >
+                        {brand}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               <div className="space-y-1.5">
               <Label>Model</Label>
