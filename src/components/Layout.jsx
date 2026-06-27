@@ -55,7 +55,7 @@ export default function Layout() {
             <TroutIcon className="w-7 h-7 text-primary-foreground" />
           </div>
           <div>
-            <p className="font-heading font-semibold leading-tight">Fly Fish</p>
+            <p className="font-heading font-semibold leading-tight">My Fly Guy</p>
             <p className="text-xs text-muted-foreground">Inventory Manager</p>
           </div>
         </div>
@@ -74,7 +74,7 @@ export default function Layout() {
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <TroutIcon className="w-6 h-6 text-primary-foreground" />
           </div>
-          <span className="font-heading font-semibold">Fly Fish</span>
+          <span className="font-heading font-semibold">My Fly Guy</span>
         </div>
         <Button variant="ghost" size="icon" onClick={() => setOpen(!open)}>
           {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
