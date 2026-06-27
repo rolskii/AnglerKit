@@ -22,6 +22,8 @@ export default function Lines() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [speciesFilter, setSpeciesFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("species");
+  const [sortDir, setSortDir] = useState("asc");
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -54,7 +56,7 @@ export default function Lines() {
   );
 
   const filtered = useMemo(() => {
-    return lines.filter((l) => {
+    const result = lines.filter((l) => {
       const q = search.toLowerCase();
       const matchesSearch = !q ||
         [l.species, l.brand, l.model, l.type, l.colour, l.reel, l.rod, l.description].some(
@@ -63,7 +65,17 @@ export default function Lines() {
       const matchesSpecies = speciesFilter === "all" || l.species === speciesFilter;
       return matchesSearch && matchesSpecies;
     });
-  }, [lines, search, speciesFilter]);
+    const dir = sortDir === "asc" ? 1 : -1;
+    return result.sort((a, b) => {
+      const av = a[sortBy];
+      const bv = b[sortBy];
+      if (av == null && bv == null) return 0;
+      if (av == null) return 1;
+      if (bv == null) return -1;
+      if (typeof av === "number" && typeof bv === "number") return (av - bv) * dir;
+      return String(av).localeCompare(String(bv)) * dir;
+    });
+  }, [lines, search, speciesFilter, sortBy, sortDir]);
 
   const handleSave = async (payload) => {
     setSaving(true);
@@ -129,6 +141,25 @@ export default function Lines() {
             ))}
           </SelectContent>
         </Select>
+        <Select value={sortBy} onValueChange={setSortBy}>
+          <SelectTrigger className="sm:w-44"><SelectValue placeholder="Sort by" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="species">Species</SelectItem>
+            <SelectItem value="brand">Brand</SelectItem>
+            <SelectItem value="model">Model</SelectItem>
+            <SelectItem value="type">Type</SelectItem>
+            <SelectItem value="line_weight">Line Wt</SelectItem>
+            <SelectItem value="grain_weight">Grain Wt</SelectItem>
+          </SelectContent>
+        </Select>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
+          title={sortDir === "asc" ? "Ascending" : "Descending"}
+        >
+          {sortDir === "asc" ? "↑" : "↓"}
+        </Button>
       </div>
 
       {loading ? (
