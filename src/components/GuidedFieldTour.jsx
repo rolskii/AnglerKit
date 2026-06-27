@@ -24,10 +24,15 @@ export default function GuidedFieldTour({ steps, active, onClose }) {
     const el = steps[step]?.ref?.current;
     if (el) el.scrollIntoView({ block: "center", behavior: "smooth" });
     measure();
+    // Re-measure after the dialog open/scroll animation settles
+    const t1 = setTimeout(measure, 250);
+    const t2 = setTimeout(measure, 500);
     const onScroll = () => measure();
     window.addEventListener("scroll", onScroll, true);
     window.addEventListener("resize", onScroll);
     return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
       window.removeEventListener("scroll", onScroll, true);
       window.removeEventListener("resize", onScroll);
     };
