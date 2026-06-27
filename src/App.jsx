@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import Layout from '@/components/Layout';
+import Home from '@/pages/Home';
 import Lines from '@/pages/Lines';
 import Reels from '@/pages/Reels';
 import Rods from '@/pages/Rods';
@@ -42,7 +43,7 @@ const AuthenticatedApp = () => {
   return (
     <Routes>
       <Route element={<Layout />}>
-        <Route path="/" element={<Navigate to="/lines" replace />} />
+        <Route path="/" element={<Home />} />
         <Route path="/lines" element={<Lines />} />
         <Route path="/reels" element={<Reels />} />
         <Route path="/rods" element={<Rods />} />
