@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Plus, Search, Loader2, Waves } from "lucide-react";
+import { Plus, Search, Loader2, Waves, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import LineCard from "@/components/lines/LineCard";
 import LineDetailDialog from "@/components/lines/LineDetailDialog";
 import LineForm from "@/components/lines/LineForm";
@@ -77,6 +77,15 @@ export default function Lines() {
     });
   }, [lines, search, speciesFilter, sortBy, sortDir]);
 
+  const toggleSort = (field) => {
+    if (sortBy === field) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortBy(field);
+      setSortDir("asc");
+    }
+  };
+
   const handleSave = async (payload) => {
     setSaving(true);
     try {
@@ -141,25 +150,6 @@ export default function Lines() {
             ))}
           </SelectContent>
         </Select>
-        <Select value={sortBy} onValueChange={setSortBy}>
-          <SelectTrigger className="sm:w-44"><SelectValue placeholder="Sort by" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="species">Species</SelectItem>
-            <SelectItem value="brand">Brand</SelectItem>
-            <SelectItem value="model">Model</SelectItem>
-            <SelectItem value="type">Type</SelectItem>
-            <SelectItem value="line_weight">Line Wt</SelectItem>
-            <SelectItem value="grain_weight">Grain Wt</SelectItem>
-          </SelectContent>
-        </Select>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
-          title={sortDir === "asc" ? "Ascending" : "Descending"}
-        >
-          {sortDir === "asc" ? "↑" : "↓"}
-        </Button>
       </div>
 
       {loading ? (
@@ -174,12 +164,12 @@ export default function Lines() {
           <table className="w-full text-sm">
             <thead className="bg-muted/50 text-muted-foreground">
               <tr>
-                <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Species</th>
-                <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Brand</th>
-                <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Model</th>
-                <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Type</th>
-                <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Line Wt</th>
-                <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Grain Wt</th>
+                <SortHeader label="Species" field="species" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Brand" field="brand" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Model" field="model" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Type" field="type" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Line Wt" field="line_weight" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Grain Wt" field="grain_weight" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Colour</th>
                 <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Condition</th>
               </tr>
@@ -241,5 +231,24 @@ export default function Lines() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+  );
+}
+
+function SortHeader({ label, field, sortBy, sortDir, onSort }) {
+  const active = sortBy === field;
+  return (
+    <th
+      className="text-left font-medium px-3 py-2.5 whitespace-nowrap cursor-pointer select-none hover:text-foreground"
+      onClick={() => onSort(field)}
+    >
+      <span className="inline-flex items-center gap-1">
+        {label}
+        {active ? (
+          sortDir === "asc" ? <ArrowUp className="w-3.5 h-3.5" /> : <ArrowDown className="w-3.5 h-3.5" />
+        ) : (
+          <ArrowUpDown className="w-3.5 h-3.5 opacity-40" />
+        )}
+      </span>
+    </th>
   );
 }
