@@ -9,6 +9,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2 } from "lucide-react";
 
 const SPECIES = ["Trout", "Salmon", "Steelhead", "Bass", "Pike", "Saltwater", "Gar", "Muskie", "Anything", "Other"];
@@ -19,7 +20,7 @@ const DEFAULT_BRANDS = ["Rio", "Cortland", "Scientific Anglers", "Sage", "3M", "
 const empty = {
   species: "Trout", brand: "", model: "", type: "Head", description: "",
   line_weight: "", grain_weight: "", head_length: "", total_length: "",
-  colour: "", condition: "Good", reel: "", rod: "", notes: "",
+  colour: "", condition: "Good", reel: "", rod: "", spooled: false, notes: "",
 };
 
 export default function LineForm({ open, onOpenChange, onSubmit, initial, reels, rods, loading, existingBrands = [] }) {
@@ -154,6 +155,16 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
                   {reels.map((r) => <SelectItem key={r.id} value={r.name}>{r.name}</SelectItem>)}
                 </SelectContent>
               </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Spooled</Label>
+              <div className="flex items-center gap-2 h-9">
+                <Checkbox
+                  checked={!!form.spooled}
+                  onCheckedChange={(v) => set("spooled", !!v)}
+                />
+                <span className="text-sm text-muted-foreground">On a spare spool (not on a reel)</span>
+              </div>
             </div>
             <div className="space-y-1.5">
               <Label>Rod</Label>

@@ -75,6 +75,11 @@
       "type": "string",
       "description": "Rod this line is paired with"
     },
+    "spooled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this line is on a spare spool (not on a reel)"
+    },
     "notes": {
       "type": "string"
     }
