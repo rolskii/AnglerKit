@@ -93,49 +93,66 @@ export default function GuidedFieldTour({ steps, active, onClose }) {
         </div>,
         document.body
       )}
-      {/* Tour bar — inside the dialog so button clicks work reliably */}
-      <div className="sticky bottom-0 z-10 mt-4 bg-popover border border-border rounded-lg p-3 shadow-lg">
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <p className="text-sm font-semibold truncate">{current.title}</p>
-            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{current.description}</p>
-          </div>
-          <button type="button" onClick={onClose} className="text-muted-foreground hover:text-foreground shrink-0 p-1">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-        <div className="flex items-center justify-between mt-2">
-          <span className="text-xs text-muted-foreground">{step + 1} / {steps.length}</span>
-          <div className="flex gap-1.5">
-            {!isFirst && (
-              <button
-                type="button"
-                onClick={() => goTo(step - 1)}
-                className="inline-flex items-center gap-1 h-8 rounded-md px-3 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" /> Back
-              </button>
-            )}
-            {isLast ? (
-              <button
-                type="button"
-                onClick={onClose}
-                className="inline-flex items-center gap-1 h-8 rounded-md px-3 text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-              >
-                Done
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => goTo(step + 1)}
-                className="inline-flex items-center gap-1 h-8 rounded-md px-3 text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-              >
-                Next <ChevronRight className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
+      {/* Tour note — portaled next to the highlighted field */}
+      {rect && createPortal(
+        (() => {
+          const noteWidth = 280;
+          const noteHeight = 150;
+          const gap = 12;
+          const placeBelow = rect.bottom + noteHeight + gap < window.innerHeight;
+          const top = placeBelow ? rect.bottom + gap : Math.max(8, rect.top - noteHeight - gap);
+          let left = rect.left + rect.width / 2 - noteWidth / 2;
+          left = Math.max(8, Math.min(left, window.innerWidth - noteWidth - 8));
+          return (
+            <div
+              className="fixed z-[56] rounded-lg border-2 border-primary bg-primary text-primary-foreground shadow-xl p-3"
+              style={{ top, left, width: noteWidth }}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-sm font-bold truncate">{current.title}</p>
+                  <p className="text-xs text-primary-foreground/90 mt-0.5">{current.description}</p>
+                </div>
+                <button type="button" onClick={onClose} className="text-primary-foreground/80 hover:text-primary-foreground shrink-0 p-1">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="flex items-center justify-between mt-2">
+                <span className="text-xs text-primary-foreground/80">{step + 1} / {steps.length}</span>
+                <div className="flex gap-1.5">
+                  {!isFirst && (
+                    <button
+                      type="button"
+                      onClick={() => goTo(step - 1)}
+                      className="inline-flex items-center gap-1 h-8 rounded-md px-3 text-xs font-medium bg-primary-foreground/15 text-primary-foreground hover:bg-primary-foreground/25 transition-colors"
+                    >
+                      <ChevronLeft className="w-4 h-4" /> Back
+                    </button>
+                  )}
+                  {isLast ? (
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      className="inline-flex items-center gap-1 h-8 rounded-md px-3 text-xs font-medium bg-primary-foreground text-primary hover:bg-primary-foreground/90 transition-colors"
+                    >
+                      Done
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => goTo(step + 1)}
+                      className="inline-flex items-center gap-1 h-8 rounded-md px-3 text-xs font-medium bg-primary-foreground text-primary hover:bg-primary-foreground/90 transition-colors"
+                    >
+                      Next <ChevronRight className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })(),
+        document.body
+      )}
     </>
   );
 }
