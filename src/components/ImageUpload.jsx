@@ -11,14 +11,17 @@ export default function ImageUpload({ value = [], onChange }) {
 
   const images = Array.isArray(value) ? value : value ? [value] : [];
 
-  const handleFile = async (file) => {
-    if (!file) return;
+  const handleFiles = async (fileList) => {
+    const files = Array.from(fileList || []);
+    if (files.length === 0) return;
     setUploading(true);
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      onChange([...images, file_url]);
+      const uploaded = await Promise.all(
+        files.map((file) => base44.integrations.Core.UploadFile({ file }).then((r) => r.file_url))
+      );
+      onChange([...images, ...uploaded.filter(Boolean)]);
     } catch (e) {
-      toast.error("Failed to upload image");
+      toast.error("Failed to upload image(s)");
     } finally {
       setUploading(false);
     }
@@ -63,8 +66,9 @@ export default function ImageUpload({ value = [], onChange }) {
         ref={fileRef}
         type="file"
         accept="image/*"
+        multiple
         className="hidden"
-        onChange={(e) => { handleFile(e.target.files?.[0]); e.target.value = ""; }}
+        onChange={(e) => { handleFiles(e.target.files); e.target.value = ""; }}
       />
       <input
         ref={cameraRef}
@@ -72,7 +76,7 @@ export default function ImageUpload({ value = [], onChange }) {
         accept="image/*"
         capture="environment"
         className="hidden"
-        onChange={(e) => { handleFile(e.target.files?.[0]); e.target.value = ""; }}
+        onChange={(e) => { handleFiles(e.target.files); e.target.value = ""; }}
       />
     </div>
   );
