@@ -72,27 +72,6 @@ export default function Reels() {
     return map;
   }, [lines]);
 
-  const parseSize = (s) => {
-    if (!s) return null;
-    const tokens = String(s).trim().split(/\s+/);
-    let total = 0;
-    let hasNum = false;
-    for (const t of tokens) {
-      const m = t.match(/^(\d+)\/(\d+)$/);
-      if (m) {
-        total += parseInt(m[1], 10) / parseInt(m[2], 10);
-        hasNum = true;
-      } else {
-        const n = parseFloat(t);
-        if (!isNaN(n)) {
-          total += n;
-          hasNum = true;
-        }
-      }
-    }
-    return hasNum ? total : null;
-  };
-
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
     const result = reels.filter((r) =>
@@ -105,14 +84,6 @@ export default function Reels() {
       if (av == null && bv == null) return 0;
       if (av == null) return 1;
       if (bv == null) return -1;
-      if (sortBy === "size") {
-        const na = parseSize(av);
-        const nb = parseSize(bv);
-        if (na == null && nb == null) return 0;
-        if (na == null) return 1;
-        if (nb == null) return -1;
-        return (na - nb) * dir;
-      }
       return String(av).localeCompare(String(bv)) * dir;
     });
   }, [reels, search, sortBy, sortDir]);
