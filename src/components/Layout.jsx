@@ -51,7 +51,7 @@ export default function Layout() {
             <img src="https://media.base44.com/images/public/6a3f2458eb55a5d860886e35/118c69a31_Trout.png" alt="FlyFishBud" className="w-7 h-7 object-contain [filter:invert(1)] [mix-blend-mode:screen]" />
           </div>
           <div>
-            <p className="font-heading font-semibold leading-tight">FlyFishBud</p>
+            <p className="font-heading font-semibold leading-tight">Fly Fish</p>
             <p className="text-xs text-muted-foreground">Line Manager</p>
           </div>
         </div>
@@ -70,7 +70,7 @@ export default function Layout() {
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <img src="https://media.base44.com/images/public/6a3f2458eb55a5d860886e35/118c69a31_Trout.png" alt="FlyFishBud" className="w-6 h-6 object-contain [filter:invert(1)] [mix-blend-mode:screen]" />
           </div>
-          <span className="font-heading font-semibold">FlyFishBud</span>
+          <span className="font-heading font-semibold">Fly Fish</span>
         </div>
         <Button variant="ghost" size="icon" onClick={() => setOpen(!open)}>
           {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
