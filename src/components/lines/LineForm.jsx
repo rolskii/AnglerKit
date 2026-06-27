@@ -18,6 +18,7 @@ const SPECIES = ["Trout", "Salmon", "Steelhead", "Bass", "Pike", "Saltwater", "G
 const TYPES = ["Tip", "Body", "Head", "Integrated", "Shooting", "WF", "Running", "Sinking", "System", "Other"].sort((a, b) => a.localeCompare(b));
 const CONDITIONS = ["New", "Brand New", "Like New", "Good", "Fair", "Poor"].sort((a, b) => a.localeCompare(b));
 const DEFAULT_BRANDS = ["Rio", "Cortland", "Scientific Anglers", "Sage", "3M", "Airflo", "Wulff"].sort((a, b) => a.localeCompare(b));
+const DEFAULT_DESCRIPTIONS = ["Floating", "Sink Tip", "Full Sinking", "Intermediate", "Hover", "Float/Sink"].sort((a, b) => a.localeCompare(b));
 
 const empty = {
   species: "Trout", brand: "", model: "", type: "Head", description: "",
@@ -25,9 +26,10 @@ const empty = {
   colour: "", condition: "Good", reel: "", rod: "", spooled: false, notes: "", images: [],
 };
 
-export default function LineForm({ open, onOpenChange, onSubmit, initial, reels, rods, loading, existingBrands = [] }) {
+export default function LineForm({ open, onOpenChange, onSubmit, initial, reels, rods, loading, existingBrands = [], existingDescriptions = [] }) {
   const [form, setForm] = useState(empty);
   const [showBrandDropdown, setShowBrandDropdown] = useState(false);
+  const [showDescDropdown, setShowDescDropdown] = useState(false);
   const [tourActive, setTourActive] = useState(false);
 
   const refs = {
@@ -67,6 +69,12 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
         b.toLowerCase().includes(form.brand.toLowerCase())
       ).sort((a, b) => a.localeCompare(b))
     : [];
+
+  const filteredDescriptions = form.description
+    ? (existingDescriptions.length > 0 ? existingDescriptions : DEFAULT_DESCRIPTIONS).filter(d =>
+        d.toLowerCase().includes(form.description.toLowerCase())
+      ).sort((a, b) => a.localeCompare(b))
+    : (existingDescriptions.length > 0 ? existingDescriptions : DEFAULT_DESCRIPTIONS).slice().sort((a, b) => a.localeCompare(b));
 
   useEffect(() => {
     setForm(initial ? { ...empty, ...initial } : empty);
@@ -152,9 +160,30 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1.5 col-span-2" ref={refs.description}>
+            <div className="space-y-1.5 col-span-2 relative" ref={refs.description}>
               <Label>Description</Label>
-              <Input value={form.description} onChange={(e) => set("description", e.target.value)} placeholder="Floating, Sink, etc." />
+              <input
+                type="text"
+                value={form.description}
+                onChange={(e) => { set("description", e.target.value); setShowDescDropdown(true); }}
+                onFocus={() => setShowDescDropdown(true)}
+                onBlur={() => setTimeout(() => setShowDescDropdown(false), 200)}
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                placeholder="Floating, Sink, etc."
+              />
+              {showDescDropdown && filteredDescriptions.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-input rounded-md shadow-md z-10 max-h-48 overflow-y-auto">
+                  {filteredDescriptions.map((desc, idx) => (
+                    <div
+                      key={idx}
+                      onMouseDown={(e) => { e.preventDefault(); set("description", desc); setShowDescDropdown(false); }}
+                      className="px-3 py-2 cursor-pointer hover:bg-accent transition-colors"
+                    >
+                      {desc}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="space-y-1.5" ref={refs.line_weight}>
               <Label>Line Weight</Label>
