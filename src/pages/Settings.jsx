@@ -108,6 +108,7 @@ export default function Settings() {
   const handleAppNameChange = (v) => {
     setAppName(v);
     localStorage.setItem("appName", v);
+    window.dispatchEvent(new Event("appNameChanged"));
   };
 
   if (loading) {

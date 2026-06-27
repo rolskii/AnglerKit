@@ -23,8 +23,15 @@ export default function Layout() {
     const handleStorageChange = () => {
       setAppName(localStorage.getItem("appName") || "My Fly Guy");
     };
+    const handleAppNameChange = () => {
+      setAppName(localStorage.getItem("appName") || "My Fly Guy");
+    };
     window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
+    window.addEventListener("appNameChanged", handleAppNameChange);
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("appNameChanged", handleAppNameChange);
+    };
   }, []);
 
   const handleLogout = async () => {
