@@ -99,7 +99,7 @@ function LineDetail({ label, value }) {
   return (
     <div className="flex justify-between gap-2">
       <span className="text-muted-foreground">{label}</span>
-      <span className="font-medium text-right truncate">{value != null && value !== "" ? value : "—"}</span>
+      <span className="font-medium text-right break-words">{value != null && value !== "" ? value : "—"}</span>
     </div>
   );
 }
