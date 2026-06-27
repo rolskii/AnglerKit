@@ -62,7 +62,7 @@ export default function ImportExport() {
   };
 
   const handleDownloadSample = () => {
-    const sample = {
+    const samples = {
       FlyLine: [
         {
           species: "Trout",
@@ -104,11 +104,12 @@ export default function ImportExport() {
         },
       ],
     };
-    const blob = new Blob([JSON.stringify(sample, null, 2)], { type: "application/json" });
+    const data = samples[importEntity] || [];
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "flyfish-sample-import.json";
+    a.download = `flyfish-sample-${importEntity.toLowerCase()}.json`;
     a.click();
     URL.revokeObjectURL(url);
     toast.success("Sample file downloaded");
@@ -174,7 +175,7 @@ export default function ImportExport() {
           <h2 className="text-lg font-heading font-semibold">Import</h2>
         </div>
         <p className="text-sm text-muted-foreground">
-          Upload a previously exported JSON file. Records will be added to the selected collection.
+          Upload a previously exported JSON file. Records will be added to the selected collection. Not sure of the format? Download a sample template below.
         </p>
         <div className="flex flex-wrap items-center gap-3">
           <select
@@ -193,6 +194,10 @@ export default function ImportExport() {
               Choose File
             </span>
           </label>
+          <Button variant="outline" onClick={handleDownloadSample}>
+            <FileJson className="w-4 h-4" />
+            Download Sample
+          </Button>
         </div>
         {importResult?.success != null && (
           <div className="flex items-center gap-2 text-sm text-green-600">
