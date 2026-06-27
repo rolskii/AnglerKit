@@ -53,7 +53,7 @@ export default function Layout() {
           </div>
           <div>
             <p className="font-heading font-semibold leading-tight">Fly Fish</p>
-            <p className="text-xs text-muted-foreground">Line Manager</p>
+            <p className="text-xs text-muted-foreground">Inventory Manager</p>
           </div>
         </div>
         <NavLinks />
