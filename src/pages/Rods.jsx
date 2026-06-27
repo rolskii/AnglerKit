@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Search, Loader2, Fish, Pencil, Trash2 } from "lucide-react";
 import RodForm from "@/components/rods/RodForm";
+import FlyRodIcon from "@/components/icons/FlyRodIcon";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -101,7 +102,7 @@ export default function Rods() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="font-heading text-2xl font-bold flex items-center gap-2">
-            <Fish className="w-6 h-6 text-primary" /> Fly Rods
+            <FlyRodIcon className="w-6 h-6 text-primary" /> Fly Rods
           </h1>
           <p className="text-muted-foreground text-sm mt-1">{rods.length} rods in your collection</p>
         </div>
