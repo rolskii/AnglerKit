@@ -10,8 +10,8 @@ const navItems = [
   { to: "/reels", label: "Reels" },
   { to: "/rods", label: "Rods" },
   { to: "/import-export", label: "Import / Export" },
-  { to: "/about", label: "About" },
   { to: "/settings", label: "Settings" },
+  { to: "/about", label: "About" },
 ];
 
 export default function Layout() {
