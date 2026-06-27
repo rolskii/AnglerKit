@@ -47,6 +47,11 @@ export default function Lines() {
 
   useEffect(() => { load(); }, []);
 
+  const existingBrands = useMemo(() => {
+    const brands = new Set(lines.map(l => l.brand).filter(Boolean));
+    return Array.from(brands).sort();
+  }, [lines]);
+
   const filtered = useMemo(() => {
     const result = lines.filter((l) => {
       const q = search.toLowerCase();
@@ -196,6 +201,7 @@ export default function Lines() {
         reels={reels}
         rods={rods}
         loading={saving}
+        existingBrands={existingBrands}
       />
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>

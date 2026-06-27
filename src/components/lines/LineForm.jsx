@@ -21,7 +21,7 @@ const empty = {
   colour: "", condition: "Good", reel: "", rod: "", notes: "",
 };
 
-export default function LineForm({ open, onOpenChange, onSubmit, initial, reels, rods, loading }) {
+export default function LineForm({ open, onOpenChange, onSubmit, initial, reels, rods, loading, existingBrands = [] }) {
   const [form, setForm] = useState(empty);
 
   useEffect(() => {
@@ -67,7 +67,17 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
             </div>
             <div className="space-y-1.5">
               <Label>Brand</Label>
-              <Input value={form.brand} onChange={(e) => set("brand", e.target.value)} required />
+              <Input 
+                list="brandList" 
+                value={form.brand} 
+                onChange={(e) => set("brand", e.target.value)} 
+                required 
+              />
+              <datalist id="brandList">
+                {existingBrands.map((brand, idx) => (
+                  <option key={idx} value={brand} />
+                ))}
+              </datalist>
             </div>
             <div className="space-y-1.5">
               <Label>Model</Label>
