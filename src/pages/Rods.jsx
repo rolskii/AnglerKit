@@ -77,6 +77,11 @@ export default function Rods() {
       !q || [r.name, r.brand, r.length, r.line_weight, r.type, r.material].some((v) => v && v.toLowerCase().includes(q))
     );
     const dir = sortDir === "asc" ? 1 : -1;
+    const toNumber = (v) => {
+      if (v == null || v === "") return null;
+      const n = parseFloat(String(v).replace(/[^\d.-]/g, ""));
+      return isNaN(n) ? null : n;
+    };
     const lengthToInches = (v) => {
       if (!v) return null;
       const s = String(v).trim();
@@ -95,6 +100,9 @@ export default function Rods() {
       if (sortBy === "length") {
         av = lengthToInches(av);
         bv = lengthToInches(bv);
+      } else if (sortBy === "line_weight") {
+        av = toNumber(av);
+        bv = toNumber(bv);
       }
       if (av == null && bv == null) return 0;
       if (av == null) return 1;
