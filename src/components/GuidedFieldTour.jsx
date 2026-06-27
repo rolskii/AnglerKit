@@ -40,7 +40,7 @@ export default function GuidedFieldTour({ steps, active, onClose }) {
     const start = setTimeout(() => {
       setReady(true);
       const el = stepsRef.current[step]?.ref?.current;
-      if (el) el.scrollIntoView({ block: "center", behavior: "smooth" });
+      if (el) el.scrollIntoView({ block: "nearest", behavior: "smooth" });
       measure();
     }, 350);
     const t1 = setTimeout(measure, 600);
@@ -73,6 +73,8 @@ export default function GuidedFieldTour({ steps, active, onClose }) {
   if (popoverTop < 12) popoverTop = rect.bottom + gap; // not enough room above -> below
   let popoverLeft = rect.left + rect.width / 2 - popSize.w / 2;
   popoverLeft = Math.max(12, Math.min(popoverLeft, window.innerWidth - popSize.w - 12));
+  // Keep the popover (and its buttons) fully within the viewport
+  popoverTop = Math.max(12, Math.min(popoverTop, window.innerHeight - popSize.h - 12));
 
   return createPortal(
     <>
