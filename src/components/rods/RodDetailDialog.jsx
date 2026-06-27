@@ -9,7 +9,7 @@ export default function RodDetailDialog({ open, onOpenChange, rod, lineCount, pa
   if (!rod) return null;
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Rod Details</DialogTitle>
         </DialogHeader>

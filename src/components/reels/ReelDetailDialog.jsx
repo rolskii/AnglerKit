@@ -9,7 +9,7 @@ export default function ReelDetailDialog({ open, onOpenChange, reel, lineCount, 
   if (!reel) return null;
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Reel Details</DialogTitle>
         </DialogHeader>
