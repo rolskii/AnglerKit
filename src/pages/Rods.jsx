@@ -79,8 +79,9 @@ export default function Rods() {
     const dir = sortDir === "asc" ? 1 : -1;
     const toNumber = (v) => {
       if (v == null || v === "") return null;
-      const n = parseFloat(String(v).replace(/[^\d.-]/g, ""));
-      return isNaN(n) ? null : n;
+      const parts = String(v).split("/").map((p) => parseFloat(p.replace(/[^\d.-]/g, ""))).filter((n) => !isNaN(n));
+      if (parts.length === 0) return null;
+      return parts.reduce((a, b) => a + b, 0) / parts.length;
     };
     const lengthToInches = (v) => {
       if (!v) return null;
