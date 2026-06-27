@@ -30,6 +30,13 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
+  const speciesOptions = form.species && !SPECIES.includes(form.species)
+    ? [...SPECIES, form.species]
+    : SPECIES;
+  const typeOptions = form.type && !TYPES.includes(form.type)
+    ? [...TYPES, form.type]
+    : TYPES;
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const payload = {
@@ -54,7 +61,7 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
               <Select value={form.species} onValueChange={(v) => set("species", v)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {SPECIES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  {speciesOptions.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -71,7 +78,7 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
               <Select value={form.type} onValueChange={(v) => set("type", v)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                  {typeOptions.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
