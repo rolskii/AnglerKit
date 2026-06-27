@@ -8,58 +8,61 @@ export default function GuidedFieldTour({ steps, active, onClose }) {
   const [rect, setRect] = useState(null);
   const [ready, setReady] = useState(false);
   const [popSize, setPopSize] = useState({ w: 288, h: 120 });
-  const rafRef = useRef(null);
   const popRef = useRef(null);
-  const stepsRef = useRef(steps);
-  stepsRef.current = steps;
-  const stepRef = useRef(step);
-  stepRef.current = step;
+  const rafRef = useRef(null);
 
+  // Reset when the tour starts
   useEffect(() => {
     if (active) {
       setStep(0);
       setReady(false);
+      setRect(null);
     }
   }, [active]);
 
+  // Measure the current field's position synchronously
   const measure = () => {
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    rafRef.current = requestAnimationFrame(() => {
-      const el = stepsRef.current[stepRef.current]?.ref?.current;
-      if (el) setRect(el.getBoundingClientRect());
-      if (popRef.current) {
-        const r = popRef.current.getBoundingClientRect();
-        setPopSize({ w: r.width, h: r.height });
-      }
-    });
+    const el = steps[step]?.ref?.current;
+    if (el) setRect(el.getBoundingClientRect());
+    if (popRef.current) {
+      const r = popRef.current.getBoundingClientRect();
+      setPopSize({ w: r.width, h: r.height });
+    }
   };
 
+  // Initial delay so the dialog open animation settles before measuring
   useEffect(() => {
     if (!active) return;
-    // Wait for the dialog open animation to finish before measuring
-    const start = setTimeout(() => {
+    const t = setTimeout(() => {
       setReady(true);
-      const el = stepsRef.current[step]?.ref?.current;
-      if (el) el.scrollIntoView({ block: "nearest", behavior: "smooth" });
       measure();
     }, 350);
-    const t1 = setTimeout(measure, 600);
-    const t2 = setTimeout(measure, 900);
-    const onScroll = () => measure();
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active, step]);
+
+  // Re-measure immediately whenever the step changes (after we're ready)
+  useLayoutEffect(() => {
+    if (ready) measure();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, step]);
+
+  // Keep the spotlight aligned if the dialog scrolls or the viewport resizes
+  useEffect(() => {
+    if (!active) return;
+    const onScroll = () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      rafRef.current = requestAnimationFrame(measure);
+    };
     window.addEventListener("scroll", onScroll, true);
     window.addEventListener("resize", onScroll);
     return () => {
-      clearTimeout(start);
-      clearTimeout(t1);
-      clearTimeout(t2);
       window.removeEventListener("scroll", onScroll, true);
       window.removeEventListener("resize", onScroll);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [active, step]);
-
-  useLayoutEffect(() => {
-    if (ready) measure();
-  }, [ready, step]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active, step, ready]);
 
   if (!active || !ready || !rect) return null;
   const current = steps[step];
@@ -68,12 +71,10 @@ export default function GuidedFieldTour({ steps, active, onClose }) {
   const isFirst = step === 0;
 
   const gap = 10;
-  // Position popover directly above the field, centered horizontally over it
   let popoverTop = rect.top - popSize.h - gap;
-  if (popoverTop < 12) popoverTop = rect.bottom + gap; // not enough room above -> below
+  if (popoverTop < 12) popoverTop = rect.bottom + gap;
   let popoverLeft = rect.left + rect.width / 2 - popSize.w / 2;
   popoverLeft = Math.max(12, Math.min(popoverLeft, window.innerWidth - popSize.w - 12));
-  // Keep the popover (and its buttons) fully within the viewport
   popoverTop = Math.max(12, Math.min(popoverTop, window.innerHeight - popSize.h - 12));
 
   return createPortal(
