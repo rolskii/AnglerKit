@@ -235,12 +235,14 @@ export default function Settings() {
         <div>
           <h2 className="font-heading font-semibold">App Name</h2>
           <p className="text-sm text-muted-foreground mb-3">Customize the name displayed in the app.</p>
-          <Input
-            value={appName}
-            onChange={(e) => handleAppNameChange(e.target.value)}
-            placeholder="Enter app name"
-            className="max-w-xs"
-          />
+          <div className="flex items-center gap-2 max-w-xs">
+            <Input
+              value={appName}
+              onChange={(e) => setAppName(e.target.value)}
+              placeholder="Enter app name"
+            />
+            <Button onClick={() => handleAppNameChange(appName)}>Save</Button>
+          </div>
         </div>
       </div>
 
