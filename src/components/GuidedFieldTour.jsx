@@ -103,7 +103,7 @@ export default function GuidedFieldTour({ steps, active, onClose }) {
             <p className="text-sm font-semibold">{current.title}</p>
             <p className="text-xs text-muted-foreground mt-1">{current.description}</p>
           </div>
-          <button type="button" onClick={onClose} className="text-muted-foreground hover:text-foreground shrink-0">
+          <button type="button" onPointerDown={(e) => { e.stopPropagation(); onClose(); }} className="text-muted-foreground hover:text-foreground shrink-0">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -113,7 +113,7 @@ export default function GuidedFieldTour({ steps, active, onClose }) {
             {!isFirst && (
               <button
                 type="button"
-                onClick={(e) => { e.stopPropagation(); e.preventDefault(); goTo(step - 1); }}
+                onPointerDown={(e) => { e.stopPropagation(); goTo(step - 1); }}
                 className="inline-flex items-center gap-1 h-8 rounded-md px-3 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" /> Back
@@ -122,7 +122,7 @@ export default function GuidedFieldTour({ steps, active, onClose }) {
             {isLast ? (
               <button
                 type="button"
-                onClick={(e) => { e.stopPropagation(); e.preventDefault(); onClose(); }}
+                onPointerDown={(e) => { e.stopPropagation(); onClose(); }}
                 className="inline-flex items-center gap-1 h-8 rounded-md px-3 text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
               >
                 Done
@@ -130,7 +130,7 @@ export default function GuidedFieldTour({ steps, active, onClose }) {
             ) : (
               <button
                 type="button"
-                onClick={(e) => { e.stopPropagation(); e.preventDefault(); goTo(step + 1); }}
+                onPointerDown={(e) => { e.stopPropagation(); goTo(step + 1); }}
                 className="inline-flex items-center gap-1 h-8 rounded-md px-3 text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
               >
                 Next <ChevronRight className="w-4 h-4" />
