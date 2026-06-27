@@ -94,6 +94,7 @@ export default function GuidedFieldTour({ steps, active, onClose }) {
       </div>
       <div
         ref={popRef}
+        onPointerDown={(e) => e.stopPropagation()}
         className="fixed z-[60] w-72 rounded-lg border border-border bg-popover text-popover-foreground shadow-xl p-3 transition-all duration-200"
         style={{ top: popoverTop, left: popoverLeft }}
       >

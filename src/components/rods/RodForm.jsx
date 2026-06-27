@@ -57,7 +57,11 @@ export default function RodForm({ open, onOpenChange, onSubmit, initial, loading
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto">
+      <DialogContent
+        className="max-h-[90vh] overflow-y-auto"
+        onPointerDownOutside={tourActive ? (e) => e.preventDefault() : undefined}
+        onInteractOutside={tourActive ? (e) => e.preventDefault() : undefined}
+      >
         <DialogHeader>
           <DialogTitle>{initial ? "Edit Rod" : "Add Rod"}</DialogTitle>
         </DialogHeader>

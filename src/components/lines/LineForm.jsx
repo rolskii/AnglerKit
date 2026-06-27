@@ -95,7 +95,11 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent
+          className="max-w-2xl max-h-[90vh] overflow-y-auto"
+          onPointerDownOutside={tourActive ? (e) => e.preventDefault() : undefined}
+          onInteractOutside={tourActive ? (e) => e.preventDefault() : undefined}
+        >
           <DialogHeader>
             <DialogTitle>{initial ? "Edit Fly Line" : "Add Fly Line"}</DialogTitle>
           </DialogHeader>
