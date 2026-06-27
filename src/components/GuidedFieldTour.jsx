@@ -10,6 +10,10 @@ export default function GuidedFieldTour({ steps, active, onClose }) {
   const [popSize, setPopSize] = useState({ w: 288, h: 120 });
   const rafRef = useRef(null);
   const popRef = useRef(null);
+  const stepsRef = useRef(steps);
+  stepsRef.current = steps;
+  const stepRef = useRef(step);
+  stepRef.current = step;
 
   useEffect(() => {
     if (active) {
@@ -21,7 +25,7 @@ export default function GuidedFieldTour({ steps, active, onClose }) {
   const measure = () => {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     rafRef.current = requestAnimationFrame(() => {
-      const el = steps[step]?.ref?.current;
+      const el = stepsRef.current[stepRef.current]?.ref?.current;
       if (el) setRect(el.getBoundingClientRect());
       if (popRef.current) {
         const r = popRef.current.getBoundingClientRect();
@@ -35,7 +39,7 @@ export default function GuidedFieldTour({ steps, active, onClose }) {
     // Wait for the dialog open animation to finish before measuring
     const start = setTimeout(() => {
       setReady(true);
-      const el = steps[step]?.ref?.current;
+      const el = stepsRef.current[step]?.ref?.current;
       if (el) el.scrollIntoView({ block: "center", behavior: "smooth" });
       measure();
     }, 350);
@@ -51,7 +55,7 @@ export default function GuidedFieldTour({ steps, active, onClose }) {
       window.removeEventListener("scroll", onScroll, true);
       window.removeEventListener("resize", onScroll);
     };
-  }, [active, step, steps]);
+  }, [active, step]);
 
   useLayoutEffect(() => {
     if (ready) measure();
