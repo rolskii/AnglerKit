@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2 } from "lucide-react";
 import ImageUpload from "@/components/ImageUpload";
+import GuidedFieldTour from "@/components/GuidedFieldTour";
 
 const SPECIES = ["Trout", "Salmon", "Steelhead", "Bass", "Pike", "Saltwater", "Gar", "Muskie", "Anything", "Other"].sort((a, b) => a.localeCompare(b));
 const TYPES = ["Tip", "Body", "Head", "Integrated", "Shooting", "WF", "Running", "Sinking", "System", "Other"].sort((a, b) => a.localeCompare(b));
@@ -27,6 +28,39 @@ const empty = {
 export default function LineForm({ open, onOpenChange, onSubmit, initial, reels, rods, loading, existingBrands = [] }) {
   const [form, setForm] = useState(empty);
   const [showBrandDropdown, setShowBrandDropdown] = useState(false);
+  const [tourActive, setTourActive] = useState(false);
+
+  const refs = {
+    species: useRef(), brand: useRef(), model: useRef(), type: useRef(),
+    description: useRef(), line_weight: useRef(), grain_weight: useRef(),
+    head_length: useRef(), total_length: useRef(), colour: useRef(),
+    condition: useRef(), reel: useRef(), spooled: useRef(), rod: useRef(),
+    notes: useRef(), images: useRef(),
+  };
+
+  const tourSteps = [
+    { ref: refs.species, title: "Species", description: "Select the target species this line is designed for." },
+    { ref: refs.brand, title: "Brand", description: "Type the manufacturer. Matching brands from your collection will appear as suggestions." },
+    { ref: refs.model, title: "Model", description: "Enter the model name of the line." },
+    { ref: refs.type, title: "Type", description: "Choose the line type (e.g. Head, Shooting, WF)." },
+    { ref: refs.description, title: "Description", description: "Add a short description like Floating or Sink." },
+    { ref: refs.line_weight, title: "Line Weight", description: "Enter the line weight (e.g. 6, 4/5, n/a)." },
+    { ref: refs.grain_weight, title: "Grain Weight", description: "Optional: the grain weight as a number." },
+    { ref: refs.head_length, title: "Head Length", description: "Optional: head length in feet." },
+    { ref: refs.total_length, title: "Total Length", description: "Optional: total line length in feet." },
+    { ref: refs.colour, title: "Colour", description: "Enter the line colour." },
+    { ref: refs.condition, title: "Condition", description: "Select the current condition of the line." },
+    { ref: refs.reel, title: "Reel", description: "Choose the reel this line is spooled on, or None." },
+    { ref: refs.spooled, title: "Spooled", description: "Check this if the line is on a spare spool rather than a reel." },
+    { ref: refs.rod, title: "Rod", description: "Choose the rod this line is paired with, or None." },
+    { ref: refs.notes, title: "Notes", description: "Any extra notes about this line." },
+    { ref: refs.images, title: "Photos", description: "Upload one or more photos of the line." },
+  ];
+
+  useEffect(() => {
+    if (open && !initial) setTourActive(true);
+    else setTourActive(false);
+  }, [open, initial]);
   
   const filteredBrands = form.brand
     ? (existingBrands.length > 0 ? existingBrands : DEFAULT_BRANDS).filter(b =>
@@ -67,7 +101,7 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
+              <div className="space-y-1.5" ref={refs.species}>
                 <Label>Species</Label>
                 <Select value={form.species} onValueChange={(v) => set("species", v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
@@ -76,7 +110,7 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-1.5 relative">
+              <div className="space-y-1.5 relative" ref={refs.brand}>
                 <Label>Brand</Label>
                 <input 
                   type="text"
@@ -101,11 +135,11 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
                   </div>
                 )}
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-1.5" ref={refs.model}>
               <Label>Model</Label>
               <Input value={form.model} onChange={(e) => set("model", e.target.value)} required />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1.5" ref={refs.type}>
               <Label>Type</Label>
               <Select value={form.type} onValueChange={(v) => set("type", v)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
@@ -114,31 +148,31 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1.5 col-span-2">
+            <div className="space-y-1.5 col-span-2" ref={refs.description}>
               <Label>Description</Label>
               <Input value={form.description} onChange={(e) => set("description", e.target.value)} placeholder="Floating, Sink, etc." />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1.5" ref={refs.line_weight}>
               <Label>Line Weight</Label>
               <Input value={form.line_weight} onChange={(e) => set("line_weight", e.target.value)} placeholder="6, 4/5, n/a" />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1.5" ref={refs.grain_weight}>
               <Label>Grain Weight</Label>
               <Input type="number" value={form.grain_weight} onChange={(e) => set("grain_weight", e.target.value)} />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1.5" ref={refs.head_length}>
               <Label>Head Length (ft)</Label>
               <Input type="number" value={form.head_length} onChange={(e) => set("head_length", e.target.value)} />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1.5" ref={refs.total_length}>
               <Label>Total Length (ft)</Label>
               <Input type="number" value={form.total_length} onChange={(e) => set("total_length", e.target.value)} />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1.5" ref={refs.colour}>
               <Label>Colour</Label>
               <Input value={form.colour} onChange={(e) => set("colour", e.target.value)} />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1.5" ref={refs.condition}>
               <Label>Condition</Label>
               <Select value={form.condition} onValueChange={(v) => set("condition", v)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
@@ -147,7 +181,7 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1.5" ref={refs.reel}>
               <Label>Reel</Label>
               <Select value={form.reel || "_none"} onValueChange={(v) => set("reel", v === "_none" ? "" : v)}>
                 <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
@@ -157,7 +191,7 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1.5" ref={refs.spooled}>
               <Label>Spooled</Label>
               <div className="flex items-center gap-2 h-9">
                 <Checkbox
@@ -167,7 +201,7 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
                 <span className="text-sm text-muted-foreground">On a spare spool (not on a reel)</span>
               </div>
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1.5" ref={refs.rod}>
               <Label>Rod</Label>
               <Select value={form.rod || "_none"} onValueChange={(v) => set("rod", v === "_none" ? "" : v)}>
                 <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
@@ -177,11 +211,11 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1.5 col-span-2">
+            <div className="space-y-1.5 col-span-2" ref={refs.notes}>
               <Label>Notes</Label>
               <Textarea value={form.notes} onChange={(e) => set("notes", e.target.value)} rows={2} />
             </div>
-            <div className="space-y-1.5 col-span-2">
+            <div className="space-y-1.5 col-span-2" ref={refs.images}>
               <Label>Photos</Label>
               <ImageUpload value={form.images || []} onChange={(v) => set("images", v)} />
             </div>
@@ -194,6 +228,7 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
             </Button>
           </DialogFooter>
           </form>
+          <GuidedFieldTour steps={tourSteps} active={tourActive} onClose={() => setTourActive(false)} />
           </DialogContent>
           </Dialog>
           </>
