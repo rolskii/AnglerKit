@@ -76,31 +76,40 @@ export default function ImportExport() {
     }
   };
 
-  const handleDownloadSample = () => {
-    const files = {
-      "flyfish-sample-lines.csv": `species,brand,model,type,description,line_weight,grain_weight,head_length,total_length,colour,condition,reel,rod,notes
+  const SAMPLES = {
+    FlyLine: {
+      file: "flyfish-sample-lines.csv",
+      content: `species,brand,model,type,description,line_weight,grain_weight,head_length,total_length,colour,condition,reel,rod,notes
 Trout,Scientific Anglers,Mastery Trout,WF,Floating,5,140,40,90,Olive,New,,,Floating
 Steelhead,RIO,Outbound Short,Sinking,Sink tip,8,300,30,100,Blue,Good,Lamson Liquid,,Sink tip
 `,
-      "flyfish-sample-reels.csv": `name,brand,model,size,condition,notes
+    },
+    Reel: {
+      file: "flyfish-sample-reels.csv",
+      content: `name,brand,model,size,condition,notes
 Lamson Liquid,Lamson,Liquid 3,3+,New,
 Hatch Finatic,Hatch,Finatic 5,5+,Like New,Backup reel
 `,
-      "flyfish-sample-rods.csv": `name,brand,length,line_weight,type,material,condition,notes
+    },
+    Rod: {
+      file: "flyfish-sample-rods.csv",
+      content: `name,brand,length,line_weight,type,material,condition,notes
 Orvis Clearwater 9' 5wt,Orvis,9 ft,5,Single Hand,Carbon,New,
 Sage X 10' 7wt,Sage,10 ft,7,Single Hand,Carbon,Good,Great dry fly rod
 `,
-    };
-    Object.entries(files).forEach(([filename, content]) => {
-      const blob = new Blob([content], { type: "text/csv" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      a.click();
-      URL.revokeObjectURL(url);
-    });
-    toast.success("Sample files downloaded");
+    },
+  };
+
+  const handleDownloadSample = (entityName) => {
+    const { file, content } = SAMPLES[entityName];
+    const blob = new Blob([content], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = file;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`${entityName} sample downloaded`);
   };
 
   const handleImport = async (e) => {
@@ -182,9 +191,17 @@ Sage X 10' 7wt,Sage,10 ft,7,Single Hand,Carbon,Good,Great dry fly rod
               Choose File
             </span>
           </label>
-          <Button variant="outline" onClick={handleDownloadSample}>
+          <Button variant="outline" onClick={() => handleDownloadSample("FlyLine")}>
             <FileJson className="w-4 h-4" />
-            Download Sample
+            Sample Lines
+          </Button>
+          <Button variant="outline" onClick={() => handleDownloadSample("Reel")}>
+            <FileJson className="w-4 h-4" />
+            Sample Reels
+          </Button>
+          <Button variant="outline" onClick={() => handleDownloadSample("Rod")}>
+            <FileJson className="w-4 h-4" />
+            Sample Rods
           </Button>
         </div>
         {importResult?.success != null && (
