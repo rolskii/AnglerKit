@@ -16,15 +16,15 @@ const navItems = [
 
 export default function Layout() {
   const [open, setOpen] = useState(false);
-  const [appName, setAppName] = useState(() => localStorage.getItem("appName") || "My Fly Guy");
+  const [appName, setAppName] = useState(() => localStorage.getItem("appName") || "The Stripping Basket");
   const navigate = useNavigate();
 
   useEffect(() => {
     const handleStorageChange = () => {
-      setAppName(localStorage.getItem("appName") || "My Fly Guy");
+      setAppName(localStorage.getItem("appName") || "The Stripping Basket");
     };
     const handleAppNameChange = () => {
-      setAppName(localStorage.getItem("appName") || "My Fly Guy");
+      setAppName(localStorage.getItem("appName") || "The Stripping Basket");
     };
     window.addEventListener("storage", handleStorageChange);
     window.addEventListener("appNameChanged", handleAppNameChange);

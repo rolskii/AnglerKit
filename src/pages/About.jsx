@@ -10,20 +10,20 @@ export default function About() {
           <TroutIcon className="w-10 h-10 text-primary-foreground" />
         </div>
         <div>
-          <h1 className="font-heading text-2xl font-bold">About My Fly Guy</h1>
+          <h1 className="font-heading text-2xl font-bold">About The Stripping Basket</h1>
           <p className="text-muted-foreground text-sm">Inventory Manager</p>
         </div>
       </div>
 
       <div className="prose prose-sm max-w-none text-foreground/90 space-y-4">
         <p>
-          My Fly Guy is your ultimate fly fishing gear manager — built to help you organize
+          The Stripping Basket is your ultimate fly fishing gear manager — built to help you organize
           your lines, rods, and reels so you're always ready for your next perfect cast.
         </p>
         <p>
           Keep a detailed inventory of every piece of equipment in your collection, track
           condition and specifications, and pair lines with the rods and reels they belong on.
-          Whether you're chasing trout on a quiet stream or swinging for steelhead, My Fly Guy
+          Whether you're chasing trout on a quiet stream or swinging for steelhead, The Stripping Basket
           keeps your gear in order.
         </p>
       </div>
