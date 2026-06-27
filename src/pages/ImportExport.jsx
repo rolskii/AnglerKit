@@ -62,7 +62,7 @@ export default function ImportExport() {
   };
 
   const handleDownloadSample = () => {
-    const samples = {
+    const sample = {
       FlyLine: [
         {
           species: "Trout",
@@ -104,12 +104,11 @@ export default function ImportExport() {
         },
       ],
     };
-    const data = samples[importEntity] || [];
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify(sample, null, 2)], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `flyfish-sample-${importEntity.toLowerCase()}.json`;
+    a.download = "flyfish-sample-import.txt";
     a.click();
     URL.revokeObjectURL(url);
     toast.success("Sample file downloaded");
