@@ -2,7 +2,7 @@ import React from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, RotateCw, Fish } from "lucide-react";
+import { Pencil, Trash2, Fish } from "lucide-react";
 
 const conditionColor = {
   "New": "bg-emerald-100 text-emerald-700",
@@ -42,7 +42,7 @@ export default function LineCard({ line, onEdit, onDelete }) {
 
       <div className="flex flex-col gap-1.5 text-sm border-t border-border pt-3">
         <div className="flex items-center gap-2 text-muted-foreground">
-          <RotateCw className="w-3.5 h-3.5 shrink-0" />
+          <span className="font-medium shrink-0">Reel:</span>
           <span className="truncate">{line.reel || "No reel"}</span>
         </div>
         <div className="flex items-center gap-2 text-muted-foreground">
