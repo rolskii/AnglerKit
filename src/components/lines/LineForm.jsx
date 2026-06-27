@@ -50,37 +50,38 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{initial ? "Edit Fly Line" : "Add Fly Line"}</DialogTitle>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label>Species</Label>
-              <Select value={form.species} onValueChange={(v) => set("species", v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {speciesOptions.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label>Brand</Label>
-              <Input 
-                list="brandList" 
-                value={form.brand} 
-                onChange={(e) => set("brand", e.target.value)} 
-                required 
-              />
-              <datalist id="brandList">
-                {(existingBrands.length > 0 ? existingBrands : DEFAULT_BRANDS).map((brand, idx) => (
-                  <option key={idx} value={brand} />
-                ))}
-              </datalist>
-            </div>
-            <div className="space-y-1.5">
+    <>
+      <datalist id="brandList">
+        {(existingBrands.length > 0 ? existingBrands : DEFAULT_BRANDS).map((brand, idx) => (
+          <option key={idx} value={brand} />
+        ))}
+      </datalist>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{initial ? "Edit Fly Line" : "Add Fly Line"}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label>Species</Label>
+                <Select value={form.species} onValueChange={(v) => set("species", v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {speciesOptions.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Brand</Label>
+                <Input 
+                  list="brandList" 
+                  value={form.brand} 
+                  onChange={(e) => set("brand", e.target.value)} 
+                  required 
+                />
+              </div>
+              <div className="space-y-1.5">
               <Label>Model</Label>
               <Input value={form.model} onChange={(e) => set("model", e.target.value)} required />
             </div>
@@ -158,8 +159,9 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
               {initial ? "Save changes" : "Add line"}
             </Button>
           </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-}
+          </form>
+          </DialogContent>
+          </Dialog>
+          </>
+          );
+          }
