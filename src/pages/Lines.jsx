@@ -168,7 +168,7 @@ export default function Lines() {
                 <tr
                   key={line.id}
                   onClick={() => setViewTarget(line)}
-                  className="border-t border-border cursor-pointer hover:bg-accent/50 transition-colors"
+                  className={`border-t border-border cursor-pointer hover:bg-accent/50 transition-colors ${line.reel ? "bg-primary/5" : ""}`}
                 >
                   <td className="px-3 py-2.5 whitespace-nowrap">{line.species || "—"}</td>
                   <td className="px-3 py-2.5 whitespace-nowrap font-medium">{line.brand || "—"}</td>
