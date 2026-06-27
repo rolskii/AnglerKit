@@ -64,6 +64,14 @@ export default function GuidedFieldTour({ steps, active, onClose }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active, step, ready]);
 
+  // Advance to a given step and measure that field immediately
+  const goTo = (newStep) => {
+    const clamped = Math.max(0, Math.min(newStep, steps.length - 1));
+    setStep(clamped);
+    const el = steps[clamped]?.ref?.current;
+    if (el) setRect(el.getBoundingClientRect());
+  };
+
   if (!active || !ready || !rect) return null;
   const current = steps[step];
   if (!current) return null;
@@ -103,14 +111,14 @@ export default function GuidedFieldTour({ steps, active, onClose }) {
           <span className="text-xs text-muted-foreground">{step + 1} / {steps.length}</span>
           <div className="flex gap-1.5">
             {!isFirst && (
-              <Button type="button" size="sm" variant="ghost" onClick={() => setStep((s) => s - 1)}>
+              <Button type="button" size="sm" variant="ghost" onClick={() => goTo(step - 1)}>
                 <ChevronLeft className="w-4 h-4" /> Back
               </Button>
             )}
             {isLast ? (
               <Button type="button" size="sm" onClick={onClose}>Done</Button>
             ) : (
-              <Button type="button" size="sm" onClick={() => setStep((s) => s + 1)}>
+              <Button type="button" size="sm" onClick={() => goTo(step + 1)}>
                 Next <ChevronRight className="w-4 h-4" />
               </Button>
             )}
