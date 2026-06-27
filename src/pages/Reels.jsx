@@ -2,8 +2,6 @@ import React, { useEffect, useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Plus, Search, Loader2, RotateCw, Pencil, Trash2 } from "lucide-react";
 import ReelForm from "@/components/reels/ReelForm";
 import {
@@ -123,38 +121,48 @@ export default function Reels() {
           <p>No reels found. Add your first one!</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((reel) => (
-            <Card key={reel.id} className="p-4 flex flex-col gap-3 hover:shadow-md transition-shadow">
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <h3 className="font-heading font-semibold">{reel.name}</h3>
-                  <p className="text-sm text-muted-foreground mt-0.5">
-                    {[reel.brand, reel.model, reel.size].filter(Boolean).join(" · ") || "—"}
-                  </p>
-                </div>
-                {reel.condition && (
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${conditionColor[reel.condition] || "bg-muted text-muted-foreground"}`}>
-                    {reel.condition}
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="text-xs">
-                  {linesByReel[reel.name] || 0} line{(linesByReel[reel.name] || 0) !== 1 ? "s" : ""}
-                </Badge>
-              </div>
-              {reel.notes && <p className="text-xs text-muted-foreground italic">{reel.notes}</p>}
-              <div className="flex gap-2 mt-auto pt-1">
-                <Button size="sm" variant="outline" className="flex-1" onClick={() => { setEditing(reel); setFormOpen(true); }}>
-                  <Pencil className="w-3.5 h-3.5 mr-1.5" /> Edit
-                </Button>
-                <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => setDeleteTarget(reel)}>
-                  <Trash2 className="w-3.5 h-3.5" />
-                </Button>
-              </div>
-            </Card>
-          ))}
+        <div className="overflow-x-auto rounded-lg border border-border">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/50 text-muted-foreground">
+              <tr>
+                <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Name</th>
+                <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Brand</th>
+                <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Model</th>
+                <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Size</th>
+                <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Condition</th>
+                <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Lines</th>
+                <th className="text-right font-medium px-3 py-2.5 whitespace-nowrap">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((reel) => (
+                <tr key={reel.id} className="border-t border-border hover:bg-accent/50 transition-colors">
+                  <td className="px-3 py-2.5 whitespace-nowrap font-medium">{reel.name || "—"}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">{reel.brand || "—"}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">{reel.model || "—"}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">{reel.size || "—"}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">
+                    {reel.condition ? (
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${conditionColor[reel.condition] || "bg-muted text-muted-foreground"}`}>
+                        {reel.condition}
+                      </span>
+                    ) : "—"}
+                  </td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">{linesByReel[reel.name] || 0}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap text-right">
+                    <div className="flex justify-end gap-1">
+                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => { setEditing(reel); setFormOpen(true); }}>
+                        <Pencil className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-destructive hover:text-destructive" onClick={() => setDeleteTarget(reel)}>
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 
