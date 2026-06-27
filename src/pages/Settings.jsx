@@ -20,7 +20,6 @@ export default function Settings() {
   const [lastBackup, setLastBackup] = useState(() => localStorage.getItem("lastBackup") || null);
   const [error, setError] = useState(null);
   const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "light");
-  const [appName, setAppName] = useState(() => localStorage.getItem("appName") || "My Fly Guy");
 
   const applyTheme = (t) => {
     setTheme(t);
@@ -103,12 +102,6 @@ export default function Settings() {
   const toggleAutosave = (v) => {
     setAutosave(v);
     localStorage.setItem("autosave", String(v));
-  };
-
-  const handleAppNameChange = (v) => {
-    setAppName(v);
-    localStorage.setItem("appName", v);
-    window.dispatchEvent(new Event("appNameChanged"));
   };
 
   if (loading) {
@@ -231,21 +224,6 @@ export default function Settings() {
         <ActiveIcon className="w-3.5 h-3.5" />
         Backups are saved as CSV files in your {SERVICES[service].folder}.
       </p>
-
-      <div className="rounded-lg border border-border bg-card p-6 space-y-4">
-        <div>
-          <h2 className="font-heading font-semibold">App Name</h2>
-          <p className="text-sm text-muted-foreground mb-3">Customize the name displayed in the app.</p>
-          <div className="flex items-center gap-2 max-w-xs">
-            <Input
-              value={appName}
-              onChange={(e) => setAppName(e.target.value)}
-              placeholder="Enter app name"
-            />
-            <Button onClick={() => handleAppNameChange(appName)}>Save</Button>
-          </div>
-        </div>
-      </div>
 
       <div className="rounded-lg border border-border bg-card p-6 space-y-4">
         <div>
