@@ -72,7 +72,7 @@ export default function RodCard({ rod, lineCount, pairedLines, onEdit, onDelete 
         )}
       </div>
 
-      {rod.notes && <p className="text-xs text-muted-foreground italic border-t border-border pt-2">{rod.notes}</p>}
+      {rod.notes && <p className="text-sm text-muted-foreground italic border-t border-border pt-2">{rod.notes}</p>}
 
       <div className="flex gap-2 mt-auto pt-1">
         <Button size="sm" variant="outline" className="flex-1" onClick={() => onEdit(rod)}>

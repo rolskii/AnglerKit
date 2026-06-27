@@ -67,7 +67,7 @@ export default function ReelCard({ reel, lineCount, spooledLines, onEdit, onDele
         )}
       </div>
 
-      {reel.notes && <p className="text-xs text-muted-foreground italic border-t border-border pt-2">{reel.notes}</p>}
+      {reel.notes && <p className="text-sm text-muted-foreground italic border-t border-border pt-2">{reel.notes}</p>}
 
       <div className="flex gap-2 mt-auto pt-1">
         <Button size="sm" variant="outline" className="flex-1" onClick={() => onEdit(reel)}>

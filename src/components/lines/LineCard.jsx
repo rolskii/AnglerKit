@@ -54,7 +54,7 @@ export default function LineCard({ line, onEdit, onDelete }) {
       </div>
 
       {line.notes && (
-        <p className="text-xs text-muted-foreground italic border-t border-border pt-2">{line.notes}</p>
+        <p className="text-sm text-muted-foreground italic border-t border-border pt-2">{line.notes}</p>
       )}
 
       <div className="flex gap-2 mt-auto pt-1">
