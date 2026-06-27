@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
-import { Button } from "@/components/ui/button";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function GuidedFieldTour({ steps, active, onClose }) {
@@ -111,16 +110,30 @@ export default function GuidedFieldTour({ steps, active, onClose }) {
           <span className="text-xs text-muted-foreground">{step + 1} / {steps.length}</span>
           <div className="flex gap-1.5">
             {!isFirst && (
-              <Button type="button" size="sm" variant="ghost" onClick={() => goTo(step - 1)}>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); e.preventDefault(); goTo(step - 1); }}
+                className="inline-flex items-center gap-1 h-8 rounded-md px-3 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+              >
                 <ChevronLeft className="w-4 h-4" /> Back
-              </Button>
+              </button>
             )}
             {isLast ? (
-              <Button type="button" size="sm" onClick={onClose}>Done</Button>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); e.preventDefault(); onClose(); }}
+                className="inline-flex items-center gap-1 h-8 rounded-md px-3 text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+              >
+                Done
+              </button>
             ) : (
-              <Button type="button" size="sm" onClick={() => goTo(step + 1)}>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); e.preventDefault(); goTo(step + 1); }}
+                className="inline-flex items-center gap-1 h-8 rounded-md px-3 text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+              >
                 Next <ChevronRight className="w-4 h-4" />
-              </Button>
+              </button>
             )}
           </div>
         </div>
