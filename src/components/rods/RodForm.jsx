@@ -15,7 +15,7 @@ import ImageUpload from "@/components/ImageUpload";
 const TYPES = ["Single Hand", "Switch", "Spey", "Other"];
 const MATERIALS = ["Carbon", "Cane", "Fiberglass", "Other"];
 const CONDITIONS = ["New", "Like New", "Good", "Fair", "Poor"];
-const empty = { name: "", brand: "", length: "", line_weight: "", type: "Single Hand", material: "Carbon", condition: "Good", notes: "", image_url: "" };
+const empty = { name: "", brand: "", length: "", line_weight: "", type: "Single Hand", material: "Carbon", condition: "Good", notes: "", images: [] };
 
 export default function RodForm({ open, onOpenChange, onSubmit, initial, loading }) {
   const [form, setForm] = useState(empty);
@@ -93,8 +93,8 @@ export default function RodForm({ open, onOpenChange, onSubmit, initial, loading
             <Textarea value={form.notes} onChange={(e) => set("notes", e.target.value)} rows={2} />
           </div>
           <div className="space-y-1.5">
-            <Label>Photo</Label>
-            <ImageUpload value={form.image_url || ""} onChange={(v) => set("image_url", v)} />
+            <Label>Photos</Label>
+            <ImageUpload value={form.images || []} onChange={(v) => set("images", v)} />
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>

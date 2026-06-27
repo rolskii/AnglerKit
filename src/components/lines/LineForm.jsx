@@ -21,7 +21,7 @@ const DEFAULT_BRANDS = ["Rio", "Cortland", "Scientific Anglers", "Sage", "3M", "
 const empty = {
   species: "Trout", brand: "", model: "", type: "Head", description: "",
   line_weight: "", grain_weight: "", head_length: "", total_length: "",
-  colour: "", condition: "Good", reel: "", rod: "", spooled: false, notes: "", image_url: "",
+  colour: "", condition: "Good", reel: "", rod: "", spooled: false, notes: "", images: [],
 };
 
 export default function LineForm({ open, onOpenChange, onSubmit, initial, reels, rods, loading, existingBrands = [] }) {
@@ -182,8 +182,8 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
               <Textarea value={form.notes} onChange={(e) => set("notes", e.target.value)} rows={2} />
             </div>
             <div className="space-y-1.5 col-span-2">
-              <Label>Photo</Label>
-              <ImageUpload value={form.image_url || ""} onChange={(v) => set("image_url", v)} />
+              <Label>Photos</Label>
+              <ImageUpload value={form.images || []} onChange={(v) => set("images", v)} />
             </div>
           </div>
           <DialogFooter>

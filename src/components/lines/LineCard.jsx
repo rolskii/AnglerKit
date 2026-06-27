@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
+import ImageGallery, { getItemImages } from "@/components/ImageGallery";
 
 const conditionColor = {
   "New": "bg-emerald-100 text-emerald-700",
@@ -15,9 +16,7 @@ const conditionColor = {
 export default function LineCard({ line, onEdit, onDelete }) {
   return (
     <Card className="p-4 flex flex-col gap-3 hover:shadow-md transition-shadow">
-      {line.image_url && (
-        <img src={line.image_url} alt={line.model} className="w-full aspect-square object-cover rounded-md" />
-      )}
+      <ImageGallery images={getItemImages(line)} />
       <div className="flex items-start justify-between gap-2">
         <div>
           <div className="flex items-center gap-2 flex-wrap">

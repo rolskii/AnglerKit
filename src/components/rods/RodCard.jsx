@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
+import ImageGallery, { getItemImages } from "@/components/ImageGallery";
 
 const conditionColor = {
   "New": "bg-emerald-100 text-emerald-700",
@@ -15,9 +16,7 @@ const conditionColor = {
 export default function RodCard({ rod, lineCount, pairedLines, onEdit, onDelete }) {
   return (
     <Card className="p-4 flex flex-col gap-3">
-      {rod.image_url && (
-        <img src={rod.image_url} alt={rod.name} className="w-full aspect-square object-cover rounded-md" />
-      )}
+      <ImageGallery images={getItemImages(rod)} />
       <div className="flex items-start justify-between gap-2">
         <div>
           <h3 className="font-heading font-semibold">{rod.name}</h3>

@@ -27,7 +27,14 @@
     },
     "image_url": {
       "type": "string",
-      "description": "Photo of the reel"
+      "description": "Legacy single photo (superseded by images)"
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Photos of the reel"
     },
     "notes": {
       "type": "string"
