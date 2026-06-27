@@ -5,32 +5,46 @@ export default function TroutIcon({ className = "w-7 h-7" }) {
     <svg
       viewBox="0 0 64 64"
       fill="none"
-      stroke="currentColor"
-      strokeWidth={2.2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
       className={className}
       aria-hidden="true"
     >
-      {/* elongated trout body */}
-      <path d="M6 32c6-9 16-13 26-13 7 0 12 2 18 6 3 2 3 10 0 12-6 4-11 6-18 6-10 0-20-4-26-11z" />
-      {/* forked tail */}
-      <path d="M50 25l8-6M50 39l8 6M50 32h10" />
+      {/* trout body silhouette */}
+      <path
+        d="M4 33c7-10 18-15 30-15 6 0 11 1.5 16 4.5l9-5.5-4 9 4 9-9-5.5c-5 3-10 4.5-16 4.5-12 0-23-5-30-15z"
+        fill="currentColor"
+      />
+      {/* gill line */}
+      <path
+        d="M20 20.5c-2.5 4-2.5 19 0 23"
+        stroke="rgba(0,0,0,0.25)"
+        strokeWidth={1.6}
+        strokeLinecap="round"
+        fill="none"
+      />
       {/* dorsal fin */}
-      <path d="M22 19c2-4 5-6 8-6M30 19c1-3 3-5 5-6" />
-      {/* adipose fin (small) */}
-      <path d="M40 19c2-2 4-3 6-3" />
+      <path
+        d="M24 18.5c2-4 5-6.5 9-7.5-1 4-1 7 0 9-3-1-6-1-9-1.5z"
+        fill="currentColor"
+      />
+      {/* adipose fin */}
+      <path
+        d="M44 18c2-1.5 4-2 6-2-0.5 2-0.5 3.5 0 5-2-1.5-4-2.5-6-3z"
+        fill="currentColor"
+      />
       {/* pectoral fin */}
-      <path d="M24 36c-2 4-5 6-9 7" />
-      {/* gill curve */}
-      <path d="M20 24c-2 3-2 11 0 14" />
+      <path
+        d="M22 38c-2 4-6 7-11 8 2-4 2-7 1-9 3 1 7 1 10 1z"
+        fill="currentColor"
+      />
       {/* eye */}
-      <circle cx="14" cy="30" r="1.6" fill="currentColor" stroke="none" />
-      {/* spots along body */}
-      <circle cx="28" cy="28" r="1.1" fill="currentColor" stroke="none" />
-      <circle cx="36" cy="31" r="1.1" fill="currentColor" stroke="none" />
-      <circle cx="32" cy="35" r="1.1" fill="currentColor" stroke="none" />
-      <circle cx="42" cy="29" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="13" cy="30" r="2.2" fill="rgba(0,0,0,0.3)" />
+      <circle cx="13.5" cy="29.5" r="0.8" fill="#fff" />
+      {/* spots */}
+      <circle cx="28" cy="27" r="1.3" fill="rgba(0,0,0,0.3)" />
+      <circle cx="35" cy="30" r="1.3" fill="rgba(0,0,0,0.3)" />
+      <circle cx="31" cy="34" r="1.3" fill="rgba(0,0,0,0.3)" />
+      <circle cx="41" cy="27" r="1.3" fill="rgba(0,0,0,0.3)" />
+      <circle cx="38" cy="34" r="1.3" fill="rgba(0,0,0,0.3)" />
     </svg>
   );
 }
