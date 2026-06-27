@@ -12,7 +12,7 @@ const conditionColor = {
   "Poor": "bg-rose-100 text-rose-700",
 };
 
-export default function ReelCard({ reel, lineCount, onEdit, onDelete }) {
+export default function ReelCard({ reel, lineCount, spooledLines, onEdit, onDelete }) {
   return (
     <Card className="p-4 flex flex-col gap-3">
       <div className="flex items-start justify-between gap-2">
@@ -36,10 +36,27 @@ export default function ReelCard({ reel, lineCount, onEdit, onDelete }) {
         <Detail label="Condition" value={reel.condition} />
       </div>
 
-      <div className="flex items-center gap-2 border-t border-border pt-3">
-        <Badge variant="secondary" className="text-xs">
-          {lineCount || 0} line{(lineCount || 0) !== 1 ? "s" : ""}
-        </Badge>
+      <div className="flex flex-col gap-2 border-t border-border pt-3">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium">Spooled Lines</span>
+          <Badge variant="secondary" className="text-xs">
+            {lineCount || 0} line{(lineCount || 0) !== 1 ? "s" : ""}
+          </Badge>
+        </div>
+        {spooledLines && spooledLines.length > 0 ? (
+          <ul className="space-y-1.5">
+            {spooledLines.map((l) => (
+              <li key={l.id} className="text-sm flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                <span className="font-medium">{l.brand} {l.model}</span>
+                {l.line_weight && <Badge variant="outline" className="text-xs">{l.line_weight}</Badge>}
+                {l.type && <span className="text-muted-foreground text-xs">· {l.type}</span>}
+                {l.species && <span className="text-muted-foreground text-xs">· {l.species}</span>}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-muted-foreground">No lines spooled on this reel.</p>
+        )}
       </div>
 
       {reel.notes && <p className="text-xs text-muted-foreground italic border-t border-border pt-2">{reel.notes}</p>}

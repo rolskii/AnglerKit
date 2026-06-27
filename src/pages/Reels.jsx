@@ -58,6 +58,17 @@ export default function Reels() {
     return map;
   }, [lines]);
 
+  const spooledLinesByReel = useMemo(() => {
+    const map = {};
+    lines.forEach((l) => {
+      if (l.reel) {
+        if (!map[l.reel]) map[l.reel] = [];
+        map[l.reel].push(l);
+      }
+    });
+    return map;
+  }, [lines]);
+
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
     return reels.filter((r) =>
@@ -173,6 +184,7 @@ export default function Reels() {
         onOpenChange={(o) => !o && setViewTarget(null)}
         reel={viewTarget}
         lineCount={viewTarget ? linesByReel[viewTarget.name] || 0 : 0}
+        spooledLines={viewTarget ? spooledLinesByReel[viewTarget.name] || [] : []}
         onEdit={(r) => { setViewTarget(null); setEditing(r); setFormOpen(true); }}
         onDelete={(r) => { setViewTarget(null); setDeleteTarget(r); }}
       />
