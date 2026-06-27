@@ -6,7 +6,6 @@ import { Plus, Search, Loader2, Waves, ArrowUp, ArrowDown, ArrowUpDown } from "l
 import LineCard from "@/components/lines/LineCard";
 import LineDetailDialog from "@/components/lines/LineDetailDialog";
 import LineForm from "@/components/lines/LineForm";
-import FlyLineIcon from "@/components/icons/FlyLineIcon";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -113,7 +112,7 @@ export default function Lines() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="font-heading text-2xl font-bold flex items-center gap-2">
-            <FlyLineIcon className="w-6 h-6 text-primary" /> Fly Lines
+            Fly Lines
           </h1>
           <p className="text-muted-foreground text-sm mt-1">{lines.length} lines in your collection</p>
         </div>

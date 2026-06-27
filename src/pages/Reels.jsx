@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Plus, Search, Loader2, RotateCw, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import ReelForm from "@/components/reels/ReelForm";
 import ReelDetailDialog from "@/components/reels/ReelDetailDialog";
-import ReelIcon from "@/components/icons/ReelIcon";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -133,7 +132,7 @@ export default function Reels() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="font-heading text-2xl font-bold flex items-center gap-2">
-            <ReelIcon className="w-6 h-6 text-primary" /> Reels
+            Reels
           </h1>
           <p className="text-muted-foreground text-sm mt-1">{reels.length} reels in your collection</p>
         </div>
