@@ -1,7 +1,8 @@
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
@@ -18,6 +19,20 @@ import Settings from '@/pages/Settings';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [didInitialRedirect, setDidInitialRedirect] = useState(false);
+
+  useEffect(() => {
+    if (!isLoadingAuth && !isLoadingPublicSettings && !authError && !didInitialRedirect) {
+      setDidInitialRedirect(true);
+      if (location.pathname !== "/" && !sessionStorage.getItem("navigated")) {
+        navigate("/", { replace: true });
+      } else {
+        sessionStorage.setItem("navigated", "true");
+      }
+    }
+  }, [isLoadingAuth, isLoadingPublicSettings, authError, didInitialRedirect, location.pathname, navigate]);
 
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
