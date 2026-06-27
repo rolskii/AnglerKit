@@ -164,10 +164,6 @@ export default function ImportExport() {
               {ent.label}
             </Button>
           ))}
-          <Button variant="outline" onClick={handleDownloadSample}>
-            <FileJson className="w-4 h-4" />
-            Sample Template
-          </Button>
         </div>
       </div>
 
