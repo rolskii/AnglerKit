@@ -1,6 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
-const CONNECTOR_ID = '6a3f4eea83dab3778fd36181';
+const CONNECTORS = {
+  onedrive: '6a3f4eea83dab3778fd36181',
+  gdrive: '6a3f50032d295a9447877a15',
+  dropbox: '6a3f50054d07d36c92f3b0aa',
+};
 
 const COLUMNS = {
   FlyLine: ["species", "brand", "model", "type", "description", "line_weight", "grain_weight", "head_length", "total_length", "colour", "condition", "reel", "rod", "notes"],
@@ -21,6 +25,47 @@ function toCsv(records, columns) {
   return rows.join("\n");
 }
 
+async function uploadToOneDrive(accessToken, name, content) {
+  const res = await fetch(`https://graph.microsoft.com/v1.0/me/drive/root:/FlyFish/${name}:/content`, {
+    method: 'PUT',
+    headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'text/csv' },
+    body: content,
+  });
+  if (!res.ok) throw new Error(`OneDrive upload failed: ${await res.text()}`);
+}
+
+async function uploadToGDrive(accessToken, name, content) {
+  const boundary = 'flyfish_' + Math.random().toString(36).slice(2);
+  const metadata = JSON.stringify({ name });
+  const body =
+    `--${boundary}\r\n` +
+    `Content-Type: application/json; charset=UTF-8\r\n\r\n` +
+    `${metadata}\r\n` +
+    `--${boundary}\r\n` +
+    `Content-Type: text/csv\r\n\r\n` +
+    `${content}\r\n` +
+    `--${boundary}--`;
+  const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': `multipart/related; boundary=${boundary}` },
+    body,
+  });
+  if (!res.ok) throw new Error(`Google Drive upload failed: ${await res.text()}`);
+}
+
+async function uploadToDropbox(accessToken, name, content) {
+  const res = await fetch('https://content.dropboxapi.com/2/files/upload', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'Dropbox-API-Arg': JSON.stringify({ path: `/FlyFish/${name}`, mode: 'overwrite' }),
+      'Content-Type': 'application/octet-stream',
+    },
+    body: content,
+  });
+  if (!res.ok) throw new Error(`Dropbox upload failed: ${await res.text()}`);
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -28,15 +73,24 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     let mode = 'backup';
-    try { const body = await req.json(); if (body && body.mode) mode = body.mode; } catch (_) {}
+    let service = 'onedrive';
+    try {
+      const body = await req.json();
+      if (body) {
+        if (body.mode) mode = body.mode;
+        if (body.service) service = body.service;
+      }
+    } catch (_) {}
 
-    // Verify the app user's OneDrive connection
+    const connectorId = CONNECTORS[service];
+    if (!connectorId) return Response.json({ error: 'Unknown service' }, { status: 400 });
+
     let accessToken;
     try {
-      const conn = await base44.asServiceRole.connectors.getCurrentAppUserConnection(CONNECTOR_ID);
+      const conn = await base44.asServiceRole.connectors.getCurrentAppUserConnection(connectorId);
       accessToken = conn.accessToken;
     } catch (e) {
-      return Response.json({ error: 'OneDrive not connected', not_connected: true }, { status: 400 });
+      return Response.json({ error: 'Cloud service not connected', not_connected: true }, { status: 400 });
     }
 
     if (mode === 'check') {
@@ -58,17 +112,12 @@ Deno.serve(async (req) => {
 
     const uploaded = [];
     for (const f of files) {
-      const res = await fetch(`https://graph.microsoft.com/v1.0/me/drive/root:/FlyFish/${f.name}:/content`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'text/csv',
-        },
-        body: f.content,
-      });
-      if (!res.ok) {
-        const err = await res.text();
-        return Response.json({ error: `OneDrive upload failed: ${err}` }, { status: 502 });
+      if (service === 'onedrive') {
+        await uploadToOneDrive(accessToken, f.name, f.content);
+      } else if (service === 'gdrive') {
+        await uploadToGDrive(accessToken, f.name, f.content);
+      } else if (service === 'dropbox') {
+        await uploadToDropbox(accessToken, f.name, f.content);
       }
       uploaded.push(f.name);
     }

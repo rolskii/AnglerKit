@@ -1,12 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Cloud, Loader2, CheckCircle2, AlertCircle, CloudUpload, Link2, Unlink } from "lucide-react";
+import { Loader2, CheckCircle2, AlertCircle, CloudUpload, Link2, Unlink, HardDrive, Cloud, Box } from "lucide-react";
 
-const CONNECTOR_ID = "6a3f4eea83dab3778fd36181";
+const SERVICES = {
+  onedrive: { id: "6a3f4eea83dab3778fd36181", label: "OneDrive", icon: Cloud, folder: "FlyFish folder in your OneDrive" },
+  gdrive: { id: "6a3f50032d295a9447877a15", label: "Google Drive", icon: HardDrive, folder: "Your Google Drive (app-created files)" },
+  dropbox: { id: "6a3f50054d07d36c92f3b0aa", label: "Dropbox", icon: Box, folder: "/FlyFish folder in your Dropbox" },
+};
 
 export default function Settings() {
   const [user, setUser] = useState(null);
+  const [service, setService] = useState(() => localStorage.getItem("cloudService") || "onedrive");
   const [connected, setConnected] = useState(false);
   const [loading, setLoading] = useState(true);
   const [backing, setBacking] = useState(false);
@@ -14,14 +19,10 @@ export default function Settings() {
   const [lastBackup, setLastBackup] = useState(() => localStorage.getItem("lastBackup") || null);
   const [error, setError] = useState(null);
 
-  const checkConnection = async () => {
+  const checkConnection = async (svc) => {
     try {
-      const res = await base44.functions.invoke("cloudBackup", { mode: "check" });
-      if (res.data?.error) {
-        setConnected(false);
-      } else {
-        setConnected(true);
-      }
+      const res = await base44.functions.invoke("cloudBackup", { mode: "check", service: svc });
+      setConnected(!res.data?.error);
     } catch {
       setConnected(false);
     }
@@ -32,21 +33,30 @@ export default function Settings() {
       if (authed) {
         const me = await base44.auth.me();
         setUser(me);
-        await checkConnection();
+        await checkConnection(service);
       }
       setLoading(false);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const handleSelectService = async (svc) => {
+    setService(svc);
+    localStorage.setItem("cloudService", svc);
+    setConnected(false);
+    setError(null);
+    await checkConnection(svc);
+  };
 
   const handleConnect = async () => {
     setError(null);
     try {
-      const url = await base44.connectors.connectAppUser(CONNECTOR_ID);
+      const url = await base44.connectors.connectAppUser(SERVICES[service].id);
       const popup = window.open(url, "_blank");
       const timer = setInterval(() => {
         if (!popup || popup.closed) {
           clearInterval(timer);
-          checkConnection();
+          checkConnection(service);
         }
       }, 500);
     } catch (e) {
@@ -57,7 +67,7 @@ export default function Settings() {
   const handleDisconnect = async () => {
     setError(null);
     try {
-      await base44.connectors.disconnectAppUser(CONNECTOR_ID);
+      await base44.connectors.disconnectAppUser(SERVICES[service].id);
       setConnected(false);
     } catch (e) {
       setError(e.message);
@@ -68,7 +78,7 @@ export default function Settings() {
     setBacking(true);
     setError(null);
     try {
-      const res = await base44.functions.invoke("cloudBackup", { mode: "backup" });
+      const res = await base44.functions.invoke("cloudBackup", { mode: "backup", service });
       if (res.data?.error) throw new Error(res.data.error);
       const ts = res.data.backed_up_at || new Date().toISOString();
       setLastBackup(ts);
@@ -103,6 +113,8 @@ export default function Settings() {
     );
   }
 
+  const ActiveIcon = SERVICES[service].icon;
+
   return (
     <div className="space-y-8 max-w-2xl">
       <div>
@@ -110,14 +122,29 @@ export default function Settings() {
         <p className="text-muted-foreground text-sm mt-1">Manage your cloud backup preferences.</p>
       </div>
 
-      <div className="rounded-lg border border-border bg-card p-6 space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 text-primary">
-            <Cloud className="w-5 h-5" />
-          </div>
-          <div>
-            <h2 className="font-heading font-semibold">Cloud Backup</h2>
-            <p className="text-sm text-muted-foreground">Save your inventory to your own OneDrive folder.</p>
+      <div className="rounded-lg border border-border bg-card p-6 space-y-5">
+        <div>
+          <h2 className="font-heading font-semibold mb-1">Choose your cloud service</h2>
+          <p className="text-sm text-muted-foreground mb-3">Pick where your inventory backups are stored. You connect your own account.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {Object.entries(SERVICES).map(([key, svc]) => {
+              const Icon = svc.icon;
+              const active = service === key;
+              return (
+                <button
+                  key={key}
+                  onClick={() => handleSelectService(key)}
+                  className={`flex items-center gap-3 rounded-lg border p-3 text-left transition-colors ${
+                    active ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:bg-accent/50"
+                  }`}
+                >
+                  <div className={`flex h-9 w-9 items-center justify-center rounded-md ${active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <span className={`text-sm font-medium ${active ? "text-primary" : ""}`}>{svc.label}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -126,7 +153,7 @@ export default function Settings() {
             {connected ? (
               <>
                 <CheckCircle2 className="w-4 h-4 text-green-600" />
-                <span className="font-medium">OneDrive connected</span>
+                <span className="font-medium">{SERVICES[service].label} connected</span>
               </>
             ) : (
               <>
@@ -141,7 +168,7 @@ export default function Settings() {
             </Button>
           ) : (
             <Button variant="outline" size="sm" onClick={handleConnect}>
-              <Link2 className="w-4 h-4" /> Connect OneDrive
+              <Link2 className="w-4 h-4" /> Connect {SERVICES[service].label}
             </Button>
           )}
         </div>
@@ -184,8 +211,9 @@ export default function Settings() {
         )}
       </div>
 
-      <p className="text-xs text-muted-foreground">
-        Backups are saved as CSV files in a "FlyFish" folder in your OneDrive. Each backup overwrites the same dated files.
+      <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+        <ActiveIcon className="w-3.5 h-3.5" />
+        Backups are saved as CSV files in your {SERVICES[service].folder}.
       </p>
     </div>
   );
