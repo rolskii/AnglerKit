@@ -1,14 +1,20 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function GuidedFieldTour({ steps, active, onClose }) {
   const [step, setStep] = useState(0);
   const [rect, setRect] = useState(null);
+  const [ready, setReady] = useState(false);
+  const [popSize, setPopSize] = useState({ w: 288, h: 120 });
   const rafRef = useRef(null);
+  const popRef = useRef(null);
 
   useEffect(() => {
-    if (active) setStep(0);
+    if (active) {
+      setStep(0);
+      setReady(false);
+    }
   }, [active]);
 
   const measure = () => {
@@ -16,21 +22,29 @@ export default function GuidedFieldTour({ steps, active, onClose }) {
     rafRef.current = requestAnimationFrame(() => {
       const el = steps[step]?.ref?.current;
       if (el) setRect(el.getBoundingClientRect());
+      if (popRef.current) {
+        const r = popRef.current.getBoundingClientRect();
+        setPopSize({ w: r.width, h: r.height });
+      }
     });
   };
 
   useEffect(() => {
     if (!active) return;
-    const el = steps[step]?.ref?.current;
-    if (el) el.scrollIntoView({ block: "center", behavior: "smooth" });
-    measure();
-    // Re-measure after the dialog open/scroll animation settles
-    const t1 = setTimeout(measure, 250);
-    const t2 = setTimeout(measure, 500);
+    // Wait for the dialog open animation to finish before measuring
+    const start = setTimeout(() => {
+      setReady(true);
+      const el = steps[step]?.ref?.current;
+      if (el) el.scrollIntoView({ block: "center", behavior: "smooth" });
+      measure();
+    }, 350);
+    const t1 = setTimeout(measure, 600);
+    const t2 = setTimeout(measure, 900);
     const onScroll = () => measure();
     window.addEventListener("scroll", onScroll, true);
     window.addEventListener("resize", onScroll);
     return () => {
+      clearTimeout(start);
       clearTimeout(t1);
       clearTimeout(t2);
       window.removeEventListener("scroll", onScroll, true);
@@ -38,16 +52,22 @@ export default function GuidedFieldTour({ steps, active, onClose }) {
     };
   }, [active, step, steps]);
 
-  if (!active || !rect) return null;
+  useLayoutEffect(() => {
+    if (ready) measure();
+  }, [ready, step]);
+
+  if (!active || !ready || !rect) return null;
   const current = steps[step];
   if (!current) return null;
   const isLast = step === steps.length - 1;
   const isFirst = step === 0;
 
-  const popoverTop = rect.bottom + 8 + 150 > window.innerHeight
-    ? Math.max(12, rect.top - 160)
-    : rect.bottom + 8;
-  const popoverLeft = Math.max(12, Math.min(rect.left, window.innerWidth - 300));
+  const gap = 10;
+  // Position popover directly above the field, centered horizontally over it
+  let popoverTop = rect.top - popSize.h - gap;
+  if (popoverTop < 12) popoverTop = rect.bottom + gap; // not enough room above -> below
+  let popoverLeft = rect.left + rect.width / 2 - popSize.w / 2;
+  popoverLeft = Math.max(12, Math.min(popoverLeft, window.innerWidth - popSize.w - 12));
 
   return (
     <>
@@ -58,7 +78,8 @@ export default function GuidedFieldTour({ steps, active, onClose }) {
         />
       </div>
       <div
-        className="fixed z-[60] w-72 rounded-lg border border-border bg-popover text-popover-foreground shadow-xl p-3"
+        ref={popRef}
+        className="fixed z-[60] w-72 rounded-lg border border-border bg-popover text-popover-foreground shadow-xl p-3 transition-all duration-200"
         style={{ top: popoverTop, left: popoverLeft }}
       >
         <div className="flex items-start justify-between gap-2">
