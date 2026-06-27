@@ -77,12 +77,29 @@ export default function Rods() {
       !q || [r.name, r.brand, r.length, r.line_weight, r.type, r.material].some((v) => v && v.toLowerCase().includes(q))
     );
     const dir = sortDir === "asc" ? 1 : -1;
+    const lengthToInches = (v) => {
+      if (!v) return null;
+      const s = String(v).trim();
+      const ft = s.match(/(\d+(?:\.\d+)?)\s*['′]/);
+      const inch = s.match(/(\d+(?:\.\d+)?)\s*["″]/);
+      let total = 0;
+      let matched = false;
+      if (ft) { total += parseFloat(ft[1]) * 12; matched = true; }
+      if (inch) { total += parseFloat(inch[1]); matched = true; }
+      if (!matched && !isNaN(parseFloat(s))) total = parseFloat(s) * 12;
+      return matched ? total : null;
+    };
     return result.sort((a, b) => {
-      const av = a[sortBy];
-      const bv = b[sortBy];
+      let av = a[sortBy];
+      let bv = b[sortBy];
+      if (sortBy === "length") {
+        av = lengthToInches(av);
+        bv = lengthToInches(bv);
+      }
       if (av == null && bv == null) return 0;
       if (av == null) return 1;
       if (bv == null) return -1;
+      if (typeof av === "number" && typeof bv === "number") return (av - bv) * dir;
       return String(av).localeCompare(String(bv)) * dir;
     });
   }, [rods, search, sortBy, sortDir]);
