@@ -16,7 +16,7 @@ export default function LineCard({ line, onEdit, onDelete }) {
   return (
     <Card className="p-4 flex flex-col gap-3 hover:shadow-md transition-shadow">
       {line.image_url && (
-        <img src={line.image_url} alt={line.model} className="w-full h-40 object-cover rounded-md" />
+        <img src={line.image_url} alt={line.model} className="w-full aspect-square object-cover rounded-md" />
       )}
       <div className="flex items-start justify-between gap-2">
         <div>

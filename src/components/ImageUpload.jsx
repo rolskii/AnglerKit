@@ -25,8 +25,8 @@ export default function ImageUpload({ value, onChange }) {
   return (
     <div className="space-y-2">
       {value ? (
-        <div className="relative rounded-lg border border-border overflow-hidden w-full max-w-xs">
-          <img src={value} alt="Item" className="w-full h-40 object-cover" />
+        <div className="relative rounded-lg border border-border overflow-hidden w-full max-w-xs aspect-square">
+          <img src={value} alt="Item" className="w-full h-full object-cover" />
           <div className="absolute top-2 right-2 flex gap-1">
             <Button
               type="button"
