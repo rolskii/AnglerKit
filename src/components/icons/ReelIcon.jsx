@@ -27,7 +27,9 @@ export default function ReelIcon({ className = "" }) {
       <line x1="12" y1="12" x2="18.5" y2="5.5" />
       <circle cx="19.2" cy="4.8" r="1.1" />
       {/* Mounting foot */}
-      <line x1="3.5" y1="20.5" x2="8" y2="20.5" />
+      <line x1="3.5" y1="20.5" x2="20.5" y2="20.5" />
+      <line x1="8" y1="20.5" x2="9.5" y2="19" />
+      <line x1="16" y1="20.5" x2="14.5" y2="19" />
     </svg>
   );
 }
