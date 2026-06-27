@@ -8,7 +8,7 @@ import TroutIcon from "@/components/TroutIcon";
 const navItems = [
   { to: "/lines", label: "Lines" },
   { to: "/reels", label: "Reels" },
-  { to: "/rods", label: "Fly Rods" },
+  { to: "/rods", label: "Rods" },
 ];
 
 export default function Layout() {
