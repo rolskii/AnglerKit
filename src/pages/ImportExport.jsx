@@ -61,6 +61,59 @@ export default function ImportExport() {
     }
   };
 
+  const handleDownloadSample = () => {
+    const sample = {
+      FlyLine: [
+        {
+          species: "Trout",
+          brand: "Scientific Anglers",
+          model: "Mastery Trout",
+          type: "WF",
+          description: "Floating",
+          line_weight: "5",
+          grain_weight: 140,
+          head_length: 40,
+          total_length: 90,
+          colour: "Olive",
+          condition: "New",
+          reel: "",
+          rod: "",
+          notes: "",
+        },
+      ],
+      Reel: [
+        {
+          name: "Lamson Liquid",
+          brand: "Lamson",
+          model: "Liquid 3",
+          size: "3+",
+          condition: "New",
+          notes: "",
+        },
+      ],
+      Rod: [
+        {
+          name: "Orvis Clearwater 9' 5wt",
+          brand: "Orvis",
+          length: "9 ft",
+          line_weight: "5",
+          type: "Single Hand",
+          material: "Carbon",
+          condition: "New",
+          notes: "",
+        },
+      ],
+    };
+    const blob = new Blob([JSON.stringify(sample, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "flyfish-sample-import.json";
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Sample file downloaded");
+  };
+
   const handleImport = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -99,7 +152,7 @@ export default function ImportExport() {
           <Download className="w-5 h-5 text-primary" />
           <h2 className="text-lg font-heading font-semibold">Export</h2>
         </div>
-        <p className="text-sm text-muted-foreground">Download your data as a JSON file. Use "Export All" for a full backup.</p>
+        <p className="text-sm text-muted-foreground">Download your data as a JSON file. Use "Export All" for a full backup, or grab a sample template to see the expected format.</p>
         <div className="flex flex-wrap gap-3">
           <Button onClick={handleExportAll} disabled={exporting}>
             {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
@@ -111,6 +164,10 @@ export default function ImportExport() {
               {ent.label}
             </Button>
           ))}
+          <Button variant="outline" onClick={handleDownloadSample}>
+            <FileJson className="w-4 h-4" />
+            Sample Template
+          </Button>
         </div>
       </div>
 
