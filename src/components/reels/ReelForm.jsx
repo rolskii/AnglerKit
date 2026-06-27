@@ -31,7 +31,7 @@ export default function ReelForm({ open, onOpenChange, onSubmit, initial, loadin
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{initial ? "Edit Reel" : "Add Reel"}</DialogTitle>
         </DialogHeader>

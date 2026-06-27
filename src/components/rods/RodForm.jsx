@@ -33,7 +33,7 @@ export default function RodForm({ open, onOpenChange, onSubmit, initial, loading
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{initial ? "Edit Rod" : "Add Rod"}</DialogTitle>
         </DialogHeader>
