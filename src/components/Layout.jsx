@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Outlet, NavLink, useNavigate } from "react-router-dom";
+import { Outlet, NavLink, useNavigate, Link } from "react-router-dom";
 import { LogOut, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
@@ -67,7 +67,7 @@ export default function Layout() {
     <div className="min-h-screen bg-background">
       {/* Desktop sidebar */}
       <aside className="hidden md:flex fixed inset-y-0 left-0 w-64 flex-col border-r border-border bg-sidebar p-4">
-        <div className="flex items-center gap-2 px-2 py-3 mb-4">
+        <Link to="/" className="flex items-center gap-2 px-2 py-3 mb-4">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <TroutIcon className="w-7 h-7 text-primary-foreground" />
           </div>
@@ -75,7 +75,7 @@ export default function Layout() {
             <p className="font-heading font-semibold leading-tight">{appName}</p>
             <p className="text-xs text-muted-foreground">Inventory Manager</p>
           </div>
-        </div>
+        </Link>
         <NavLinks />
         <div className="mt-auto">
           <Button variant="ghost" className="w-full justify-start gap-3 text-muted-foreground" onClick={handleLogout}>
@@ -87,12 +87,12 @@ export default function Layout() {
 
       {/* Mobile header */}
       <header className="md:hidden sticky top-0 z-30 flex items-center justify-between border-b border-border bg-sidebar px-4 py-3">
-        <div className="flex items-center gap-2">
+        <Link to="/" className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <TroutIcon className="w-6 h-6 text-primary-foreground" />
           </div>
           <span className="font-heading font-semibold">{appName}</span>
-        </div>
+        </Link>
         <Button variant="ghost" size="icon" onClick={() => setOpen(!open)}>
           {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </Button>
