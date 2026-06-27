@@ -16,6 +16,35 @@ export default function ImportExport() {
   const [importEntity, setImportEntity] = useState("FlyLine");
   const [importResult, setImportResult] = useState(null);
 
+  const COLUMNS = {
+    FlyLine: ["species", "brand", "model", "type", "description", "line_weight", "grain_weight", "head_length", "total_length", "colour", "condition", "reel", "rod", "notes"],
+    Reel: ["name", "brand", "model", "size", "condition", "notes"],
+    Rod: ["name", "brand", "length", "line_weight", "type", "material", "condition", "notes"],
+  };
+
+  const toCsv = (records, columns) => {
+    const escape = (v) => {
+      if (v == null) return "";
+      const s = String(v).replace(/"/g, '""');
+      return /[",\n]/.test(s) ? `"${s}"` : s;
+    };
+    const rows = [columns.join(",")];
+    records.forEach((r) => {
+      rows.push(columns.map((c) => escape(r[c])).join(","));
+    });
+    return rows.join("\n");
+  };
+
+  const downloadCsv = (filename, content) => {
+    const blob = new Blob([content], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const handleExportAll = async () => {
     setExporting(true);
     try {
@@ -24,19 +53,10 @@ export default function ImportExport() {
         base44.entities.Reel.list("-updated_date", 500),
         base44.entities.Rod.list("-updated_date", 500),
       ]);
-      const data = {
-        exported_at: new Date().toISOString(),
-        FlyLine: lines,
-        Reel: reels,
-        Rod: rods,
-      };
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `flyfish-export-${new Date().toISOString().slice(0, 10)}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
+      const date = new Date().toISOString().slice(0, 10);
+      downloadCsv(`flyfish-lines-${date}.csv`, toCsv(lines, COLUMNS.FlyLine));
+      downloadCsv(`flyfish-reels-${date}.csv`, toCsv(reels, COLUMNS.Reel));
+      downloadCsv(`flyfish-rods-${date}.csv`, toCsv(rods, COLUMNS.Rod));
       toast.success("Export complete");
     } catch (e) {
       toast.error("Export failed");
@@ -48,13 +68,8 @@ export default function ImportExport() {
   const handleExportSingle = async (entityName) => {
     try {
       const records = await base44.entities[entityName].list("-updated_date", 500);
-      const blob = new Blob([JSON.stringify(records, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${entityName}-${new Date().toISOString().slice(0, 10)}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
+      const date = new Date().toISOString().slice(0, 10);
+      downloadCsv(`flyfish-${entityName.toLowerCase()}-${date}.csv`, toCsv(records, COLUMNS[entityName]));
       toast.success(`${entityName} exported`);
     } catch (e) {
       toast.error(`Export failed for ${entityName}`);
