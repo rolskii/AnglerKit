@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Search, Loader2, RotateCw } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ReelForm from "@/components/reels/ReelForm";
 import ReelDetailDialog from "@/components/reels/ReelDetailDialog";
 import {
@@ -24,6 +25,8 @@ export default function Reels() {
   const [lines, setLines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState("name");
+  const [sortDir, setSortDir] = useState("asc");
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -71,10 +74,19 @@ export default function Reels() {
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
-    return reels.filter((r) =>
+    const result = reels.filter((r) =>
       !q || [r.name, r.brand, r.model, r.size].some((v) => v && v.toLowerCase().includes(q))
     );
-  }, [reels, search]);
+    const dir = sortDir === "asc" ? 1 : -1;
+    return result.sort((a, b) => {
+      const av = a[sortBy];
+      const bv = b[sortBy];
+      if (av == null && bv == null) return 0;
+      if (av == null) return 1;
+      if (bv == null) return -1;
+      return String(av).localeCompare(String(bv)) * dir;
+    });
+  }, [reels, search, sortBy, sortDir]);
 
   const handleSave = async (payload) => {
     setSaving(true);
@@ -121,9 +133,29 @@ export default function Reels() {
         </Button>
       </div>
 
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input placeholder="Search reels..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input placeholder="Search reels..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+        </div>
+        <Select value={sortBy} onValueChange={setSortBy}>
+          <SelectTrigger className="sm:w-44"><SelectValue placeholder="Sort by" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="name">Name</SelectItem>
+            <SelectItem value="brand">Brand</SelectItem>
+            <SelectItem value="model">Model</SelectItem>
+            <SelectItem value="size">Size</SelectItem>
+            <SelectItem value="condition">Condition</SelectItem>
+          </SelectContent>
+        </Select>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
+          title={sortDir === "asc" ? "Ascending" : "Descending"}
+        >
+          {sortDir === "asc" ? "↑" : "↓"}
+        </Button>
       </div>
 
       {loading ? (
