@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Loader2, CheckCircle2, AlertCircle, CloudUpload, Link2, Unlink, HardDrive, Cloud, Box } from "lucide-react";
+import { Loader2, CheckCircle2, AlertCircle, CloudUpload, Link2, Unlink, HardDrive, Cloud, Box, Sun, Moon } from "lucide-react";
 
 const SERVICES = {
   onedrive: { id: "6a3f4eea83dab3778fd36181", label: "OneDrive", icon: Cloud, folder: "FlyFish folder in your OneDrive" },
@@ -18,6 +18,14 @@ export default function Settings() {
   const [autosave, setAutosave] = useState(() => localStorage.getItem("autosave") === "true");
   const [lastBackup, setLastBackup] = useState(() => localStorage.getItem("lastBackup") || null);
   const [error, setError] = useState(null);
+  const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "light");
+
+  const applyTheme = (t) => {
+    setTheme(t);
+    localStorage.setItem("theme", t);
+    if (t === "dark") document.documentElement.classList.add("dark");
+    else document.documentElement.classList.remove("dark");
+  };
 
   const checkConnection = async (svc) => {
     try {
@@ -215,6 +223,37 @@ export default function Settings() {
         <ActiveIcon className="w-3.5 h-3.5" />
         Backups are saved as CSV files in your {SERVICES[service].folder}.
       </p>
+
+      <div className="rounded-lg border border-border bg-card p-6 space-y-4">
+        <div>
+          <h2 className="font-heading font-semibold">Appearance</h2>
+          <p className="text-sm text-muted-foreground">Choose between light and dark mode.</p>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={() => applyTheme("light")}
+            className={`flex items-center gap-3 rounded-lg border p-3 text-left transition-colors ${
+              theme === "light" ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:bg-accent/50"
+            }`}
+          >
+            <div className={`flex h-9 w-9 items-center justify-center rounded-md ${theme === "light" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+              <Sun className="w-5 h-5" />
+            </div>
+            <span className={`text-sm font-medium ${theme === "light" ? "text-primary" : ""}`}>Light</span>
+          </button>
+          <button
+            onClick={() => applyTheme("dark")}
+            className={`flex items-center gap-3 rounded-lg border p-3 text-left transition-colors ${
+              theme === "dark" ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:bg-accent/50"
+            }`}
+          >
+            <div className={`flex h-9 w-9 items-center justify-center rounded-md ${theme === "dark" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+              <Moon className="w-5 h-5" />
+            </div>
+            <span className={`text-sm font-medium ${theme === "dark" ? "text-primary" : ""}`}>Dark</span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
