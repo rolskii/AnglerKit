@@ -7,6 +7,8 @@ export default function GuidedFieldTour({ steps, active, onClose }) {
   const [rect, setRect] = useState(null);
   const [ready, setReady] = useState(false);
   const rafRef = useRef(null);
+  const stepRef = useRef(0);
+  useEffect(() => { stepRef.current = step; }, [step]);
 
   // Reset when the tour starts
   useEffect(() => {
@@ -30,7 +32,7 @@ export default function GuidedFieldTour({ steps, active, onClose }) {
 
   // Measure only (no scroll) — used by the scroll/resize listener
   const measureOnly = () => {
-    const el = steps[step]?.ref?.current;
+    const el = steps[stepRef.current]?.ref?.current;
     if (!el) return;
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     rafRef.current = requestAnimationFrame(() => {
@@ -69,6 +71,7 @@ export default function GuidedFieldTour({ steps, active, onClose }) {
   // Advance to a given step
   const goTo = (newStep) => {
     const clamped = Math.max(0, Math.min(newStep, steps.length - 1));
+    stepRef.current = clamped;
     setStep(clamped);
     // scrollAndMeasure will fire via the useLayoutEffect on step change,
     // but call it directly too for immediacy
