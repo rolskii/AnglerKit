@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Loader2, RotateCw, Trash2 } from "lucide-react";
+import { Plus, Search, Loader2, RotateCw } from "lucide-react";
 import ReelForm from "@/components/reels/ReelForm";
 import ReelDetailDialog from "@/components/reels/ReelDetailDialog";
 import {
@@ -144,7 +144,6 @@ export default function Reels() {
                 <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Size</th>
                 <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Condition</th>
                 <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Lines</th>
-                <th className="text-right font-medium px-3 py-2.5 whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -162,11 +161,6 @@ export default function Reels() {
                     ) : "—"}
                   </td>
                   <td className="px-3 py-2.5 whitespace-nowrap">{linesByReel[reel.name] || 0}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap text-right" onClick={(e) => e.stopPropagation()}>
-                    <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-destructive hover:text-destructive" onClick={() => setDeleteTarget(reel)}>
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
-                  </td>
                 </tr>
               ))}
             </tbody>
