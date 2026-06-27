@@ -143,7 +143,6 @@ export default function Reels() {
                 <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Model</th>
                 <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Size</th>
                 <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Condition</th>
-                <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Lines</th>
               </tr>
             </thead>
             <tbody>
@@ -160,7 +159,6 @@ export default function Reels() {
                       </span>
                     ) : "—"}
                   </td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{linesByReel[reel.name] || 0}</td>
                 </tr>
               ))}
             </tbody>
