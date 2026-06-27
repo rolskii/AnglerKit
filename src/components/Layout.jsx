@@ -52,7 +52,7 @@ export default function Layout() {
           </div>
           <div>
             <p className="font-heading font-semibold leading-tight">FlyFishBud</p>
-            <p className="text-xs text-muted-foreground">Tackle Manager</p>
+            <p className="text-xs text-muted-foreground">Line Manager</p>
           </div>
         </div>
         <NavLinks />
