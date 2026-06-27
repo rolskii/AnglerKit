@@ -52,7 +52,7 @@ export default function ReelForm({ open, onOpenChange, onSubmit, initial, loadin
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(v) => { if (!v && tourActive) return; onOpenChange(v); }}>
       <DialogContent
         className="max-h-[90vh] overflow-y-auto"
         onPointerDownOutside={tourActive ? (e) => e.preventDefault() : undefined}

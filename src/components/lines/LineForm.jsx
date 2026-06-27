@@ -94,7 +94,7 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
 
   return (
     <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
+      <Dialog open={open} onOpenChange={(v) => { if (!v && tourActive) return; onOpenChange(v); }}>
         <DialogContent
           className="max-w-2xl max-h-[90vh] overflow-y-auto"
           onPointerDownOutside={tourActive ? (e) => e.preventDefault() : undefined}
