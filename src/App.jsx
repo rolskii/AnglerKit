@@ -15,6 +15,7 @@ import Rods from '@/pages/Rods';
 import ImportExport from '@/pages/ImportExport';
 import About from '@/pages/About';
 import Settings from '@/pages/Settings';
+import Catches from '@/pages/Catches';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -62,6 +63,7 @@ const AuthenticatedApp = () => {
         <Route path="/lines" element={<Lines />} />
         <Route path="/reels" element={<Reels />} />
         <Route path="/rods" element={<Rods />} />
+        <Route path="/catches" element={<Catches />} />
         <Route path="/import-export" element={<ImportExport />} />
         <Route path="/about" element={<About />} />
         <Route path="/settings" element={<Settings />} />
