@@ -23,6 +23,7 @@ const emptyCatch = {
   date: new Date().toISOString().slice(0, 10),
   location: "",
   length: "",
+  girth: "",
   weight: "",
   fly_used: "",
   rod: "",
@@ -53,6 +54,7 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
     const payload = {
       ...form,
       length: numOrNull(form.length),
+      girth: numOrNull(form.girth),
       weight: numOrNull(form.weight),
       water_temp: numOrNull(form.water_temp),
     };
@@ -108,6 +110,16 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
                 value={form.length ?? ""}
                 onChange={(e) => set("length", e.target.value)}
                 placeholder="22"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Girth (in)</Label>
+              <Input
+                type="number"
+                step="0.1"
+                value={form.girth ?? ""}
+                onChange={(e) => set("girth", e.target.value)}
+                placeholder="12"
               />
             </div>
             <div className="space-y-1.5">

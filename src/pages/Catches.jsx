@@ -157,6 +157,7 @@ export default function Catches() {
                 <SortHeader label="Date" field="date" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Body of Water</th>
                 <SortHeader label="Length" field="length" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Girth" field="girth" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Weight" field="weight" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Fly</th>
                 <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Released</th>
@@ -175,6 +176,7 @@ export default function Catches() {
                   </td>
                   <td className="px-3 py-2.5 whitespace-nowrap">{c.location || "—"}</td>
                   <td className="px-3 py-2.5 whitespace-nowrap">{c.length != null ? `${c.length} in` : "—"}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">{c.girth != null ? `${c.girth} in` : "—"}</td>
                   <td className="px-3 py-2.5 whitespace-nowrap">{c.weight != null ? `${c.weight} lb` : "—"}</td>
                   <td className="px-3 py-2.5 whitespace-nowrap">{c.fly_used || "—"}</td>
                   <td className="px-3 py-2.5 whitespace-nowrap">{c.released ? "Yes" : "No"}</td>

@@ -19,6 +19,10 @@
       "type": "number",
       "description": "Length of the fish in inches"
     },
+    "girth": {
+      "type": "number",
+      "description": "Girth of the fish in inches"
+    },
     "weight": {
       "type": "number",
       "description": "Weight of the fish in pounds"

@@ -41,6 +41,7 @@ export default function CatchCard({ catchItem, onEdit, onDelete }) {
 
       <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
         <Detail label="Length" value={catchItem.length ? `${catchItem.length} in` : null} />
+        <Detail label="Girth" value={catchItem.girth ? `${catchItem.girth} in` : null} />
         <Detail label="Weight" value={catchItem.weight ? `${catchItem.weight} lb` : null} />
         <Detail label="Fly" value={catchItem.fly_used} />
         <Detail label="Water Temp" value={catchItem.water_temp != null ? `${catchItem.water_temp}°` : null} />
