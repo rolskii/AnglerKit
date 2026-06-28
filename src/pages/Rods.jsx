@@ -194,6 +194,7 @@ export default function Rods() {
                 <SortHeader label="Type" field="type" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Material" field="material" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Condition" field="condition" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Value" field="value" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
               </tr>
             </thead>
             <tbody>
@@ -212,6 +213,7 @@ export default function Rods() {
                       </span>
                     ) : "—"}
                   </td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">{rod.value != null ? `$${rod.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}</td>
                 </tr>
               ))}
             </tbody>

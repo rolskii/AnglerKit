@@ -166,6 +166,7 @@ export default function Lines() {
                 <SortHeader label="Grain Wt" field="grain_weight" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Colour</th>
                 <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Condition</th>
+                <SortHeader label="Value" field="value" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
               </tr>
             </thead>
             <tbody>
@@ -183,6 +184,7 @@ export default function Lines() {
                   <td className="px-3 py-2.5 whitespace-nowrap">{line.grain_weight || "—"}</td>
                   <td className="px-3 py-2.5 whitespace-nowrap">{line.colour || "—"}</td>
                   <td className="px-3 py-2.5 whitespace-nowrap">{line.condition || "—"}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">{line.value != null ? `$${line.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}</td>
                 </tr>
               ))}
             </tbody>

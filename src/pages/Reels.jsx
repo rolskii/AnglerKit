@@ -172,6 +172,7 @@ export default function Reels() {
                 <SortHeader label="Model" field="model" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Size" field="size" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Condition" field="condition" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Value" field="value" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
               </tr>
             </thead>
             <tbody>
@@ -188,6 +189,7 @@ export default function Reels() {
                       </span>
                     ) : "—"}
                   </td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">{reel.value != null ? `$${reel.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}</td>
                 </tr>
               ))}
             </tbody>
