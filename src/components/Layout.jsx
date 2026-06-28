@@ -17,15 +17,15 @@ const navItems = [
 
 export default function Layout() {
   const [open, setOpen] = useState(false);
-  const [appName, setAppName] = useState(() => localStorage.getItem("appName") || "The Stripping Basket");
+  const [appName, setAppName] = useState(() => localStorage.getItem("appName") || "Angler's Log");
   const navigate = useNavigate();
 
   useEffect(() => {
     const handleStorageChange = () => {
-      setAppName(localStorage.getItem("appName") || "The Stripping Basket");
+      setAppName(localStorage.getItem("appName") || "Angler's Log");
     };
     const handleAppNameChange = () => {
-      setAppName(localStorage.getItem("appName") || "The Stripping Basket");
+      setAppName(localStorage.getItem("appName") || "Angler's Log");
     };
     window.addEventListener("storage", handleStorageChange);
     window.addEventListener("appNameChanged", handleAppNameChange);

@@ -28,7 +28,7 @@ export default function Home() {
   return (
     <div className="space-y-8">
       <div className="text-center space-y-2">
-        <h1 className="text-3xl font-heading font-bold">The Stripping Basket</h1>
+        <h1 className="text-3xl font-heading font-bold">Angler's Log</h1>
         <p className="text-muted-foreground">Your fly fishing gear, organized in one place.</p>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

@@ -10,17 +10,17 @@ export default function About() {
           <TroutIcon className="w-10 h-10 text-primary-foreground" />
         </div>
         <div>
-          <h1 className="font-heading text-2xl font-bold">About The Stripping Basket</h1>
+          <h1 className="font-heading text-2xl font-bold">About Angler's Log</h1>
           <p className="text-muted-foreground text-sm">Inventory Manager</p>
         </div>
       </div>
 
       <div className="prose prose-sm max-w-none text-foreground/90 space-y-4">
         <p>
-          The Stripping Basket is your fly fishing line manager — built to help you organize your lines as well as keeping track of your rods and reels so you're always ready for your next outing.
+          Angler's Log is your fly fishing line manager — built to help you organize your lines as well as keeping track of your rods and reels so you're always ready for your next outing.
         </p>
         <p>
-          Keep a detailed inventory of every piece of equipment in your collection, track condition and specifications, and pair lines with the rods and reels they belong on. Whether you're chasing Trout on a quiet stream or stripping for GT's, The Stripping Basket will keep your fly fishing adventures in order.
+          Keep a detailed inventory of every piece of equipment in your collection, track condition and specifications, and pair lines with the rods and reels they belong on. Whether you're chasing Trout on a quiet stream or stripping for GT's, Angler's Log will keep your fly fishing adventures in order.
         </p>
       </div>
 
