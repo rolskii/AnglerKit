@@ -248,7 +248,7 @@ export default function ShareButton({ card = {}, photoUrls = [] }) {
       if (images.length === 0) throw new Error("Could not load photos");
 
       const html = buildCardHTML(card, images);
-      const file = new File([html], safeFileName(card.title), { type: "text/html" });
+      const file = new File([html], `${safeFileName(card.title)}.html`, { type: "text/html" });
 
       if (navigator.canShare?.({ files: [file] })) {
         try {
