@@ -68,14 +68,22 @@ function buildCardHTML(card, images) {
         </div>`;
     })
     .join("");
-  const thumbs = images
-    .map(
-      (src, i) => `
-      <figure class="thumb${i === 0 ? " active" : ""}" data-index="${i}">
-        <img src="${src}" alt="Photo ${i + 1}" loading="lazy" />
-      </figure>`
-    )
+  const multi = images.length > 1;
+  const radios = images
+    .map((src, i) => `<input type="radio" name="gal" id="gal${i}"${i === 0 ? " checked" : ""} />`)
     .join("");
+  const slides = images
+    .map((src, i) => `<img class="slide" src="${src}" alt="Photo ${i + 1}" />`)
+    .join("");
+  const thumbs = images
+    .map((src, i) => `<label for="gal${i}" class="thumb"><img src="${src}" alt="Photo ${i + 1}" loading="lazy" /></label>`)
+    .join("");
+  const slideRules = images
+    .map((_, i) => `#gal${i}:checked ~ .main .slide:nth-child(${i + 1}) { opacity: 1; }`)
+    .join("\n  ");
+  const activeRules = images
+    .map((_, i) => `#gal${i}:checked ~ .body .thumbs .thumb:nth-child(${i + 1}) { outline: 3px solid #0d9488; outline-offset: -3px; }`)
+    .join("\n  ");
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -88,6 +96,10 @@ function buildCardHTML(card, images) {
   body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #eef2f6; color: #0f172a; padding: 20px; }
   .card { max-width: 560px; margin: 0 auto; background: #fff; border-radius: 16px; box-shadow: 0 4px 20px rgba(15,23,42,.08); overflow: hidden; }
   .hero { width: 100%; max-height: 360px; object-fit: cover; display: block; background: #e2e8f0; cursor: pointer; }
+  input[name="gal"] { display: none; }
+  .main { position: relative; width: 100%; aspect-ratio: 4/3; background: #e2e8f0; cursor: pointer; overflow: hidden; }
+  .slide { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .25s; }
+  ${slideRules}
   .body { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
   .head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
   .head h1 { margin: 0; font-size: 20px; line-height: 1.2; }
@@ -108,11 +120,11 @@ function buildCardHTML(card, images) {
   .desc { font-size: 12px; }
   .italic { font-style: italic; }
   .notes { border-top: 1px solid #e2e8f0; padding-top: 10px; color: #64748b; font-style: italic; font-size: 13px; white-space: pre-wrap; }
-  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
-  .thumb { margin: 0; border-radius: 8px; overflow: hidden; cursor: pointer; aspect-ratio: 1; background: #e2e8f0; }
+  .thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+  .thumb { margin: 0; border-radius: 8px; overflow: hidden; cursor: pointer; aspect-ratio: 1; background: #e2e8f0; display: block; }
   .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .2s; }
   .thumb:hover img { transform: scale(1.05); }
-  .thumb.active { outline: 3px solid #0d9488; outline-offset: -3px; }
+  ${activeRules}
   .more { font-size: 12px; color: #64748b; margin-top: 2px; }
   .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.92); display: none; align-items: center; justify-content: center; z-index: 100; }
   .lightbox.open { display: flex; }
@@ -128,7 +140,7 @@ function buildCardHTML(card, images) {
 </head>
 <body>
   <div class="card">
-    ${images[0] ? `<img class="hero" id="hero" src="${images[0]}" alt="Main photo" />` : ""}
+    ${multi ? `${radios}<div class="main" id="main">${slides}</div>` : images.length === 1 ? `<img class="hero" id="hero" src="${images[0]}" alt="Photo" />` : ""}
     <div class="body">
       <div class="head">
         <div>
@@ -141,8 +153,8 @@ function buildCardHTML(card, images) {
       ${sections}
       ${card.notes ? `<p class="notes">${esc(card.notes)}</p>` : ""}
       ${
-        images.length > 1
-          ? `<div class="section"><div class="section-title">Photos</div><div class="gallery" id="gallery">${thumbs}</div><p class="more">Tap a photo to make it the main image. Tap the main image to view full size.</p></div>`
+        multi
+          ? `<div class="section"><div class="section-title">Photos</div><div class="thumbs">${thumbs}</div><p class="more">Tap a photo to make it the main image. Tap the main image to view full size.</p></div>`
           : images.length === 1
           ? `<p class="more">Tap the photo to view full size.</p>`
           : ""
@@ -159,46 +171,44 @@ function buildCardHTML(card, images) {
   <footer>Shared from Angler's Log</footer>
 <script>
   (function () {
+    var main = document.getElementById('main');
     var hero = document.getElementById('hero');
-    var thumbEls = document.querySelectorAll('.thumb');
+    var slides = document.querySelectorAll('.slide');
     var imgs = [];
-    Array.prototype.forEach.call(thumbEls, function (t) { imgs.push(t.querySelector('img').src); });
+    Array.prototype.forEach.call(slides, function (s) { imgs.push(s.src); });
     if (imgs.length === 0 && hero) imgs = [hero.src];
-    var current = 0;
-    function setActive(i) {
-      current = i;
-      if (hero) hero.src = imgs[i];
-      Array.prototype.forEach.call(thumbEls, function (t, idx) { t.classList.toggle('active', idx === i); });
-    }
-    Array.prototype.forEach.call(thumbEls, function (t, idx) {
-      t.addEventListener('click', function () { setActive(idx); });
-    });
+    if (imgs.length === 0) return;
     var box = document.getElementById('lightbox');
     var full = document.getElementById('full');
     var count = document.getElementById('count');
-    var lbIdx = 0;
+    var idx = 0;
+    function currentIdx() {
+      var c = document.querySelector('input[name="gal"]:checked');
+      return c ? parseInt(c.id.replace('gal', ''), 10) : 0;
+    }
     function show(i) {
-      lbIdx = (i + imgs.length) % imgs.length;
-      full.src = imgs[lbIdx];
-      count.textContent = (lbIdx + 1) + ' / ' + imgs.length;
+      idx = (i + imgs.length) % imgs.length;
+      full.src = imgs[idx];
+      count.textContent = (idx + 1) + ' / ' + imgs.length;
       box.classList.add('open');
     }
-    if (hero) hero.addEventListener('click', function () { show(current); });
-    document.getElementById('prev').addEventListener('click', function (e) { e.stopPropagation(); show(lbIdx - 1); });
-    document.getElementById('next').addEventListener('click', function (e) { e.stopPropagation(); show(lbIdx + 1); });
+    if (main) main.addEventListener('click', function () { show(currentIdx()); });
+    if (hero) hero.addEventListener('click', function () { show(0); });
+    document.getElementById('prev').addEventListener('click', function (e) { e.stopPropagation(); show(idx - 1); });
+    document.getElementById('next').addEventListener('click', function (e) { e.stopPropagation(); show(idx + 1); });
     document.getElementById('close').addEventListener('click', function () { box.classList.remove('open'); });
     box.addEventListener('click', function (e) { if (e.target === box) box.classList.remove('open'); });
     document.addEventListener('keydown', function (e) {
       if (!box.classList.contains('open')) return;
-      if (e.key === 'ArrowLeft') show(lbIdx - 1);
-      if (e.key === 'ArrowRight') show(lbIdx + 1);
+      if (e.key === 'ArrowLeft') show(idx - 1);
+      if (e.key === 'ArrowRight') show(idx + 1);
       if (e.key === 'Escape') box.classList.remove('open');
     });
     var sx = 0;
     box.addEventListener('touchstart', function (e) { sx = e.changedTouches[0].clientX; }, { passive: true });
     box.addEventListener('touchend', function (e) {
       var dx = e.changedTouches[0].clientX - sx;
-      if (Math.abs(dx) > 40) show(lbIdx + (dx < 0 ? 1 : -1));
+      if (Math.abs(dx) > 40) show(idx + (dx < 0 ? 1 : -1));
     }, { passive: true });
   })();
 </script>
