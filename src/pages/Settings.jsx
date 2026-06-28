@@ -59,16 +59,23 @@ export default function Settings() {
 
   const handleConnect = async () => {
     setError(null);
+    // Open the popup synchronously so browsers don't block it as a non-user gesture.
+    const popup = window.open("about:blank", "_blank");
     try {
       const url = await base44.connectors.connectAppUser(SERVICES[service].id);
-      const popup = window.open(url, "_blank");
-      const timer = setInterval(() => {
-        if (!popup || popup.closed) {
-          clearInterval(timer);
-          checkConnection(service);
-        }
-      }, 500);
+      if (popup && url) {
+        popup.location = url;
+        const timer = setInterval(() => {
+          if (!popup || popup.closed) {
+            clearInterval(timer);
+            checkConnection(service);
+          }
+        }, 500);
+      } else if (popup) {
+        popup.close();
+      }
     } catch (e) {
+      if (popup) popup.close();
       setError(e.message);
     }
   };
