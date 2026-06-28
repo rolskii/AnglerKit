@@ -2,63 +2,58 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Share2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import html2canvas from "html2canvas";
 
-export default function ShareButton({ targetRef, title = "Angler's Log", summary, photoUrls = [] }) {
+export default function ShareButton({ title = "Angler's Log", summary, photoUrls = [] }) {
   const [busy, setBusy] = useState(false);
 
   const handleShare = async () => {
-    const el = targetRef?.current;
-    if (!el) return;
+    const photos = (photoUrls || []).filter(Boolean);
+    if (photos.length === 0) {
+      toast.error("No photos to share");
+      return;
+    }
     setBusy(true);
+    const linkText = [summary, ...photos].filter(Boolean).join("\n");
     try {
-      let blob = null;
-      try {
-        const canvas = await html2canvas(el, {
-          backgroundColor: "#ffffff",
-          scale: 2,
-          useCORS: true,
-          logging: false,
-          ignoreElements: (node) => node?.hasAttribute?.("data-html2canvas-ignore"),
-        });
-        blob = await new Promise((res) => canvas.toBlob(res, "image/png"));
-      } catch (e) {
-        blob = null;
+      // Fetch each photo as a real file so the recipient can view them all
+      const files = await Promise.all(
+        photos.map(async (url, idx) => {
+          const res = await fetch(url);
+          const blob = await res.blob();
+          const ext = (blob.type.split("/")[1] || "jpg").split("+")[0];
+          return new File([blob], `${title}-${idx + 1}.${ext}`, {
+            type: blob.type || "image/jpeg",
+          });
+        })
+      );
+
+      // 1. Native share with all image files (mobile share sheet)
+      if (navigator.canShare?.({ files })) {
+        await navigator.share({ title, text: summary, files });
+        return;
       }
 
-      const text = [summary, ...photoUrls].filter(Boolean).join("\n");
-
-      // 1. Native share with the card image (mobile share sheet)
-      if (blob) {
-        const file = new File([blob], `${title}.png`, { type: "image/png" });
-        try {
-          if (navigator.canShare?.({ files: [file] })) {
-            await navigator.share({ title, text: summary, files: [file] });
-            return;
-          }
-        } catch (e) {
-          if (e?.name === "AbortError") return;
-        }
+      // 2. Native text share with photo links
+      if (navigator.share) {
+        await navigator.share({ title, text: linkText });
+        return;
       }
 
-      // 2. Native text share (includes photo links)
+      // 3. Fallback: copy details + photo links
+      await navigator.clipboard.writeText(linkText);
+      toast.success("Card details & photo links copied");
+    } catch (e) {
+      if (e?.name === "AbortError") return;
+      // Fallback: share/copy text with links
       try {
         if (navigator.share) {
-          await navigator.share({ title, text });
-          if (blob) downloadBlob(blob, `${title}.png`);
-          return;
+          await navigator.share({ title, text: linkText });
+        } else {
+          await navigator.clipboard.writeText(linkText);
+          toast.success("Card details & photo links copied");
         }
-      } catch (e) {
-        if (e?.name === "AbortError") return;
-      }
-
-      // 3. Fallback: save image + copy details
-      if (blob) downloadBlob(blob, `${title}.png`);
-      try {
-        await navigator.clipboard.writeText(text);
-        toast.success(blob ? "Card image saved & details copied" : "Card details copied");
-      } catch {
-        toast.success(blob ? "Card image saved to your device" : "Could not share card");
+      } catch (e2) {
+        if (e2?.name !== "AbortError") toast.error("Could not share photos");
       }
     } finally {
       setBusy(false);
@@ -71,13 +66,4 @@ export default function ShareButton({ targetRef, title = "Angler's Log", summary
       Share
     </Button>
   );
-}
-
-function downloadBlob(blob, name) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = name;
-  a.click();
-  URL.revokeObjectURL(url);
 }
