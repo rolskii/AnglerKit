@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { Waves, Disc, Fish, Anchor, Bug } from "lucide-react";
+import { Waves, Disc, Fish, Anchor, Bug, Package } from "lucide-react";
 
 const items = [
   {
@@ -33,6 +33,12 @@ const items = [
     title: "Catch Log",
     description: "Log your catches with photos, location, conditions, and gear used.",
     icon: Anchor,
+  },
+  {
+    to: "/misc",
+    title: "Misc. Gear",
+    description: "Track other fishing gear — apparel, tools, storage, safety, and accessories.",
+    icon: Package,
   },
 ];
 

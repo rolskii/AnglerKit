@@ -1,0 +1,71 @@
+{
+  "name": "MiscItem",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Item name/description"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Apparel",
+        "Tool",
+        "Storage",
+        "Accessory",
+        "Safety",
+        "Electronics",
+        "Other"
+      ],
+      "default": "Accessory",
+      "description": "Type of miscellaneous item (e.g. Apparel, Tool, Storage, Accessory, Safety, Electronics)"
+    },
+    "brand": {
+      "type": "string"
+    },
+    "model": {
+      "type": "string",
+      "description": "Model or size (e.g. Simms G3, Medium, #5)"
+    },
+    "colour": {
+      "type": "string"
+    },
+    "quantity": {
+      "type": "number",
+      "description": "How many of this item you own",
+      "default": 1
+    },
+    "condition": {
+      "type": "string",
+      "enum": [
+        "New",
+        "Like New",
+        "Good",
+        "Fair",
+        "Poor"
+      ],
+      "default": "Good"
+    },
+    "value": {
+      "type": "number",
+      "description": "Dollar value of the item"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Legacy single photo (superseded by images)"
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Photos of the item"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

@@ -12,6 +12,7 @@ const navItems = [
   { to: "/rods", label: "Rods" },
   { to: "/catches", label: "Catch Log" },
   { to: "/lures", label: "Lures & Flies" },
+  { to: "/misc", label: "Misc. Gear" },
   { to: "/import-export", label: "Import / Export" },
   { to: "/settings", label: "Settings" },
   { to: "/about", label: "About" },
