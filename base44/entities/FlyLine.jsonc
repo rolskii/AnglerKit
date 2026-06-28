@@ -67,6 +67,10 @@
         "Poor"
       ]
     },
+    "value": {
+      "type": "number",
+      "description": "Dollar value of the line"
+    },
     "reel": {
       "type": "string",
       "description": "Reel this line is on"

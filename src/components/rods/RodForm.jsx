@@ -15,7 +15,7 @@ import ImageUpload from "@/components/ImageUpload";
 const TYPES = ["Single Hand", "Switch", "Spey", "Other"];
 const MATERIALS = ["Carbon", "Cane", "Fiberglass", "Other"];
 const CONDITIONS = ["New", "Like New", "Good", "Fair", "Poor"];
-const empty = { name: "", brand: "", length: "", line_weight: "", type: "Single Hand", material: "Carbon", condition: "Good", notes: "", images: [] };
+const empty = { name: "", brand: "", length: "", line_weight: "", type: "Single Hand", material: "Carbon", condition: "Good", value: "", notes: "", images: [] };
 
 export default function RodForm({ open, onOpenChange, onSubmit, initial, loading }) {
   const [form, setForm] = useState(empty);
@@ -28,7 +28,7 @@ export default function RodForm({ open, onOpenChange, onSubmit, initial, loading
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(form);
+    onSubmit({ ...form, value: form.value ? Number(form.value) : null });
   };
 
   return (
@@ -86,6 +86,10 @@ export default function RodForm({ open, onOpenChange, onSubmit, initial, loading
                   {CONDITIONS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                 </SelectContent>
               </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Value ($)</Label>
+              <Input type="number" value={form.value} onChange={(e) => set("value", e.target.value)} placeholder="0.00" />
             </div>
           </div>
           <div className="space-y-1.5">

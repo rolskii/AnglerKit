@@ -25,6 +25,10 @@
         "Poor"
       ]
     },
+    "value": {
+      "type": "number",
+      "description": "Dollar value of the reel"
+    },
     "image_url": {
       "type": "string",
       "description": "Legacy single photo (superseded by images)"

@@ -40,6 +40,7 @@ export default function LineCard({ line, onEdit, onDelete }) {
         <Detail label="Head Len" value={line.head_length ? `${line.head_length} ft` : null} />
         <Detail label="Total Len" value={line.total_length ? `${line.total_length} ft` : null} />
         <Detail label="Colour" value={line.colour} />
+        <Detail label="Value" value={line.value != null ? `$${line.value}` : null} />
       </div>
 
       <div className="flex flex-col gap-1.5 text-sm border-t border-border pt-3">

@@ -43,6 +43,10 @@
         "Poor"
       ]
     },
+    "value": {
+      "type": "number",
+      "description": "Dollar value of the rod"
+    },
     "image_url": {
       "type": "string",
       "description": "Legacy single photo (superseded by images)"

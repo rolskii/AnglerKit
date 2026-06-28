@@ -13,7 +13,7 @@ import { Loader2 } from "lucide-react";
 import ImageUpload from "@/components/ImageUpload";
 
 const CONDITIONS = ["New", "Like New", "Good", "Fair", "Poor"];
-const empty = { name: "", brand: "", model: "", size: "", condition: "Good", notes: "", images: [] };
+const empty = { name: "", brand: "", model: "", size: "", condition: "Good", value: "", notes: "", images: [] };
 
 export default function ReelForm({ open, onOpenChange, onSubmit, initial, loading }) {
   const [form, setForm] = useState(empty);
@@ -26,7 +26,7 @@ export default function ReelForm({ open, onOpenChange, onSubmit, initial, loadin
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(form);
+    onSubmit({ ...form, value: form.value ? Number(form.value) : null });
   };
 
   return (
@@ -61,6 +61,10 @@ export default function ReelForm({ open, onOpenChange, onSubmit, initial, loadin
                   {CONDITIONS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                 </SelectContent>
               </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Value ($)</Label>
+              <Input type="number" value={form.value} onChange={(e) => set("value", e.target.value)} placeholder="0.00" />
             </div>
           </div>
           <div className="space-y-1.5">

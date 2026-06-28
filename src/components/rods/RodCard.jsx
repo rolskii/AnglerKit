@@ -38,6 +38,7 @@ export default function RodCard({ rod, lineCount, pairedLines, onEdit, onDelete 
         <Detail label="Type" value={rod.type} />
         <Detail label="Material" value={rod.material} />
         <Detail label="Condition" value={rod.condition} />
+        <Detail label="Value" value={rod.value != null ? `$${rod.value}` : null} />
       </div>
 
       <div className="flex flex-col gap-2 border-t border-border pt-3">
