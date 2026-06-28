@@ -72,6 +72,9 @@ export default function Reels() {
     return map;
   }, [lines]);
 
+  const totalValue = useMemo(() =>
+    reels.reduce((sum, r) => sum + (r.value || 0), 0), [reels]);
+
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
     const result = reels.filter((r) =>
@@ -137,7 +140,10 @@ export default function Reels() {
           <h1 className="font-heading text-2xl font-bold flex items-center gap-2">
             Reels
           </h1>
-          <p className="text-muted-foreground text-sm mt-1">{reels.length} reels in your collection</p>
+          <p className="text-muted-foreground text-sm mt-1">
+            {reels.length} reels in your collection
+            {totalValue > 0 && <span className="font-medium text-foreground"> · Total value ${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>}
+          </p>
         </div>
         <Button onClick={() => { setEditing(null); setFormOpen(true); }}>
           <Plus className="w-4 h-4 mr-2" /> Add Reel
