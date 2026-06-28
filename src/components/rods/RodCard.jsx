@@ -16,6 +16,37 @@ const conditionColor = {
 
 export default function RodCard({ rod, lineCount, pairedLines, onEdit, onDelete }) {
   const cardRef = useRef(null);
+  const card = {
+    title: rod.name,
+    subtitle: [rod.brand, rod.length, rod.line_weight ? `${rod.line_weight}wt` : null].filter(Boolean).join(" · ") || "—",
+    badge: rod.condition,
+    details: [
+      { label: "Brand", value: rod.brand },
+      { label: "Length", value: rod.length },
+      { label: "Line Weight", value: rod.line_weight },
+      { label: "Type", value: rod.type },
+      { label: "Material", value: rod.material },
+      { label: "Condition", value: rod.condition },
+      { label: "Value", value: rod.value != null ? `$${rod.value}` : null },
+    ],
+    sections: pairedLines && pairedLines.length > 0 ? [{
+      title: "Paired Lines",
+      items: pairedLines.map((l) => ({
+        name: [l.brand, l.model, l.type, l.line_weight, l.species ? `- ${l.species}` : null].filter(Boolean).join(" "),
+        sub: [
+          { label: "Grain Wt", value: l.grain_weight },
+          { label: "Head Length", value: l.head_length },
+          { label: "Total Length", value: l.total_length },
+          { label: "Colour", value: l.colour },
+          { label: "Condition", value: l.condition },
+          { label: "Spooled Reel", value: l.reel },
+        ],
+        description: l.description,
+        notes: l.notes,
+      })),
+    }] : [],
+    notes: rod.notes,
+  };
   return (
     <Card ref={cardRef} className="p-4 flex flex-col gap-3">
       <ImageGallery images={getItemImages(rod)} />
@@ -81,12 +112,7 @@ export default function RodCard({ rod, lineCount, pairedLines, onEdit, onDelete 
         <Button size="sm" variant="outline" className="flex-1" onClick={() => onEdit(rod)}>
           <Pencil className="w-3.5 h-3.5 mr-1.5" /> Edit
         </Button>
-        <ShareButton
-          targetRef={cardRef}
-          title={rod.name}
-          summary={rod.name}
-          photoUrls={getItemImages(rod)}
-        />
+        <ShareButton card={card} photoUrls={getItemImages(rod)} />
         <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => onDelete(rod)}>
           <Trash2 className="w-3.5 h-3.5" />
         </Button>

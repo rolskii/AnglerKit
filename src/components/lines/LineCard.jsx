@@ -16,6 +16,23 @@ const conditionColor = {
 
 export default function LineCard({ line, onEdit, onDelete }) {
   const cardRef = useRef(null);
+  const card = {
+    title: `${line.brand} ${line.model}`,
+    subtitle: `${line.species} · ${line.description || "—"}`,
+    badge: line.condition,
+    details: [
+      { label: "Line Wt", value: line.line_weight },
+      { label: "Grain Wt", value: line.grain_weight },
+      { label: "Head Len", value: line.head_length ? `${line.head_length} ft` : null },
+      { label: "Total Len", value: line.total_length ? `${line.total_length} ft` : null },
+      { label: "Colour", value: line.colour },
+      { label: "Value", value: line.value != null ? `$${line.value}` : null },
+      { label: "Reel", value: line.reel },
+      { label: "Rod", value: line.rod },
+    ],
+    sections: [],
+    notes: line.notes,
+  };
   return (
     <Card ref={cardRef} className="p-4 flex flex-col gap-3 hover:shadow-md transition-shadow">
       <ImageGallery images={getItemImages(line)} />
@@ -64,12 +81,7 @@ export default function LineCard({ line, onEdit, onDelete }) {
         <Button size="sm" variant="outline" className="flex-1" onClick={() => onEdit(line)}>
           <Pencil className="w-3.5 h-3.5 mr-1.5" /> Edit
         </Button>
-        <ShareButton
-          targetRef={cardRef}
-          title={`${line.brand} ${line.model}`}
-          summary={`${line.brand} ${line.model}`}
-          photoUrls={getItemImages(line)}
-        />
+        <ShareButton card={card} photoUrls={getItemImages(line)} />
         <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => onDelete(line)}>
           <Trash2 className="w-3.5 h-3.5" />
         </Button>

@@ -24,14 +24,50 @@ function blobToDataURL(blob) {
 }
 
 function esc(s) {
-  return String(s || "")
+  return String(s ?? "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 }
 
-function buildGalleryHTML({ title, summary, images }) {
+function val(v) {
+  return v != null && v !== "" ? esc(v) : "—";
+}
+
+function buildCardHTML(card, images) {
+  const title = card.title || "Angler's Log";
+  const details = (card.details || [])
+    .map(
+      (d) => `<div class="detail"><span class="lbl">${esc(d.label)}</span><span class="val">${val(d.value)}</span></div>`
+    )
+    .join("");
+  const sections = (card.sections || [])
+    .map((s) => {
+      const items = (s.items || [])
+        .map(
+          (it) => `
+        <li class="item">
+          <div class="item-name">${esc(it.name)}</div>
+          ${(it.sub || [])
+            .map(
+              (sd) =>
+                `<div class="detail sm"><span class="lbl">${esc(sd.label)}</span><span class="val">${val(sd.value)}</span></div>`
+            )
+            .join("")}
+          ${it.description ? `<p class="muted desc">${esc(it.description)}</p>` : ""}
+          ${it.notes ? `<p class="muted desc italic">${esc(it.notes)}</p>` : ""}
+        </li>`
+        )
+        .join("");
+      return `
+        <div class="section">
+          <div class="section-title">${esc(s.title)}</div>
+          ${s.note ? `<p class="muted">${esc(s.note)}</p>` : ""}
+          ${items ? `<ul class="item-list">${items}</ul>` : ""}
+        </div>`;
+    })
+    .join("");
   const thumbs = images
     .map(
       (src, i) => `
@@ -40,6 +76,7 @@ function buildGalleryHTML({ title, summary, images }) {
       </figure>`
     )
     .join("");
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -48,32 +85,69 @@ function buildGalleryHTML({ title, summary, images }) {
 <title>${esc(title)}</title>
 <style>
   * { box-sizing: border-box; }
-  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f8fafc; color: #0f172a; }
-  header { padding: 28px 20px 8px; text-align: center; }
-  header h1 { margin: 0 0 6px; font-size: 22px; }
-  header p { margin: 0; color: #475569; font-size: 14px; white-space: pre-wrap; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; padding: 20px; max-width: 920px; margin: 0 auto; }
-  .thumb { margin: 0; border-radius: 12px; overflow: hidden; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,.15); aspect-ratio: 1; background: #e2e8f0; }
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #eef2f6; color: #0f172a; padding: 20px; }
+  .card { max-width: 560px; margin: 0 auto; background: #fff; border-radius: 16px; box-shadow: 0 4px 20px rgba(15,23,42,.08); overflow: hidden; }
+  .hero { width: 100%; max-height: 360px; object-fit: cover; display: block; background: #e2e8f0; cursor: pointer; }
+  .body { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+  .head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .head h1 { margin: 0; font-size: 20px; line-height: 1.2; }
+  .head .sub { margin: 4px 0 0; color: #64748b; font-size: 13px; }
+  .badge { flex-shrink: 0; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: #e2f4ee; color: #047857; }
+  .details { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; }
+  .detail { display: flex; justify-content: space-between; gap: 8px; border-bottom: 1px solid #f1f5f9; padding: 3px 0; font-size: 14px; }
+  .detail.sm { font-size: 12px; }
+  .lbl { color: #94a3b8; }
+  .val { font-weight: 600; text-align: right; word-break: break-word; }
+  .section { border-top: 1px solid #e2e8f0; padding-top: 12px; }
+  .section-title { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+  .item-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .item { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; background: #f8fafc; }
+  .item-name { font-weight: 600; font-size: 13px; margin-bottom: 6px; }
+  .item .details { grid-template-columns: 1fr 1fr; }
+  .muted { color: #64748b; font-size: 13px; margin: 4px 0 0; }
+  .desc { font-size: 12px; }
+  .italic { font-style: italic; }
+  .notes { border-top: 1px solid #e2e8f0; padding-top: 10px; color: #64748b; font-style: italic; font-size: 13px; white-space: pre-wrap; }
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+  .thumb { margin: 0; border-radius: 8px; overflow: hidden; cursor: pointer; aspect-ratio: 1; background: #e2e8f0; }
   .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .2s; }
-  .thumb:hover img { transform: scale(1.04); }
+  .thumb:hover img { transform: scale(1.05); }
+  .more { font-size: 12px; color: #64748b; margin-top: 2px; }
   .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.92); display: none; align-items: center; justify-content: center; z-index: 100; }
   .lightbox.open { display: flex; }
   .lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; }
-  .nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,.15); color: #fff; border: none; width: 48px; height: 48px; border-radius: 50%; font-size: 26px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,.15); color: #fff; border: none; width: 46px; height: 46px; border-radius: 50%; font-size: 26px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
   .nav:hover { background: rgba(255,255,255,.3); }
   .nav.prev { left: 14px; }
   .nav.next { right: 14px; }
-  .close { position: absolute; top: 14px; right: 14px; background: rgba(255,255,255,.15); color: #fff; border: none; width: 44px; height: 44px; border-radius: 50%; font-size: 24px; cursor: pointer; }
-  .count { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); color: #fff; font-size: 14px; }
-  footer { text-align: center; padding: 8px 20px 30px; color: #94a3b8; font-size: 12px; }
+  .close { position: absolute; top: 14px; right: 14px; background: rgba(255,255,255,.15); color: #fff; border: none; width: 42px; height: 42px; border-radius: 50%; font-size: 24px; cursor: pointer; }
+  .count { position: absolute; top: 18px; left: 50%; transform: translateX(-50%); color: #fff; font-size: 14px; }
+  footer { text-align: center; color: #94a3b8; font-size: 12px; padding: 14px 0 4px; }
 </style>
 </head>
 <body>
-  <header>
-    <h1>${esc(title)}</h1>
-    ${summary ? `<p>${esc(summary)}</p>` : ""}
-  </header>
-  <div class="grid" id="grid">${thumbs}</div>
+  <div class="card">
+    ${images[0] ? `<img class="hero" id="hero" src="${images[0]}" alt="Main photo" />` : ""}
+    <div class="body">
+      <div class="head">
+        <div>
+          <h1>${esc(title)}</h1>
+          ${card.subtitle ? `<p class="sub">${esc(card.subtitle)}</p>` : ""}
+        </div>
+        ${card.badge ? `<span class="badge">${esc(card.badge)}</span>` : ""}
+      </div>
+      ${details ? `<div class="details">${details}</div>` : ""}
+      ${sections}
+      ${card.notes ? `<p class="notes">${esc(card.notes)}</p>` : ""}
+      ${
+        images.length > 1
+          ? `<div class="section"><div class="section-title">Photos</div><div class="gallery" id="gallery">${thumbs}</div><p class="more">Tap any photo to view full size.</p></div>`
+          : images.length === 1
+          ? `<p class="more">Tap the photo to view full size.</p>`
+          : ""
+      }
+    </div>
+  </div>
   <div class="lightbox" id="lightbox">
     <button class="close" id="close" aria-label="Close">&times;</button>
     <div class="count" id="count"></div>
@@ -81,10 +155,13 @@ function buildGalleryHTML({ title, summary, images }) {
     <img id="full" src="" alt="" />
     <button class="nav next" id="next" aria-label="Next">&#8250;</button>
   </div>
-  <footer>Tap any photo to view it full size. Use arrows or swipe to browse.</footer>
+  <footer>Shared from Angler's Log</footer>
 <script>
   (function () {
-    var imgs = Array.prototype.map.call(document.querySelectorAll('.thumb img'), function (i) { return i.src; });
+    var imgs = [];
+    var hero = document.getElementById('hero');
+    if (hero) imgs.push(hero.src);
+    Array.prototype.forEach.call(document.querySelectorAll('.thumb img'), function (i) { imgs.push(i.src); });
     var idx = 0;
     var box = document.getElementById('lightbox');
     var full = document.getElementById('full');
@@ -95,8 +172,9 @@ function buildGalleryHTML({ title, summary, images }) {
       count.textContent = (idx + 1) + ' / ' + imgs.length;
       box.classList.add('open');
     }
+    if (hero) hero.addEventListener('click', function () { show(0); });
     Array.prototype.forEach.call(document.querySelectorAll('.thumb'), function (t) {
-      t.addEventListener('click', function () { show(parseInt(t.dataset.index, 10)); });
+      t.addEventListener('click', function () { show(parseInt(t.dataset.index, 10) + 1); });
     });
     document.getElementById('prev').addEventListener('click', function (e) { e.stopPropagation(); show(idx - 1); });
     document.getElementById('next').addEventListener('click', function (e) { e.stopPropagation(); show(idx + 1); });
@@ -120,7 +198,7 @@ function buildGalleryHTML({ title, summary, images }) {
 </html>`;
 }
 
-export default function ShareButton({ title = "Angler's Log", summary, photoUrls = [] }) {
+export default function ShareButton({ card = {}, photoUrls = [] }) {
   const [busy, setBusy] = useState(false);
 
   const handleShare = async () => {
@@ -130,8 +208,8 @@ export default function ShareButton({ title = "Angler's Log", summary, photoUrls
       return;
     }
     setBusy(true);
+    const summary = [card.title, card.subtitle].filter(Boolean).join(" — ");
     try {
-      // Fetch each photo and embed it as a data URL so the page is self-contained
       const results = await Promise.allSettled(
         photos.map(async (url) => {
           const res = await fetch(url);
@@ -143,41 +221,38 @@ export default function ShareButton({ title = "Angler's Log", summary, photoUrls
       const images = results.filter((r) => r.status === "fulfilled").map((r) => r.value);
       if (images.length === 0) throw new Error("Could not load photos");
 
-      const html = buildGalleryHTML({ title, summary, images });
-      const file = new File([html], `${title}.html`, { type: "text/html" });
+      const html = buildCardHTML(card, images);
+      const file = new File([html], `${card.title || "card"}.html`, { type: "text/html" });
 
-      // 1. Native share with the webpage file
       if (navigator.canShare?.({ files: [file] })) {
         try {
-          await navigator.share({ title, text: summary, files: [file] });
+          await navigator.share({ title: card.title, text: summary, files: [file] });
           return;
         } catch (e) {
           if (e?.name === "AbortError") return;
         }
       }
 
-      // 2. Native text share with photo links
       const linkText = [summary, ...photos].filter(Boolean).join("\n");
       try {
         if (navigator.share) {
-          await navigator.share({ title, text: linkText });
+          await navigator.share({ title: card.title, text: linkText });
           return;
         }
       } catch (e) {
         if (e?.name === "AbortError") return;
       }
 
-      // 3. Fallback: save the webpage + copy links
       downloadBlob(file, file.name);
       try {
         await navigator.clipboard.writeText(linkText);
-        toast.success("Webpage saved & links copied");
+        toast.success("Card webpage saved & links copied");
       } catch {
-        toast.success("Webpage saved to your device");
+        toast.success("Card webpage saved to your device");
       }
     } catch (e) {
       if (e?.name === "AbortError") return;
-      toast.error("Could not share photos");
+      toast.error("Could not share card");
     } finally {
       setBusy(false);
     }

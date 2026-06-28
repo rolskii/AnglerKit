@@ -16,6 +16,35 @@ const conditionColor = {
 
 export default function ReelCard({ reel, lineCount, spooledLines, onEdit, onDelete }) {
   const cardRef = useRef(null);
+  const card = {
+    title: reel.name,
+    subtitle: [reel.brand, reel.model, reel.size].filter(Boolean).join(" · ") || "—",
+    badge: reel.condition,
+    details: [
+      { label: "Brand", value: reel.brand },
+      { label: "Model", value: reel.model },
+      { label: "Size", value: reel.size },
+      { label: "Condition", value: reel.condition },
+      { label: "Value", value: reel.value != null ? `$${reel.value}` : null },
+    ],
+    sections: spooledLines && spooledLines.length > 0 ? [{
+      title: "Currently Spooled with",
+      items: spooledLines.map((l) => ({
+        name: [l.brand, l.model, l.type, l.line_weight, l.species ? `- ${l.species}` : null].filter(Boolean).join(" "),
+        sub: [
+          { label: "Grain Wt", value: l.grain_weight },
+          { label: "Head Length", value: l.head_length },
+          { label: "Total Length", value: l.total_length },
+          { label: "Colour", value: l.colour },
+          { label: "Condition", value: l.condition },
+          { label: "Paired Rod", value: l.rod },
+        ],
+        description: l.description,
+        notes: l.notes,
+      })),
+    }] : [],
+    notes: reel.notes,
+  };
   return (
     <Card ref={cardRef} className="p-4 flex flex-col gap-3">
       <ImageGallery images={getItemImages(reel)} />
@@ -76,12 +105,7 @@ export default function ReelCard({ reel, lineCount, spooledLines, onEdit, onDele
         <Button size="sm" variant="outline" className="flex-1" onClick={() => onEdit(reel)}>
           <Pencil className="w-3.5 h-3.5 mr-1.5" /> Edit
         </Button>
-        <ShareButton
-          targetRef={cardRef}
-          title={reel.name}
-          summary={reel.name}
-          photoUrls={getItemImages(reel)}
-        />
+        <ShareButton card={card} photoUrls={getItemImages(reel)} />
         <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => onDelete(reel)}>
           <Trash2 className="w-3.5 h-3.5" />
         </Button>

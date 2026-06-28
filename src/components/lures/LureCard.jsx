@@ -15,6 +15,23 @@ const conditionColor = {
 
 export default function LureCard({ lure, onEdit, onDelete }) {
   const cardRef = useRef(null);
+  const card = {
+    title: lure.name,
+    subtitle: [lure.type, lure.category, lure.brand].filter(Boolean).join(" · ") || "—",
+    badge: lure.condition,
+    details: [
+      { label: "Type", value: lure.type },
+      { label: "Category", value: lure.category },
+      { label: "Brand", value: lure.brand },
+      { label: "Size", value: lure.size },
+      { label: "Colour", value: lure.colour },
+      { label: "Quantity", value: lure.quantity != null ? lure.quantity : null },
+      { label: "Condition", value: lure.condition },
+      { label: "Value", value: lure.value != null ? `$${lure.value}` : null },
+    ],
+    sections: [],
+    notes: lure.notes,
+  };
   return (
     <Card ref={cardRef} className="p-4 flex flex-col gap-3">
       <ImageGallery images={getItemImages(lure)} />
@@ -49,12 +66,7 @@ export default function LureCard({ lure, onEdit, onDelete }) {
         <Button size="sm" variant="outline" className="flex-1" onClick={() => onEdit(lure)}>
           <Pencil className="w-3.5 h-3.5 mr-1.5" /> Edit
         </Button>
-        <ShareButton
-          targetRef={cardRef}
-          title={lure.name}
-          summary={lure.name}
-          photoUrls={getItemImages(lure)}
-        />
+        <ShareButton card={card} photoUrls={getItemImages(lure)} />
         <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => onDelete(lure)}>
           <Trash2 className="w-3.5 h-3.5" />
         </Button>

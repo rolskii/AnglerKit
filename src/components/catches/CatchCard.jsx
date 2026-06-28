@@ -8,6 +8,24 @@ import ImageGallery, { getItemImages } from "@/components/ImageGallery";
 
 export default function CatchCard({ catchItem, onEdit, onDelete }) {
   const cardRef = useRef(null);
+  const card = {
+    title: catchItem.species || "Catch",
+    subtitle: [fmtDate(catchItem.date), catchItem.location].filter(Boolean).join(" · "),
+    badge: catchItem.released ? "Released" : "Kept",
+    details: [
+      { label: "Length", value: catchItem.length ? `${catchItem.length} in` : null },
+      { label: "Girth", value: catchItem.girth ? `${catchItem.girth} in` : null },
+      { label: "Weight", value: catchItem.weight ? `${catchItem.weight} lb` : null },
+      { label: "Fly", value: catchItem.fly_used },
+      { label: "Water Temp", value: catchItem.water_temp != null ? `${catchItem.water_temp}°` : null },
+      { label: "Rod", value: catchItem.rod },
+      { label: "Reel", value: catchItem.reel },
+      { label: "Line", value: catchItem.line },
+      { label: "Conditions", value: catchItem.conditions },
+    ],
+    sections: [],
+    notes: catchItem.notes,
+  };
   const fmtDate = (d) => {
     if (!d) return null;
     try { return new Date(d).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }); }
@@ -61,12 +79,7 @@ export default function CatchCard({ catchItem, onEdit, onDelete }) {
         <Button size="sm" variant="outline" className="flex-1" onClick={() => onEdit(catchItem)}>
           <Pencil className="w-3.5 h-3.5 mr-1.5" /> Edit
         </Button>
-        <ShareButton
-          targetRef={cardRef}
-          title={catchItem.species || "Catch"}
-          summary={`${catchItem.species || "Catch"}${catchItem.length ? ` - ${catchItem.length}in` : ""}${catchItem.weight ? ` - ${catchItem.weight}lb` : ""}`}
-          photoUrls={getItemImages(catchItem)}
-        />
+        <ShareButton card={card} photoUrls={getItemImages(catchItem)} />
         <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => onDelete(catchItem)}>
           <Trash2 className="w-3.5 h-3.5" />
         </Button>
