@@ -90,7 +90,7 @@ export default function Home() {
                   </div>
                   <h2 className="text-xl font-heading font-semibold">{item.title}</h2>
                   <p className="text-sm text-muted-foreground">{item.description}</p>
-                  {item.entity && total != null && total > 0 && (
+                  {item.entity && !["/rods", "/reels"].includes(item.to) && total != null && total > 0 && (
                     <p className="text-sm font-medium text-foreground mt-auto">
                       Total value ${fmt(total)}
                     </p>
