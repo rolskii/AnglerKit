@@ -3,6 +3,17 @@ import { Button } from "@/components/ui/button";
 import { Share2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
 export default function ShareButton({ title = "Angler's Log", summary, photoUrls = [] }) {
   const [busy, setBusy] = useState(false);
 
@@ -15,10 +26,11 @@ export default function ShareButton({ title = "Angler's Log", summary, photoUrls
     setBusy(true);
     const linkText = [summary, ...photos].filter(Boolean).join("\n");
     try {
-      // Fetch each photo as a real file so the recipient can view them all
-      const files = await Promise.all(
+      // Fetch each photo as a real file (tolerate individual failures)
+      const results = await Promise.allSettled(
         photos.map(async (url, idx) => {
           const res = await fetch(url);
+          if (!res.ok) throw new Error("fetch failed");
           const blob = await res.blob();
           const ext = (blob.type.split("/")[1] || "jpg").split("+")[0];
           return new File([blob], `${title}-${idx + 1}.${ext}`, {
@@ -26,34 +38,47 @@ export default function ShareButton({ title = "Angler's Log", summary, photoUrls
           });
         })
       );
+      const files = results
+        .filter((r) => r.status === "fulfilled")
+        .map((r) => r.value);
 
       // 1. Native share with all image files (mobile share sheet)
-      if (navigator.canShare?.({ files })) {
-        await navigator.share({ title, text: summary, files });
-        return;
+      if (files.length > 0 && navigator.canShare?.({ files })) {
+        try {
+          await navigator.share({ title, text: summary, files });
+          return;
+        } catch (e) {
+          if (e?.name === "AbortError") return;
+        }
       }
 
       // 2. Native text share with photo links
-      if (navigator.share) {
-        await navigator.share({ title, text: linkText });
-        return;
-      }
-
-      // 3. Fallback: copy details + photo links
-      await navigator.clipboard.writeText(linkText);
-      toast.success("Card details & photo links copied");
-    } catch (e) {
-      if (e?.name === "AbortError") return;
-      // Fallback: share/copy text with links
       try {
         if (navigator.share) {
           await navigator.share({ title, text: linkText });
-        } else {
-          await navigator.clipboard.writeText(linkText);
-          toast.success("Card details & photo links copied");
+          return;
         }
-      } catch (e2) {
-        if (e2?.name !== "AbortError") toast.error("Could not share photos");
+      } catch (e) {
+        if (e?.name === "AbortError") return;
+      }
+
+      // 3. Fallback: save the photo files + copy links
+      if (files.length > 0) {
+        files.forEach((file) => downloadBlob(file, file.name));
+      }
+      try {
+        await navigator.clipboard.writeText(linkText);
+        toast.success(files.length ? "Photos saved & links copied" : "Photo links copied");
+      } catch {
+        toast.success(files.length ? "Photos saved to your device" : "Could not share photos");
+      }
+    } catch (e) {
+      if (e?.name === "AbortError") return;
+      try {
+        await navigator.clipboard.writeText(linkText);
+        toast.success("Photo links copied to clipboard");
+      } catch {
+        toast.error("Could not share photos");
       }
     } finally {
       setBusy(false);
