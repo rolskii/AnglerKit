@@ -75,7 +75,7 @@ export default function Home() {
     <div className="space-y-8">
       <div className="text-center space-y-2">
         <h1 className="text-3xl font-heading font-bold">Angler's Log</h1>
-        <p className="text-muted-foreground">Your fly fishing gear, organized in one place.</p>
+        <p className="text-muted-foreground">All your fishing gear, organized in one place.</p>
       </div>
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
         {items.map((item) => {
