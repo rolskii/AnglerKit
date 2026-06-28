@@ -35,6 +35,14 @@ function val(v) {
   return v != null && v !== "" ? esc(v) : "—";
 }
 
+function safeFileName(s) {
+  const cleaned = String(s ?? "")
+    .replace(/[\\/:*?"<>|]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  return cleaned || "Anglers-Log";
+}
+
 function buildCardHTML(card, images) {
   const title = card.title || "Angler's Log";
   const details = (card.details || [])
@@ -240,7 +248,7 @@ export default function ShareButton({ card = {}, photoUrls = [] }) {
       if (images.length === 0) throw new Error("Could not load photos");
 
       const html = buildCardHTML(card, images);
-      const file = new File([html], `${card.title || "card"}.html`, { type: "text/html" });
+      const file = new File([html], `${safeFileName(card.title)}.html`, { type: "text/html" });
 
       if (navigator.canShare?.({ files: [file] })) {
         try {
