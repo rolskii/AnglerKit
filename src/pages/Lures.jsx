@@ -116,7 +116,7 @@ export default function Lures() {
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
             {lures.length} lures & flies in your collection
-            {totalValue > 0 && <span className="font-medium text-foreground"> · Total value ${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>}
+            <span className="font-medium text-foreground"> · Total value ${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
           </p>
         </div>
         <Button onClick={() => { setEditing(null); setFormOpen(true); }}>
