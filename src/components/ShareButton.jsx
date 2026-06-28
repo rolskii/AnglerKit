@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Share2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import html2canvas from "html2canvas";
 
 export default function ShareButton({ targetRef, title = "Angler's Log", summary, photoUrls = [] }) {
   const [busy, setBusy] = useState(false);
@@ -11,38 +12,53 @@ export default function ShareButton({ targetRef, title = "Angler's Log", summary
     if (!el) return;
     setBusy(true);
     try {
-      const { default: html2canvas } = await import("html2canvas");
-      const canvas = await html2canvas(el, {
-        backgroundColor: "#ffffff",
-        scale: 2,
-        useCORS: true,
-        logging: false,
-      });
-      const blob = await new Promise((res) => canvas.toBlob(res, "image/png"));
-      if (!blob) throw new Error("render failed");
-      const file = new File([blob], `${title}.png`, { type: "image/png" });
-      if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ title, text: summary, files: [file] });
-      } else if (navigator.share) {
-        await navigator.share({ title, text: summary });
-        downloadBlob(blob, `${title}.png`);
-      } else {
-        downloadBlob(blob, `${title}.png`);
-        toast.success("Card image saved to your device");
-      }
-    } catch (e) {
-      if (e?.name === "AbortError") return;
-      // Fallback: share text with photo links (e.g. if canvas export is blocked)
+      let blob = null;
       try {
-        const text = [summary, ...photoUrls].filter(Boolean).join("\n");
+        const canvas = await html2canvas(el, {
+          backgroundColor: "#ffffff",
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          ignoreElements: (node) => node?.hasAttribute?.("data-html2canvas-ignore"),
+        });
+        blob = await new Promise((res) => canvas.toBlob(res, "image/png"));
+      } catch (e) {
+        blob = null;
+      }
+
+      const text = [summary, ...photoUrls].filter(Boolean).join("\n");
+
+      // 1. Native share with the card image (mobile share sheet)
+      if (blob) {
+        const file = new File([blob], `${title}.png`, { type: "image/png" });
+        try {
+          if (navigator.canShare?.({ files: [file] })) {
+            await navigator.share({ title, text: summary, files: [file] });
+            return;
+          }
+        } catch (e) {
+          if (e?.name === "AbortError") return;
+        }
+      }
+
+      // 2. Native text share (includes photo links)
+      try {
         if (navigator.share) {
           await navigator.share({ title, text });
-        } else {
-          await navigator.clipboard.writeText(text);
-          toast.success("Card details copied to clipboard");
+          if (blob) downloadBlob(blob, `${title}.png`);
+          return;
         }
-      } catch (e2) {
-        if (e2?.name !== "AbortError") toast.error("Could not share card");
+      } catch (e) {
+        if (e?.name === "AbortError") return;
+      }
+
+      // 3. Fallback: save image + copy details
+      if (blob) downloadBlob(blob, `${title}.png`);
+      try {
+        await navigator.clipboard.writeText(text);
+        toast.success(blob ? "Card image saved & details copied" : "Card details copied");
+      } catch {
+        toast.success(blob ? "Card image saved to your device" : "Could not share card");
       }
     } finally {
       setBusy(false);
