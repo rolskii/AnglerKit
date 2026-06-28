@@ -5,10 +5,10 @@ import { Waves, Disc, Fish, Anchor, Bug } from "lucide-react";
 
 const items = [
   {
-    to: "/lines",
-    title: "Lines",
-    description: "Manage your fly lines — brands, weights, conditions, and pairings.",
-    icon: Waves,
+    to: "/rods",
+    title: "Rods",
+    description: "Catalog your rods and view their paired lines.",
+    icon: Fish,
   },
   {
     to: "/reels",
@@ -17,22 +17,22 @@ const items = [
     icon: Disc,
   },
   {
-    to: "/rods",
-    title: "Rods",
-    description: "Catalog your rods and view their paired lines.",
-    icon: Fish,
-  },
-  {
-    to: "/catches",
-    title: "Catch Log",
-    description: "Log your catches with photos, location, conditions, and gear used.",
-    icon: Anchor,
+    to: "/lines",
+    title: "Lines",
+    description: "Manage your fly lines — brands, weights, conditions, and pairings.",
+    icon: Waves,
   },
   {
     to: "/lures",
     title: "Lures & Flies",
     description: "Catalog your lures and flies with photos, sizes, and quantities.",
     icon: Bug,
+  },
+  {
+    to: "/catches",
+    title: "Catch Log",
+    description: "Log your catches with photos, location, conditions, and gear used.",
+    icon: Anchor,
   },
 ];
 
@@ -43,7 +43,7 @@ export default function Home() {
         <h1 className="text-3xl font-heading font-bold">Angler's Log</h1>
         <p className="text-muted-foreground">Your fly fishing gear, organized in one place.</p>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
         {items.map((item) => {
           const Icon = item.icon;
           return (
