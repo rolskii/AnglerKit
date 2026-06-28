@@ -72,6 +72,9 @@ export default function Rods() {
     return map;
   }, [lines]);
 
+  const totalValue = useMemo(() =>
+    rods.reduce((sum, r) => sum + (r.value || 0), 0), [rods]);
+
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
     const result = rods.filter((r) =>
@@ -163,7 +166,10 @@ export default function Rods() {
           <h1 className="font-heading text-2xl font-bold flex items-center gap-2">
             Fly Rods
           </h1>
-          <p className="text-muted-foreground text-sm mt-1">{rods.length} rods in your collection</p>
+          <p className="text-muted-foreground text-sm mt-1">
+            {rods.length} rods in your collection
+            {totalValue > 0 && <span className="font-medium text-foreground"> · Total value ${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>}
+          </p>
         </div>
         <Button onClick={() => { setEditing(null); setFormOpen(true); }}>
           <Plus className="w-4 h-4 mr-2" /> Add Rod
