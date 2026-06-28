@@ -1,0 +1,69 @@
+{
+  "name": "Lure",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Lure or fly name/pattern"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "Fly",
+        "Lure"
+      ],
+      "default": "Fly"
+    },
+    "category": {
+      "type": "string",
+      "description": "Pattern or lure category (e.g. Dry Fly, Nymph, Streamer, Spinner, Spoon, Plug, Jig)"
+    },
+    "brand": {
+      "type": "string"
+    },
+    "size": {
+      "type": "string",
+      "description": "Hook size (e.g. #14) or lure size"
+    },
+    "colour": {
+      "type": "string"
+    },
+    "quantity": {
+      "type": "number",
+      "description": "How many of this pattern in your inventory",
+      "default": 1
+    },
+    "condition": {
+      "type": "string",
+      "enum": [
+        "New",
+        "Like New",
+        "Good",
+        "Fair",
+        "Poor"
+      ],
+      "default": "Good"
+    },
+    "value": {
+      "type": "number",
+      "description": "Dollar value of the lure or fly"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Legacy single photo (superseded by images)"
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Photos of the lure or fly"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}
