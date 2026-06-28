@@ -35,7 +35,7 @@ const items = [
   },
   {
     to: "/catches",
-    title: "Catch Log",
+    title: "Fish Log",
     description: "Log your catches with photos, location, conditions, and gear used.",
     icon: Anchor,
     entity: null,

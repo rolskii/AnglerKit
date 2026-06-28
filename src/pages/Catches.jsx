@@ -118,7 +118,7 @@ export default function Catches() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="font-heading text-2xl font-bold flex items-center gap-2">
-            Catch Log
+            Fish Log
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
             {catches.length} {catches.length === 1 ? "catch" : "catches"} logged
