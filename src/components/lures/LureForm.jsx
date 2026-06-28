@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import ImageUpload from "@/components/ImageUpload";
 
-const TYPES = ["Fly", "Lure", "Spinner"];
+const TYPES = ["Fly", "Lure"];
 const CATEGORIES = [
   "Dry Fly", "Nymph", "Streamer", "Wet Fly", "Emerger", "Terrestrial", "Popper",
   "Spinner", "Spoon", "Plug", "Jig", "Crankbait", "Soft Plastic", "Other"
