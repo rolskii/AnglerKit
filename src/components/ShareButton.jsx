@@ -71,7 +71,7 @@ function buildCardHTML(card, images) {
   const thumbs = images
     .map(
       (src, i) => `
-      <figure class="thumb" data-index="${i}">
+      <figure class="thumb${i === 0 ? " active" : ""}" data-index="${i}">
         <img src="${src}" alt="Photo ${i + 1}" loading="lazy" />
       </figure>`
     )
@@ -112,6 +112,7 @@ function buildCardHTML(card, images) {
   .thumb { margin: 0; border-radius: 8px; overflow: hidden; cursor: pointer; aspect-ratio: 1; background: #e2e8f0; }
   .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .2s; }
   .thumb:hover img { transform: scale(1.05); }
+  .thumb.active { outline: 3px solid #0d9488; outline-offset: -3px; }
   .more { font-size: 12px; color: #64748b; margin-top: 2px; }
   .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.92); display: none; align-items: center; justify-content: center; z-index: 100; }
   .lightbox.open { display: flex; }
@@ -141,7 +142,7 @@ function buildCardHTML(card, images) {
       ${card.notes ? `<p class="notes">${esc(card.notes)}</p>` : ""}
       ${
         images.length > 1
-          ? `<div class="section"><div class="section-title">Photos</div><div class="gallery" id="gallery">${thumbs}</div><p class="more">Tap any photo to view full size.</p></div>`
+          ? `<div class="section"><div class="section-title">Photos</div><div class="gallery" id="gallery">${thumbs}</div><p class="more">Tap a photo to make it the main image. Tap the main image to view full size.</p></div>`
           : images.length === 1
           ? `<p class="more">Tap the photo to view full size.</p>`
           : ""
@@ -158,39 +159,46 @@ function buildCardHTML(card, images) {
   <footer>Shared from Angler's Log</footer>
 <script>
   (function () {
-    var imgs = [];
     var hero = document.getElementById('hero');
-    if (hero) imgs.push(hero.src);
-    Array.prototype.forEach.call(document.querySelectorAll('.thumb img'), function (i) { imgs.push(i.src); });
-    var idx = 0;
+    var thumbEls = document.querySelectorAll('.thumb');
+    var imgs = [];
+    Array.prototype.forEach.call(thumbEls, function (t) { imgs.push(t.querySelector('img').src); });
+    if (imgs.length === 0 && hero) imgs = [hero.src];
+    var current = 0;
+    function setActive(i) {
+      current = i;
+      if (hero) hero.src = imgs[i];
+      Array.prototype.forEach.call(thumbEls, function (t, idx) { t.classList.toggle('active', idx === i); });
+    }
+    Array.prototype.forEach.call(thumbEls, function (t, idx) {
+      t.addEventListener('click', function () { setActive(idx); });
+    });
     var box = document.getElementById('lightbox');
     var full = document.getElementById('full');
     var count = document.getElementById('count');
+    var lbIdx = 0;
     function show(i) {
-      idx = (i + imgs.length) % imgs.length;
-      full.src = imgs[idx];
-      count.textContent = (idx + 1) + ' / ' + imgs.length;
+      lbIdx = (i + imgs.length) % imgs.length;
+      full.src = imgs[lbIdx];
+      count.textContent = (lbIdx + 1) + ' / ' + imgs.length;
       box.classList.add('open');
     }
-    if (hero) hero.addEventListener('click', function () { show(0); });
-    Array.prototype.forEach.call(document.querySelectorAll('.thumb'), function (t) {
-      t.addEventListener('click', function () { show(parseInt(t.dataset.index, 10) + 1); });
-    });
-    document.getElementById('prev').addEventListener('click', function (e) { e.stopPropagation(); show(idx - 1); });
-    document.getElementById('next').addEventListener('click', function (e) { e.stopPropagation(); show(idx + 1); });
+    if (hero) hero.addEventListener('click', function () { show(current); });
+    document.getElementById('prev').addEventListener('click', function (e) { e.stopPropagation(); show(lbIdx - 1); });
+    document.getElementById('next').addEventListener('click', function (e) { e.stopPropagation(); show(lbIdx + 1); });
     document.getElementById('close').addEventListener('click', function () { box.classList.remove('open'); });
     box.addEventListener('click', function (e) { if (e.target === box) box.classList.remove('open'); });
     document.addEventListener('keydown', function (e) {
       if (!box.classList.contains('open')) return;
-      if (e.key === 'ArrowLeft') show(idx - 1);
-      if (e.key === 'ArrowRight') show(idx + 1);
+      if (e.key === 'ArrowLeft') show(lbIdx - 1);
+      if (e.key === 'ArrowRight') show(lbIdx + 1);
       if (e.key === 'Escape') box.classList.remove('open');
     });
     var sx = 0;
     box.addEventListener('touchstart', function (e) { sx = e.changedTouches[0].clientX; }, { passive: true });
     box.addEventListener('touchend', function (e) {
       var dx = e.changedTouches[0].clientX - sx;
-      if (Math.abs(dx) > 40) show(idx + (dx < 0 ? 1 : -1));
+      if (Math.abs(dx) > 40) show(lbIdx + (dx < 0 ? 1 : -1));
     }, { passive: true });
   })();
 </script>
