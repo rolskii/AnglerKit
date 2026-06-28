@@ -91,7 +91,7 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
           </div>
 
           <div className="space-y-1.5">
-            <Label>Location</Label>
+            <Label>Body of Water</Label>
             <Input
               value={form.location || ""}
               onChange={(e) => set("location", e.target.value)}
