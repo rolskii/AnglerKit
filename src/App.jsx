@@ -29,13 +29,9 @@ const AuthenticatedApp = () => {
   useEffect(() => {
     if (!isLoadingAuth && !isLoadingPublicSettings && !authError && !didInitialRedirect) {
       setDidInitialRedirect(true);
-      if (location.pathname !== "/" && !sessionStorage.getItem("navigated")) {
-        navigate("/", { replace: true });
-      } else {
-        sessionStorage.setItem("navigated", "true");
-      }
+      navigate("/", { replace: true });
     }
-  }, [isLoadingAuth, isLoadingPublicSettings, authError, didInitialRedirect, location.pathname, navigate]);
+  }, [isLoadingAuth, isLoadingPublicSettings, authError, didInitialRedirect, navigate]);
 
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
