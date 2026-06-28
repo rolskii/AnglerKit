@@ -47,6 +47,15 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
 
   const set = (field, value) => setForm((f) => ({ ...f, [field]: value }));
 
+  // Use unique entity ids as dropdown values (names can duplicate), but store
+  // the display name on the catch so existing records and the card still work.
+  const rodById = Object.fromEntries(rods.map((r) => [r.id, r.name]));
+  const reelById = Object.fromEntries(reels.map((r) => [r.id, r.name]));
+  const lineById = Object.fromEntries(lines.map((l) => [l.id, `${l.brand} ${l.model}`.trim()]));
+  const rodIdByName = Object.fromEntries(rods.map((r) => [r.name, r.id]));
+  const reelIdByName = Object.fromEntries(reels.map((r) => [r.name, r.id]));
+  const lineIdByName = Object.fromEntries(lines.map((l) => [`${l.brand} ${l.model}`.trim(), l.id]));
+
   const numOrNull = (v) => (v === "" || v == null ? null : Number(v));
 
   const handleSubmit = (e) => {
@@ -146,36 +155,45 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-1.5">
               <Label>Rod</Label>
-              <Select value={form.rod || ""} onValueChange={(v) => set("rod", v === "__none" ? "" : v)}>
+              <Select
+                value={form.rod ? (rodIdByName[form.rod] || "") : ""}
+                onValueChange={(v) => set("rod", v === "__none" ? "" : (rodById[v] || ""))}
+              >
                 <SelectTrigger><SelectValue placeholder="Select rod" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="__none">—</SelectItem>
                   {rods.map((r) => (
-                    <SelectItem key={r.id} value={r.name}>{r.name}</SelectItem>
+                    <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-1.5">
               <Label>Reel</Label>
-              <Select value={form.reel || ""} onValueChange={(v) => set("reel", v === "__none" ? "" : v)}>
+              <Select
+                value={form.reel ? (reelIdByName[form.reel] || "") : ""}
+                onValueChange={(v) => set("reel", v === "__none" ? "" : (reelById[v] || ""))}
+              >
                 <SelectTrigger><SelectValue placeholder="Select reel" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="__none">—</SelectItem>
                   {reels.map((r) => (
-                    <SelectItem key={r.id} value={r.name}>{r.name}</SelectItem>
+                    <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-1.5">
               <Label>Line</Label>
-              <Select value={form.line || ""} onValueChange={(v) => set("line", v === "__none" ? "" : v)}>
+              <Select
+                value={form.line ? (lineIdByName[form.line] || "") : ""}
+                onValueChange={(v) => set("line", v === "__none" ? "" : (lineById[v] || ""))}
+              >
                 <SelectTrigger><SelectValue placeholder="Select line" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="__none">—</SelectItem>
                   {lines.map((l) => (
-                    <SelectItem key={l.id} value={`${l.brand} ${l.model}`}>{l.brand} {l.model}</SelectItem>
+                    <SelectItem key={l.id} value={l.id}>{l.brand} {l.model}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
