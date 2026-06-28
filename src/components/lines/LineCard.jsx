@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useRef } from "react";
+import ShareButton from "@/components/ShareButton";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,8 +15,9 @@ const conditionColor = {
 };
 
 export default function LineCard({ line, onEdit, onDelete }) {
+  const cardRef = useRef(null);
   return (
-    <Card className="p-4 flex flex-col gap-3 hover:shadow-md transition-shadow">
+    <Card ref={cardRef} className="p-4 flex flex-col gap-3 hover:shadow-md transition-shadow">
       <ImageGallery images={getItemImages(line)} />
       <div className="flex items-start justify-between gap-2">
         <div>
@@ -58,10 +60,16 @@ export default function LineCard({ line, onEdit, onDelete }) {
         <p className="text-sm text-muted-foreground italic border-t border-border pt-2">{line.notes}</p>
       )}
 
-      <div className="flex gap-2 mt-auto pt-1">
+      <div className="flex gap-2 mt-auto pt-1" data-html2canvas-ignore="true">
         <Button size="sm" variant="outline" className="flex-1" onClick={() => onEdit(line)}>
           <Pencil className="w-3.5 h-3.5 mr-1.5" /> Edit
         </Button>
+        <ShareButton
+          targetRef={cardRef}
+          title={`${line.brand} ${line.model}`}
+          summary={`${line.brand} ${line.model}`}
+          photoUrls={getItemImages(line)}
+        />
         <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => onDelete(line)}>
           <Trash2 className="w-3.5 h-3.5" />
         </Button>

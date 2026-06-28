@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useRef } from "react";
+import ShareButton from "@/components/ShareButton";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
@@ -13,8 +14,9 @@ const conditionColor = {
 };
 
 export default function LureCard({ lure, onEdit, onDelete }) {
+  const cardRef = useRef(null);
   return (
-    <Card className="p-4 flex flex-col gap-3">
+    <Card ref={cardRef} className="p-4 flex flex-col gap-3">
       <ImageGallery images={getItemImages(lure)} />
       <div className="flex items-start justify-between gap-2">
         <div>
@@ -43,10 +45,16 @@ export default function LureCard({ lure, onEdit, onDelete }) {
 
       {lure.notes && <p className="text-sm text-muted-foreground italic border-t border-border pt-2">{lure.notes}</p>}
 
-      <div className="flex gap-2 mt-auto pt-1">
+      <div className="flex gap-2 mt-auto pt-1" data-html2canvas-ignore="true">
         <Button size="sm" variant="outline" className="flex-1" onClick={() => onEdit(lure)}>
           <Pencil className="w-3.5 h-3.5 mr-1.5" /> Edit
         </Button>
+        <ShareButton
+          targetRef={cardRef}
+          title={lure.name}
+          summary={lure.name}
+          photoUrls={getItemImages(lure)}
+        />
         <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => onDelete(lure)}>
           <Trash2 className="w-3.5 h-3.5" />
         </Button>
