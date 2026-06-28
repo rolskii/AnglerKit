@@ -90,7 +90,7 @@ function buildCardHTML(card, images) {
     .map((_, i) => `#gal${i}:checked ~ .main .slide:nth-child(${i + 1}) { opacity: 1; }`)
     .join("\n  ");
   const activeRules = images
-    .map((_, i) => `#gal${i}:checked ~ .body .thumbs .thumb:nth-child(${i + 1}) { outline: 3px solid #0d9488; outline-offset: -3px; }`)
+    .map((_, i) => `#gal${i}:checked ~ .thumbs .thumb:nth-child(${i + 1}) { outline: 3px solid #0d9488; outline-offset: -3px; }`)
     .join("\n  ");
 
   return `<!DOCTYPE html>
@@ -128,7 +128,7 @@ function buildCardHTML(card, images) {
   .desc { font-size: 12px; }
   .italic { font-style: italic; }
   .notes { border-top: 1px solid #e2e8f0; padding-top: 10px; color: #64748b; font-style: italic; font-size: 13px; white-space: pre-wrap; }
-  .thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+  .thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 8px; padding: 10px 14px 14px; }
   .thumb { margin: 0; border-radius: 8px; overflow: hidden; cursor: pointer; aspect-ratio: 1; background: #e2e8f0; display: block; }
   .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .2s; }
   .thumb:hover img { transform: scale(1.05); }
@@ -148,7 +148,7 @@ function buildCardHTML(card, images) {
 </head>
 <body>
   <div class="card">
-    ${multi ? `${radios}<div class="main" id="main">${slides}</div>` : images.length === 1 ? `<img class="hero" id="hero" src="${images[0]}" alt="Photo" />` : ""}
+    ${multi ? `${radios}<div class="main" id="main">${slides}</div><div class="thumbs">${thumbs}</div>` : images.length === 1 ? `<img class="hero" id="hero" src="${images[0]}" alt="Photo" />` : ""}
     <div class="body">
       <div class="head">
         <div>
@@ -162,7 +162,7 @@ function buildCardHTML(card, images) {
       ${card.notes ? `<p class="notes">${esc(card.notes)}</p>` : ""}
       ${
         multi
-          ? `<div class="section"><div class="section-title">Photos</div><div class="thumbs">${thumbs}</div><p class="more">Tap a photo to make it the main image. Tap the main image to view full size.</p></div>`
+          ? `<p class="more">Tap a photo to make it the main image. Tap the main image to view full size.</p>`
           : images.length === 1
           ? `<p class="more">Tap the photo to view full size.</p>`
           : ""
