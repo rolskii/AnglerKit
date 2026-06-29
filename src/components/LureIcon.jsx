@@ -14,14 +14,17 @@ export default function LureIcon({ className, ...props }) {
       aria-hidden="true"
       {...props}
     >
-      {/* hook shank */}
-      <line x1="12" y1="2" x2="12" y2="14" />
+      {/* shank - straight line */}
+      <line x1="12" y1="2" x2="12" y2="12" />
       
-      {/* hook curve */}
-      <path d="M 12 14 Q 16 14 16 18 Q 16 22 12 22" />
+      {/* hook bend and curve */}
+      <path d="M 12 12 Q 15 13 16 16 Q 16.5 19 14 21" />
       
       {/* barb */}
-      <line x1="14" y1="18" x2="16" y2="19" />
+      <line x1="15" y1="17" x2="17" y2="17.5" />
+      
+      {/* point */}
+      <circle cx="13.5" cy="21.5" r="0.8" fill="currentColor" />
     </svg>
   );
 }
