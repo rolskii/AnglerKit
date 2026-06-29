@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { Anchor, Package, ChevronRight } from "lucide-react";
+import { Package, ChevronRight } from "lucide-react";
 import FishingPoleIcon from "@/components/FishingPoleIcon";
 import ReelIcon from "@/components/ReelIcon";
 import LineSpoolIcon from "@/components/LineSpoolIcon";
 import LureIcon from "@/components/LureIcon";
+import UnderwaterCameraIcon from "@/components/UnderwaterCameraIcon";
 import { base44 } from "@/api/base44Client";
 
 const items = [
@@ -41,7 +42,7 @@ const items = [
     to: "/catches",
     title: "Fish Log",
     description: "Log your catches with photos, location, conditions, and gear used.",
-    icon: Anchor,
+    icon: UnderwaterCameraIcon,
     entity: null,
   },
   {
