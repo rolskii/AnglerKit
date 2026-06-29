@@ -9,18 +9,18 @@ export default function LureIcon({ className, ...props }) {
         height="28"
         fill="none"
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth="2.5"
         strokeLinecap="round"
         strokeLinejoin="round"
         className="text-primary"
         {...props}
       >
-        {/* Hook shaft */}
-        <path d="M 12 3 Q 12 8, 12 12 Q 12 16, 16 18 Q 18 19, 19 20" />
-        {/* Barb */}
-        <path d="M 19 20 L 20.5 19" />
-        {/* Eyelet */}
-        <circle cx="12" cy="3" r="1" fill="currentColor" />
+        {/* Loop at top */}
+        <circle cx="12" cy="4" r="2" />
+        {/* Shaft */}
+        <path d="M 12 6 L 12 14" />
+        {/* Curved hook bottom */}
+        <path d="M 12 14 Q 5 16, 4 22" />
       </svg>
     </div>
   );
