@@ -1,6 +1,9 @@
 import React from "react";
-import { Waves, Fish, Info, Camera, Package, Zap } from "lucide-react";
+import { Camera, Download, Upload, HardDrive } from "lucide-react";
 import TroutIcon from "@/components/TroutIcon";
+import LineSpoolIcon from "@/components/LineSpoolIcon";
+import ReelIcon from "@/components/ReelIcon";
+import LureIcon from "@/components/LureIcon";
 
 export default function About() {
   return (
@@ -26,17 +29,17 @@ export default function About() {
 
       <div className="grid gap-4 sm:grid-cols-3">
         <FeatureCard
-          icon={<Waves className="w-5 h-5" />}
+          icon={<LineSpoolIcon className="w-5 h-5" />}
           title="Lines"
           description="Track brand, model, weight, grain, head length, rod type, and detailed condition for every fly line."
         />
         <FeatureCard
-          icon={<Fish className="w-5 h-5" />}
+          icon={<ReelIcon className="w-5 h-5" />}
           title="Rods & Reels"
           description="Catalog rods and reels with full specs, materials, types, and link them to your lines and setups."
         />
         <FeatureCard
-          icon={<Package className="w-5 h-5" />}
+          icon={<LureIcon className="w-5 h-5" />}
           title="Lures & Misc"
           description="Manage flies, lures, apparel, tools, and all your fishing accessories with photos and notes."
         />
@@ -46,12 +49,12 @@ export default function About() {
           description="Record every catch with species, location, gear used, water conditions, and multiple photos."
         />
         <FeatureCard
-          icon={<Zap className="w-5 h-5" />}
+          icon={<HardDrive className="w-5 h-5" />}
           title="Full Backup & Restore"
           description="Backup your entire collection as JSON and restore instantly — all data and photos included."
         />
         <FeatureCard
-          icon={<Info className="w-5 h-5" />}
+          icon={<><Download className="w-2.5 h-2.5 inline mr-0.5" /><Upload className="w-2.5 h-2.5 inline" /></>}
           title="Import / Export"
           description="Import gear from CSV templates and export your collection for spreadsheet analysis."
         />
