@@ -5,32 +5,28 @@ export default function LureIcon({ className, ...props }) {
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      fill="currentColor"
       className={className}
       aria-hidden="true"
       {...props}
     >
       {/* lure body - filled crankbait shape */}
-      <path d="M 5 10 Q 5 8 8 7 L 18 7 Q 20 7 20 10 Q 20 13 18 14 L 8 14 Q 5 13 5 10 Z" fill="currentColor" />
+      <path d="M 5 10 Q 5 7 9 6.5 L 19 6.5 Q 21 6.5 21 10 Q 21 13.5 19 14 L 9 14 Q 5 13.5 5 10 Z" fill="currentColor" />
       
       {/* eye - white circle */}
-      <circle cx="18.5" cy="9" r="1.2" fill="white" stroke="none" />
+      <circle cx="19" cy="9" r="1.3" fill="white" />
       
-      {/* gill mark - curved line */}
-      <path d="M 15 8 Q 17 9 15.5 11" stroke="white" strokeWidth="0.7" fill="none" />
+      {/* gill mark - white curved line */}
+      <path d="M 15.5 7.5 Q 18 9 16 11" stroke="white" strokeWidth="0.9" fill="none" strokeLinecap="round" />
       
       {/* top attachment loop */}
-      <path d="M 11 7 Q 10.2 5.5 11.5 5 Q 12.5 5 12.5 6.5" stroke="currentColor" strokeWidth="1.2" fill="none" />
+      <path d="M 12 6.5 Q 11 4.8 12.5 4.5 Q 13.5 4.5 13.5 6" stroke="currentColor" strokeWidth="1.3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
       
       {/* front treble hook */}
-      <path d="M 8 14 L 6.5 16 Q 6 17 7 17.5 Q 8 18 8.5 17" stroke="currentColor" strokeWidth="1" fill="none" />
+      <path d="M 8.5 14 L 6.8 16.2 Q 6.2 17.2 7.3 17.8 Q 8.5 18.3 9 17.2" stroke="currentColor" strokeWidth="1.1" fill="none" strokeLinecap="round" strokeLinejoin="round" />
       
       {/* rear treble hook */}
-      <path d="M 14 14 L 12.5 16 Q 12 17 13 17.5 Q 14 18 14.5 17" stroke="currentColor" strokeWidth="1" fill="none" />
+      <path d="M 15 14 L 13.3 16.2 Q 12.7 17.2 13.8 17.8 Q 15 18.3 15.5 17.2" stroke="currentColor" strokeWidth="1.1" fill="none" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
