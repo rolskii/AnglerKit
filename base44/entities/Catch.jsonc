@@ -1,0 +1,73 @@
+{
+  "name": "Catch",
+  "type": "object",
+  "properties": {
+    "species": {
+      "type": "string",
+      "description": "Species of fish caught"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the catch"
+    },
+    "location": {
+      "type": "string",
+      "description": "Where the fish was caught"
+    },
+    "length": {
+      "type": "number",
+      "description": "Length of the fish in inches"
+    },
+    "girth": {
+      "type": "number",
+      "description": "Girth of the fish in inches"
+    },
+    "weight": {
+      "type": "number",
+      "description": "Weight of the fish in pounds"
+    },
+    "fly_used": {
+      "type": "string",
+      "description": "Fly pattern used"
+    },
+    "rod": {
+      "type": "string",
+      "description": "Rod used for the catch"
+    },
+    "reel": {
+      "type": "string",
+      "description": "Reel used for the catch"
+    },
+    "line": {
+      "type": "string",
+      "description": "Line used for the catch"
+    },
+    "conditions": {
+      "type": "string",
+      "description": "Weather or water conditions"
+    },
+    "water_temp": {
+      "type": "number",
+      "description": "Water temperature in degrees"
+    },
+    "released": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the fish was released"
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Photos of the catch"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "species"
+  ]
+}

@@ -32,10 +32,10 @@ export default function Catches() {
     setLoading(true);
     try {
       const [c, r, re, ln] = await Promise.all([
-        base44.entities.Catch.list("-updated_date", 200),
-        base44.entities.Rod.list("-updated_date", 200),
-        base44.entities.Reel.list("-updated_date", 200),
-        base44.entities.FlyLine.list("-updated_date", 200),
+        base44.entities.Catch.list("-updated_date", 200).catch(() => []),
+        base44.entities.Rod.list("-updated_date", 200).catch(() => []),
+        base44.entities.Reel.list("-updated_date", 200).catch(() => []),
+        base44.entities.FlyLine.list("-updated_date", 200).catch(() => []),
       ]);
       setCatches(c);
       setRods(r);
