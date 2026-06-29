@@ -141,7 +141,7 @@ export default function Settings() {
       <div className="rounded-lg border border-border bg-card p-6 space-y-5">
         <div>
           <h2 className="font-heading font-semibold mb-1">Choose your cloud service</h2>
-          <p className="text-sm text-muted-foreground mb-3">Pick where your inventory backups are stored. You connect your own account.</p>
+          <p className="text-sm text-muted-foreground mb-3">Pick where your full app backup is stored — all lines, reels, rods, catches, lures, and misc gear. You connect your own account.</p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {Object.entries(SERVICES).map(([key, svc]) => {
               const Icon = svc.icon;
@@ -192,7 +192,7 @@ export default function Settings() {
         <div className="flex items-center justify-between rounded-md border border-border px-4 py-3">
           <div>
             <p className="text-sm font-medium">Autosave</p>
-            <p className="text-xs text-muted-foreground">Automatically back up after every change to your inventory.</p>
+            <p className="text-xs text-muted-foreground">Automatically back up all your data after every change.</p>
           </div>
           <button
             role="switch"

@@ -10,6 +10,9 @@ const COLUMNS = {
   FlyLine: ["species", "brand", "model", "type", "description", "line_weight", "grain_weight", "head_length", "total_length", "colour", "condition", "reel", "rod", "notes"],
   Reel: ["name", "brand", "model", "size", "condition", "notes"],
   Rod: ["name", "brand", "length", "line_weight", "type", "material", "condition", "notes"],
+  Catch: ["species", "date", "location", "length", "girth", "weight", "fly_used", "rod", "reel", "line", "conditions", "water_temp", "released", "notes"],
+  Lure: ["name", "type", "category", "brand", "size", "colour", "quantity", "condition", "notes"],
+  MiscItem: ["name", "category", "brand", "model", "colour", "quantity", "condition", "value", "notes"],
 };
 
 function toCsv(records, columns) {
@@ -97,10 +100,13 @@ Deno.serve(async (req) => {
       return Response.json({ connected: true });
     }
 
-    const [lines, reels, rods] = await Promise.all([
+    const [lines, reels, rods, catches, lures, misc] = await Promise.all([
       base44.entities.FlyLine.list('-updated_date', 500),
       base44.entities.Reel.list('-updated_date', 500),
       base44.entities.Rod.list('-updated_date', 500),
+      base44.entities.Catch.list('-updated_date', 500),
+      base44.entities.Lure.list('-updated_date', 500),
+      base44.entities.MiscItem.list('-updated_date', 500),
     ]);
 
     const date = new Date().toISOString().slice(0, 10);
@@ -108,6 +114,9 @@ Deno.serve(async (req) => {
       { name: `flyfish-lines-${date}.csv`, content: toCsv(lines, COLUMNS.FlyLine) },
       { name: `flyfish-reels-${date}.csv`, content: toCsv(reels, COLUMNS.Reel) },
       { name: `flyfish-rods-${date}.csv`, content: toCsv(rods, COLUMNS.Rod) },
+      { name: `flyfish-catches-${date}.csv`, content: toCsv(catches, COLUMNS.Catch) },
+      { name: `flyfish-lures-${date}.csv`, content: toCsv(lures, COLUMNS.Lure) },
+      { name: `flyfish-misc-${date}.csv`, content: toCsv(misc, COLUMNS.MiscItem) },
     ];
 
     const uploaded = [];
