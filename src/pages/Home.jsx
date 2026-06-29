@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { ChevronRight, Disc, Anchor, Package } from "lucide-react";
+import { ChevronRight, Anchor, Package } from "lucide-react";
 import HorizontalLinesIcon from "@/components/HorizontalLinesIcon";
 import VerticalLinesIcon from "@/components/VerticalLinesIcon";
 import BugWingsIcon from "@/components/BugWingsIcon";
+import ReelDiscIcon from "@/components/ReelDiscIcon";
 import { base44 } from "@/api/base44Client";
 
 const items = [
@@ -19,7 +20,7 @@ const items = [
     to: "/reels",
     title: "Reels",
     description: "Track your reels and see which lines are spooled on each.",
-    icon: Disc,
+    icon: ReelDiscIcon,
     entity: "Reel",
   },
   {
