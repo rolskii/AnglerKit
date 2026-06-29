@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Download, Upload, Loader2, FileJson, CheckCircle2, AlertCircle, Database, Archive, RotateCcw } from "lucide-react";
+import { Download, Upload, Loader2, FileJson, CheckCircle2, AlertCircle, Database, Archive, RotateCcw, HardDrive } from "lucide-react";
 import { toast } from "sonner";
 
 const ENTITIES = [
@@ -387,7 +387,7 @@ export default function ImportExportSection() {
       {/* Full Backup / Restore */}
       <div className="rounded-lg border-0 bg-primary/10 p-6 space-y-4">
         <div className="flex items-center gap-2">
-          <Archive className="w-5 h-5 text-primary" />
+          <HardDrive className="w-5 h-5 text-primary" />
           <h2 className="text-lg font-heading font-semibold">Full Backup</h2>
         </div>
         <p className="text-sm text-muted-foreground">
