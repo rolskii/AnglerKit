@@ -5,22 +5,26 @@ export default function LureIcon({ className, ...props }) {
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
-      fill="currentColor"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
       className={className}
       aria-hidden="true"
       {...props}
     >
-      {/* eye - circle at top */}
-      <circle cx="12" cy="3" r="2" />
+      {/* eye at top */}
+      <circle cx="12" cy="3" r="1.5" />
       
-      {/* straight shaft */}
-      <rect x="11" y="5" width="2" height="9.5" rx="1" />
+      {/* straight shaft down */}
+      <line x1="12" y1="4.5" x2="12" y2="12" />
       
-      {/* J-hook: main curved body */}
-      <path d="M 11 14.5 C 8 14.5 5 16.5 5 19.5 C 5 22 7.5 23 10.5 23 C 13 23 13 21 13 19 L 13 14.5" fill="currentColor" />
+      {/* J-hook curve - start at shaft end, curve down and around */}
+      <path d="M 12 12 Q 8 12 6 14 Q 4 16 4 18.5 Q 4 21 6.5 22" />
       
-      {/* barb point inside the hook */}
-      <polygon points="8,19 6,20.5 7.5,21" fill="currentColor" />
+      {/* barb - small angled line inside the hook */}
+      <line x1="6" y1="17" x2="3.5" y2="19" strokeWidth="1.5" />
     </svg>
   );
 }
