@@ -24,15 +24,15 @@ const navItems = [
 
 export default function Layout() {
   const [open, setOpen] = useState(false);
-  const [appName, setAppName] = useState(() => localStorage.getItem("appName") || "Angler's Log");
+  const [appName, setAppName] = useState(() => localStorage.getItem("appName") || "LineCraft");
   const navigate = useNavigate();
 
   useEffect(() => {
     const handleStorageChange = () => {
-      setAppName(localStorage.getItem("appName") || "Angler's Log");
+      setAppName(localStorage.getItem("appName") || "LineCraft");
     };
     const handleAppNameChange = () => {
-      setAppName(localStorage.getItem("appName") || "Angler's Log");
+      setAppName(localStorage.getItem("appName") || "LineCraft");
     };
     window.addEventListener("storage", handleStorageChange);
     window.addEventListener("appNameChanged", handleAppNameChange);
