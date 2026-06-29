@@ -14,18 +14,18 @@ export default function FishingPoleIcon({ className, ...props }) {
       aria-hidden="true"
       {...props}
     >
-      {/* handle */}
-      <path d="M3 20.5 6.5 17" />
+      {/* cork grip / handle */}
+      <path d="M2.5 21 7 16" strokeWidth="3.5" />
       {/* loaded rod shaft */}
-      <path d="M6.5 17 Q13 5 21 4" />
+      <path d="M7 16 Q15 6 21 4" />
       {/* reel */}
-      <circle cx="7" cy="16" r="2" />
-      <circle cx="7" cy="16" r="0.7" fill="currentColor" stroke="none" />
-      {/* guides along the shaft */}
-      <path d="M9.5 11.7 v-1.8" />
-      <path d="M13.3 7.8 v-1.8" />
-      <path d="M17.1 5.2 v-1.8" />
-      <path d="M19.4 4.3 v-1.8" />
+      <circle cx="8.5" cy="15.6" r="1.8" />
+      <circle cx="8.5" cy="15.6" r="0.6" fill="currentColor" stroke="none" />
+      {/* line guides / eyelets along the shaft */}
+      <path d="M10 11.5 Q10.9 9.7 11.8 11.5" />
+      <path d="M13.6 8 Q14.5 6.2 15.4 8" />
+      <path d="M17 5.5 Q17.9 3.7 18.8 5.5" />
+      <path d="M18.9 4.5 Q19.8 2.7 20.7 4.5" />
     </svg>
   );
 }
