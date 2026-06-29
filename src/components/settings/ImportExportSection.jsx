@@ -393,6 +393,9 @@ export default function ImportExportSection() {
         <p className="text-sm text-muted-foreground">
           Download a single backup file containing all your data — lines, reels, rods, catches, lures, and misc gear — <strong>with all photos embedded</strong>. Save it somewhere safe (e.g. a cloud drive or email it to yourself). If you ever lose your device, use "Restore from Backup" to bring everything back, photos included.
         </p>
+        <p className="text-sm text-muted-foreground">
+          <strong>Your data is always safe:</strong> Everything is stored securely in the cloud database tied to your account, not just on your device. If you lose your phone, simply sign in on any new device and all your gear, catches, and photos reappear automatically.
+        </p>
         <div className="flex flex-wrap gap-3">
           <Button onClick={handleBackup} disabled={backing}>
             {backing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
