@@ -26,7 +26,7 @@ const items = [
   {
     to: "/lines",
     title: "Lines",
-    description: "Manage your fly lines — brands, weights, conditions, and pairings.",
+    description: "Manage your different kinds of lines and fly lines - brands, weights, conditions and rod & reel pairings.",
     icon: HorizontalLinesIcon,
     entity: "FlyLine",
   },
