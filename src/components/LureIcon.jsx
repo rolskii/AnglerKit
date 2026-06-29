@@ -6,8 +6,8 @@ export default function LureIcon({ className, ...props }) {
       <img
         src="https://media.base44.com/images/public/6a3f2458eb55a5d860886e35/24434a246_Screenshot2026-06-28223854.png"
         alt="Lure icon"
-        className="w-7 h-7 text-primary"
-        style={{ mixBlendMode: 'darken' }}
+        className="w-7 h-7"
+        style={{ filter: 'brightness(0) saturate(100%) invert(1) sepia(0.6) hue-rotate(120deg)' }}
         {...props}
       />
     </div>
