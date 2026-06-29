@@ -90,7 +90,7 @@ export default function MiscForm({ open, onOpenChange, onSubmit, initial, loadin
           </div>
           <div className="space-y-1.5">
             <Label>Notes</Label>
-            <Textarea value={form.notes} onChange={(e) => set("notes", e.target.value)} rows={2} />
+            <Textarea value={form.notes} onChange={(e) => set("notes", e.target.value)} rows={2} className="bg-muted" />
           </div>
           <div className="space-y-1.5">
             <Label>Photos</Label>
