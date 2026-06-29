@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { Waves, Disc, Anchor, Bug, Package, ChevronRight } from "lucide-react";
+import { Waves, Anchor, Bug, Package, ChevronRight } from "lucide-react";
 import FishingPoleIcon from "@/components/FishingPoleIcon";
+import ReelIcon from "@/components/ReelIcon";
 import { base44 } from "@/api/base44Client";
 
 const items = [
@@ -17,7 +18,7 @@ const items = [
     to: "/reels",
     title: "Reels",
     description: "Track your reels and see which lines are spooled on each.",
-    icon: Disc,
+    icon: ReelIcon,
     entity: "Reel",
   },
   {
