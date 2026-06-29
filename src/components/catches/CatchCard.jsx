@@ -91,8 +91,8 @@ export default function CatchCard({ catchItem, onEdit, onDelete }) {
 function Detail({ label, value }) {
   return (
     <div className="flex justify-between gap-2">
-      <span className="text-muted-foreground">{label}</span>
-      <span className="font-medium text-right truncate">{value || "—"}</span>
+      <span className="text-muted-foreground shrink-0">{label}</span>
+      <span className="font-medium text-right break-words whitespace-normal">{value || "—"}</span>
     </div>
   );
 }
