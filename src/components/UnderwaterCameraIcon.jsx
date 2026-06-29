@@ -10,23 +10,23 @@ export default function UnderwaterCameraIcon({ className, ...props }) {
       aria-hidden="true"
       {...props}
     >
-      {/* top water wave line */}
-      <path d="M 2 3 Q 4 2 6 3 Q 8 4 10 3 Q 12 2 14 3 Q 16 4 18 3 Q 20 2 22 3" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinecap="round" />
+      {/* top water wave */}
+      <path d="M 1 3 Q 3 1.5 5 3 Q 7 4.5 9 3 Q 11 1.5 13 3 Q 15 4.5 17 3 Q 19 1.5 21 3 Q 22 3.5 23 3" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
       
-      {/* bottom water wave line */}
-      <path d="M 2 5 Q 4 4 6 5 Q 8 6 10 5 Q 12 4 14 5 Q 16 6 18 5 Q 20 4 22 5" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinecap="round" />
+      {/* second water wave */}
+      <path d="M 1 6 Q 3 4.5 5 6 Q 7 7.5 9 6 Q 11 4.5 13 6 Q 15 7.5 17 6 Q 19 4.5 21 6 Q 22 6.5 23 6" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
       
       {/* camera body - rounded rectangle */}
-      <rect x="3" y="8" width="14" height="10" rx="1.5" fill="currentColor" />
+      <rect x="2" y="9" width="18" height="11" rx="1.5" ry="1.5" fill="currentColor" />
       
-      {/* camera flash - small rectangle at top left */}
-      <rect x="7" y="7" width="1.5" height="1.2" fill="currentColor" />
+      {/* camera top button/flash */}
+      <rect x="9" y="7.5" width="1.5" height="1.8" fill="currentColor" />
       
-      {/* camera lens - white circle */}
-      <circle cx="16" cy="13" r="2.5" fill="white" />
+      {/* left viewfinder window - white vertical rectangle */}
+      <rect x="4.5" y="12" width="2" height="5" rx="0.5" fill="white" />
       
-      {/* camera viewfinder line - white vertical line */}
-      <rect x="5" y="10" width="1" height="6" rx="0.5" fill="white" />
+      {/* right camera lens - large white circle */}
+      <circle cx="17" cy="14.5" r="3" fill="none" stroke="white" strokeWidth="1.5" />
     </svg>
   );
 }
