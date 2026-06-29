@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { ChevronRight, Camera, Package } from "lucide-react";
 import HorizontalLinesIcon from "@/components/HorizontalLinesIcon";
 import VerticalLinesIcon from "@/components/VerticalLinesIcon";
-import BugWingsIcon from "@/components/BugWingsIcon";
+import FishingHookIcon from "@/components/FishingHookIcon";
 import ReelDiscIcon from "@/components/ReelDiscIcon";
 import { base44 } from "@/api/base44Client";
 
@@ -34,7 +34,7 @@ const items = [
     to: "/lures",
     title: "Lures & Flies",
     description: "Catalog your lures, tackle and flies with photos, sizes and quantities.",
-    icon: BugWingsIcon,
+    icon: FishingHookIcon,
     entity: "Lure",
   },
   {
