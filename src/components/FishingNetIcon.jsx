@@ -11,22 +11,27 @@ export default function FishingNetIcon({ className, ...props }) {
       {...props}
     >
       {/* handle - diagonal pole */}
-      <path d="M 18 3 L 8 15" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinecap="round" />
+      <path d="M 18 3 L 8 14" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinecap="round" />
       
-      {/* hoop - circle */}
-      <circle cx="6" cy="8" r="4.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
+      {/* hoop - circle at top */}
+      <circle cx="6" cy="7" r="4" fill="none" stroke="currentColor" strokeWidth="1.5" />
       
-      {/* net pouch - curved trapezoid shape */}
-      <path d="M 3 12 Q 2 16 3 19 Q 6 21 9 19 Q 10 16 9 12" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="1" />
+      {/* net mesh - grid pattern creating the net appearance */}
+      <line x1="2.5" y1="11" x2="1.5" y2="20" stroke="currentColor" strokeWidth="0.9" />
+      <line x1="4" y1="11" x2="3.5" y2="21" stroke="currentColor" strokeWidth="0.9" />
+      <line x1="6" y1="11" x2="6" y2="22" stroke="currentColor" strokeWidth="0.9" />
+      <line x1="8" y1="11" x2="8.5" y2="21" stroke="currentColor" strokeWidth="0.9" />
+      <line x1="9.5" y1="11" x2="10.5" y2="20" stroke="currentColor" strokeWidth="0.9" />
       
-      {/* net mesh lines - vertical and diagonal for net texture */}
-      <line x1="4" y1="12" x2="3.5" y2="19" stroke="currentColor" strokeWidth="0.8" />
-      <line x1="6" y1="12" x2="6" y2="20" stroke="currentColor" strokeWidth="0.8" />
-      <line x1="8" y1="12" x2="8.5" y2="19" stroke="currentColor" strokeWidth="0.8" />
+      {/* horizontal mesh lines */}
+      <line x1="2" y1="12.5" x2="10" y2="12.5" stroke="currentColor" strokeWidth="0.9" />
+      <line x1="1.8" y1="14.5" x2="10.2" y2="14.5" stroke="currentColor" strokeWidth="0.9" />
+      <line x1="1.5" y1="16.5" x2="10.5" y2="16.5" stroke="currentColor" strokeWidth="0.9" />
+      <line x1="1.5" y1="18.5" x2="10.5" y2="18.5" stroke="currentColor" strokeWidth="0.9" />
+      <line x1="2" y1="20.5" x2="10" y2="20.5" stroke="currentColor" strokeWidth="0.9" />
       
-      <line x1="3.5" y1="14" x2="8.5" y2="14" stroke="currentColor" strokeWidth="0.8" />
-      <line x1="3.2" y1="16" x2="8.8" y2="16" stroke="currentColor" strokeWidth="0.8" />
-      <line x1="3.2" y1="18" x2="8.8" y2="18" stroke="currentColor" strokeWidth="0.8" />
+      {/* net bottom - curved closure */}
+      <path d="M 1.5 20.5 Q 6 22.5 10.5 20.5" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
     </svg>
   );
 }
