@@ -7,9 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
-} from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
 import ImageUpload from "@/components/ImageUpload";
 
@@ -155,48 +152,51 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-1.5">
               <Label>Rod</Label>
-              <Select
-                value={form.rod ? (rodIdByName[form.rod] || undefined) : undefined}
-                onValueChange={(v) => set("rod", v === "__none" ? "" : (rodById[v] || ""))}
+              <select
+                value={form.rod ? (rodIdByName[form.rod] || "") : ""}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  set("rod", v === "" ? "" : (rodById[v] || ""));
+                }}
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
               >
-                <SelectTrigger><SelectValue placeholder="Select rod" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none">—</SelectItem>
-                  {rods.map((r) => (
-                    <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                <option value="">—</option>
+                {rods.map((r) => (
+                  <option key={r.id} value={r.id}>{r.name}</option>
+                ))}
+              </select>
             </div>
             <div className="space-y-1.5">
               <Label>Reel</Label>
-              <Select
-                value={form.reel ? (reelIdByName[form.reel] || undefined) : undefined}
-                onValueChange={(v) => set("reel", v === "__none" ? "" : (reelById[v] || ""))}
+              <select
+                value={form.reel ? (reelIdByName[form.reel] || "") : ""}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  set("reel", v === "" ? "" : (reelById[v] || ""));
+                }}
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
               >
-                <SelectTrigger><SelectValue placeholder="Select reel" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none">—</SelectItem>
-                  {reels.map((r) => (
-                    <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                <option value="">—</option>
+                {reels.map((r) => (
+                  <option key={r.id} value={r.id}>{r.name}</option>
+                ))}
+              </select>
             </div>
             <div className="space-y-1.5">
               <Label>Line</Label>
-              <Select
-                value={form.line ? (lineIdByName[form.line] || undefined) : undefined}
-                onValueChange={(v) => set("line", v === "__none" ? "" : (lineById[v] || ""))}
+              <select
+                value={form.line ? (lineIdByName[form.line] || "") : ""}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  set("line", v === "" ? "" : (lineById[v] || ""));
+                }}
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
               >
-                <SelectTrigger><SelectValue placeholder="Select line" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none">—</SelectItem>
-                  {lines.map((l) => (
-                    <SelectItem key={l.id} value={l.id}>{l.brand} {l.model}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                <option value="">—</option>
+                {lines.map((l) => (
+                  <option key={l.id} value={l.id}>{l.brand} {l.model}</option>
+                ))}
+              </select>
             </div>
           </div>
 
