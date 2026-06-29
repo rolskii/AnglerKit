@@ -73,7 +73,7 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{initial ? "Edit Fly Line" : "Add Fly Line"}</DialogTitle>
+            <DialogTitle>{initial ? "Edit Line" : "Add Line"}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
