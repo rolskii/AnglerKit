@@ -46,7 +46,7 @@ export default function MiscForm({ open, onOpenChange, onSubmit, initial, loadin
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
             <Label>Name</Label>
-            <Input value={form.name} onChange={(e) => set("name", e.target.value)} required placeholder="e.g. Wading Staff" />
+            <Input className="bg-muted" value={form.name} onChange={(e) => set("name", e.target.value)} required placeholder="e.g. Wading Staff" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
@@ -60,19 +60,19 @@ export default function MiscForm({ open, onOpenChange, onSubmit, initial, loadin
             </div>
             <div className="space-y-1.5">
               <Label>Brand</Label>
-              <Input value={form.brand} onChange={(e) => set("brand", e.target.value)} />
+              <Input className="bg-muted" value={form.brand} onChange={(e) => set("brand", e.target.value)} />
             </div>
             <div className="space-y-1.5">
               <Label>Model / Size</Label>
-              <Input value={form.model} onChange={(e) => set("model", e.target.value)} placeholder="e.g. Simms G3, Medium" />
+              <Input className="bg-muted" value={form.model} onChange={(e) => set("model", e.target.value)} placeholder="e.g. Simms G3, Medium" />
             </div>
             <div className="space-y-1.5">
               <Label>Colour</Label>
-              <Input value={form.colour} onChange={(e) => set("colour", e.target.value)} />
+              <Input className="bg-muted" value={form.colour} onChange={(e) => set("colour", e.target.value)} />
             </div>
             <div className="space-y-1.5">
               <Label>Quantity</Label>
-              <Input type="number" value={form.quantity} onChange={(e) => set("quantity", e.target.value)} placeholder="1" />
+              <Input className="bg-muted" type="number" value={form.quantity} onChange={(e) => set("quantity", e.target.value)} placeholder="1" />
             </div>
             <div className="space-y-1.5">
               <Label>Condition</Label>
@@ -85,7 +85,7 @@ export default function MiscForm({ open, onOpenChange, onSubmit, initial, loadin
             </div>
             <div className="space-y-1.5 col-span-2">
               <Label>Value ($)</Label>
-              <Input type="number" value={form.value} onChange={(e) => set("value", e.target.value)} placeholder="0.00" />
+              <Input className="bg-muted" type="number" value={form.value} onChange={(e) => set("value", e.target.value)} placeholder="0.00" />
             </div>
           </div>
           <div className="space-y-1.5">

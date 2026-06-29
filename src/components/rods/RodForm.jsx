@@ -41,6 +41,7 @@ export default function RodForm({ open, onOpenChange, onSubmit, initial, loading
           <div className="space-y-1.5">
             <Label>Name</Label>
             <Input
+              className="bg-muted"
               value={form.name}
               onChange={(e) => set("name", e.target.value)}
               required
@@ -50,15 +51,15 @@ export default function RodForm({ open, onOpenChange, onSubmit, initial, loading
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label>Brand</Label>
-              <Input value={form.brand} onChange={(e) => set("brand", e.target.value)} />
+              <Input className="bg-muted" value={form.brand} onChange={(e) => set("brand", e.target.value)} />
             </div>
             <div className="space-y-1.5">
               <Label>Length</Label>
-              <Input value={form.length} onChange={(e) => set("length", e.target.value)} placeholder={`9'4"`} />
+              <Input className="bg-muted" value={form.length} onChange={(e) => set("length", e.target.value)} placeholder={`9'4"`} />
             </div>
             <div className="space-y-1.5">
               <Label>Line Weight</Label>
-              <Input value={form.line_weight} onChange={(e) => set("line_weight", e.target.value)} placeholder="6" />
+              <Input className="bg-muted" value={form.line_weight} onChange={(e) => set("line_weight", e.target.value)} placeholder="6" />
             </div>
             <div className="space-y-1.5">
               <Label>Type</Label>
@@ -89,7 +90,7 @@ export default function RodForm({ open, onOpenChange, onSubmit, initial, loading
             </div>
             <div className="space-y-1.5">
               <Label>Value ($)</Label>
-              <Input type="number" value={form.value} onChange={(e) => set("value", e.target.value)} placeholder="0.00" />
+              <Input className="bg-muted" type="number" value={form.value} onChange={(e) => set("value", e.target.value)} placeholder="0.00" />
             </div>
           </div>
           <div className="space-y-1.5">

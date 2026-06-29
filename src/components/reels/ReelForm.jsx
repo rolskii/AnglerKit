@@ -39,20 +39,20 @@ export default function ReelForm({ open, onOpenChange, onSubmit, initial, loadin
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
             <Label>Name</Label>
-            <Input value={form.name} onChange={(e) => set("name", e.target.value)} required placeholder="e.g. Henshaw 3 3/8 Perfect" />
+            <Input className="bg-muted" value={form.name} onChange={(e) => set("name", e.target.value)} required placeholder="e.g. Henshaw 3 3/8 Perfect" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label>Brand</Label>
-              <Input value={form.brand} onChange={(e) => set("brand", e.target.value)} />
+              <Input className="bg-muted" value={form.brand} onChange={(e) => set("brand", e.target.value)} />
             </div>
             <div className="space-y-1.5">
               <Label>Model</Label>
-              <Input value={form.model} onChange={(e) => set("model", e.target.value)} />
+              <Input className="bg-muted" value={form.model} onChange={(e) => set("model", e.target.value)} />
             </div>
             <div className="space-y-1.5">
               <Label>Size</Label>
-              <Input value={form.size} onChange={(e) => set("size", e.target.value)} placeholder='3 3/8"' />
+              <Input className="bg-muted" value={form.size} onChange={(e) => set("size", e.target.value)} placeholder='3 3/8"' />
             </div>
             <div className="space-y-1.5">
               <Label>Type</Label>
@@ -74,7 +74,7 @@ export default function ReelForm({ open, onOpenChange, onSubmit, initial, loadin
             </div>
             <div className="space-y-1.5">
               <Label>Value ($)</Label>
-              <Input type="number" value={form.value} onChange={(e) => set("value", e.target.value)} placeholder="0.00" />
+              <Input className="bg-muted" type="number" value={form.value} onChange={(e) => set("value", e.target.value)} placeholder="0.00" />
             </div>
           </div>
           <div className="space-y-1.5">

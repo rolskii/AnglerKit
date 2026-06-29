@@ -83,6 +83,7 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
             <div className="space-y-1.5">
               <Label>Species *</Label>
               <Input
+                className="bg-muted"
                 list="catch-species"
                 value={form.species}
                 onChange={(e) => set("species", e.target.value)}
@@ -96,6 +97,7 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
             <div className="space-y-1.5">
               <Label>Date</Label>
               <Input
+                className="bg-muted"
                 type="date"
                 value={form.date || ""}
                 onChange={(e) => set("date", e.target.value)}
@@ -106,6 +108,7 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
           <div className="space-y-1.5">
             <Label>Body of Water</Label>
             <Input
+              className="bg-muted"
               value={form.location || ""}
               onChange={(e) => set("location", e.target.value)}
               placeholder="River, lake, or spot name"
@@ -116,6 +119,7 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
             <div className="space-y-1.5">
               <Label>Length (in)</Label>
               <Input
+                className="bg-muted"
                 type="number"
                 step="0.1"
                 value={form.length ?? ""}
@@ -126,6 +130,7 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
             <div className="space-y-1.5">
               <Label>Girth (in)</Label>
               <Input
+                className="bg-muted"
                 type="number"
                 step="0.1"
                 value={form.girth ?? ""}
@@ -136,6 +141,7 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
             <div className="space-y-1.5">
               <Label>Weight (lb)</Label>
               <Input
+                className="bg-muted"
                 type="number"
                 step="0.1"
                 value={form.weight ?? ""}
@@ -148,6 +154,7 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
           <div className="space-y-1.5">
             <Label>Fly Used</Label>
             <Input
+              className="bg-muted"
               value={form.fly_used || ""}
               onChange={(e) => set("fly_used", e.target.value)}
               placeholder="e.g. Elk Hair Caddis"
@@ -204,6 +211,7 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
             <div className="space-y-1.5">
               <Label>Conditions</Label>
               <Input
+                className="bg-muted"
                 value={form.conditions || ""}
                 onChange={(e) => set("conditions", e.target.value)}
                 placeholder="Overcast, light wind"
@@ -212,6 +220,7 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
             <div className="space-y-1.5">
               <Label>Water Temp (°)</Label>
               <Input
+                className="bg-muted"
                 type="number"
                 step="0.1"
                 value={form.water_temp ?? ""}

@@ -112,7 +112,7 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
               </div>
               <div className="space-y-1.5">
               <Label>Model</Label>
-              <Input value={form.model} onChange={(e) => set("model", e.target.value)} required />
+              <Input className="bg-muted" value={form.model} onChange={(e) => set("model", e.target.value)} required />
             </div>
             <div className="space-y-1.5">
               <Label>Type</Label>
@@ -150,23 +150,23 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
             </div>
             <div className="space-y-1.5">
               <Label>Line Weight</Label>
-              <Input value={form.line_weight} onChange={(e) => set("line_weight", e.target.value)} placeholder="6, 4/5, n/a" />
+              <Input className="bg-muted" value={form.line_weight} onChange={(e) => set("line_weight", e.target.value)} placeholder="6, 4/5, n/a" />
             </div>
             <div className="space-y-1.5">
               <Label>Grain Weight</Label>
-              <Input type="number" value={form.grain_weight} onChange={(e) => set("grain_weight", e.target.value)} />
+              <Input className="bg-muted" type="number" value={form.grain_weight} onChange={(e) => set("grain_weight", e.target.value)} />
             </div>
             <div className="space-y-1.5">
               <Label>Head Length (ft)</Label>
-              <Input type="number" value={form.head_length} onChange={(e) => set("head_length", e.target.value)} />
+              <Input className="bg-muted" type="number" value={form.head_length} onChange={(e) => set("head_length", e.target.value)} />
             </div>
             <div className="space-y-1.5">
               <Label>Total Length (ft)</Label>
-              <Input type="number" value={form.total_length} onChange={(e) => set("total_length", e.target.value)} />
+              <Input className="bg-muted" type="number" value={form.total_length} onChange={(e) => set("total_length", e.target.value)} />
             </div>
             <div className="space-y-1.5">
               <Label>Colour</Label>
-              <Input value={form.colour} onChange={(e) => set("colour", e.target.value)} />
+              <Input className="bg-muted" value={form.colour} onChange={(e) => set("colour", e.target.value)} />
             </div>
             <div className="space-y-1.5">
               <Label>Condition</Label>
@@ -179,7 +179,7 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
             </div>
             <div className="space-y-1.5">
               <Label>Value ($)</Label>
-              <Input type="number" value={form.value} onChange={(e) => set("value", e.target.value)} placeholder="0.00" />
+              <Input className="bg-muted" type="number" value={form.value} onChange={(e) => set("value", e.target.value)} placeholder="0.00" />
             </div>
             <div className="space-y-1.5">
               <Label>Reel</Label>
