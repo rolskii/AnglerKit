@@ -11,7 +11,6 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { triggerAutosave } from "@/lib/cloudAutosave";
 
 export default function Catches() {
   const [catches, setCatches] = useState([]);
@@ -93,7 +92,6 @@ export default function Catches() {
       setFormOpen(false);
       setEditing(null);
       await load();
-      triggerAutosave();
     } catch (e) {
       toast.error(e.message || "Failed to save");
     } finally {
@@ -107,7 +105,6 @@ export default function Catches() {
       toast.success("Catch deleted");
       setDeleteTarget(null);
       await load();
-      triggerAutosave();
     } catch (e) {
       toast.error("Failed to delete");
     }

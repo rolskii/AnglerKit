@@ -11,7 +11,6 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { triggerAutosave } from "@/lib/cloudAutosave";
 
 export default function Lines() {
   const [lines, setLines] = useState([]);
@@ -103,7 +102,6 @@ export default function Lines() {
       setFormOpen(false);
       setEditing(null);
       await load();
-      triggerAutosave();
     } catch (e) {
       toast.error(e.message || "Failed to save");
     } finally {
@@ -117,7 +115,6 @@ export default function Lines() {
       toast.success("Line deleted");
       setDeleteTarget(null);
       await load();
-      triggerAutosave();
     } catch (e) {
       toast.error("Failed to delete");
     }
