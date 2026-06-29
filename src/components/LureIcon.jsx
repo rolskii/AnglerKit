@@ -10,26 +10,23 @@ export default function LureIcon({ className, ...props }) {
       aria-hidden="true"
       {...props}
     >
-      {/* main lure body - fat rounded shape */}
-      <ellipse cx="11" cy="9.5" rx="7.5" ry="4.5" fill="currentColor" />
-      
-      {/* head/nose taper */}
-      <path d="M 18.5 9.5 Q 21 8.5 21.5 9.5 Q 21 10.5 18.5 10.5" fill="currentColor" />
+      {/* main body - tapered from fat back to pointed nose */}
+      <path d="M 4 11 Q 4 8.5 8 7.5 Q 14 6.5 20 9.5 Q 21.5 10 21.5 11 Q 21.5 12 20 12.5 Q 14 15.5 8 14.5 Q 4 13.5 4 11 Z" fill="currentColor" />
       
       {/* white eye */}
-      <circle cx="20.5" cy="8.5" r="1" fill="white" />
+      <circle cx="19.5" cy="10" r="1.1" fill="white" />
       
-      {/* white gill mark curve */}
-      <path d="M 16 7 Q 19 9.5 16.5 12" stroke="white" strokeWidth="0.8" fill="none" strokeLinecap="round" />
+      {/* white gill mark */}
+      <path d="M 16 8.5 Q 19 10.5 16.5 12.5" stroke="white" strokeWidth="0.9" fill="none" strokeLinecap="round" />
       
-      {/* top knot loop */}
-      <path d="M 11 5 L 11.5 3 L 12 5" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      {/* top attachment loop */}
+      <path d="M 9 7.5 Q 7.5 5.8 8.5 4.8 Q 9.5 4.5 10 6" stroke="currentColor" strokeWidth="1.3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
       
-      {/* left front hook */}
-      <path d="M 6 13.5 L 4.5 15.5 Q 4 16.5 5 17 Q 6 17.3 6.2 16.5" stroke="currentColor" strokeWidth="1" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      {/* front treble hook */}
+      <path d="M 6 14.5 L 4.2 16.8 Q 3.5 17.8 4.8 18.3 Q 6 18.7 6.5 17.5" stroke="currentColor" strokeWidth="1.1" fill="none" strokeLinecap="round" strokeLinejoin="round" />
       
-      {/* right rear hook */}
-      <path d="M 14 13.5 L 12.5 15.5 Q 12 16.5 13 17 Q 14 17.3 14.2 16.5" stroke="currentColor" strokeWidth="1" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      {/* rear treble hook */}
+      <path d="M 12.5 14.5 L 10.7 16.8 Q 10 17.8 11.3 18.3 Q 12.5 18.7 13 17.5" stroke="currentColor" strokeWidth="1.1" fill="none" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
