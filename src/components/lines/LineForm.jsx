@@ -195,9 +195,9 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
             <div className="space-y-1.5">
               <Label>Reel</Label>
               <Select value={form.reel || "_none"} onValueChange={(v) => set("reel", v === "_none" ? "" : v)}>
-                <SelectTrigger className="bg-muted"><SelectValue placeholder="None" /></SelectTrigger>
+                <SelectTrigger className="bg-muted"><SelectValue placeholder="Spooled" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="_none">None</SelectItem>
+                  <SelectItem value="_none">Spooled</SelectItem>
                   {[...reels].sort((a, b) => a.name.localeCompare(b.name)).map((r) => <SelectItem key={r.id} value={r.name}>{r.name}</SelectItem>)}
                 </SelectContent>
               </Select>
