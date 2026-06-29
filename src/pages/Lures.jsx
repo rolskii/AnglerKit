@@ -138,8 +138,8 @@ export default function Lures() {
           <table className="w-full text-sm">
             <thead className="bg-muted/50 text-muted-foreground">
               <tr>
-                <SortHeader label="Name" field="name" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Type" field="type" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Name" field="name" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Category" field="category" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Brand" field="brand" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Size" field="size" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
@@ -151,8 +151,8 @@ export default function Lures() {
             <tbody>
               {filtered.map((lure) => (
                 <tr key={lure.id} onClick={() => setViewTarget(lure)} className="border-t border-border cursor-pointer hover:bg-accent/50 transition-colors">
-                  <td className="px-3 py-2.5 whitespace-nowrap font-medium">{lure.name || "—"}</td>
                   <td className="px-3 py-2.5 whitespace-nowrap">{lure.type || "—"}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap font-medium">{lure.name || "—"}</td>
                   <td className="px-3 py-2.5 whitespace-nowrap">{lure.category || "—"}</td>
                   <td className="px-3 py-2.5 whitespace-nowrap">{lure.brand || "—"}</td>
                   <td className="px-3 py-2.5 whitespace-nowrap">{lure.size || "—"}</td>
