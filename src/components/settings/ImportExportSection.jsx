@@ -310,57 +310,6 @@ export default function ImportExportSection() {
 
   return (
     <div className="space-y-6">
-      {/* Full Backup / Restore */}
-      <div className="rounded-lg border border-border bg-card p-6 space-y-4">
-        <div className="flex items-center gap-2">
-          <Archive className="w-5 h-5 text-primary" />
-          <h2 className="text-lg font-heading font-semibold">Full Backup</h2>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Download a single backup file containing all your data — lines, reels, rods, catches, lures, and misc gear — <strong>with all photos embedded</strong>. Save it somewhere safe (e.g. a cloud drive or email it to yourself). If you ever lose your device, use "Restore from Backup" to bring everything back, photos included.
-        </p>
-        <div className="flex flex-wrap gap-3">
-          <Button onClick={handleBackup} disabled={backing}>
-            {backing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-            Create Backup
-          </Button>
-          <label className="cursor-pointer">
-            <input type="file" accept=".json" className="hidden" onChange={handleRestore} disabled={restoring} />
-            <span className="inline-flex h-9 items-center gap-2 rounded-md border border-input bg-transparent px-4 py-2 text-sm font-medium shadow-sm hover:bg-accent hover:text-accent-foreground">
-              {restoring ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
-              Restore from Backup
-            </span>
-          </label>
-        </div>
-        {backing && backupProgress && backupProgress.total > 0 && (
-          <p className="text-sm text-muted-foreground">
-            Embedding photos… {backupProgress.done} / {backupProgress.total}
-          </p>
-        )}
-        {restoring && restoreProgress && (
-          <p className="text-sm text-muted-foreground">
-            Restoring {restoreProgress.entity}{restoreProgress.total > 0 ? ` — re-uploading photos ${restoreProgress.done} / ${restoreProgress.total}` : ""}…
-          </p>
-        )}
-        {restoreResult?.summary && (
-          <div className="space-y-1 text-sm text-green-600">
-            <div className="flex items-center gap-2 font-medium">
-              <CheckCircle2 className="w-4 h-4" />
-              Restore complete
-            </div>
-            <ul className="ml-6 list-disc">
-              {restoreResult.summary.map((s, i) => <li key={i}>{s} records imported</li>)}
-            </ul>
-          </div>
-        )}
-        {restoreResult?.error && (
-          <div className="flex items-center gap-2 text-sm text-destructive">
-            <AlertCircle className="w-4 h-4" />
-            {restoreResult.error}
-          </div>
-        )}
-      </div>
-
       {/* Export */}
       <div className="rounded-lg border border-border bg-card p-6 space-y-4">
         <div className="flex items-center gap-2">
@@ -431,6 +380,57 @@ export default function ImportExportSection() {
           <div className="flex items-center gap-2 text-sm text-destructive">
             <AlertCircle className="w-4 h-4" />
             {importResult.error}
+          </div>
+        )}
+      </div>
+
+      {/* Full Backup / Restore */}
+      <div className="rounded-lg border border-border bg-card p-6 space-y-4">
+        <div className="flex items-center gap-2">
+          <Archive className="w-5 h-5 text-primary" />
+          <h2 className="text-lg font-heading font-semibold">Full Backup</h2>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Download a single backup file containing all your data — lines, reels, rods, catches, lures, and misc gear — <strong>with all photos embedded</strong>. Save it somewhere safe (e.g. a cloud drive or email it to yourself). If you ever lose your device, use "Restore from Backup" to bring everything back, photos included.
+        </p>
+        <div className="flex flex-wrap gap-3">
+          <Button onClick={handleBackup} disabled={backing}>
+            {backing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+            Create Backup
+          </Button>
+          <label className="cursor-pointer">
+            <input type="file" accept=".json" className="hidden" onChange={handleRestore} disabled={restoring} />
+            <span className="inline-flex h-9 items-center gap-2 rounded-md border border-input bg-transparent px-4 py-2 text-sm font-medium shadow-sm hover:bg-accent hover:text-accent-foreground">
+              {restoring ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
+              Restore from Backup
+            </span>
+          </label>
+        </div>
+        {backing && backupProgress && backupProgress.total > 0 && (
+          <p className="text-sm text-muted-foreground">
+            Embedding photos… {backupProgress.done} / {backupProgress.total}
+          </p>
+        )}
+        {restoring && restoreProgress && (
+          <p className="text-sm text-muted-foreground">
+            Restoring {restoreProgress.entity}{restoreProgress.total > 0 ? ` — re-uploading photos ${restoreProgress.done} / ${restoreProgress.total}` : ""}…
+          </p>
+        )}
+        {restoreResult?.summary && (
+          <div className="space-y-1 text-sm text-green-600">
+            <div className="flex items-center gap-2 font-medium">
+              <CheckCircle2 className="w-4 h-4" />
+              Restore complete
+            </div>
+            <ul className="ml-6 list-disc">
+              {restoreResult.summary.map((s, i) => <li key={i}>{s} records imported</li>)}
+            </ul>
+          </div>
+        )}
+        {restoreResult?.error && (
+          <div className="flex items-center gap-2 text-sm text-destructive">
+            <AlertCircle className="w-4 h-4" />
+            {restoreResult.error}
           </div>
         )}
       </div>
