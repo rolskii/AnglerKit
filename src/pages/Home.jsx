@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { Waves, Disc, Fish, Anchor, Bug, Package } from "lucide-react";
+import { Waves, Disc, Fish, Anchor, Bug, Package, ChevronRight } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 const items = [
@@ -73,27 +73,36 @@ export default function Home() {
 
   return (
     <div className="space-y-8">
-      <div className="text-center space-y-2">
-        <h1 className="text-3xl font-heading font-bold">Angler's Log</h1>
-        <p className="text-muted-foreground">All your fishing gear, organized in one place.</p>
+      <div className="space-y-1.5">
+        <h1 className="text-[34px] font-heading font-bold tracking-tight leading-tight">Angler's Log</h1>
+        <p className="text-[17px] text-muted-foreground">All your fishing gear, organized in one place.</p>
       </div>
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {items.map((item) => {
           const Icon = item.icon;
           const total = totals[item.to];
+          const showTotal =
+            item.entity && !["/rods", "/reels"].includes(item.to) && total != null && total > 0;
           return (
-            <Link key={item.to} to={item.to}>
-              <Card className="p-6 h-full hover:shadow-md hover:border-primary transition-all cursor-pointer">
-                <div className="flex flex-col gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                    <Icon className="w-6 h-6" />
+            <Link key={item.to} to={item.to} className="group">
+              <Card className="relative p-5 h-full rounded-2xl border-0 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer">
+                <div className="flex flex-col gap-3.5">
+                  <div className="flex items-start justify-between">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                      <Icon className="w-6 h-6" strokeWidth={2} />
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors" />
                   </div>
-                  <h2 className="text-xl font-heading font-semibold">{item.title}</h2>
-                  <p className="text-sm text-muted-foreground">{item.description}</p>
-                  {item.entity && !["/rods", "/reels"].includes(item.to) && total != null && total > 0 && (
-                    <p className="text-sm font-medium text-foreground mt-auto">
-                      Total value ${fmt(total)}
-                    </p>
+                  <div className="space-y-1">
+                    <h2 className="text-[19px] font-heading font-semibold tracking-tight">{item.title}</h2>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{item.description}</p>
+                  </div>
+                  {showTotal && (
+                    <div className="mt-auto pt-1 flex items-baseline gap-1.5">
+                      <span className="text-xs text-muted-foreground">Total value</span>
+                      <span className="text-sm font-semibold text-foreground">${fmt(total)}</span>
+                    </div>
                   )}
                 </div>
               </Card>
