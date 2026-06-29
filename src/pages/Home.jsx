@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { Waves, Anchor, Bug, Package, ChevronRight } from "lucide-react";
+import { Anchor, Bug, Package, ChevronRight } from "lucide-react";
 import FishingPoleIcon from "@/components/FishingPoleIcon";
 import ReelIcon from "@/components/ReelIcon";
+import LineSpoolIcon from "@/components/LineSpoolIcon";
 import { base44 } from "@/api/base44Client";
 
 const items = [
@@ -25,7 +26,7 @@ const items = [
     to: "/lines",
     title: "Lines",
     description: "Manage your fly lines — brands, weights, conditions, and pairings.",
-    icon: Waves,
+    icon: LineSpoolIcon,
     entity: "FlyLine",
   },
   {
