@@ -4,24 +4,28 @@ export default function LureIcon({ className, ...props }) {
   return (
     <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
       <svg
-        viewBox="0 0 22 30"
+        viewBox="0 0 20 28"
         width="28"
         height="28"
-        fill="currentColor"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
         className="text-primary"
         {...props}
       >
-        {/* Eye circle */}
-        <circle cx="11" cy="2.5" r="2" />
+        {/* Eye */}
+        <circle cx="10" cy="2" r="1.5" fill="currentColor" />
         
-        {/* Vertical shaft */}
-        <rect x="9.75" y="4.5" width="2.5" height="10.5" />
+        {/* Shaft */}
+        <line x1="10" y1="3.5" x2="10" y2="12" />
         
-        {/* Smooth J-curve for hook - stroke-like appearance */}
-        <path d="M 9.75 15 Q 6.5 17 4 20 Q 2 22.5 3 24.5 Q 4.5 26.5 7 25 Q 10 23 11.25 15 Z" />
+        {/* Hook curve - J shape */}
+        <path d="M 10 12 Q 5 14 3 18 Q 2 20 4 23 Q 6 25 9 23 Q 12 20 10 12" />
         
-        {/* Sharp left barb */}
-        <polygon points="4.5,18 1.5,16 3.5,17.5" />
+        {/* Barb */}
+        <line x1="3" y1="18" x2="0.5" y2="15.5" />
       </svg>
     </div>
   );
