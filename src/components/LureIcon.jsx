@@ -11,16 +11,16 @@ export default function LureIcon({ className, ...props }) {
       {...props}
     >
       {/* eye - circle at top */}
-      <circle cx="12" cy="3" r="2" />
+      <circle cx="12" cy="2.5" r="1.5" />
       
-      {/* shank - vertical line */}
-      <rect x="11" y="5" width="2" height="8" rx="1" />
+      {/* shank - vertical bar */}
+      <rect x="11" y="4.5" width="2" height="7" rx="1" />
       
-      {/* left hook curve */}
-      <path d="M 11 13 Q 6 13 5 17 Q 4.5 19 6 20.5 Q 7 21 8 20 Q 9 18 11 13" fill="currentColor" />
+      {/* left hook - curved downward */}
+      <path d="M 11 11.5 Q 6 11.5 5.5 15 Q 5.2 17.5 7 19 Q 8.5 20 10 18.5 Q 11 16 11 11.5" />
       
-      {/* right hook curve */}
-      <path d="M 13 13 Q 18 13 19 17 Q 19.5 19 18 20.5 Q 17 21 16 20 Q 15 18 13 13" fill="currentColor" />
+      {/* right hook - curved downward */}
+      <path d="M 13 11.5 Q 18 11.5 18.5 15 Q 18.8 17.5 17 19 Q 15.5 20 14 18.5 Q 13 16 13 11.5" />
     </svg>
   );
 }
