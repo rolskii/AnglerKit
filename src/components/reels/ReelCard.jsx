@@ -63,12 +63,13 @@ export default function ReelCard({ reel, lineCount, spooledLines, onEdit, onDele
       </div>
 
       <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
-        <Detail label="Brand" value={reel.brand} />
-        <Detail label="Model" value={reel.model} />
-        <Detail label="Size" value={reel.size} />
-        <Detail label="Condition" value={reel.condition} />
-        <Detail label="Value" value={reel.value != null ? `$${reel.value}` : null} />
-      </div>
+         <Detail label="Brand" value={reel.brand} />
+         <Detail label="Model" value={reel.model} />
+         <Detail label="Size" value={reel.size} />
+         <Detail label="Type" value={reel.type} />
+         <Detail label="Condition" value={reel.condition} />
+         <Detail label="Value" value={reel.value != null ? `$${reel.value}` : null} />
+       </div>
 
       <div className="flex flex-col gap-2 border-t border-border pt-3">
         <div className="flex items-center gap-2">
