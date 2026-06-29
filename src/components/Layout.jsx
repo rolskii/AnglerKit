@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Outlet, NavLink, useNavigate, Link } from "react-router-dom";
 import {
   LogOut, Menu, X,
@@ -24,23 +24,8 @@ const navItems = [
 
 export default function Layout() {
   const [open, setOpen] = useState(false);
-  const [appName, setAppName] = useState(() => localStorage.getItem("appName") || "Angler's Log");
+  const appName = "Angler's Log";
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const handleStorageChange = () => {
-      setAppName(localStorage.getItem("appName") || "Angler's Log");
-    };
-    const handleAppNameChange = () => {
-      setAppName(localStorage.getItem("appName") || "Angler's Log");
-    };
-    window.addEventListener("storage", handleStorageChange);
-    window.addEventListener("appNameChanged", handleAppNameChange);
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-      window.removeEventListener("appNameChanged", handleAppNameChange);
-    };
-  }, []);
 
   const handleLogout = async () => {
     await base44.auth.logout();
