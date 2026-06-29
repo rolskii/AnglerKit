@@ -21,7 +21,7 @@ export default function Settings() {
   const [lastBackup, setLastBackup] = useState(() => localStorage.getItem("lastBackup") || null);
   const [error, setError] = useState(null);
   const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "light");
-  const [folder, setFolder] = useState(() => localStorage.getItem("backupFolder") || "FlyFish");
+  const [folder, setFolder] = useState(() => localStorage.getItem("backupFolder") || "AnglersLog");
 
   const applyTheme = (t) => {
     setTheme(t);
@@ -95,7 +95,7 @@ export default function Settings() {
   const handleBackup = async () => {
     setBacking(true);
     setError(null);
-    const cleanFolder = folder.trim() || "FlyFish";
+    const cleanFolder = folder.trim() || "AnglersLog";
     localStorage.setItem("backupFolder", cleanFolder);
     try {
       const res = await base44.functions.invoke("cloudBackup", { mode: "backup", service, folder: cleanFolder });
@@ -217,11 +217,11 @@ export default function Settings() {
               setFolder(e.target.value);
               localStorage.setItem("backupFolder", e.target.value);
             }}
-            placeholder="FlyFish"
+            placeholder="AnglersLog"
             disabled={!connected}
             className="max-w-xs"
           />
-          <p className="text-xs text-muted-foreground">Where backups are saved in your {SERVICES[service].label}. Use a name like "FlyFish" or a nested path like "Backups/FlyFish".</p>
+          <p className="text-xs text-muted-foreground">Where backups are saved in your {SERVICES[service].label}. Use a name like "AnglersLog" or a nested path like "Backups/AnglersLog".</p>
         </div>
 
         <div className="flex items-center justify-between">
@@ -248,7 +248,7 @@ export default function Settings() {
 
       <p className="text-xs text-muted-foreground flex items-center gap-1.5">
         <ActiveIcon className="w-3.5 h-3.5" />
-        Backups are saved as CSV files in "{folder.trim() || "FlyFish"}" within your {SERVICES[service].label}.
+        Backups are saved as CSV files in "{folder.trim() || "AnglersLog"}" within your {SERVICES[service].label}.
       </p>
 
       <div>

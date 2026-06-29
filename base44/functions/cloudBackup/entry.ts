@@ -29,8 +29,8 @@ function toCsv(records, columns) {
 }
 
 function normalizeFolder(folder) {
-  let f = (folder || 'FlyFish').trim();
-  if (!f) f = 'FlyFish';
+  let f = (folder || 'AnglersLog').trim();
+  if (!f) f = 'AnglersLog';
   return f;
 }
 
@@ -125,7 +125,7 @@ Deno.serve(async (req) => {
 
     let mode = 'backup';
     let service = 'onedrive';
-    let folder = 'FlyFish';
+    let folder = 'AnglersLog';
     try {
       const body = await req.json();
       if (body) {
@@ -161,12 +161,12 @@ Deno.serve(async (req) => {
 
     const date = new Date().toISOString().slice(0, 10);
     const files = [
-      { name: `flyfish-lines-${date}.csv`, content: toCsv(lines, COLUMNS.FlyLine) },
-      { name: `flyfish-reels-${date}.csv`, content: toCsv(reels, COLUMNS.Reel) },
-      { name: `flyfish-rods-${date}.csv`, content: toCsv(rods, COLUMNS.Rod) },
-      { name: `flyfish-catches-${date}.csv`, content: toCsv(catches, COLUMNS.Catch) },
-      { name: `flyfish-lures-${date}.csv`, content: toCsv(lures, COLUMNS.Lure) },
-      { name: `flyfish-misc-${date}.csv`, content: toCsv(misc, COLUMNS.MiscItem) },
+      { name: `anglerslog-lines-${date}.csv`, content: toCsv(lines, COLUMNS.FlyLine) },
+      { name: `anglerslog-reels-${date}.csv`, content: toCsv(reels, COLUMNS.Reel) },
+      { name: `anglerslog-rods-${date}.csv`, content: toCsv(rods, COLUMNS.Rod) },
+      { name: `anglerslog-catches-${date}.csv`, content: toCsv(catches, COLUMNS.Catch) },
+      { name: `anglerslog-lures-${date}.csv`, content: toCsv(lures, COLUMNS.Lure) },
+      { name: `anglerslog-misc-${date}.csv`, content: toCsv(misc, COLUMNS.MiscItem) },
     ];
 
     const uploaded = [];
