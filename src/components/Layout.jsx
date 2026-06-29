@@ -2,16 +2,17 @@ import React, { useState } from "react";
 import { Outlet, NavLink, useNavigate, Link } from "react-router-dom";
 import {
   LogOut, Menu, X,
-  Home as HomeIcon, Waves, Disc, Fish, Anchor, Bug, Package,
+  Home as HomeIcon, Disc, Fish, Anchor, Bug, Package,
   ArrowLeftRight, Settings as SettingsIcon, Info,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import TroutIcon from "@/components/TroutIcon";
+import HorizontalLinesIcon from "@/components/HorizontalLinesIcon";
 
 const navItems = [
   { to: "/", label: "Home", icon: HomeIcon },
-  { to: "/lines", label: "Lines", icon: Waves },
+  { to: "/lines", label: "Lines", icon: HorizontalLinesIcon },
   { to: "/reels", label: "Reels", icon: Disc },
   { to: "/rods", label: "Rods", icon: Fish },
   { to: "/catches", label: "Fish Log", icon: Anchor },
