@@ -13,7 +13,7 @@ import { Loader2 } from "lucide-react";
 import ImageUpload from "@/components/ImageUpload";
 
 const CONDITIONS = ["New", "Like New", "Good", "Fair", "Poor"];
-const TYPES = ["Caster", "Fly", "Spinning", "Other"];
+const TYPES = ["Casting", "Fly", "Spinning", "Other"];
 const empty = { name: "", brand: "", model: "", size: "", type: "", condition: "Good", value: "", notes: "", images: [] };
 
 export default function ReelForm({ open, onOpenChange, onSubmit, initial, loading }) {
