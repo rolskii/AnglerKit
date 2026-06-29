@@ -11,13 +11,16 @@ export default function LureIcon({ className, ...props }) {
       {...props}
     >
       {/* eye - circle at top */}
-      <circle cx="12" cy="2.5" r="1.8" />
+      <circle cx="12" cy="3" r="2" />
       
       {/* straight shaft */}
-      <rect x="11" y="4.5" width="2" height="9" rx="1" />
+      <rect x="11" y="5" width="2" height="9.5" rx="1" />
       
-      {/* J-shaped hook - curves to the left */}
-      <path d="M 11 13.5 Q 4 13.5 4 17.5 Q 4 20.5 7.5 21 Q 11 21.5 12 19" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      {/* curved hook base */}
+      <path d="M 11 14.5 Q 6 14.5 6 18 Q 6 21.5 10 22 Q 13 22 13 19" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      
+      {/* barb point on hook */}
+      <path d="M 8 19 L 6.5 20.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
     </svg>
   );
 }
