@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { ChevronRight, Fish, Disc, Anchor, Bug, Package } from "lucide-react";
+import { ChevronRight, Disc, Anchor, Package } from "lucide-react";
 import HorizontalLinesIcon from "@/components/HorizontalLinesIcon";
 import VerticalLinesIcon from "@/components/VerticalLinesIcon";
+import BugWingsIcon from "@/components/BugWingsIcon";
 import { base44 } from "@/api/base44Client";
 
 const items = [
@@ -32,7 +33,7 @@ const items = [
     to: "/lures",
     title: "Lures & Flies",
     description: "Catalog your lures and flies with photos, sizes, and quantities.",
-    icon: Bug,
+    icon: BugWingsIcon,
     entity: "Lure",
   },
   {
