@@ -19,13 +19,11 @@ export default function LineSpoolIcon({ className, ...props }) {
         <path d="M4 4.5 V19.5" strokeWidth="3" />
         <path d="M20 4.5 V19.5" strokeWidth="3" />
         {/* wound line strokes */}
-        <path d="M6 6 V18" strokeWidth="2" />
-        <path d="M8 6 V18" strokeWidth="2" />
+        <path d="M7 6 V18" strokeWidth="2" />
         <path d="M10 6 V18" strokeWidth="2" />
-        <path d="M12 6 V18" strokeWidth="2" />
-        <path d="M14 6 V18" strokeWidth="2" />
+        <path d="M13 6 V18" strokeWidth="2" />
         <path d="M16 6 V18" strokeWidth="2" />
-        <path d="M18 6 V18" strokeWidth="2" />
+        <path d="M19 6 V18" strokeWidth="2" />
         {/* thread tail arcing off the right flange */}
         <path d="M20 4.5 C15 -0.5 10 5 4.5 2" strokeWidth="2" />
       </g>
