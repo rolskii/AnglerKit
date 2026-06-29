@@ -85,9 +85,9 @@ export default function Home() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {items.map((item) => {
           const Icon = item.icon;
-          const total = totals[item.to];
-          const showTotal =
-            item.entity && !["/rods", "/reels"].includes(item.to) && total != null && total > 0;
+           const total = totals[item.to];
+           const showTotal =
+             item.entity && !["/rods", "/reels", "/lines", "/lures", "/misc"].includes(item.to) && total != null && total > 0;
           return (
             <Link key={item.to} to={item.to} className="group">
               <Card className="relative p-5 h-full rounded-2xl border-0 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer bg-primary/10">
