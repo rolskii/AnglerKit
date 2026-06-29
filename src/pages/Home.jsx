@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { Waves, Disc, Fish, Anchor, Bug, Package, ChevronRight } from "lucide-react";
+import { Waves, Disc, Anchor, Bug, Package, ChevronRight } from "lucide-react";
+import FishingPoleIcon from "@/components/FishingPoleIcon";
 import { base44 } from "@/api/base44Client";
 
 const items = [
@@ -9,7 +10,7 @@ const items = [
     to: "/rods",
     title: "Rods",
     description: "Catalog your rods and view their paired lines.",
-    icon: Fish,
+    icon: FishingPoleIcon,
     entity: "Rod",
   },
   {
