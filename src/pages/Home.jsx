@@ -47,7 +47,7 @@ const items = [
   {
     to: "/misc",
     title: "Misc. Gear",
-    description: "Track other fishing gear — apparel, tools, storage, safety, and accessories.",
+    description: "Track other fishing gear - apparel, tools and accessories.",
     icon: Package,
     entity: "MiscItem",
   },
