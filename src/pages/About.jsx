@@ -22,10 +22,10 @@ export default function About() {
 
       <div className="prose prose-sm max-w-none text-foreground/90 space-y-4">
         <p>
-          LineCraft is your complete fly fishing gear management system — the ultimate companion for organizing lines, rods, reels, lures, and all your fishing essentials. Stay perfectly prepared for your next adventure.
+          Angler's Log is your complete fishing gear management system - the ultimate companion for organizing lines, rods, reels, lures and all your fishing essentials. Stay perfectly prepared for your next adventure.
         </p>
         <p>
-          Manage detailed inventories of every piece of equipment in your collection, track condition, specifications, and finances. Pair lines with rods and reels, log your catches with photos and conditions, and keep everything backed up securely. Built with Apple-inspired design for an intuitive, native feel on every device.
+          Manage detailed inventories of every piece of equipment in your collection, track condition, specifications, and values. Pair lines with rods and reels, log your catches with photos and conditions and keep everything backed up securely while allowing you to download all of your data. Built with Apple-inspired design for an intuitive, native feel on every device.
         </p>
       </div>
 
