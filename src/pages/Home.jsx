@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { ChevronRight, Anchor, Package } from "lucide-react";
+import { ChevronRight, Camera, Package } from "lucide-react";
 import HorizontalLinesIcon from "@/components/HorizontalLinesIcon";
 import VerticalLinesIcon from "@/components/VerticalLinesIcon";
 import BugWingsIcon from "@/components/BugWingsIcon";
@@ -48,7 +48,7 @@ const items = [
     to: "/catches",
     title: "Fish Log",
     description: "Log in your catches with measurements, photos and gear used.",
-    icon: Anchor,
+    icon: Camera,
     entity: null,
   },
 ];
