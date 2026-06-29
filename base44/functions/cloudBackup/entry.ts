@@ -28,8 +28,15 @@ function toCsv(records, columns) {
   return rows.join("\n");
 }
 
-async function uploadToOneDrive(accessToken, name, content) {
-  const res = await fetch(`https://graph.microsoft.com/v1.0/me/drive/root:/FlyFish/${name}:/content`, {
+function normalizeFolder(folder) {
+  let f = (folder || 'FlyFish').trim();
+  if (!f) f = 'FlyFish';
+  return f;
+}
+
+async function uploadToOneDrive(accessToken, name, content, folder) {
+  const f = normalizeFolder(folder);
+  const res = await fetch(`https://graph.microsoft.com/v1.0/me/drive/root:/${f}/${name}:/content`, {
     method: 'PUT',
     headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'text/csv' },
     body: content,
@@ -37,9 +44,35 @@ async function uploadToOneDrive(accessToken, name, content) {
   if (!res.ok) throw new Error(`OneDrive upload failed: ${await res.text()}`);
 }
 
-async function uploadToGDrive(accessToken, name, content) {
+async function ensureGDriveFolder(accessToken, path) {
+  const parts = path.split('/').map((p) => p.trim()).filter(Boolean);
+  let parentId = '';
+  for (const part of parts) {
+    const q = encodeURIComponent(`name = '${part.replace(/'/g, "\\'")}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false${parentId ? ` and '${parentId}' in parents` : ''}`);
+    const sres = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}`, {
+      headers: { 'Authorization': `Bearer ${accessToken}` },
+    });
+    const sdata = await sres.json();
+    if (sdata.files && sdata.files.length > 0) {
+      parentId = sdata.files[0].id;
+    } else {
+      const cres = await fetch('https://www.googleapis.com/drive/v3/files', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: part, mimeType: 'application/vnd.google-apps.folder', parents: parentId ? [parentId] : undefined }),
+      });
+      const cdata = await cres.json();
+      parentId = cdata.id;
+    }
+  }
+  return parentId;
+}
+
+async function uploadToGDrive(accessToken, name, content, folder) {
+  const f = normalizeFolder(folder);
+  const parentId = await ensureGDriveFolder(accessToken, f);
   const boundary = 'flyfish_' + Math.random().toString(36).slice(2);
-  const metadata = JSON.stringify({ name });
+  const metadata = JSON.stringify({ name, parents: parentId ? [parentId] : undefined });
   const body =
     `--${boundary}\r\n` +
     `Content-Type: application/json; charset=UTF-8\r\n\r\n` +
@@ -56,12 +89,27 @@ async function uploadToGDrive(accessToken, name, content) {
   if (!res.ok) throw new Error(`Google Drive upload failed: ${await res.text()}`);
 }
 
-async function uploadToDropbox(accessToken, name, content) {
+async function ensureDropboxFolder(accessToken, path) {
+  const parts = path.split('/').map((p) => p.trim()).filter(Boolean);
+  let current = '';
+  for (const part of parts) {
+    current = current ? `${current}/${part}` : `/${part}`;
+    await fetch('https://api.dropboxapi.com/2/files/create_folder_v2', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path: current }),
+    }).catch(() => {});
+  }
+}
+
+async function uploadToDropbox(accessToken, name, content, folder) {
+  const f = normalizeFolder(folder);
+  await ensureDropboxFolder(accessToken, f);
   const res = await fetch('https://content.dropboxapi.com/2/files/upload', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${accessToken}`,
-      'Dropbox-API-Arg': JSON.stringify({ path: `/FlyFish/${name}`, mode: 'overwrite' }),
+      'Dropbox-API-Arg': JSON.stringify({ path: `/${f}/${name}`, mode: 'overwrite' }),
       'Content-Type': 'application/octet-stream',
     },
     body: content,
@@ -77,11 +125,13 @@ Deno.serve(async (req) => {
 
     let mode = 'backup';
     let service = 'onedrive';
+    let folder = 'FlyFish';
     try {
       const body = await req.json();
       if (body) {
         if (body.mode) mode = body.mode;
         if (body.service) service = body.service;
+        if (body.folder) folder = body.folder;
       }
     } catch (_) {}
 
@@ -122,11 +172,11 @@ Deno.serve(async (req) => {
     const uploaded = [];
     for (const f of files) {
       if (service === 'onedrive') {
-        await uploadToOneDrive(accessToken, f.name, f.content);
+        await uploadToOneDrive(accessToken, f.name, f.content, folder);
       } else if (service === 'gdrive') {
-        await uploadToGDrive(accessToken, f.name, f.content);
+        await uploadToGDrive(accessToken, f.name, f.content, folder);
       } else if (service === 'dropbox') {
-        await uploadToDropbox(accessToken, f.name, f.content);
+        await uploadToDropbox(accessToken, f.name, f.content, folder);
       }
       uploaded.push(f.name);
     }

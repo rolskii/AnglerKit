@@ -21,6 +21,7 @@ export default function Settings() {
   const [lastBackup, setLastBackup] = useState(() => localStorage.getItem("lastBackup") || null);
   const [error, setError] = useState(null);
   const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "light");
+  const [folder, setFolder] = useState(() => localStorage.getItem("backupFolder") || "FlyFish");
 
   const applyTheme = (t) => {
     setTheme(t);
@@ -94,8 +95,10 @@ export default function Settings() {
   const handleBackup = async () => {
     setBacking(true);
     setError(null);
+    const cleanFolder = folder.trim() || "FlyFish";
+    localStorage.setItem("backupFolder", cleanFolder);
     try {
-      const res = await base44.functions.invoke("cloudBackup", { mode: "backup", service });
+      const res = await base44.functions.invoke("cloudBackup", { mode: "backup", service, folder: cleanFolder });
       if (res.data?.error) throw new Error(res.data.error);
       const ts = res.data.backed_up_at || new Date().toISOString();
       setLastBackup(ts);
@@ -206,6 +209,18 @@ export default function Settings() {
           </button>
         </div>
 
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Backup folder</label>
+          <Input
+            value={folder}
+            onChange={(e) => setFolder(e.target.value)}
+            placeholder="FlyFish"
+            disabled={!connected}
+            className="max-w-xs"
+          />
+          <p className="text-xs text-muted-foreground">Where backups are saved in your {SERVICES[service].label}. Use a name like "FlyFish" or a nested path like "Backups/FlyFish".</p>
+        </div>
+
         <div className="flex items-center justify-between">
           <div className="text-sm text-muted-foreground">
             {lastBackup ? (
@@ -230,7 +245,7 @@ export default function Settings() {
 
       <p className="text-xs text-muted-foreground flex items-center gap-1.5">
         <ActiveIcon className="w-3.5 h-3.5" />
-        Backups are saved as CSV files in your {SERVICES[service].folder}.
+        Backups are saved as CSV files in "{folder.trim() || "FlyFish"}" within your {SERVICES[service].label}.
       </p>
 
       <div>
