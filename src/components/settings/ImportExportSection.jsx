@@ -394,7 +394,7 @@ export default function ImportExportSection() {
           Your data is always safe: Everything is stored securely in the cloud database tied to your account, not just on your device. If you lose your phone, simply sign in on any new device and all your gear, catches, and photos reappear automatically.
         </p>
         <p className="text-sm text-muted-foreground">
-          But if you like, you can also download a single backup file containing all your data — lines, reels, rods, catches, lures, and misc gear — with all photos embedded. Use 'Restore from Backup' to bring everything back, photos included putting you in complete control.
+          But if you want complete control, you can also download a single backup file containing all your data — lines, reels, rods, catches, lures, and misc gear — with all photos embedded. Use 'Restore from Backup' to bring everything back, photos included putting you in complete control.
         </p>
         <div className="flex flex-wrap gap-3">
           <Button onClick={handleBackup} disabled={backing}>
