@@ -15,7 +15,7 @@ import ImageUpload from "@/components/ImageUpload";
 
 const SPECIES = ["Trout", "Salmon", "Steelhead", "Bass", "Pike", "Saltwater", "Gar", "Muskie", "Anything", "Other"].sort((a, b) => a.localeCompare(b));
 const TYPES = ["Tip", "Body", "Head", "Integrated", "Shooting", "WF", "Running", "Sinking", "System", "Other"].sort((a, b) => a.localeCompare(b));
-const ROD_TYPES = ["Baitcasting", "Fly", "Spinning", "Other"];
+const ROD_TYPES = ["Casting", "Fly", "Spinning", "Other"];
 const CONDITIONS = ["New", "Brand New", "Like New", "Good", "Fair", "Poor"].sort((a, b) => a.localeCompare(b));
 const DEFAULT_BRANDS = ["Rio", "Cortland", "Scientific Anglers", "Sage", "3M", "Airflo", "Wulff"].sort((a, b) => a.localeCompare(b));
 const DEFAULT_DESCRIPTIONS = ["Floating", "Sink Tip", "Full Sinking", "Intermediate", "Hover", "Float/Sink"].sort((a, b) => a.localeCompare(b));

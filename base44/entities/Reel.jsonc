@@ -18,7 +18,7 @@
     "type": {
       "type": "string",
       "enum": [
-        "Baitcaster",
+        "Caster",
         "Fly",
         "Spinning",
         "Other"
