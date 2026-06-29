@@ -165,7 +165,6 @@ export default function Reels() {
             <thead className="bg-muted/50 text-muted-foreground">
               <tr>
                 <SortHeader label="Name" field="name" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Brand" field="brand" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Model" field="model" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Size" field="size" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Condition" field="condition" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
@@ -175,19 +174,18 @@ export default function Reels() {
             <tbody>
               {filtered.map((reel) => (
                 <tr key={reel.id} onClick={() => setViewTarget(reel)} className="border-t border-border cursor-pointer hover:bg-accent/50 transition-colors">
-                  <td className="px-3 py-2.5 whitespace-nowrap font-medium">{reel.name || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{reel.brand || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{reel.model || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{reel.size || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">
-                    {reel.condition ? (
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${conditionColor[reel.condition] || "bg-muted text-muted-foreground"}`}>
-                        {reel.condition}
-                      </span>
-                    ) : "—"}
-                  </td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{reel.value != null ? `$${reel.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}</td>
-                </tr>
+                   <td className="px-3 py-2.5 whitespace-nowrap font-medium">{reel.name || "—"}</td>
+                   <td className="px-3 py-2.5 whitespace-nowrap">{reel.model || "—"}</td>
+                   <td className="px-3 py-2.5 whitespace-nowrap">{reel.size || "—"}</td>
+                   <td className="px-3 py-2.5 whitespace-nowrap">
+                     {reel.condition ? (
+                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${conditionColor[reel.condition] || "bg-muted text-muted-foreground"}`}>
+                         {reel.condition}
+                       </span>
+                     ) : "—"}
+                   </td>
+                   <td className="px-3 py-2.5 whitespace-nowrap">{reel.value != null ? `$${reel.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}</td>
+                 </tr>
               ))}
             </tbody>
           </table>
