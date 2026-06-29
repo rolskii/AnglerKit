@@ -1,13 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { ChevronRight } from "lucide-react";
-import FishingPoleIcon from "@/components/FishingPoleIcon";
-import ReelIcon from "@/components/ReelIcon";
-import LineSpoolIcon from "@/components/LineSpoolIcon";
-import LureIcon from "@/components/LureIcon";
-import UnderwaterCameraIcon from "@/components/UnderwaterCameraIcon";
-import FishingNetIcon from "@/components/FishingNetIcon";
+import { ChevronRight, Fish, Disc, Anchor, Bug, Package } from "lucide-react";
+import HorizontalLinesIcon from "@/components/HorizontalLinesIcon";
 import { base44 } from "@/api/base44Client";
 
 const items = [
@@ -15,42 +10,42 @@ const items = [
     to: "/rods",
     title: "Rods",
     description: "Catalog your rods and view their paired lines.",
-    icon: FishingPoleIcon,
+    icon: Fish,
     entity: "Rod",
   },
   {
     to: "/reels",
     title: "Reels",
     description: "Track your reels and see which lines are spooled on each.",
-    icon: ReelIcon,
+    icon: Disc,
     entity: "Reel",
   },
   {
     to: "/lines",
     title: "Lines",
     description: "Manage your fly lines — brands, weights, conditions, and pairings.",
-    icon: LineSpoolIcon,
+    icon: HorizontalLinesIcon,
     entity: "FlyLine",
   },
   {
     to: "/lures",
     title: "Lures & Flies",
     description: "Catalog your lures and flies with photos, sizes, and quantities.",
-    icon: LureIcon,
+    icon: Bug,
     entity: "Lure",
   },
   {
     to: "/catches",
     title: "Fish Log",
     description: "Log your catches with photos, location, conditions, and gear used.",
-    icon: UnderwaterCameraIcon,
+    icon: Anchor,
     entity: null,
   },
   {
     to: "/misc",
     title: "Misc. Gear",
     description: "Track other fishing gear — apparel, tools, storage, safety, and accessories.",
-    icon: FishingNetIcon,
+    icon: Package,
     entity: "MiscItem",
   },
 ];
