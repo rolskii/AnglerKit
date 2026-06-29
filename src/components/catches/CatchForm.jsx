@@ -156,7 +156,7 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
             <div className="space-y-1.5">
               <Label>Rod</Label>
               <Select
-                value={form.rod ? (rodIdByName[form.rod] || "") : ""}
+                value={form.rod ? (rodIdByName[form.rod] || undefined) : undefined}
                 onValueChange={(v) => set("rod", v === "__none" ? "" : (rodById[v] || ""))}
               >
                 <SelectTrigger><SelectValue placeholder="Select rod" /></SelectTrigger>
@@ -171,7 +171,7 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
             <div className="space-y-1.5">
               <Label>Reel</Label>
               <Select
-                value={form.reel ? (reelIdByName[form.reel] || "") : ""}
+                value={form.reel ? (reelIdByName[form.reel] || undefined) : undefined}
                 onValueChange={(v) => set("reel", v === "__none" ? "" : (reelById[v] || ""))}
               >
                 <SelectTrigger><SelectValue placeholder="Select reel" /></SelectTrigger>
@@ -186,7 +186,7 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
             <div className="space-y-1.5">
               <Label>Line</Label>
               <Select
-                value={form.line ? (lineIdByName[form.line] || "") : ""}
+                value={form.line ? (lineIdByName[form.line] || undefined) : undefined}
                 onValueChange={(v) => set("line", v === "__none" ? "" : (lineById[v] || ""))}
               >
                 <SelectTrigger><SelectValue placeholder="Select line" /></SelectTrigger>
