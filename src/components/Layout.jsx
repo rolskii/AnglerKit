@@ -2,21 +2,24 @@ import React, { useState } from "react";
 import { Outlet, NavLink, useNavigate, Link } from "react-router-dom";
 import {
   LogOut, Menu, X,
-  Home as HomeIcon, Disc, Fish, Anchor, Bug, Package,
+  Home as HomeIcon, Anchor, Package,
   ArrowLeftRight, Settings as SettingsIcon, Info,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import TroutIcon from "@/components/TroutIcon";
 import HorizontalLinesIcon from "@/components/HorizontalLinesIcon";
+import VerticalLinesIcon from "@/components/VerticalLinesIcon";
+import ReelDiscIcon from "@/components/ReelDiscIcon";
+import BugWingsIcon from "@/components/BugWingsIcon";
 
 const navItems = [
   { to: "/", label: "Home", icon: HomeIcon },
   { to: "/lines", label: "Lines", icon: HorizontalLinesIcon },
-  { to: "/reels", label: "Reels", icon: Disc },
-  { to: "/rods", label: "Rods", icon: Fish },
+  { to: "/reels", label: "Reels", icon: ReelDiscIcon },
+  { to: "/rods", label: "Rods", icon: VerticalLinesIcon },
   { to: "/catches", label: "Fish Log", icon: Anchor },
-  { to: "/lures", label: "Lures & Flies", icon: Bug },
+  { to: "/lures", label: "Lures & Flies", icon: BugWingsIcon },
   { to: "/misc", label: "Misc. Gear", icon: Package },
   { to: "/import-export", label: "Import / Export", icon: ArrowLeftRight },
   { to: "/settings", label: "Settings", icon: SettingsIcon },
