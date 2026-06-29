@@ -191,7 +191,6 @@ export default function Rods() {
             <thead className="bg-muted/50 text-muted-foreground">
               <tr>
                 <SortHeader label="Name" field="name" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Type" field="type" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Length" field="length" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Line Wt" field="line_weight" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Material" field="material" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
@@ -203,7 +202,6 @@ export default function Rods() {
               {filtered.map((rod) => (
                 <tr key={rod.id} onClick={() => setViewTarget(rod)} className="border-t border-border cursor-pointer hover:bg-accent/50 transition-colors">
                   <td className="px-3 py-2.5 whitespace-nowrap font-medium">{rod.name || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{rod.type || "—"}</td>
                   <td className="px-3 py-2.5 whitespace-nowrap">{rod.length || "—"}</td>
                   <td className="px-3 py-2.5 whitespace-nowrap">{rod.line_weight || "—"}</td>
                   <td className="px-3 py-2.5 whitespace-nowrap">{rod.material || "—"}</td>
