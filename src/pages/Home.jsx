@@ -38,18 +38,18 @@ const items = [
     entity: "Lure",
   },
   {
-    to: "/catches",
-    title: "Fish Log",
-    description: "Log in your catches with measurements, photos and gear used.",
-    icon: Anchor,
-    entity: null,
-  },
-  {
     to: "/misc",
     title: "Misc. Gear",
     description: "Track other fishing gear - apparel, tools and accessories.",
     icon: Package,
     entity: "MiscItem",
+  },
+  {
+    to: "/catches",
+    title: "Fish Log",
+    description: "Log in your catches with measurements, photos and gear used.",
+    icon: Anchor,
+    entity: null,
   },
 ];
 
