@@ -45,6 +45,41 @@ export default function ImportExport() {
     URL.revokeObjectURL(url);
   };
 
+  const escapeXml = (v) => {
+    if (v == null) return "";
+    return String(v)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&apos;");
+  };
+
+  const toExcelXml = (sheets) => {
+    const worksheets = sheets.map((s) => {
+      const headerRow = `<Row>${s.columns.map((c) => `<Cell><Data ss:Type="String">${escapeXml(c)}</Data></Cell>`).join("")}</Row>`;
+      const dataRows = s.records.map((r) =>
+        `<Row>${s.columns.map((c) => {
+          const val = r[c];
+          const isNum = typeof val === "number" && isFinite(val);
+          return `<Cell><Data ss:Type="${isNum ? "Number" : "String"}">${escapeXml(val)}</Data></Cell>`;
+        }).join("")}</Row>`
+      ).join("");
+      return `<Worksheet ss:Name="${escapeXml(s.name)}"><Table>${headerRow}${dataRows}</Table></Worksheet>`;
+    }).join("");
+    return `<?xml version="1.0"?>\n<?mso-application progid="Excel.Sheet"?>\n<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">${worksheets}</Workbook>`;
+  };
+
+  const downloadFile = (filename, content, type) => {
+    const blob = new Blob([content], { type });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const handleExportAll = async () => {
     setExporting(true);
     try {
@@ -60,6 +95,29 @@ export default function ImportExport() {
       toast.success("Export complete");
     } catch (e) {
       toast.error("Export failed");
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleExportAllExcel = async () => {
+    setExporting(true);
+    try {
+      const [lines, reels, rods] = await Promise.all([
+        base44.entities.FlyLine.list("-updated_date", 500),
+        base44.entities.Reel.list("-updated_date", 500),
+        base44.entities.Rod.list("-updated_date", 500),
+      ]);
+      const xml = toExcelXml([
+        { name: "Lines", records: lines, columns: COLUMNS.FlyLine },
+        { name: "Reels", records: reels, columns: COLUMNS.Reel },
+        { name: "Rods", records: rods, columns: COLUMNS.Rod },
+      ]);
+      const date = new Date().toISOString().slice(0, 10);
+      downloadFile(`flyfish-all-${date}.xls`, xml, "application/vnd.ms-excel");
+      toast.success("Excel export complete");
+    } catch (e) {
+      toast.error("Excel export failed");
     } finally {
       setExporting(false);
     }
@@ -154,7 +212,11 @@ Sage X 10' 7wt,Sage,10 ft,7,Single Hand,Carbon,Good,Great dry fly rod
         <div className="flex flex-wrap gap-3">
           <Button onClick={handleExportAll} disabled={exporting}>
             {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-            Export All
+            Export All (CSV)
+          </Button>
+          <Button onClick={handleExportAllExcel} disabled={exporting}>
+            {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+            Export All (Excel)
           </Button>
           {ENTITIES.map((ent) => (
             <Button key={ent.name} variant="outline" onClick={() => handleExportSingle(ent.name)}>
