@@ -10,8 +10,8 @@ export default function About() {
           <TroutIcon className="w-10 h-10 text-primary-foreground" />
         </div>
         <div>
-          <h1 className="font-heading text-2xl font-bold">LineCraft</h1>
-          <p className="text-muted-foreground text-sm">Your ultimate fly fishing gear manager</p>
+          <h1 className="font-heading text-2xl font-bold">About Angler's Log</h1>
+          <p className="text-muted-foreground text-sm">Inventory Manager</p>
         </div>
       </div>
 
