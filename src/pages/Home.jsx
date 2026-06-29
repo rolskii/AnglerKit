@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { ChevronRight, Fish, Disc, Anchor, Bug, Package } from "lucide-react";
 import HorizontalLinesIcon from "@/components/HorizontalLinesIcon";
+import VerticalLinesIcon from "@/components/VerticalLinesIcon";
 import { base44 } from "@/api/base44Client";
 
 const items = [
@@ -10,7 +11,7 @@ const items = [
     to: "/rods",
     title: "Rods",
     description: "Catalog your rods and view their paired lines.",
-    icon: Fish,
+    icon: VerticalLinesIcon,
     entity: "Rod",
   },
   {
