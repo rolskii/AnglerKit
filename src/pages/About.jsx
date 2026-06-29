@@ -1,9 +1,11 @@
 import React from "react";
 import { Camera, Download, Upload, HardDrive } from "lucide-react";
 import TroutIcon from "@/components/TroutIcon";
-import LineSpoolIcon from "@/components/LineSpoolIcon";
-import ReelIcon from "@/components/ReelIcon";
-import LureIcon from "@/components/LureIcon";
+import HorizontalLinesIcon from "@/components/HorizontalLinesIcon";
+import ReelDiscIcon from "@/components/ReelDiscIcon";
+import BugWingsIcon from "@/components/BugWingsIcon";
+import VerticalLinesIcon from "@/components/VerticalLinesIcon";
+import { Package } from "lucide-react";
 
 export default function About() {
   return (
@@ -29,17 +31,17 @@ export default function About() {
 
       <div className="grid gap-4 sm:grid-cols-3">
         <FeatureCard
-          icon={<LineSpoolIcon className="w-5 h-5" />}
+          icon={<HorizontalLinesIcon className="w-5 h-5" />}
           title="Lines"
           description="Track brand, model, weight, grain, head length, rod type, and detailed condition for every fly line."
         />
         <FeatureCard
-          icon={<ReelIcon className="w-5 h-5" />}
+          icon={<ReelDiscIcon className="w-5 h-5" />}
           title="Rods & Reels"
           description="Catalog rods and reels with full specs, materials, types, and link them to your lines and setups."
         />
         <FeatureCard
-          icon={<LureIcon className="w-5 h-5" />}
+          icon={<BugWingsIcon className="w-5 h-5" />}
           title="Lures & Misc"
           description="Manage flies, lures, apparel, tools, and all your fishing accessories with photos and notes."
         />
