@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { Package, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import FishingPoleIcon from "@/components/FishingPoleIcon";
 import ReelIcon from "@/components/ReelIcon";
 import LineSpoolIcon from "@/components/LineSpoolIcon";
 import LureIcon from "@/components/LureIcon";
 import UnderwaterCameraIcon from "@/components/UnderwaterCameraIcon";
+import FishingNetIcon from "@/components/FishingNetIcon";
 import { base44 } from "@/api/base44Client";
 
 const items = [
@@ -49,7 +50,7 @@ const items = [
     to: "/misc",
     title: "Misc. Gear",
     description: "Track other fishing gear — apparel, tools, storage, safety, and accessories.",
-    icon: Package,
+    icon: FishingNetIcon,
     entity: "MiscItem",
   },
 ];
