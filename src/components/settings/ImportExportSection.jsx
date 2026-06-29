@@ -103,6 +103,43 @@ const downloadFile = (filename, content, mime = "text/csv") => {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 };
 
+const fetchAsDataUri = async (url) => {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    return await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+};
+
+const dataUriToFile = (dataUri, filename) => {
+  const [meta, base64] = dataUri.split(",");
+  const mime = meta.match(/:(.*?);/)[1];
+  const ext = (mime.split("/")[1] || "jpg").replace("jpeg", "jpg");
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return new File([bytes], `${filename}.${ext}`, { type: mime });
+};
+
+const reuploadImage = async (img, name) => {
+  if (!img || !img.startsWith("data:")) return img;
+  try {
+    const file = dataUriToFile(img, name);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    return file_url;
+  } catch {
+    return null;
+  }
+};
+
 export default function ImportExportSection() {
   const [exporting, setExporting] = useState(false);
   const [importing, setImporting] = useState(false);
@@ -111,23 +148,53 @@ export default function ImportExportSection() {
   const [backing, setBacking] = useState(false);
   const [restoring, setRestoring] = useState(false);
   const [restoreResult, setRestoreResult] = useState(null);
+  const [backupProgress, setBackupProgress] = useState(null);
+  const [restoreProgress, setRestoreProgress] = useState(null);
 
   const handleBackup = async () => {
     setBacking(true);
+    setBackupProgress({ done: 0, total: 0 });
     try {
       const data = {};
       for (const ent of ALL_ENTITIES) {
         const records = await base44.entities[ent.name].list("-updated_date", 2000);
         data[ent.name] = records.map(({ id, created_date, updated_date, created_by_id, ...rest }) => rest);
       }
+      const tasks = [];
+      for (const ent of ALL_ENTITIES) {
+        for (const rec of data[ent.name]) {
+          if (Array.isArray(rec.images)) {
+            rec.images.forEach((url, idx) => {
+              if (url) tasks.push({ url, set: (v) => { rec.images[idx] = v; } });
+            });
+          }
+          if (rec.image_url) {
+            const url = rec.image_url;
+            tasks.push({ url, set: (v) => { rec.image_url = v; } });
+          }
+        }
+      }
+      setBackupProgress({ done: 0, total: tasks.length });
+      let done = 0;
+      const POOL = 6;
+      for (let i = 0; i < tasks.length; i += POOL) {
+        const batch = tasks.slice(i, i + POOL);
+        await Promise.all(batch.map(async (t) => {
+          const dataUri = await fetchAsDataUri(t.url);
+          t.set(dataUri || t.url);
+          done++;
+          setBackupProgress({ done, total: tasks.length });
+        }));
+      }
       const date = new Date().toISOString().slice(0, 10);
-      const payload = { app: "AnglersLog", version: 1, exported_at: new Date().toISOString(), data };
+      const payload = { app: "AnglersLog", version: 2, exported_at: new Date().toISOString(), data };
       downloadFile(`anglerslog-backup-${date}.json`, JSON.stringify(payload, null, 2), "application/json");
       toast.success("Backup downloaded");
     } catch (e) {
       toast.error("Backup failed");
     } finally {
       setBacking(false);
+      setBackupProgress(null);
     }
   };
 
@@ -136,6 +203,7 @@ export default function ImportExportSection() {
     if (!file) return;
     setRestoring(true);
     setRestoreResult(null);
+    setRestoreProgress({ entity: "", done: 0, total: 0 });
     try {
       const text = await file.text();
       const parsed = JSON.parse(text);
@@ -146,6 +214,24 @@ export default function ImportExportSection() {
         const records = data[ent.name];
         if (!records || !Array.isArray(records) || records.length === 0) continue;
         const cleaned = records.map(({ id, created_date, updated_date, created_by_id, ...rest }) => rest);
+        let imgCount = 0;
+        for (const rec of cleaned) {
+          if (Array.isArray(rec.images)) imgCount += rec.images.filter((i) => i && i.startsWith("data:")).length;
+          if (rec.image_url && rec.image_url.startsWith("data:")) imgCount += 1;
+        }
+        setRestoreProgress({ entity: ent.label, done: 0, total: imgCount });
+        let done = 0;
+        for (const rec of cleaned) {
+          if (Array.isArray(rec.images)) {
+            rec.images = await Promise.all(rec.images.map((img, idx) => reuploadImage(img, `${ent.name}-${idx}`)));
+            done += rec.images.filter((i) => i && i.startsWith("data:")).length;
+          }
+          if (rec.image_url) {
+            rec.image_url = await reuploadImage(rec.image_url, `${ent.name}-img`);
+            if (rec.image_url && rec.image_url.startsWith("data:")) done++;
+          }
+          setRestoreProgress({ entity: ent.label, done, total: imgCount });
+        }
         const created = await base44.entities[ent.name].bulkCreate(cleaned);
         summary.push(`${ent.label}: ${created.length}`);
       }
@@ -156,6 +242,7 @@ export default function ImportExportSection() {
       toast.error("Restore failed");
     } finally {
       setRestoring(false);
+      setRestoreProgress(null);
       e.target.value = "";
     }
   };
@@ -230,7 +317,7 @@ export default function ImportExportSection() {
           <h2 className="text-lg font-heading font-semibold">Full Backup</h2>
         </div>
         <p className="text-sm text-muted-foreground">
-          Download a single backup file containing all your data — lines, reels, rods, catches, lures, and misc gear. Save it somewhere safe (e.g. a cloud drive or email it to yourself). If you ever lose your device, use "Restore from Backup" to bring everything back.
+          Download a single backup file containing all your data — lines, reels, rods, catches, lures, and misc gear — <strong>with all photos embedded</strong>. Save it somewhere safe (e.g. a cloud drive or email it to yourself). If you ever lose your device, use "Restore from Backup" to bring everything back, photos included.
         </p>
         <div className="flex flex-wrap gap-3">
           <Button onClick={handleBackup} disabled={backing}>
@@ -245,6 +332,16 @@ export default function ImportExportSection() {
             </span>
           </label>
         </div>
+        {backing && backupProgress && backupProgress.total > 0 && (
+          <p className="text-sm text-muted-foreground">
+            Embedding photos… {backupProgress.done} / {backupProgress.total}
+          </p>
+        )}
+        {restoring && restoreProgress && (
+          <p className="text-sm text-muted-foreground">
+            Restoring {restoreProgress.entity}{restoreProgress.total > 0 ? ` — re-uploading photos ${restoreProgress.done} / ${restoreProgress.total}` : ""}…
+          </p>
+        )}
         {restoreResult?.summary && (
           <div className="space-y-1 text-sm text-green-600">
             <div className="flex items-center gap-2 font-medium">
