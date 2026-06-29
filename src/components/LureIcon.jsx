@@ -5,26 +5,22 @@ export default function LureIcon({ className, ...props }) {
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      fill="currentColor"
       className={className}
       aria-hidden="true"
       {...props}
     >
-      {/* shank - straight line */}
-      <line x1="12" y1="2" x2="12" y2="12" />
+      {/* eye - circle at top */}
+      <circle cx="12" cy="3" r="2" />
       
-      {/* hook bend and curve */}
-      <path d="M 12 12 Q 15 13 16 16 Q 16.5 19 14 21" />
+      {/* shank - vertical line */}
+      <rect x="11" y="5" width="2" height="8" rx="1" />
       
-      {/* barb */}
-      <line x1="15" y1="17" x2="17" y2="17.5" />
+      {/* left hook curve */}
+      <path d="M 11 13 Q 6 13 5 17 Q 4.5 19 6 20.5 Q 7 21 8 20 Q 9 18 11 13" fill="currentColor" />
       
-      {/* point */}
-      <circle cx="13.5" cy="21.5" r="0.8" fill="currentColor" />
+      {/* right hook curve */}
+      <path d="M 13 13 Q 18 13 19 17 Q 19.5 19 18 20.5 Q 17 21 16 20 Q 15 18 13 13" fill="currentColor" />
     </svg>
   );
 }
