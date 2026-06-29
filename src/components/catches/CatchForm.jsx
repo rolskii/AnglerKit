@@ -154,7 +154,7 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
             />
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label>Rod</Label>
               <select
