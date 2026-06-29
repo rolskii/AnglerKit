@@ -96,7 +96,7 @@ export default function Home() {
                 <div className="flex flex-col gap-3.5">
                   <div className="flex items-start justify-between">
                     <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                      <Icon className="w-6 h-6" strokeWidth={2} />
+                      <Icon className="w-8 h-8" strokeWidth={2} />
                     </div>
                     <ChevronRight className="w-5 h-5 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors" />
                   </div>
