@@ -180,20 +180,16 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
               <Input className="bg-muted" value={form.colour} onChange={(e) => set("colour", e.target.value)} />
             </div>
             <div className="space-y-1.5">
-              <Label>Condition</Label>
-              <Select value={form.condition} onValueChange={(v) => set("condition", v)}>
-                <SelectTrigger className="bg-muted"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {CONDITIONS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label>Value ($)</Label>
-              <Input className="bg-muted" type="number" value={form.value} onChange={(e) => set("value", e.target.value)} placeholder="0.00" />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Reel</Label>
+               <Label>Condition</Label>
+               <Select value={form.condition} onValueChange={(v) => set("condition", v)}>
+                 <SelectTrigger className="bg-muted"><SelectValue /></SelectTrigger>
+                 <SelectContent>
+                   {CONDITIONS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                 </SelectContent>
+               </Select>
+             </div>
+             <div className="space-y-1.5">
+               <Label>Reel</Label>
               <Select value={form.reel || "_none"} onValueChange={(v) => set("reel", v === "_none" ? "" : v)}>
                 <SelectTrigger className="bg-muted"><SelectValue placeholder="Spooled" /></SelectTrigger>
                 <SelectContent>
@@ -204,16 +200,20 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
             </div>
 
             <div className="space-y-1.5">
-              <Label>Rod</Label>
-              <Select value={form.rod || "_none"} onValueChange={(v) => set("rod", v === "_none" ? "" : v)}>
-                <SelectTrigger className="bg-muted"><SelectValue placeholder="None" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="_none">None</SelectItem>
-                  {[...rods].sort((a, b) => a.name.localeCompare(b.name)).map((r) => <SelectItem key={r.id} value={r.name}>{r.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5 col-span-2">
+               <Label>Rod</Label>
+               <Select value={form.rod || "_none"} onValueChange={(v) => set("rod", v === "_none" ? "" : v)}>
+                 <SelectTrigger className="bg-muted"><SelectValue placeholder="None" /></SelectTrigger>
+                 <SelectContent>
+                   <SelectItem value="_none">None</SelectItem>
+                   {[...rods].sort((a, b) => a.name.localeCompare(b.name)).map((r) => <SelectItem key={r.id} value={r.name}>{r.name}</SelectItem>)}
+                 </SelectContent>
+               </Select>
+             </div>
+             <div className="space-y-1.5">
+               <Label>Value ($)</Label>
+               <Input className="bg-muted" type="number" value={form.value} onChange={(e) => set("value", e.target.value)} placeholder="0.00" />
+             </div>
+             <div className="space-y-1.5 col-span-2">
               <Label>Notes</Label>
               <Textarea value={form.notes} onChange={(e) => set("notes", e.target.value)} rows={2} />
             </div>
