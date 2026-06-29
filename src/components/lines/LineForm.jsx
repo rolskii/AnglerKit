@@ -15,12 +15,13 @@ import ImageUpload from "@/components/ImageUpload";
 
 const SPECIES = ["Trout", "Salmon", "Steelhead", "Bass", "Pike", "Saltwater", "Gar", "Muskie", "Anything", "Other"].sort((a, b) => a.localeCompare(b));
 const TYPES = ["Tip", "Body", "Head", "Integrated", "Shooting", "WF", "Running", "Sinking", "System", "Other"].sort((a, b) => a.localeCompare(b));
+const ROD_TYPES = ["Baitcasting", "Fly", "Spinning", "Other"];
 const CONDITIONS = ["New", "Brand New", "Like New", "Good", "Fair", "Poor"].sort((a, b) => a.localeCompare(b));
 const DEFAULT_BRANDS = ["Rio", "Cortland", "Scientific Anglers", "Sage", "3M", "Airflo", "Wulff"].sort((a, b) => a.localeCompare(b));
 const DEFAULT_DESCRIPTIONS = ["Floating", "Sink Tip", "Full Sinking", "Intermediate", "Hover", "Float/Sink"].sort((a, b) => a.localeCompare(b));
 
 const empty = {
-  species: "Trout", brand: "", model: "", type: "Head", description: "",
+  species: "Trout", brand: "", model: "", type: "Head", rod_type: "", description: "",
   line_weight: "", grain_weight: "", head_length: "", total_length: "",
   colour: "", condition: "Good", value: "", reel: "", rod: "", spooled: false, notes: "", images: [],
 };
@@ -120,6 +121,16 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
                 <SelectTrigger className="bg-muted"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {typeOptions.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Rod Type</Label>
+              <Select value={form.rod_type} onValueChange={(v) => set("rod_type", v)}>
+                <SelectTrigger className="bg-muted"><SelectValue placeholder="Select..." /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={null}>None</SelectItem>
+                  {ROD_TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>

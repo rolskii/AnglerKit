@@ -38,6 +38,15 @@
         "Other"
       ]
     },
+    "rod_type": {
+      "type": "string",
+      "enum": [
+        "Baitcasting",
+        "Fly",
+        "Spinning",
+        "Other"
+      ]
+    },
     "description": {
       "type": "string"
     },
