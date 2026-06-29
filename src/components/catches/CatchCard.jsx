@@ -8,6 +8,11 @@ import ImageGallery, { getItemImages } from "@/components/ImageGallery";
 
 export default function CatchCard({ catchItem, onEdit, onDelete }) {
   const cardRef = useRef(null);
+  const fmtDate = (d) => {
+    if (!d) return null;
+    try { return new Date(d).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }); }
+    catch { return d; }
+  };
   const card = {
     title: catchItem.species || "Catch",
     subtitle: [fmtDate(catchItem.date), catchItem.location].filter(Boolean).join(" · "),
@@ -25,11 +30,6 @@ export default function CatchCard({ catchItem, onEdit, onDelete }) {
     ],
     sections: [],
     notes: catchItem.notes,
-  };
-  const fmtDate = (d) => {
-    if (!d) return null;
-    try { return new Date(d).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }); }
-    catch { return d; }
   };
 
   return (
