@@ -18,9 +18,9 @@
     "type": {
       "type": "string",
       "enum": [
-        "Single Hand",
-        "Switch",
-        "Spey",
+        "Baitcasting",
+        "Fly",
+        "Spinning",
         "Other"
       ]
     },

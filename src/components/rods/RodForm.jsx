@@ -12,10 +12,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import ImageUpload from "@/components/ImageUpload";
 
-const TYPES = ["Single Hand", "Switch", "Spey", "Other"];
+const TYPES = ["Baitcasting", "Fly", "Spinning", "Other"];
 const MATERIALS = ["Carbon", "Cane", "Fiberglass", "Other"];
 const CONDITIONS = ["New", "Like New", "Good", "Fair", "Poor"];
-const empty = { name: "", brand: "", length: "", line_weight: "", type: "Single Hand", material: "Carbon", condition: "Good", value: "", notes: "", images: [] };
+const empty = { name: "", brand: "", length: "", line_weight: "", type: "Fly", material: "Carbon", condition: "Good", value: "", notes: "", images: [] };
 
 export default function RodForm({ open, onOpenChange, onSubmit, initial, loading }) {
   const [form, setForm] = useState(empty);
