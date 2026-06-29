@@ -1,19 +1,10 @@
 export default function FishingHookIcon({ className = "" }) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <path d="M12 2v8" />
-      <path d="M16 10c0 2.21-1.79 4-4 4s-4-1.79-4-4" />
-      <path d="M12 14v2" />
-      <path d="M10 18l-2 3" />
-      <path d="M14 18l2 3" />
-    </svg>
+    <object
+      data="https://media.base44.com/images/public/6a3f2458eb55a5d860886e35/8eed12276_fishing-hook.svg"
+      type="image/svg+xml"
+      className={`w-8 h-8 ${className}`}
+      style={{ filter: "invert(1) hue-rotate(150deg) saturate(1.5)" }}
+    />
   );
 }
