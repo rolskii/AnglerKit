@@ -13,7 +13,8 @@ import { Loader2 } from "lucide-react";
 import ImageUpload from "@/components/ImageUpload";
 
 const CONDITIONS = ["New", "Like New", "Good", "Fair", "Poor"];
-const empty = { name: "", brand: "", model: "", size: "", condition: "Good", value: "", notes: "", images: [] };
+const TYPES = ["Baitcaster", "Fly", "Spinning", "Other"];
+const empty = { name: "", brand: "", model: "", size: "", type: "", condition: "Good", value: "", notes: "", images: [] };
 
 export default function ReelForm({ open, onOpenChange, onSubmit, initial, loading }) {
   const [form, setForm] = useState(empty);
@@ -52,6 +53,15 @@ export default function ReelForm({ open, onOpenChange, onSubmit, initial, loadin
             <div className="space-y-1.5">
               <Label>Size</Label>
               <Input value={form.size} onChange={(e) => set("size", e.target.value)} placeholder='3 3/8"' />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Type</Label>
+              <Select value={form.type} onValueChange={(v) => set("type", v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-1.5">
               <Label>Condition</Label>

@@ -15,6 +15,15 @@
     "size": {
       "type": "string"
     },
+    "type": {
+      "type": "string",
+      "enum": [
+        "Baitcaster",
+        "Fly",
+        "Spinning",
+        "Other"
+      ]
+    },
     "condition": {
       "type": "string",
       "enum": [
