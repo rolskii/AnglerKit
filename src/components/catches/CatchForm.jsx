@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2 } from "lucide-react";
 import ImageUpload from "@/components/ImageUpload";
+import LineSelect from "@/components/catches/LineSelect";
 
 const SPECIES_OPTIONS = [
   "Trout", "Salmon", "Steelhead", "Bass", "Pike", "Walleye",
@@ -190,20 +191,11 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
             </div>
             <div className="space-y-1.5">
               <Label>Line</Label>
-              <select
-                value={form.line ? (lineIdByName[form.line] || "") : ""}
-                onChange={(e) => {
-                  const v = e.target.value;
-                  set("line", v === "" ? "" : (lineById[v] || ""));
-                }}
-                className="flex h-9 w-full appearance-none rounded-md border border-input bg-card px-3 py-1 pr-8 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
-                style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 0.5rem center" }}
-              >
-                <option value="">—</option>
-                {sortedLines.map((l) => (
-                  <option key={l.id} value={l.id}>{l.brand} {l.model}</option>
-                ))}
-              </select>
+              <LineSelect
+                lines={sortedLines}
+                value={form.line ? (sortedLines.find((l) => `${l.brand} ${l.model}`.trim() === form.line)?.id || "") : ""}
+                onChange={(id) => set("line", id === "" ? "" : (lineById[id] || ""))}
+              />
             </div>
           </div>
 
