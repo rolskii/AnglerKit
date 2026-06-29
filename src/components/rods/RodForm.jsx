@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import ImageUpload from "@/components/ImageUpload";
 
-const TYPES = ["Baitcasting", "Fly", "Spinning", "Other"];
+const TYPES = ["Casting", "Fly", "Spinning", "Other"];
 const MATERIALS = ["Carbon", "Cane", "Fiberglass", "Other"];
 const CONDITIONS = ["New", "Like New", "Good", "Fair", "Poor"];
 const empty = { name: "", brand: "", length: "", line_weight: "", type: "Fly", material: "Carbon", condition: "Good", value: "", notes: "", images: [] };
