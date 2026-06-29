@@ -90,7 +90,7 @@ export default function Home() {
             item.entity && !["/rods", "/reels"].includes(item.to) && total != null && total > 0;
           return (
             <Link key={item.to} to={item.to} className="group">
-              <Card className="relative p-5 h-full rounded-2xl border-0 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer">
+              <Card className="relative p-5 h-full rounded-2xl border-0 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer bg-primary/10">
                 <div className="flex flex-col gap-3.5">
                   <div className="flex items-start justify-between">
                     <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground">
