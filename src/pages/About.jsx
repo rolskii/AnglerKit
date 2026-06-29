@@ -53,7 +53,7 @@ export default function About() {
         <FeatureCard
           icon={<HardDrive className="w-5 h-5" />}
           title="Full Backup & Restore"
-          description="Backup your entire collection as JSON and restore instantly — all data and photos included."
+          description="Your data is always safe: Everything is stored securely in the cloud database tied to your account, not just on your device. If you lose your phone, simply sign in on any new device and all your gear, catches, and photos reappear automatically. But if you like, you can also download a single backup file containing all your data — lines, reels, rods, catches, lures, and misc gear — with all photos embedded. Use 'Restore from Backup' to bring everything back, photos included putting you in complete control."
         />
         <FeatureCard
           icon={<><Download className="w-2.5 h-2.5 inline mr-0.5" /><Upload className="w-2.5 h-2.5 inline" /></>}
