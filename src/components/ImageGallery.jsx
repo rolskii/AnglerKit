@@ -11,7 +11,7 @@ export default function ImageGallery({ images = [] }) {
   if (!images || images.length === 0) return null;
   return (
     <div className="space-y-2">
-      <img src={images[active]} alt={`Photo ${active + 1}`} className="w-full aspect-square object-cover rounded-md" />
+      <img src={images[active]} alt={`Photo ${active + 1}`} className="w-full max-h-[60vh] object-contain rounded-md bg-muted/30" />
       {images.length > 1 && (
         <div className="flex gap-1.5 overflow-x-auto pb-1">
           {images.map((url, idx) => (
