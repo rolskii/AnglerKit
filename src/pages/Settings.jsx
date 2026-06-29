@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, CheckCircle2, AlertCircle, CloudUpload, Link2, Unlink, HardDrive, Cloud, Box, Sun, Moon } from "lucide-react";
+import { Loader2, CheckCircle2, AlertCircle, CloudUpload, Link2, Unlink, HardDrive, Cloud, Box, Sun, Moon, ArrowLeftRight } from "lucide-react";
+import ImportExportSection from "@/components/settings/ImportExportSection";
 
 const SERVICES = {
   onedrive: { id: "6a3f4eea83dab3778fd36181", label: "OneDrive", icon: Cloud, folder: "FlyFish folder in your OneDrive" },
@@ -135,7 +136,7 @@ export default function Settings() {
     <div className="space-y-8 max-w-2xl">
       <div>
         <h1 className="font-heading text-2xl font-bold">Settings</h1>
-        <p className="text-muted-foreground text-sm mt-1">Manage your cloud backup preferences.</p>
+        <p className="text-muted-foreground text-sm mt-1">Manage your cloud backup, import/export, and appearance.</p>
       </div>
 
       <div className="rounded-lg border border-border bg-card p-6 space-y-5">
@@ -231,6 +232,14 @@ export default function Settings() {
         <ActiveIcon className="w-3.5 h-3.5" />
         Backups are saved as CSV files in your {SERVICES[service].folder}.
       </p>
+
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <ArrowLeftRight className="w-5 h-5 text-primary" />
+          <h2 className="font-heading text-lg font-semibold">Import / Export</h2>
+        </div>
+        <ImportExportSection />
+      </div>
 
       <div className="rounded-lg border border-border bg-card p-6 space-y-4">
         <div>

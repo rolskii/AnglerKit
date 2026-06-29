@@ -10,68 +10,92 @@ const ENTITIES = [
   { name: "Rod", label: "Rods" },
 ];
 
-export default function ImportExport() {
+const COLUMNS = {
+  FlyLine: ["species", "brand", "model", "type", "description", "line_weight", "grain_weight", "head_length", "total_length", "colour", "condition", "reel", "rod", "notes"],
+  Reel: ["name", "brand", "model", "size", "condition", "notes"],
+  Rod: ["name", "brand", "length", "line_weight", "type", "material", "condition", "notes"],
+};
+
+const SAMPLES = {
+  FlyLine: {
+    file: "flyfish-sample-lines.csv",
+    content: `species,brand,model,type,description,line_weight,grain_weight,head_length,total_length,colour,condition,reel,rod,notes
+Trout,Scientific Anglers,Mastery Trout,WF,Floating,5,140,40,90,Olive,New,,,Floating
+Steelhead,RIO,Outbound Short,Sinking,Sink tip,8,300,30,100,Blue,Good,Lamson Liquid,,Sink tip
+`,
+  },
+  Reel: {
+    file: "flyfish-sample-reels.csv",
+    content: `name,brand,model,size,condition,notes
+Lamson Liquid,Lamson,Liquid 3,3+,New,
+Hatch Finatic,Hatch,Finatic 5,5+,Like New,Backup reel
+`,
+  },
+  Rod: {
+    file: "flyfish-sample-rods.csv",
+    content: `name,brand,length,line_weight,type,material,condition,notes
+Orvis Clearwater 9' 5wt,Orvis,9 ft,5,Single Hand,Carbon,New,
+Sage X 10' 7wt,Sage,10 ft,7,Single Hand,Carbon,Good,Great dry fly rod
+`,
+  },
+};
+
+const parseCsv = (text) => {
+  const rows = [];
+  let i = 0, field = "", row = [], inQuotes = false;
+  while (i < text.length) {
+    const ch = text[i];
+    if (inQuotes) {
+      if (ch === '"') {
+        if (text[i + 1] === '"') { field += '"'; i += 2; continue; }
+        inQuotes = false; i++; continue;
+      }
+      field += ch; i++; continue;
+    }
+    if (ch === '"') { inQuotes = true; i++; continue; }
+    if (ch === ',') { row.push(field); field = ""; i++; continue; }
+    if (ch === '\n') { row.push(field); rows.push(row); row = []; field = ""; i++; continue; }
+    if (ch === '\r') { i++; continue; }
+    field += ch; i++;
+  }
+  if (field !== "" || row.length > 0) { row.push(field); rows.push(row); }
+  if (rows.length < 2) return [];
+  const headers = rows[0].map((h) => h.trim());
+  return rows.slice(1).filter((r) => r.some((c) => c !== "")).map((r) => {
+    const obj = {};
+    headers.forEach((h, idx) => { obj[h] = r[idx] !== undefined ? r[idx] : ""; });
+    return obj;
+  });
+};
+
+const toCsv = (records, columns) => {
+  const escape = (v) => {
+    if (v == null) return "";
+    const s = String(v).replace(/"/g, '""');
+    return /[",\n]/.test(s) ? `"${s}"` : s;
+  };
+  const rows = [columns.join(",")];
+  records.forEach((r) => {
+    rows.push(columns.map((c) => escape(r[c])).join(","));
+  });
+  return rows.join("\n");
+};
+
+const downloadCsv = (filename, content) => {
+  const blob = new Blob([content], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+export default function ImportExportSection() {
   const [exporting, setExporting] = useState(false);
   const [importing, setImporting] = useState(false);
   const [importEntity, setImportEntity] = useState("FlyLine");
   const [importResult, setImportResult] = useState(null);
-
-  const COLUMNS = {
-    FlyLine: ["species", "brand", "model", "type", "description", "line_weight", "grain_weight", "head_length", "total_length", "colour", "condition", "reel", "rod", "notes"],
-    Reel: ["name", "brand", "model", "size", "condition", "notes"],
-    Rod: ["name", "brand", "length", "line_weight", "type", "material", "condition", "notes"],
-  };
-
-  const parseCsv = (text) => {
-    const rows = [];
-    let i = 0, field = "", row = [], inQuotes = false;
-    while (i < text.length) {
-      const ch = text[i];
-      if (inQuotes) {
-        if (ch === '"') {
-          if (text[i + 1] === '"') { field += '"'; i += 2; continue; }
-          inQuotes = false; i++; continue;
-        }
-        field += ch; i++; continue;
-      }
-      if (ch === '"') { inQuotes = true; i++; continue; }
-      if (ch === ',') { row.push(field); field = ""; i++; continue; }
-      if (ch === '\n') { row.push(field); rows.push(row); row = []; field = ""; i++; continue; }
-      if (ch === '\r') { i++; continue; }
-      field += ch; i++;
-    }
-    if (field !== "" || row.length > 0) { row.push(field); rows.push(row); }
-    if (rows.length < 2) return [];
-    const headers = rows[0].map((h) => h.trim());
-    return rows.slice(1).filter((r) => r.some((c) => c !== "")).map((r) => {
-      const obj = {};
-      headers.forEach((h, idx) => { obj[h] = r[idx] !== undefined ? r[idx] : ""; });
-      return obj;
-    });
-  };
-
-  const toCsv = (records, columns) => {
-    const escape = (v) => {
-      if (v == null) return "";
-      const s = String(v).replace(/"/g, '""');
-      return /[",\n]/.test(s) ? `"${s}"` : s;
-    };
-    const rows = [columns.join(",")];
-    records.forEach((r) => {
-      rows.push(columns.map((c) => escape(r[c])).join(","));
-    });
-    return rows.join("\n");
-  };
-
-  const downloadCsv = (filename, content) => {
-    const blob = new Blob([content], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
 
   const handleExportAll = async () => {
     setExporting(true);
@@ -104,39 +128,9 @@ export default function ImportExport() {
     }
   };
 
-  const SAMPLES = {
-    FlyLine: {
-      file: "flyfish-sample-lines.csv",
-      content: `species,brand,model,type,description,line_weight,grain_weight,head_length,total_length,colour,condition,reel,rod,notes
-Trout,Scientific Anglers,Mastery Trout,WF,Floating,5,140,40,90,Olive,New,,,Floating
-Steelhead,RIO,Outbound Short,Sinking,Sink tip,8,300,30,100,Blue,Good,Lamson Liquid,,Sink tip
-`,
-    },
-    Reel: {
-      file: "flyfish-sample-reels.csv",
-      content: `name,brand,model,size,condition,notes
-Lamson Liquid,Lamson,Liquid 3,3+,New,
-Hatch Finatic,Hatch,Finatic 5,5+,Like New,Backup reel
-`,
-    },
-    Rod: {
-      file: "flyfish-sample-rods.csv",
-      content: `name,brand,length,line_weight,type,material,condition,notes
-Orvis Clearwater 9' 5wt,Orvis,9 ft,5,Single Hand,Carbon,New,
-Sage X 10' 7wt,Sage,10 ft,7,Single Hand,Carbon,Good,Great dry fly rod
-`,
-    },
-  };
-
   const handleDownloadSample = (entityName) => {
     const { file, content } = SAMPLES[entityName];
-    const blob = new Blob([content], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = file;
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadCsv(file, content);
     toast.success(`${entityName} sample downloaded`);
   };
 
@@ -165,12 +159,7 @@ Sage X 10' 7wt,Sage,10 ft,7,Single Hand,Carbon,Good,Great dry fly rod
   };
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-heading font-semibold">Import / Export</h1>
-        <p className="text-muted-foreground text-sm mt-1">Back up or restore your inventory data.</p>
-      </div>
-
+    <div className="space-y-6">
       {/* Export */}
       <div className="rounded-lg border border-border bg-card p-6 space-y-4">
         <div className="flex items-center gap-2">

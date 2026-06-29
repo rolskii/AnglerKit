@@ -3,7 +3,7 @@ import { Outlet, NavLink, useNavigate, Link } from "react-router-dom";
 import {
   LogOut, Menu, X,
   Home as HomeIcon, Anchor, Package,
-  ArrowLeftRight, Settings as SettingsIcon, Info,
+  Settings as SettingsIcon, Info,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
@@ -21,7 +21,6 @@ const navItems = [
   { to: "/lures", label: "Lures & Flies", icon: BugWingsIcon },
   { to: "/misc", label: "Misc. Gear", icon: Package },
   { to: "/catches", label: "Fish Log", icon: Anchor },
-  { to: "/import-export", label: "Import / Export", icon: ArrowLeftRight },
   { to: "/settings", label: "Settings", icon: SettingsIcon },
   { to: "/about", label: "About", icon: Info },
 ];

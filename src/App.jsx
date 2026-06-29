@@ -12,7 +12,6 @@ import Home from '@/pages/Home';
 import Lines from '@/pages/Lines';
 import Reels from '@/pages/Reels';
 import Rods from '@/pages/Rods';
-import ImportExport from '@/pages/ImportExport';
 import About from '@/pages/About';
 import Settings from '@/pages/Settings';
 import Catches from '@/pages/Catches';
@@ -64,7 +63,6 @@ const AuthenticatedApp = () => {
         <Route path="/catches" element={<Catches />} />
         <Route path="/lures" element={<Lures />} />
         <Route path="/misc" element={<Misc />} />
-        <Route path="/import-export" element={<ImportExport />} />
         <Route path="/about" element={<About />} />
         <Route path="/settings" element={<Settings />} />
       </Route>
