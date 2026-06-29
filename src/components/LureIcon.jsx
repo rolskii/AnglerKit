@@ -14,13 +14,13 @@ export default function LureIcon({ className, ...props }) {
       <circle cx="12" cy="3" r="2" />
       
       {/* straight shaft */}
-      <rect x="11" y="5" width="2" height="9.5" rx="1" />
+      <rect x="11" y="5" width="2" height="10" />
       
-      {/* curved hook base */}
-      <path d="M 11 14.5 Q 6 14.5 6 18 Q 6 21.5 10 22 Q 13 22 13 19" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      {/* J-shaped hook curve */}
+      <path d="M 11 15 Q 5 15 5 19 Q 5 22 9 22 L 13 22 Q 13 18 12 15" fill="currentColor" />
       
-      {/* barb point on hook */}
-      <path d="M 8 19 L 6.5 20.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      {/* barb point */}
+      <polygon points="6,18 4,20 6,21" fill="currentColor" />
     </svg>
   );
 }
