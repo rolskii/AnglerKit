@@ -10,11 +10,11 @@ import { base44 } from "@/api/base44Client";
 
 const items = [
   {
-    to: "/rods",
-    title: "Rods",
-    description: "Catalog your rods and view their paired lines.",
-    icon: VerticalLinesIcon,
-    entity: "Rod",
+    to: "/lines",
+    title: "Lines",
+    description: "Manage your different kinds of lines and fly lines - brands, weights, conditions and rod & reel pairings.",
+    icon: HorizontalLinesIcon,
+    entity: "FlyLine",
   },
   {
     to: "/reels",
@@ -24,11 +24,11 @@ const items = [
     entity: "Reel",
   },
   {
-    to: "/lines",
-    title: "Lines",
-    description: "Manage your different kinds of lines and fly lines - brands, weights, conditions and rod & reel pairings.",
-    icon: HorizontalLinesIcon,
-    entity: "FlyLine",
+    to: "/rods",
+    title: "Rods",
+    description: "Catalog your rods and view their paired lines.",
+    icon: VerticalLinesIcon,
+    entity: "Rod",
   },
   {
     to: "/lures",
