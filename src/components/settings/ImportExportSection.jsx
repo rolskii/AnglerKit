@@ -1,13 +1,22 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Download, Upload, Loader2, FileJson, CheckCircle2, AlertCircle } from "lucide-react";
+import { Download, Upload, Loader2, FileJson, CheckCircle2, AlertCircle, Database, Archive, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 
 const ENTITIES = [
   { name: "FlyLine", label: "Lines" },
   { name: "Reel", label: "Reels" },
   { name: "Rod", label: "Rods" },
+];
+
+const ALL_ENTITIES = [
+  { name: "FlyLine", label: "Lines" },
+  { name: "Reel", label: "Reels" },
+  { name: "Rod", label: "Rods" },
+  { name: "Catch", label: "Catches" },
+  { name: "Lure", label: "Lures & Flies" },
+  { name: "MiscItem", label: "Misc. Gear" },
 ];
 
 const COLUMNS = {
@@ -81,8 +90,8 @@ const toCsv = (records, columns) => {
   return rows.join("\n");
 };
 
-const downloadCsv = (filename, content) => {
-  const blob = new Blob([content], { type: "text/csv" });
+const downloadFile = (filename, content, mime = "text/csv") => {
+  const blob = new Blob([content], { type: mime });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -96,6 +105,57 @@ export default function ImportExportSection() {
   const [importing, setImporting] = useState(false);
   const [importEntity, setImportEntity] = useState("FlyLine");
   const [importResult, setImportResult] = useState(null);
+  const [backing, setBacking] = useState(false);
+  const [restoring, setRestoring] = useState(false);
+  const [restoreResult, setRestoreResult] = useState(null);
+
+  const handleBackup = async () => {
+    setBacking(true);
+    try {
+      const data = {};
+      for (const ent of ALL_ENTITIES) {
+        const records = await base44.entities[ent.name].list("-updated_date", 2000);
+        data[ent.name] = records.map(({ id, created_date, updated_date, created_by_id, ...rest }) => rest);
+      }
+      const date = new Date().toISOString().slice(0, 10);
+      const payload = { app: "AnglersLog", version: 1, exported_at: new Date().toISOString(), data };
+      downloadFile(`anglerslog-backup-${date}.json`, JSON.stringify(payload, null, 2), "application/json");
+      toast.success("Backup downloaded");
+    } catch (e) {
+      toast.error("Backup failed");
+    } finally {
+      setBacking(false);
+    }
+  };
+
+  const handleRestore = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setRestoring(true);
+    setRestoreResult(null);
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      const data = parsed.data || parsed;
+      if (!data || typeof data !== "object") throw new Error("Invalid backup file");
+      const summary = [];
+      for (const ent of ALL_ENTITIES) {
+        const records = data[ent.name];
+        if (!records || !Array.isArray(records) || records.length === 0) continue;
+        const cleaned = records.map(({ id, created_date, updated_date, created_by_id, ...rest }) => rest);
+        const created = await base44.entities[ent.name].bulkCreate(cleaned);
+        summary.push(`${ent.label}: ${created.length}`);
+      }
+      setRestoreResult({ summary });
+      toast.success("Restore complete");
+    } catch (e) {
+      setRestoreResult({ error: e.message || "Invalid backup file" });
+      toast.error("Restore failed");
+    } finally {
+      setRestoring(false);
+      e.target.value = "";
+    }
+  };
 
   const handleExportAll = async () => {
     setExporting(true);
@@ -106,9 +166,9 @@ export default function ImportExportSection() {
         base44.entities.Rod.list("-updated_date", 500),
       ]);
       const date = new Date().toISOString().slice(0, 10);
-      downloadCsv(`flyfish-lines-${date}.csv`, toCsv(lines, COLUMNS.FlyLine));
-      downloadCsv(`flyfish-reels-${date}.csv`, toCsv(reels, COLUMNS.Reel));
-      downloadCsv(`flyfish-rods-${date}.csv`, toCsv(rods, COLUMNS.Rod));
+      downloadFile(`flyfish-lines-${date}.csv`, toCsv(lines, COLUMNS.FlyLine));
+      downloadFile(`flyfish-reels-${date}.csv`, toCsv(reels, COLUMNS.Reel));
+      downloadFile(`flyfish-rods-${date}.csv`, toCsv(rods, COLUMNS.Rod));
       toast.success("Export complete");
     } catch (e) {
       toast.error("Export failed");
@@ -121,7 +181,7 @@ export default function ImportExportSection() {
     try {
       const records = await base44.entities[entityName].list("-updated_date", 500);
       const date = new Date().toISOString().slice(0, 10);
-      downloadCsv(`flyfish-${entityName.toLowerCase()}-${date}.csv`, toCsv(records, COLUMNS[entityName]));
+      downloadFile(`flyfish-${entityName.toLowerCase()}-${date}.csv`, toCsv(records, COLUMNS[entityName]));
       toast.success(`${entityName} exported`);
     } catch (e) {
       toast.error(`Export failed for ${entityName}`);
@@ -130,7 +190,7 @@ export default function ImportExportSection() {
 
   const handleDownloadSample = (entityName) => {
     const { file, content } = SAMPLES[entityName];
-    downloadCsv(file, content);
+    downloadFile(file, content);
     toast.success(`${entityName} sample downloaded`);
   };
 
@@ -160,13 +220,54 @@ export default function ImportExportSection() {
 
   return (
     <div className="space-y-6">
+      {/* Full Backup / Restore */}
+      <div className="rounded-lg border border-border bg-card p-6 space-y-4">
+        <div className="flex items-center gap-2">
+          <Archive className="w-5 h-5 text-primary" />
+          <h2 className="text-lg font-heading font-semibold">Full Backup</h2>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Download a single backup file containing all your data — lines, reels, rods, catches, lures, and misc gear. Save it somewhere safe (e.g. a cloud drive or email it to yourself). If you ever lose your device, use "Restore from Backup" to bring everything back.
+        </p>
+        <div className="flex flex-wrap gap-3">
+          <Button onClick={handleBackup} disabled={backing}>
+            {backing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+            Create Backup
+          </Button>
+          <label className="cursor-pointer">
+            <input type="file" accept=".json" className="hidden" onChange={handleRestore} disabled={restoring} />
+            <span className="inline-flex h-9 items-center gap-2 rounded-md border border-input bg-transparent px-4 py-2 text-sm font-medium shadow-sm hover:bg-accent hover:text-accent-foreground">
+              {restoring ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
+              Restore from Backup
+            </span>
+          </label>
+        </div>
+        {restoreResult?.summary && (
+          <div className="space-y-1 text-sm text-green-600">
+            <div className="flex items-center gap-2 font-medium">
+              <CheckCircle2 className="w-4 h-4" />
+              Restore complete
+            </div>
+            <ul className="ml-6 list-disc">
+              {restoreResult.summary.map((s, i) => <li key={i}>{s} records imported</li>)}
+            </ul>
+          </div>
+        )}
+        {restoreResult?.error && (
+          <div className="flex items-center gap-2 text-sm text-destructive">
+            <AlertCircle className="w-4 h-4" />
+            {restoreResult.error}
+          </div>
+        )}
+      </div>
+
       {/* Export */}
       <div className="rounded-lg border border-border bg-card p-6 space-y-4">
         <div className="flex items-center gap-2">
           <Download className="w-5 h-5 text-primary" />
-          <h2 className="text-lg font-heading font-semibold">Export</h2>
+          <h2 className="text-lg font-heading font-semibold">Export (CSV)</h2>
         </div>
-        <p className="text-sm text-muted-foreground">Download your data as a CSV file. Use "Export All" for a full backup, or grab a sample template to see the expected format.</p>
+        <p className="text-sm text-muted-foreground">Download individual collections as CSV files. Use "Export All" for lines, reels, and rods together, or grab a sample template to see the expected format.</p>
         <div className="flex flex-wrap gap-3">
           <Button onClick={handleExportAll} disabled={exporting}>
             {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
@@ -185,7 +286,7 @@ export default function ImportExportSection() {
       <div className="rounded-lg border border-border bg-card p-6 space-y-4">
         <div className="flex items-center gap-2">
           <Upload className="w-5 h-5 text-primary" />
-          <h2 className="text-lg font-heading font-semibold">Import</h2>
+          <h2 className="text-lg font-heading font-semibold">Import (CSV)</h2>
         </div>
         <p className="text-sm text-muted-foreground">
           Upload a previously exported CSV file. Records will be added to the selected collection. Not sure of the format? Download a sample template below.
