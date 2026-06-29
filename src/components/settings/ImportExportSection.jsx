@@ -28,23 +28,23 @@ const COLUMNS = {
 const SAMPLES = {
   FlyLine: {
     file: "flyfish-sample-lines.csv",
-    content: `species,brand,model,type,description,line_weight,grain_weight,head_length,total_length,colour,condition,reel,rod,notes
-Trout,Scientific Anglers,Mastery Trout,WF,Floating,5,140,40,90,Olive,New,,,Floating
-Steelhead,RIO,Outbound Short,Sinking,Sink tip,8,300,30,100,Blue,Good,Lamson Liquid,,Sink tip
+    content: `species,brand,model,type,rod_type,description,line_weight,grain_weight,head_length,total_length,colour,condition,reel,rod,notes
+Trout,Scientific Anglers,Mastery Trout,WF,Fly,Floating,5,140,40,90,Olive,New,,,Floating
+Steelhead,RIO,Outbound Short,Sinking,Fly,Sink tip,8,300,30,100,Blue,Good,Lamson Liquid,,Sink tip
 `,
   },
   Reel: {
     file: "flyfish-sample-reels.csv",
-    content: `name,brand,model,size,condition,notes
-Lamson Liquid,Lamson,Liquid 3,3+,New,
-Hatch Finatic,Hatch,Finatic 5,5+,Like New,Backup reel
+    content: `name,brand,model,type,size,condition,notes
+Lamson Liquid,Lamson,Liquid 3,Fly,3+,New,
+Hatch Finatic,Hatch,Finatic 5,Fly,5+,Like New,Backup reel
 `,
   },
   Rod: {
     file: "flyfish-sample-rods.csv",
-    content: `name,brand,length,line_weight,type,material,condition,notes
-Orvis Clearwater 9' 5wt,Orvis,9 ft,5,Single Hand,Carbon,New,
-Sage X 10' 7wt,Sage,10 ft,7,Single Hand,Carbon,Good,Great dry fly rod
+    content: `name,type,brand,length,line_weight,material,condition,notes
+Orvis Clearwater 9' 5wt,Fly,Orvis,9 ft,5,Carbon,New,
+Sage X 10' 7wt,Fly,Sage,10 ft,7,Carbon,Good,Great dry fly rod
 `,
   },
 };
