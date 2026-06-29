@@ -311,7 +311,7 @@ export default function ImportExportSection() {
   return (
     <div className="space-y-6">
       {/* Export */}
-      <div className="rounded-lg border border-border bg-card p-6 space-y-4">
+      <div className="rounded-lg border-0 bg-primary/10 p-6 space-y-4">
         <div className="flex items-center gap-2">
           <Download className="w-5 h-5 text-primary" />
           <h2 className="text-lg font-heading font-semibold">Export (CSV)</h2>
@@ -332,7 +332,7 @@ export default function ImportExportSection() {
       </div>
 
       {/* Import */}
-      <div className="rounded-lg border border-border bg-card p-6 space-y-4">
+      <div className="rounded-lg border-0 bg-primary/10 p-6 space-y-4">
         <div className="flex items-center gap-2">
           <Upload className="w-5 h-5 text-primary" />
           <h2 className="text-lg font-heading font-semibold">Import (CSV)</h2>
@@ -385,7 +385,7 @@ export default function ImportExportSection() {
       </div>
 
       {/* Full Backup / Restore */}
-      <div className="rounded-lg border border-border bg-card p-6 space-y-4">
+      <div className="rounded-lg border-0 bg-primary/10 p-6 space-y-4">
         <div className="flex items-center gap-2">
           <Archive className="w-5 h-5 text-primary" />
           <h2 className="text-lg font-heading font-semibold">Full Backup</h2>
