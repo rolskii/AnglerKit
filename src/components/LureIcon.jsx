@@ -4,37 +4,30 @@ export default function LureIcon({ className, ...props }) {
   return (
     <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
       <svg
-        viewBox="0 0 20 28"
+        viewBox="0 0 20 24"
         width="28"
         height="28"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+        fill="currentColor"
         className="text-primary"
         {...props}
       >
+        {/* Lure body - teardrop/spoon shape */}
+        <ellipse cx="10" cy="8" rx="5" ry="6" fill="currentColor" opacity="0.8" />
+        
         {/* Eye */}
-        <circle cx="10" cy="2" r="1.5" fill="currentColor" />
+        <circle cx="10" cy="3" r="1.5" fill="currentColor" />
+        
+        {/* Hook eye connector */}
+        <line x1="10" y1="4.5" x2="10" y2="6" stroke="currentColor" strokeWidth="1.5" />
         
         {/* Hook shaft */}
-        <line x1="10" y1="3.5" x2="10" y2="11" />
-        
-        {/* Thread wraps */}
-        <line x1="9" y1="5" x2="11" y2="5" />
-        <line x1="9" y1="7" x2="11" y2="7" />
-        <line x1="9" y1="9" x2="11" y2="9" />
+        <line x1="10" y1="14" x2="10" y2="19" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
         
         {/* Hook curve */}
-        <path d="M 10 11 Q 5 13 3 17 Q 2 19 4 22 Q 6 24 9 22 Q 12 19 10 11" />
+        <path d="M 10 19 Q 6 20.5 4 23 Q 3.5 23.5 5 23.8 Q 7 23.5 9 21.5 Q 10 20 10 19" fill="currentColor" />
         
         {/* Barb */}
-        <line x1="3" y1="17" x2="0.5" y2="14.5" />
-        
-        {/* Feather/tail strokes */}
-        <path d="M 8 15 Q 6 14 5 12" />
-        <path d="M 10 16 Q 8 15 7 13" />
+        <line x1="4" y1="23" x2="2" y2="21.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
       </svg>
     </div>
   );
