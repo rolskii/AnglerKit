@@ -89,14 +89,14 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
               <div className="space-y-1.5 relative">
                 <Label>Brand</Label>
                 <input 
-                  type="text"
-                  value={form.brand} 
-                  onChange={(e) => { set("brand", e.target.value); setShowBrandDropdown(true); }}
-                  onFocus={() => setShowBrandDropdown(true)}
-                  onBlur={() => setTimeout(() => setShowBrandDropdown(false), 200)}
-                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                  required 
-                />
+                   type="text"
+                   value={form.brand} 
+                   onChange={(e) => { set("brand", e.target.value); setShowBrandDropdown(true); }}
+                   onFocus={() => setShowBrandDropdown(true)}
+                   onBlur={() => setTimeout(() => setShowBrandDropdown(false), 200)}
+                   className="flex h-9 w-full rounded-md border border-input bg-muted px-3 py-1 text-base shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                   required 
+                 />
                 {showBrandDropdown && filteredBrands.length > 0 && (
                   <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-input rounded-md shadow-md z-10 max-h-48 overflow-y-auto">
                     {filteredBrands.map((brand, idx) => (
@@ -137,14 +137,14 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
             <div className="space-y-1.5 col-span-2 relative">
               <Label>Description</Label>
               <input
-                type="text"
-                value={form.description}
-                onChange={(e) => { set("description", e.target.value); setShowDescDropdown(true); }}
-                onFocus={() => setShowDescDropdown(true)}
-                onBlur={() => setTimeout(() => setShowDescDropdown(false), 200)}
-                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                placeholder="Floating, Sink, etc."
-              />
+                 type="text"
+                 value={form.description}
+                 onChange={(e) => { set("description", e.target.value); setShowDescDropdown(true); }}
+                 onFocus={() => setShowDescDropdown(true)}
+                 onBlur={() => setTimeout(() => setShowDescDropdown(false), 200)}
+                 className="flex h-9 w-full rounded-md border border-input bg-muted px-3 py-1 text-base shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                 placeholder="Floating, Sink, etc."
+               />
               {showDescDropdown && filteredDescriptions.length > 0 && (
                 <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-input rounded-md shadow-md z-10 max-h-48 overflow-y-auto">
                   {filteredDescriptions.map((desc, idx) => (
@@ -215,7 +215,7 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
              </div>
              <div className="space-y-1.5 col-span-2">
               <Label>Notes</Label>
-              <Textarea value={form.notes} onChange={(e) => set("notes", e.target.value)} rows={2} />
+               <Textarea className="bg-muted" value={form.notes} onChange={(e) => set("notes", e.target.value)} rows={2} />
             </div>
             <div className="space-y-1.5 col-span-2">
               <Label>Photos</Label>
