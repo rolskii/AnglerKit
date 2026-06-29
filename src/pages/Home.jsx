@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { ChevronRight, Fish, Disc, Anchor, Bug, Package } from "lucide-react";
 import HorizontalLinesIcon from "@/components/HorizontalLinesIcon";
 import VerticalLinesIcon from "@/components/VerticalLinesIcon";
+import LureIcon from "@/components/LureIcon";
 import { base44 } from "@/api/base44Client";
 
 const items = [
@@ -32,7 +33,7 @@ const items = [
     to: "/lures",
     title: "Lures & Flies",
     description: "Catalog your lures and flies with photos, sizes, and quantities.",
-    icon: Bug,
+    icon: LureIcon,
     entity: "Lure",
   },
   {
