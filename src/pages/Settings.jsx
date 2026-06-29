@@ -213,7 +213,10 @@ export default function Settings() {
           <label className="text-sm font-medium">Backup folder</label>
           <Input
             value={folder}
-            onChange={(e) => setFolder(e.target.value)}
+            onChange={(e) => {
+              setFolder(e.target.value);
+              localStorage.setItem("backupFolder", e.target.value);
+            }}
             placeholder="FlyFish"
             disabled={!connected}
             className="max-w-xs"
