@@ -189,14 +189,15 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
                 ))}
               </select>
             </div>
-            <div className="space-y-1.5">
-              <Label>Line</Label>
-              <LineSelect
-                lines={sortedLines}
-                value={form.line ? (sortedLines.find((l) => `${l.brand} ${l.model}`.trim() === form.line)?.id || "") : ""}
-                onChange={(id) => set("line", id === "" ? "" : (lineById[id] || ""))}
-              />
-            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>Line</Label>
+            <LineSelect
+              lines={sortedLines}
+              value={form.line ? (sortedLines.find((l) => `${l.brand} ${l.model}`.trim() === form.line)?.id || "") : ""}
+              onChange={(id) => set("line", id === "" ? "" : (lineById[id] || ""))}
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
