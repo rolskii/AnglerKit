@@ -10,7 +10,7 @@ export default function CatchCard({ catchItem, onEdit, onDelete }) {
   const cardRef = useRef(null);
   const fmtDate = (d) => {
     if (!d) return null;
-    try { return new Date(d).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }); }
+    try { return new Date(d + "T00:00:00").toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }); }
     catch { return d; }
   };
   const card = {

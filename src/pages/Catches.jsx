@@ -172,7 +172,7 @@ export default function Catches() {
                 >
                   <td className="px-3 py-2.5 whitespace-nowrap font-medium">{c.species || "—"}</td>
                   <td className="px-3 py-2.5 whitespace-nowrap">
-                    {c.date ? new Date(c.date).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : "—"}
+                    {c.date ? new Date(c.date + "T00:00:00").toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : "—"}
                   </td>
                   <td className="px-3 py-2.5 whitespace-nowrap">{c.location || "—"}</td>
                   <td className="px-3 py-2.5 whitespace-nowrap">{c.length != null ? `${c.length} in` : "—"}</td>
