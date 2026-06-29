@@ -125,7 +125,7 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label>Rod Type</Label>
+              <Label>Line Type</Label>
               <Select value={form.rod_type} onValueChange={(v) => set("rod_type", v)}>
                 <SelectTrigger className="bg-muted"><SelectValue placeholder="Select..." /></SelectTrigger>
                 <SelectContent>
