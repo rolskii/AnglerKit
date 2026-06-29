@@ -53,6 +53,10 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
   const reelIdByName = Object.fromEntries(reels.map((r) => [r.name, r.id]));
   const lineIdByName = Object.fromEntries(lines.map((l) => [`${l.brand} ${l.model}`.trim(), l.id]));
 
+  const sortedRods = [...rods].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+  const sortedReels = [...reels].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+  const sortedLines = [...lines].sort((a, b) => (`${a.brand} ${a.model}`.trim()).localeCompare(`${b.brand} ${b.model}`.trim()));
+
   const numOrNull = (v) => (v === "" || v == null ? null : Number(v));
 
   const handleSubmit = (e) => {
@@ -162,7 +166,7 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
                 style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 0.5rem center" }}
               >
                 <option value="">—</option>
-                {rods.map((r) => (
+                {sortedRods.map((r) => (
                   <option key={r.id} value={r.id}>{r.name}</option>
                 ))}
               </select>
@@ -179,7 +183,7 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
                 style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 0.5rem center" }}
               >
                 <option value="">—</option>
-                {reels.map((r) => (
+                {sortedReels.map((r) => (
                   <option key={r.id} value={r.id}>{r.name}</option>
                 ))}
               </select>
@@ -196,7 +200,7 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
                 style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 0.5rem center" }}
               >
                 <option value="">—</option>
-                {lines.map((l) => (
+                {sortedLines.map((l) => (
                   <option key={l.id} value={l.id}>{l.brand} {l.model}</option>
                 ))}
               </select>
