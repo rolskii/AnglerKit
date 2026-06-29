@@ -7,20 +7,19 @@ export default function LureIcon({ className, ...props }) {
         viewBox="0 0 24 24"
         width="28"
         height="28"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+        fill="currentColor"
         className="text-primary"
         {...props}
       >
-        {/* Loop at top */}
-        <circle cx="12" cy="4" r="2" />
-        {/* Shaft */}
-        <path d="M 12 6 L 12 14" />
-        {/* Curved hook bottom */}
-        <path d="M 12 14 Q 5 16, 4 22" />
+        {/* Filled hook shape */}
+        <g>
+          {/* Loop */}
+          <circle cx="12" cy="3.5" r="2.2" />
+          {/* Shaft - thick vertical line as rectangle */}
+          <rect x="10.5" y="5.5" width="3" height="8" />
+          {/* Curved hook bottom - thick curved path */}
+          <path d="M 10.5 13.5 Q 7 16, 3.5 21 Q 2.5 22, 3 22.5 Q 4 22.5, 5.5 21 Q 9 16.5, 13.5 13.5 Z" />
+        </g>
       </svg>
     </div>
   );
