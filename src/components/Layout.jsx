@@ -11,14 +11,14 @@ import TroutIcon from "@/components/TroutIcon";
 import HorizontalLinesIcon from "@/components/HorizontalLinesIcon";
 import VerticalLinesIcon from "@/components/VerticalLinesIcon";
 import ReelDiscIcon from "@/components/ReelDiscIcon";
-import BugWingsIcon from "@/components/BugWingsIcon";
+import FishingHookIcon from "@/components/FishingHookIcon";
 
 const navItems = [
   { to: "/", label: "Home", icon: HomeIcon },
   { to: "/lines", label: "Lines", icon: HorizontalLinesIcon },
   { to: "/reels", label: "Reels", icon: ReelDiscIcon },
   { to: "/rods", label: "Rods", icon: VerticalLinesIcon },
-  { to: "/lures", label: "Lures & Flies", icon: BugWingsIcon },
+  { to: "/lures", label: "Lures & Flies", icon: FishingHookIcon },
   { to: "/misc", label: "Misc. Gear", icon: Package },
   { to: "/catches", label: "Fish Log", icon: Camera },
   { to: "/settings", label: "Settings", icon: SettingsIcon },
