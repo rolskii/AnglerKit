@@ -208,7 +208,7 @@ Sage X 10' 7wt,Sage,10 ft,7,Single Hand,Carbon,Good,Great dry fly rod
           <Download className="w-5 h-5 text-primary" />
           <h2 className="text-lg font-heading font-semibold">Export</h2>
         </div>
-        <p className="text-sm text-muted-foreground">Download your data as a JSON file. Use "Export All" for a full backup, or grab a sample template to see the expected format.</p>
+        <p className="text-sm text-muted-foreground">Download your data as CSV or Excel files. Use "Export All" for a full backup, or grab a sample template to see the expected format.</p>
         <div className="flex flex-wrap gap-3">
           <Button onClick={handleExportAll} disabled={exporting}>
             {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
