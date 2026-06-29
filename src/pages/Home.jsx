@@ -19,7 +19,7 @@ const items = [
   {
     to: "/reels",
     title: "Reels",
-    description: "Track your reels and see which lines are spooled on each.",
+    description: "Track your reels and see which ones are in use along with the lines spooled on each.",
     icon: ReelDiscIcon,
     entity: "Reel",
   },
