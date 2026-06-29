@@ -5,32 +5,29 @@ export default function FishingNetIcon({ className, ...props }) {
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      fill="currentColor"
       className={className}
       aria-hidden="true"
       {...props}
     >
-      {/* handle - long solid angled line */}
-      <line x1="20" y1="2" x2="8" y2="16" strokeWidth="2.5" />
+      {/* handle */}
+      <rect x="18" y="1" width="2" height="12" rx="1" transform="rotate(-50 19 7)" />
       
-      {/* hoop - oval loop */}
-      <ellipse cx="6.5" cy="9" rx="3" ry="3.5" />
+      {/* hoop oval */}
+      <ellipse cx="7" cy="8" rx="3" ry="3.5" fill="none" stroke="currentColor" strokeWidth="2" />
       
-      {/* net pouch - rounded dome shape */}
-      <path d="M 3.5 12 Q 2 17 6.5 19 Q 11 17 9.5 12" fill="none" strokeWidth="2" />
+      {/* net dome outline */}
+      <path d="M 4 11.5 L 2.5 18 Q 7 21 11.5 18 L 10 11.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
       
-      {/* mesh grid - vertical lines */}
-      <line x1="4.5" y1="12" x2="3.5" y2="18.5" strokeWidth="1.2" />
-      <line x1="6.5" y1="12.5" x2="6.5" y2="19" strokeWidth="1.2" />
-      <line x1="8.5" y1="12" x2="9.5" y2="18.5" strokeWidth="1.2" />
+      {/* vertical mesh */}
+      <line x1="5" y1="11.5" x2="3" y2="17.5" stroke="currentColor" strokeWidth="1.5" />
+      <line x1="7" y1="11.5" x2="7" y2="20.5" stroke="currentColor" strokeWidth="1.5" />
+      <line x1="9" y1="11.5" x2="11" y2="17.5" stroke="currentColor" strokeWidth="1.5" />
       
-      {/* mesh grid - horizontal/curved lines */}
-      <path d="M 3.8 14 Q 6.5 13.5 9.2 14" strokeWidth="1.2" />
-      <path d="M 3.3 16 Q 6.5 15.3 9.7 16" strokeWidth="1.2" />
+      {/* horizontal mesh */}
+      <line x1="4.2" y1="13.5" x2="9.8" y2="13.5" stroke="currentColor" strokeWidth="1.5" />
+      <line x1="3.7" y1="15.5" x2="10.3" y2="15.5" stroke="currentColor" strokeWidth="1.5" />
+      <line x1="3.2" y1="17.5" x2="10.8" y2="17.5" stroke="currentColor" strokeWidth="1.5" />
     </svg>
   );
 }
