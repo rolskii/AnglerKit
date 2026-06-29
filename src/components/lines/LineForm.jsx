@@ -116,14 +116,14 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
               <Input className="bg-muted" value={form.model} onChange={(e) => set("model", e.target.value)} required />
             </div>
             <div className="space-y-1.5">
-              <Label>Type</Label>
-              <Select value={form.type} onValueChange={(v) => set("type", v)}>
-                <SelectTrigger className="bg-muted"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {typeOptions.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
+               <Label>Description</Label>
+               <Select value={form.type} onValueChange={(v) => set("type", v)}>
+                 <SelectTrigger className="bg-muted"><SelectValue /></SelectTrigger>
+                 <SelectContent>
+                   {typeOptions.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                 </SelectContent>
+               </Select>
+             </div>
             <div className="space-y-1.5">
               <Label>Line Type</Label>
               <Select value={form.rod_type} onValueChange={(v) => set("rod_type", v)}>
