@@ -11,6 +11,7 @@ export default function ReelIcon({ className, ...props }) {
       aria-hidden="true"
       {...props}
     >
+      <g transform="translate(12 12) scale(1.13) translate(-12 -12)">
       {/* reel foot / seat */}
       <rect x="7" y="2.5" width="10" height="2" rx="0.7" />
       {/* neck connecting foot to spool */}
@@ -28,6 +29,7 @@ export default function ReelIcon({ className, ...props }) {
            M8.4 17.83 A1.1 1.1 0 1 1 10.6 17.83 A1.1 1.1 0 1 1 8.4 17.83 Z
            M13.4 17.83 A1.1 1.1 0 1 1 15.6 17.83 A1.1 1.1 0 1 1 13.4 17.83 Z"
       />
+      </g>
     </svg>
   );
 }
