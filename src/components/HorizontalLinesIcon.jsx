@@ -12,10 +12,10 @@ export default function HorizontalLinesIcon({ className, ...props }) {
       className={className}
       {...props}
     >
-      <line x1="5" y1="4.5" x2="19" y2="4.5" />
-      <line x1="5" y1="9.5" x2="19" y2="9.5" />
-      <line x1="5" y1="14.5" x2="19" y2="14.5" />
-      <line x1="5" y1="19.5" x2="19" y2="19.5" />
+      <line x1="5" y1="6" x2="19" y2="6" />
+      <line x1="5" y1="10" x2="19" y2="10" />
+      <line x1="5" y1="14" x2="19" y2="14" />
+      <line x1="5" y1="18" x2="19" y2="18" />
     </svg>
   );
 }
