@@ -22,6 +22,34 @@ export default function ImportExport() {
     Rod: ["name", "brand", "length", "line_weight", "type", "material", "condition", "notes"],
   };
 
+  const parseCsv = (text) => {
+    const rows = [];
+    let i = 0, field = "", row = [], inQuotes = false;
+    while (i < text.length) {
+      const ch = text[i];
+      if (inQuotes) {
+        if (ch === '"') {
+          if (text[i + 1] === '"') { field += '"'; i += 2; continue; }
+          inQuotes = false; i++; continue;
+        }
+        field += ch; i++; continue;
+      }
+      if (ch === '"') { inQuotes = true; i++; continue; }
+      if (ch === ',') { row.push(field); field = ""; i++; continue; }
+      if (ch === '\n') { row.push(field); rows.push(row); row = []; field = ""; i++; continue; }
+      if (ch === '\r') { i++; continue; }
+      field += ch; i++;
+    }
+    if (field !== "" || row.length > 0) { row.push(field); rows.push(row); }
+    if (rows.length < 2) return [];
+    const headers = rows[0].map((h) => h.trim());
+    return rows.slice(1).filter((r) => r.some((c) => c !== "")).map((r) => {
+      const obj = {};
+      headers.forEach((h, idx) => { obj[h] = r[idx] !== undefined ? r[idx] : ""; });
+      return obj;
+    });
+  };
+
   const toCsv = (records, columns) => {
     const escape = (v) => {
       if (v == null) return "";
@@ -119,9 +147,8 @@ Sage X 10' 7wt,Sage,10 ft,7,Single Hand,Carbon,Good,Great dry fly rod
     setImportResult(null);
     try {
       const text = await file.text();
-      const parsed = JSON.parse(text);
-      const records = Array.isArray(parsed) ? parsed : parsed[importEntity];
-      if (!records || !Array.isArray(records)) {
+      const records = parseCsv(text);
+      if (!records || !Array.isArray(records) || records.length === 0) {
         throw new Error("No valid records found in file");
       }
       const cleaned = records.map(({ id, created_date, updated_date, created_by_id, created_by, is_sample, ...rest }) => rest);
@@ -150,7 +177,7 @@ Sage X 10' 7wt,Sage,10 ft,7,Single Hand,Carbon,Good,Great dry fly rod
           <Download className="w-5 h-5 text-primary" />
           <h2 className="text-lg font-heading font-semibold">Export</h2>
         </div>
-        <p className="text-sm text-muted-foreground">Download your data as a JSON file. Use "Export All" for a full backup, or grab a sample template to see the expected format.</p>
+        <p className="text-sm text-muted-foreground">Download your data as a CSV file. Use "Export All" for a full backup, or grab a sample template to see the expected format.</p>
         <div className="flex flex-wrap gap-3">
           <Button onClick={handleExportAll} disabled={exporting}>
             {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
@@ -172,7 +199,7 @@ Sage X 10' 7wt,Sage,10 ft,7,Single Hand,Carbon,Good,Great dry fly rod
           <h2 className="text-lg font-heading font-semibold">Import</h2>
         </div>
         <p className="text-sm text-muted-foreground">
-          Upload a previously exported JSON file. Records will be added to the selected collection. Not sure of the format? Download a sample template below.
+          Upload a previously exported CSV file. Records will be added to the selected collection. Not sure of the format? Download a sample template below.
         </p>
         <div className="flex flex-wrap items-center gap-3">
           <select
@@ -185,7 +212,7 @@ Sage X 10' 7wt,Sage,10 ft,7,Single Hand,Carbon,Good,Great dry fly rod
             ))}
           </select>
           <label className="cursor-pointer">
-            <input type="file" accept=".json" className="hidden" onChange={handleImport} disabled={importing} />
+            <input type="file" accept=".csv" className="hidden" onChange={handleImport} disabled={importing} />
             <span className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90">
               {importing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
               Choose File
