@@ -164,6 +164,7 @@ export default function Reels() {
           <table className="w-full text-sm">
             <thead className="bg-muted/50 text-muted-foreground">
               <tr>
+                <SortHeader label="Type" field="type" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Name" field="name" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Model" field="model" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Size" field="size" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
@@ -174,6 +175,7 @@ export default function Reels() {
             <tbody>
               {filtered.map((reel) => (
                 <tr key={reel.id} onClick={() => setViewTarget(reel)} className="border-t border-border cursor-pointer hover:bg-accent/50 transition-colors">
+                   <td className="px-3 py-2.5 whitespace-nowrap">{reel.type || "—"}</td>
                    <td className="px-3 py-2.5 whitespace-nowrap font-medium">{reel.name || "—"}</td>
                    <td className="px-3 py-2.5 whitespace-nowrap">{reel.model || "—"}</td>
                    <td className="px-3 py-2.5 whitespace-nowrap">{reel.size || "—"}</td>
