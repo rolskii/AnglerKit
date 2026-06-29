@@ -59,7 +59,7 @@ export default function Settings() {
         <ImportExportSection />
       </div>
 
-      <div className="rounded-lg border border-border bg-card p-6 space-y-4">
+      <div className="rounded-lg border-0 bg-primary/10 p-6 space-y-4">
         <div>
           <h2 className="font-heading font-semibold">Appearance</h2>
           <p className="text-sm text-muted-foreground">Choose between light and dark mode.</p>

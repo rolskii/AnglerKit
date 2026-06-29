@@ -62,7 +62,7 @@ export default function About() {
         />
       </div>
 
-      <div className="rounded-lg border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
+      <div className="rounded-lg border-0 bg-primary/10 p-4 text-sm text-muted-foreground">
         Built with the Base44 platform.
       </div>
     </div>
@@ -71,7 +71,7 @@ export default function About() {
 
 function FeatureCard({ icon, title, description }) {
   return (
-    <div className="rounded-lg border border-border bg-card p-4 space-y-2">
+    <div className="rounded-lg border-0 bg-primary/10 p-4 space-y-2">
       <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
         {icon}
       </div>
