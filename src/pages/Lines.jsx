@@ -162,6 +162,7 @@ export default function Lines() {
             <thead className="bg-muted/50 text-muted-foreground">
               <tr>
                 <SortHeader label="Species" field="species" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Line Type" field="rod_type" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Brand" field="brand" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Model" field="model" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Description" field="type" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
@@ -180,6 +181,7 @@ export default function Lines() {
                   className={`border-t border-border cursor-pointer hover:bg-accent/50 transition-colors ${line.reel && line.reel.toLowerCase() !== "spooled" && !line.spooled ? "bg-primary/15 border-l-4 border-l-primary" : ""}`}
                 >
                   <td className="px-3 py-2.5 whitespace-nowrap">{line.species || "—"}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">{line.rod_type || "—"}</td>
                   <td className="px-3 py-2.5 whitespace-nowrap font-medium">{line.brand || "—"}</td>
                   <td className="px-3 py-2.5 whitespace-nowrap">{line.model || "—"}</td>
                   <td className="px-3 py-2.5 whitespace-nowrap">{line.type || "—"}</td>
