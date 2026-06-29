@@ -12,9 +12,9 @@ export default function VerticalLinesIcon({ className, ...props }) {
       className={className}
       {...props}
     >
-      <line x1="6" y1="5" x2="6" y2="19" />
-      <line x1="12" y1="5" x2="12" y2="19" />
-      <line x1="18" y1="5" x2="18" y2="19" />
+      <path d="M4 11h1" />
+      <path d="M8 15a2 2 0 0 1-4 0V3a1 1 0 0 1 1-1h.5C14 2 20 9 20 18v4" />
+      <circle cx="18" cy="18" r="2" />
     </svg>
   );
 }
