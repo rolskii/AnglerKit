@@ -24,8 +24,6 @@ export default function LineSpoolIcon({ className, ...props }) {
         <path d="M13 6 V18" strokeWidth="2" />
         <path d="M16 6 V18" strokeWidth="2" />
         <path d="M19 6 V18" strokeWidth="2" />
-        {/* thread tail arcing off the right flange */}
-        <path d="M20 4.5 C15 -0.5 10 5 4.5 2" strokeWidth="2" />
       </g>
     </svg>
   );
