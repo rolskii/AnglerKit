@@ -12,8 +12,8 @@ export default function ReelDiscIcon({ className, ...props }) {
       className={className}
       {...props}
     >
-      {/* Horizontal line at the top */}
-      <line x1="3" y1="3" x2="21" y2="3" />
+      {/* Horizontal line at the top, touching the outer circle */}
+      <line x1="8.5" y1="8" x2="15.5" y2="8" />
       {/* Disc */}
       <circle cx="12" cy="14" r="7" />
       <circle cx="12" cy="14" r="2.5" />
