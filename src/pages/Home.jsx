@@ -33,7 +33,7 @@ const items = [
   {
     to: "/lures",
     title: "Lures & Flies",
-    description: "Catalog your lures and flies with photos, sizes, and quantities.",
+    description: "Catalog your lures, tackle and flies with photos, sizes and quantities.",
     icon: BugWingsIcon,
     entity: "Lure",
   },
