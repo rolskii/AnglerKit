@@ -56,7 +56,7 @@ export default function LureForm({ open, onOpenChange, onSubmit, initial, loadin
             <div className="space-y-1.5">
               <Label>Type</Label>
               <Select value={form.type} onValueChange={(v) => set("type", v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger className="bg-muted"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                 </SelectContent>
@@ -65,7 +65,7 @@ export default function LureForm({ open, onOpenChange, onSubmit, initial, loadin
             <div className="space-y-1.5">
               <Label>Category</Label>
               <Select value={form.category} onValueChange={(v) => set("category", v)}>
-                <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                <SelectTrigger className="bg-muted"><SelectValue placeholder="Select category" /></SelectTrigger>
                 <SelectContent>
                   {CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                 </SelectContent>
@@ -90,7 +90,7 @@ export default function LureForm({ open, onOpenChange, onSubmit, initial, loadin
             <div className="space-y-1.5">
               <Label>Condition</Label>
               <Select value={form.condition} onValueChange={(v) => set("condition", v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger className="bg-muted"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {CONDITIONS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                 </SelectContent>

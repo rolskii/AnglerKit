@@ -79,7 +79,7 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
               <div className="space-y-1.5">
                 <Label>Species</Label>
                 <Select value={form.species} onValueChange={(v) => set("species", v)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="bg-muted"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {speciesOptions.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                   </SelectContent>
@@ -117,7 +117,7 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
             <div className="space-y-1.5">
               <Label>Type</Label>
               <Select value={form.type} onValueChange={(v) => set("type", v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger className="bg-muted"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {typeOptions.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                 </SelectContent>
@@ -171,7 +171,7 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
             <div className="space-y-1.5">
               <Label>Condition</Label>
               <Select value={form.condition} onValueChange={(v) => set("condition", v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger className="bg-muted"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {CONDITIONS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                 </SelectContent>
@@ -184,7 +184,7 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
             <div className="space-y-1.5">
               <Label>Reel</Label>
               <Select value={form.reel || "_none"} onValueChange={(v) => set("reel", v === "_none" ? "" : v)}>
-                <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
+                <SelectTrigger className="bg-muted"><SelectValue placeholder="None" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="_none">None</SelectItem>
                   {[...reels].sort((a, b) => a.name.localeCompare(b.name)).map((r) => <SelectItem key={r.id} value={r.name}>{r.name}</SelectItem>)}
@@ -204,7 +204,7 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
             <div className="space-y-1.5">
               <Label>Rod</Label>
               <Select value={form.rod || "_none"} onValueChange={(v) => set("rod", v === "_none" ? "" : v)}>
-                <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
+                <SelectTrigger className="bg-muted"><SelectValue placeholder="None" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="_none">None</SelectItem>
                   {[...rods].sort((a, b) => a.name.localeCompare(b.name)).map((r) => <SelectItem key={r.id} value={r.name}>{r.name}</SelectItem>)}
