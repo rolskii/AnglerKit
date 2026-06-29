@@ -1,6 +1,9 @@
 export default function FishingHookIcon({ className = "" }) {
   return (
     <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
       viewBox="0 0 24 24"
       fill="none"
       stroke="hsl(170, 70%, 32%)"
@@ -9,9 +12,9 @@ export default function FishingHookIcon({ className = "" }) {
       strokeLinejoin="round"
       className={`w-8 h-8 ${className}`}
     >
-      <path d="M12 2v8" />
-      <path d="M12 10c3.314 0 6 2.686 6 6 0 3.314-2.686 6-6 6-3.314 0-6-2.686-6-6 0-1.5.56-2.868 1.475-3.9" />
-      <path d="M8.9 13.2l-1.414 1.414" />
+      <path d="m17.586 11.414-5.93 5.93a1 1 0 0 1-8-8l3.137-3.137a.707.707 0 0 1 1.207.5V10" />
+      <path d="M20.414 8.586 22 7" />
+      <circle cx="19" cy="10" r="2" />
     </svg>
   );
 }
