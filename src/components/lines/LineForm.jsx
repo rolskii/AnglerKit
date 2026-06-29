@@ -202,16 +202,7 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1.5">
-              <Label>Spooled</Label>
-              <div className="flex items-center gap-2 h-9">
-                <Checkbox
-                  checked={!!form.spooled}
-                  onCheckedChange={(v) => set("spooled", !!v)}
-                />
-                <span className="text-sm text-muted-foreground">On a spare spool (not on a reel)</span>
-              </div>
-            </div>
+
             <div className="space-y-1.5">
               <Label>Rod</Label>
               <Select value={form.rod || "_none"} onValueChange={(v) => set("rod", v === "_none" ? "" : v)}>
