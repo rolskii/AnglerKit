@@ -13,7 +13,7 @@ export default function ImageGallery({ images = [] }) {
     <div className="space-y-2">
       <img src={images[active]} alt={`Photo ${active + 1}`} className="w-full max-h-[60vh] object-contain rounded-md bg-muted/30" />
       {images.length > 1 && (
-        <div className="flex gap-1.5 overflow-x-auto pb-1">
+        <div className="flex flex-wrap gap-1.5 pb-1">
           {images.map((url, idx) => (
             <button
               key={idx}
