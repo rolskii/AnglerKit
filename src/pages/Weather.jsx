@@ -10,7 +10,7 @@ export default function Weather() {
   const [error, setError] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [tempUnit, setTempUnit] = useState('fahrenheit');
+  const [tempUnit, setTempUnit] = useState(() => localStorage.getItem('weatherTempUnit') || 'fahrenheit');
   const [lastCoords, setLastCoords] = useState(null);
   const [userCoords, setUserCoords] = useState(null);
   const [selectedDay, setSelectedDay] = useState(null);
@@ -108,6 +108,7 @@ export default function Weather() {
   const toggleTempUnit = () => {
     const next = tempUnit === 'fahrenheit' ? 'celsius' : 'fahrenheit';
     setTempUnit(next);
+    localStorage.setItem('weatherTempUnit', next);
     if (lastCoords) {
       fetchWeatherByCoords(lastCoords.lat, lastCoords.lon, lastCoords.name, next);
     }
