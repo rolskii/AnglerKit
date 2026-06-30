@@ -38,7 +38,7 @@ export default function Moon() {
       const phase = calculateMoonPhase(date);
 
       const response = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=sunrise,sunset,moonrise,moonset&timezone=auto&start_date=${dateStr}&end_date=${dateStr}`
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=sunrise,sunset&timezone=auto&start_date=${dateStr}&end_date=${dateStr}`
       );
       const data = await response.json();
 
@@ -46,8 +46,8 @@ export default function Moon() {
       const times = {
         sunrise: fmtTime(data.daily?.sunrise?.[0]),
         sunset: fmtTime(data.daily?.sunset?.[0]),
-        moonrise: fmtTime(data.daily?.moonrise?.[0]),
-        moonset: fmtTime(data.daily?.moonset?.[0]),
+        moonrise: 'N/A',
+        moonset: 'N/A',
       };
 
       setSunTimes(times);
