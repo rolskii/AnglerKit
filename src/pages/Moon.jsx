@@ -5,8 +5,13 @@ import { Moon as MoonIcon, Sun, Waves, MapPin, Bell, BellOff } from 'lucide-reac
 export default function Moon() {
   const [moonData, setMoonData] = useState(null);
   const savedLocation = localStorage.getItem('moonLocation');
+  const savedCoords = localStorage.getItem('moonCoords');
   const [location, setLocation] = useState(savedLocation || 'Toronto, ON');
   const [editingLocation, setEditingLocation] = useState(savedLocation || 'Toronto, ON');
+  const [lastCoords, setLastCoords] = useState(savedCoords ? JSON.parse(savedCoords) : null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [sunTimes, setSunTimes] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [alarmsByDate, setAlarmsByDate] = useState(() => {
     const stored = localStorage.getItem('alarmsByDate');
@@ -17,31 +22,82 @@ export default function Moon() {
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   useEffect(() => {
-    const calculateMoonData = () => {
-      const [year, month, day] = selectedDate.split('-');
+    if (lastCoords) {
+      fetchMoonData(lastCoords.lat, lastCoords.lon, lastCoords.name || location, selectedDate);
+    } else {
+      handleLocationChange();
+    }
+  }, [selectedDate]);
+
+  const fetchMoonData = async (lat, lon, locationName, dateStr) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const [year, month, day] = dateStr.split('-');
       const date = new Date(year, month - 1, day);
       const phase = calculateMoonPhase(date);
-      
+
+      const response = await fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=sunrise,sunset,moonrise,moonset&timezone=auto&start_date=${dateStr}&end_date=${dateStr}`
+      );
+      const data = await response.json();
+
+      const fmtTime = (isoStr) => isoStr ? new Date(isoStr).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : 'N/A';
+      const times = {
+        sunrise: fmtTime(data.daily?.sunrise?.[0]),
+        sunset: fmtTime(data.daily?.sunset?.[0]),
+        moonrise: fmtTime(data.daily?.moonrise?.[0]),
+        moonset: fmtTime(data.daily?.moonset?.[0]),
+      };
+
+      setSunTimes(times);
       setMoonData({
         date: date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }),
         phase: phase.name,
         illumination: Math.round(phase.illumination * 100),
-        moonrise: 'Sunrise: 5:48 AM',
-        moonset: 'Sunset: 8:54 PM',
-        location: location,
+        location: locationName,
+        ...times,
       });
-    };
+      setLoading(false);
+    } catch (err) {
+      setError('Failed to fetch moon data for that location.');
+      setLoading(false);
+    }
+  };
 
-    calculateMoonData();
-  }, [location, selectedDate]);
+  const handleLocationChange = async (selectedLocation) => {
+    const loc = (typeof selectedLocation === 'string' && selectedLocation) || editingLocation;
+    if (!loc || !loc.trim()) return;
 
-  const handleLocationChange = (selectedLocation) => {
-    const locationToUse = (typeof selectedLocation === 'string' && selectedLocation) || editingLocation;
-    if (locationToUse && locationToUse.trim()) {
-      localStorage.setItem('moonLocation', locationToUse);
-      setEditingLocation(locationToUse);
-      setLocation(locationToUse);
+    if (lastCoords && loc.trim() === location) {
+      fetchMoonData(lastCoords.lat, lastCoords.lon, lastCoords.name || loc, selectedDate);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      const geoResponse = await fetch(
+        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(loc)}&language=en&count=1&format=json`
+      );
+      const geoData = await geoResponse.json();
+      if (!geoData.results?.[0]) {
+        setError('Location not found. Please try another search.');
+        setLoading(false);
+        return;
+      }
+      const result = geoData.results[0];
+      const coords = { lat: result.latitude, lon: result.longitude, name: `${result.name}${result.admin1 ? ', ' + result.admin1 : ''}` };
+      setLastCoords(coords);
+      localStorage.setItem('moonLocation', coords.name);
+      localStorage.setItem('moonCoords', JSON.stringify(coords));
+      setLocation(coords.name);
+      setEditingLocation(coords.name);
       setShowSuggestions(false);
+      await fetchMoonData(coords.lat, coords.lon, coords.name, selectedDate);
+    } catch (err) {
+      setError('Failed to fetch data for that location.');
+      setLoading(false);
     }
   };
 
@@ -153,21 +209,42 @@ export default function Moon() {
     return { name, illumination };
   };
 
-  const getSolunarTimes = (phase) => {
-    const major = [
-      { text: 'Moonrise to 2 hrs after', time: '5:48 AM - 7:48 AM' },
-      { text: 'Moon highest point', time: '12:30 PM' },
-      { text: 'Moonset to 2 hrs after', time: '8:54 PM - 10:54 PM' }
-    ];
-    const minor = [
-      { text: 'Sun rise to 30 min after', time: '5:48 AM - 6:18 AM' },
-      { text: 'Sun set to 30 min after', time: '8:54 PM - 9:24 PM' }
-    ];
-    
+  const getSolunarTimes = () => {
+    if (!sunTimes) return { major: [], minor: [] };
+
+    const addMinutes = (timeStr, mins) => {
+      const start = parseTimeToMinutes(timeStr);
+      if (!start) return timeStr;
+      const end = start + mins;
+      let endHours = Math.floor(end / 60) % 24;
+      const endMins = end % 60;
+      const period = endHours >= 12 ? 'PM' : 'AM';
+      if (endHours === 0) endHours = 12;
+      else if (endHours > 12) endHours -= 12;
+      return `${endHours}:${String(endMins).padStart(2, '0')} ${period}`;
+    };
+
+    const major = [];
+    if (sunTimes.moonrise && sunTimes.moonrise !== 'N/A') {
+      major.push({ text: 'Moonrise to 2 hrs after', time: `${sunTimes.moonrise} - ${addMinutes(sunTimes.moonrise, 120)}` });
+    }
+    major.push({ text: 'Moon highest point (approx.)', time: '12:30 PM' });
+    if (sunTimes.moonset && sunTimes.moonset !== 'N/A') {
+      major.push({ text: 'Moonset to 2 hrs after', time: `${sunTimes.moonset} - ${addMinutes(sunTimes.moonset, 120)}` });
+    }
+
+    const minor = [];
+    if (sunTimes.sunrise && sunTimes.sunrise !== 'N/A') {
+      minor.push({ text: 'Sun rise to 30 min after', time: `${sunTimes.sunrise} - ${addMinutes(sunTimes.sunrise, 30)}` });
+    }
+    if (sunTimes.sunset && sunTimes.sunset !== 'N/A') {
+      minor.push({ text: 'Sun set to 30 min after', time: `${sunTimes.sunset} - ${addMinutes(sunTimes.sunset, 30)}` });
+    }
+
     return { major, minor };
   };
 
-  if (!moonData) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
@@ -175,7 +252,27 @@ export default function Moon() {
     );
   }
 
-  const solunar = getSolunarTimes(moonData.phase);
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background p-4 pb-20 flex items-center justify-center">
+        <Card className="max-w-md">
+          <CardContent className="pt-6 text-center">
+            <p className="text-sm text-muted-foreground mb-4">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity text-sm font-medium"
+            >
+              Try Again
+            </button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!moonData) return null;
+
+  const solunar = getSolunarTimes();
 
   return (
     <div className="min-h-screen bg-background p-4 pb-20">
@@ -269,11 +366,11 @@ export default function Moon() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-card p-4 rounded-lg text-center">
                     <p className="text-xs text-muted-foreground mb-1">Sunrise</p>
-                    <p className="font-semibold">5:48 AM</p>
+                    <p className="font-semibold">{moonData.sunrise}</p>
                   </div>
                   <div className="bg-card p-4 rounded-lg text-center">
                     <p className="text-xs text-muted-foreground mb-1">Sunset</p>
-                    <p className="font-semibold">8:54 PM</p>
+                    <p className="font-semibold">{moonData.sunset}</p>
                   </div>
                 </div>
               </CardContent>
