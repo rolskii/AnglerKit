@@ -58,11 +58,7 @@ export default function RodCard({ rod, lineCount, pairedLines, onEdit, onDelete 
             {[rod.brand, rod.length, rod.line_weight ? `${rod.line_weight}wt` : null].filter(Boolean).join(" · ") || "—"}
           </p>
         </div>
-        {rod.condition && (
-          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${conditionColor[rod.condition] || "bg-muted text-muted-foreground"}`}>
-            {rod.condition}
-          </span>
-        )}
+
       </div>
 
       <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
