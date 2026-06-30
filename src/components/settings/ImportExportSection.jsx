@@ -23,12 +23,12 @@ const ALL_ENTITIES = [
 ];
 
 const COLUMNS = {
-  FlyLine: ["species", "brand", "model", "type", "description", "line_weight", "grain_weight", "head_length", "total_length", "colour", "condition", "reel", "rod", "notes"],
-  Reel: ["name", "brand", "model", "size", "condition", "notes"],
-  Rod: ["name", "brand", "length", "line_weight", "type", "material", "condition", "notes"],
-  Lure: ["name", "type", "category", "brand", "size", "colour", "quantity", "condition", "notes"],
-  MiscItem: ["name", "category", "brand", "model", "colour", "quantity", "condition", "notes"],
-  Catch: ["species", "date", "location", "length", "girth", "weight", "fly_used", "rod", "reel", "line", "conditions", "water_temp", "released", "notes"],
+  FlyLine: ["species", "brand", "model", "type", "description", "line_weight", "grain_weight", "head_length", "total_length", "colour", "condition", "reel", "rod", "notes", "images"],
+  Reel: ["name", "brand", "model", "size", "condition", "notes", "images"],
+  Rod: ["name", "brand", "length", "line_weight", "type", "material", "condition", "notes", "images"],
+  Lure: ["name", "type", "category", "brand", "size", "colour", "quantity", "condition", "notes", "images"],
+  MiscItem: ["name", "category", "brand", "model", "colour", "quantity", "condition", "notes", "images"],
+  Catch: ["species", "date", "location", "length", "girth", "weight", "fly_used", "rod", "reel", "line", "conditions", "water_temp", "released", "notes", "images"],
 };
 
 const SAMPLES = {
@@ -86,7 +86,13 @@ const parseCsv = (text) => {
 const toCsv = (records, columns) => {
   const escape = (v) => {
     if (v == null) return "";
-    const s = String(v).replace(/"/g, '""');
+    let s;
+    if (Array.isArray(v)) {
+      s = v.filter(Boolean).join(" | ");
+    } else {
+      s = String(v);
+    }
+    s = s.replace(/"/g, '""');
     return /[",\n]/.test(s) ? `"${s}"` : s;
   };
   const rows = [columns.join(",")];
