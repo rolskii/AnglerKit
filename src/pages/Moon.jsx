@@ -46,7 +46,13 @@ export default function Moon() {
     return hours * 60 + minutes;
   };
 
-  const setAlarm = (timeStr) => {
+  const toggleAlarm = (timeStr) => {
+    if (selectedAlarmTime === timeStr) {
+      setSelectedAlarmTime(null);
+      setAlarmEnabled(false);
+      return;
+    }
+
     const timeInMinutes = parseTimeToMinutes(timeStr);
     if (!timeInMinutes) return;
 
@@ -239,7 +245,7 @@ export default function Moon() {
                             </div>
                           </div>
                           <button
-                            onClick={() => setAlarm(item.time.split(' - ')[0])}
+                            onClick={() => toggleAlarm(item.time.split(' - ')[0])}
                             className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 flex-shrink-0 transition-colors ${
                               selectedAlarmTime === item.time.split(' - ')[0]
                                 ? 'bg-primary text-primary-foreground'
@@ -248,8 +254,8 @@ export default function Moon() {
                           >
                             {selectedAlarmTime === item.time.split(' - ')[0] ? (
                               <>
-                                <Bell className="w-3.5 h-3.5" />
-                                Set
+                                <BellOff className="w-3.5 h-3.5" />
+                                Cancel
                               </>
                             ) : (
                               <>
