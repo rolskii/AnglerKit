@@ -117,6 +117,7 @@ export default function Catches() {
           <h1 className="font-heading text-2xl font-bold flex items-center gap-2">
             Fish Log
           </h1>
+          <p className="text-muted-foreground text-sm">Log in your catches with measurements, photos and gear used.</p>
           <p className="text-muted-foreground text-sm mt-1">
             {catches.length} {catches.length === 1 ? "catch" : "catches"} logged
           </p>

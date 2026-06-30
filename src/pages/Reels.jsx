@@ -137,6 +137,7 @@ export default function Reels() {
           <h1 className="font-heading text-2xl font-bold flex items-center gap-2">
             Reels
           </h1>
+          <p className="text-muted-foreground text-sm">Track your reels and see which ones are in use along with the lines spooled on each.</p>
           <p className="text-muted-foreground text-sm mt-1">
             {reels.length} reels in your collection
             {totalValue > 0 && <span className="font-medium text-foreground"> · Total value of reels ${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>}

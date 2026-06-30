@@ -115,7 +115,6 @@ export default function Home() {
                   </div>
                   <div className="space-y-1.5">
                     <h2 className="text-base md:text-lg font-heading font-semibold tracking-tight">{item.title}</h2>
-                    <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">{item.description}</p>
                   </div>
                   {showTotal && (
                     <div className="mt-auto pt-2 flex items-baseline gap-1.5">

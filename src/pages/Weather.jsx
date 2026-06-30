@@ -279,7 +279,7 @@ export default function Weather() {
               °{tempUnit === 'fahrenheit' ? 'F' : 'C'}
             </button>
           </div>
-          <p className="text-muted-foreground">Current conditions and forecast</p>
+          <p className="text-muted-foreground">Check current weather conditions and 7-day forecast for your fishing location.</p>
         </div>
 
         {/* Location Controls */}

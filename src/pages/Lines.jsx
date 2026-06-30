@@ -127,6 +127,7 @@ export default function Lines() {
           <h1 className="font-heading text-2xl font-bold flex items-center gap-2">
             Fishing Lines
           </h1>
+          <p className="text-muted-foreground text-sm">Manage your different kinds of lines and fly lines - brands, weights, conditions and rod & reel pairings.</p>
           <p className="text-muted-foreground text-sm mt-1">
             {lines.length} lines in your collection
             <span className="font-medium text-foreground"> · Total value of your lines ${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>

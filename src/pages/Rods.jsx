@@ -163,6 +163,7 @@ export default function Rods() {
           <h1 className="font-heading text-2xl font-bold flex items-center gap-2">
             Rods
           </h1>
+          <p className="text-muted-foreground text-sm">Catalog your rods and view their paired lines.</p>
           <p className="text-muted-foreground text-sm mt-1">
             {rods.length} rods in your collection
             {totalValue > 0 && <span className="font-medium text-foreground"> · Total value of rods ${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>}

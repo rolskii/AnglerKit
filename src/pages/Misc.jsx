@@ -111,6 +111,7 @@ export default function Misc() {
           <h1 className="font-heading text-2xl font-bold flex items-center gap-2">
             Other Fishing Related Gear
           </h1>
+          <p className="text-muted-foreground text-sm">Track other fishing gear - apparel, tools and accessories.</p>
           <p className="text-muted-foreground text-sm mt-1">
             {items.length} misc. items in your collection
             <span className="font-medium text-foreground"> · Total value of your miscellaneous gear ${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>

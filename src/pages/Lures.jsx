@@ -111,6 +111,7 @@ export default function Lures() {
           <h1 className="font-heading text-2xl font-bold flex items-center gap-2">
             Lures & Flies
           </h1>
+          <p className="text-muted-foreground text-sm">Catalog your lures, tackle and flies with photos, sizes and quantities.</p>
           <p className="text-muted-foreground text-sm mt-1">
             {lures.length} lures & flies in your collection
             <span className="font-medium text-foreground"> · Total value ${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
