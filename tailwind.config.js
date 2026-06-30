@@ -59,6 +59,16 @@ module.exports = {
   				'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
   				border: 'hsl(var(--sidebar-border))',
   				ring: 'hsl(var(--sidebar-ring))'
+  			},
+  			tint: {
+  				blue: 'hsl(var(--tint-blue))',
+  				'blue-bg': 'hsl(var(--tint-blue-bg))',
+  				orange: 'hsl(var(--tint-orange))',
+  				'orange-bg': 'hsl(var(--tint-orange-bg))',
+  				purple: 'hsl(var(--tint-purple))',
+  				'purple-bg': 'hsl(var(--tint-purple-bg))',
+  				teal: 'hsl(var(--tint-teal))',
+  				'teal-bg': 'hsl(var(--tint-teal-bg))'
   			}
   		},
   		fontFamily: {

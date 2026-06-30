@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Moon as MoonIcon, Sun, Waves, MapPin, Bell, BellOff } from 'lucide-react';
+import { Moon as MoonIcon, Sun, Waves, MapPin, Bell, BellOff, Save } from 'lucide-react';
 import FishIcon from '@/components/FishIcon';
 
 export default function Moon() {
@@ -14,6 +14,8 @@ export default function Moon() {
     return stored ? JSON.parse(stored) : {};
   });
   const currentDayAlarms = alarmsByDate[selectedDate] || { time: null, enabled: false, offset: 15 };
+  const [pendingTime, setPendingTime] = useState(null);
+  const [pendingOffset, setPendingOffset] = useState(15);
   const alarmIntervalRef = useRef(null);
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -44,6 +46,7 @@ export default function Moon() {
       localStorage.setItem('moonLocation', locationToUse);
       setEditingLocation(locationToUse);
       setLocation(locationToUse);
+      setPendingTime(null);
       setShowSuggestions(false);
     }
   };
@@ -81,48 +84,58 @@ export default function Moon() {
   };
 
   const toggleAlarm = (timeStr) => {
-    // Clear any existing interval
+    // If there's already a saved alarm for this time → cancel it
+    if (currentDayAlarms.time === timeStr) {
+      const updated = { ...alarmsByDate };
+      delete updated[selectedDate];
+      setAlarmsByDate(updated);
+      setPendingTime(null);
+      if (alarmIntervalRef.current) {
+        clearInterval(alarmIntervalRef.current);
+        alarmIntervalRef.current = null;
+      }
+      return;
+    }
+    // Otherwise open the pending alarm config
+    setPendingTime(timeStr);
+    setPendingOffset(currentDayAlarms.offset || 15);
+  };
+
+  const saveAlarm = () => {
+    if (!pendingTime) return;
+
     if (alarmIntervalRef.current) {
       clearInterval(alarmIntervalRef.current);
       alarmIntervalRef.current = null;
     }
 
-    if (currentDayAlarms.time === timeStr) {
-      const updated = { ...alarmsByDate };
-      delete updated[selectedDate];
-      setAlarmsByDate(updated);
-      return;
-    }
-
-    const timeInMinutes = parseTimeToMinutes(timeStr);
+    const timeInMinutes = parseTimeToMinutes(pendingTime);
     if (!timeInMinutes) return;
 
-    const offset = currentDayAlarms.offset;
-
+    const offset = pendingOffset;
     const alarmTime = new Date();
     const alarmHours = Math.floor(timeInMinutes / 60);
     const alarmMinutes = timeInMinutes % 60;
     alarmTime.setHours(alarmHours, alarmMinutes, 0);
-
-    // Subtract selected offset
     alarmTime.setMinutes(alarmTime.getMinutes() - offset);
 
     setAlarmsByDate({
       ...alarmsByDate,
-      [selectedDate]: { time: timeStr, enabled: true, offset }
+      [selectedDate]: { time: pendingTime, enabled: true, offset }
     });
 
-    // Check alarm every minute
     alarmIntervalRef.current = setInterval(() => {
       const now = new Date();
       if (now >= alarmTime) {
-        playAlarm(timeStr, offset);
+        playAlarm(pendingTime, offset);
         if (alarmIntervalRef.current) {
           clearInterval(alarmIntervalRef.current);
           alarmIntervalRef.current = null;
         }
       }
     }, 60000);
+
+    setPendingTime(null);
   };
 
   const playAlarm = (time, offset) => {
@@ -358,7 +371,9 @@ export default function Moon() {
                             className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 flex-shrink-0 transition-colors ${
                               currentDayAlarms.time === item.time.split(' - ')[0]
                                 ? 'bg-primary text-primary-foreground'
-                                : 'bg-primary/20 text-primary hover:bg-primary/30'
+                                : pendingTime === item.time.split(' - ')[0]
+                                  ? 'bg-accent text-accent-foreground'
+                                  : 'bg-primary/20 text-primary hover:bg-primary/30'
                             }`}
                           >
                             {currentDayAlarms.time === item.time.split(' - ')[0] ? (
@@ -376,29 +391,55 @@ export default function Moon() {
                         </li>
                       ))}
                     </ul>
-                    {currentDayAlarms.time && (
+                    {(pendingTime || currentDayAlarms.time) && (
                       <div className="mt-4 space-y-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
-                        <p className="text-xs font-medium text-primary">
-                          ⏰ Alarm set for {currentDayAlarms.offset === 0 ? 'at' : currentDayAlarms.offset + ' minutes before'} {currentDayAlarms.time}
-                        </p>
-                        <div className="flex gap-2">
-                          {[0, 5, 10, 15].map((min) => (
-                            <button
-                              key={min}
-                              onClick={() => setAlarmsByDate({
-                                ...alarmsByDate,
-                                [selectedDate]: { ...currentDayAlarms, offset: min }
-                              })}
-                              className={`flex-1 px-2 py-1.5 rounded text-xs font-medium transition-colors ${
-                                currentDayAlarms.offset === min
-                                  ? 'bg-primary text-primary-foreground'
-                                  : 'bg-background text-primary border border-primary/30 hover:bg-primary/20'
-                              }`}
-                            >
-                              {min}m
-                            </button>
-                          ))}
-                        </div>
+                        {pendingTime ? (
+                          <>
+                            <p className="text-xs font-medium text-primary">
+                              Set alarm for {pendingTime}
+                            </p>
+                            <p className="text-xs text-muted-foreground">Choose how early to be reminded, then save.</p>
+                            <div className="flex gap-2">
+                              {[0, 5, 10, 15].map((min) => (
+                                <button
+                                  key={min}
+                                  onClick={() => setPendingOffset(min)}
+                                  className={`flex-1 px-2 py-1.5 rounded text-xs font-medium transition-colors ${
+                                    pendingOffset === min
+                                      ? 'bg-primary text-primary-foreground'
+                                      : 'bg-background text-primary border border-primary/30 hover:bg-primary/20'
+                                  }`}
+                                >
+                                  {min}m
+                                </button>
+                              ))}
+                            </div>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={saveAlarm}
+                                className="flex-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center gap-1.5 transition-colors"
+                              >
+                                <Save className="w-3.5 h-3.5" />
+                                Save Alarm
+                              </button>
+                              <button
+                                onClick={() => setPendingTime(null)}
+                                className="px-3 py-1.5 rounded-lg text-xs font-medium bg-background text-muted-foreground border border-border hover:bg-muted transition-colors"
+                              >
+                                Dismiss
+                              </button>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <p className="text-xs font-medium text-primary">
+                              ⏰ Alarm saved — {currentDayAlarms.offset === 0 ? 'at' : currentDayAlarms.offset + ' minutes before'} {currentDayAlarms.time}
+                            </p>
+                            <p className="text-xs text-green-600 flex items-center gap-1">
+                              ✓ Active for {selectedDate}
+                            </p>
+                          </>
+                        )}
                       </div>
                     )}
                     <p className="text-xs text-muted-foreground mt-4">

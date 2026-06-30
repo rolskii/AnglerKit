@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    --background: 210 20% 90%;
+    --background: 210 25% 96%;
     --foreground: 210 40% 15%;
     --card: 0 0% 100%;
     --card-foreground: 210 40% 15%;
@@ -12,23 +12,31 @@
     --popover-foreground: 210 40% 15%;
     --primary: 210 70% 28%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 210 20% 88%;
+    --secondary: 210 20% 90%;
     --secondary-foreground: 210 40% 20%;
-    --muted: 210 15% 92%;
-    --muted-foreground: 210 20% 45%;
-    --accent: 210 65% 40%;
-    --accent-foreground: 0 0% 20%;
+    --muted: 210 20% 94%;
+    --muted-foreground: 210 14% 45%;
+    --accent: 211 100% 45%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 80% 58%;
     --destructive-foreground: 0 0% 100%;
-    --border: 210 20% 85%;
-    --input: 210 20% 85%;
+    --border: 210 18% 88%;
+    --input: 210 18% 88%;
     --ring: 210 70% 28%;
     --chart-1: 210 70% 28%;
     --chart-2: 210 70% 45%;
     --chart-3: 210 65% 40%;
     --chart-4: 210 75% 38%;
     --chart-5: 210 68% 35%;
-    --radius: 0.75rem;
+    --radius: 1rem;
+    --tint-blue: 211 100% 45%;
+    --tint-blue-bg: 211 100% 95%;
+    --tint-orange: 36 100% 52%;
+    --tint-orange-bg: 36 100% 94%;
+    --tint-purple: 280 70% 60%;
+    --tint-purple-bg: 280 70% 96%;
+    --tint-teal: 195 75% 50%;
+    --tint-teal-bg: 195 75% 94%;
     --font-heading: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
     --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
     --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;

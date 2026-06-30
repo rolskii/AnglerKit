@@ -22,10 +22,13 @@ export default function About() {
 
       <div className="prose prose-sm max-w-none text-foreground/90 space-y-4">
         <p>
-          Angler's Log is your complete fishing gear management system - the ultimate companion for organizing lines, rods, reels, lures and all your fishing essentials.
+          Every serious angler knows the feeling — the perfect rod for the conditions, the right fly tied on, everything working together. Angler's Log is built around that attention to detail.
         </p>
         <p>
-          Manage detailed inventories of every piece of equipment in your collection, condition, specifications and values. Pair lines with rods & reels, log your catches with photos and keep everything backed up securely while allowing you to download all of your data. Built with Apple-inspired design for an intuitive, native feel on every device.
+          Catalog your entire collection — lines, rods, reels, lures, flies and all your gear — with full specs, condition, photos and value. Pair lines with rods and reels, track what's spooled on what, and know exactly what you own and what it's worth. When you're on the water, log every catch with measurements, gear used and conditions. When you're off it, plan your next trip with moon phase and solunar data alongside local weather.
+        </p>
+        <p>
+          Your data stays yours — export and download your full collection any time.
         </p>
       </div>
 

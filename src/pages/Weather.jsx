@@ -369,28 +369,34 @@ export default function Weather() {
                     <Wind className="w-4 h-4" />
                     Wind Speed
                   </div>
-                  <p className="text-lg font-semibold">{Math.round(current.wind_speed_10m)} mph</p>
+                  <p className="text-lg font-semibold">
+                    {tempUnit === 'fahrenheit' ? Math.round(current.wind_speed_10m) + ' mph' : Math.round(current.wind_speed_10m * 1.60934) + ' km/h'}
+                  </p>
                 </div>
                 <div className="bg-card p-4 rounded-lg">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
                     <Eye className="w-4 h-4" />
                     Visibility
                   </div>
-                  <p className="text-lg font-semibold">{(current.visibility / 1000).toFixed(1)} mi</p>
+                  <p className="text-lg font-semibold">
+                    {tempUnit === 'fahrenheit' ? (current.visibility / 1000).toFixed(1) + ' mi' : (current.visibility / 1000).toFixed(1) + ' km'}
+                  </p>
                 </div>
                 <div className="bg-card p-4 rounded-lg">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
                     <CloudRain className="w-4 h-4" />
                     Precipitation
                   </div>
-                  <p className="text-lg font-semibold">{current.precipitation.toFixed(2)}"</p>
+                  <p className="text-lg font-semibold">
+                    {tempUnit === 'fahrenheit' ? current.precipitation.toFixed(2) + '"' : (current.precipitation * 25.4).toFixed(1) + ' mm'}
+                  </p>
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* 7-Day Forecast */}
+        {/* 10-Day Forecast */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">10-Day Forecast</CardTitle>
