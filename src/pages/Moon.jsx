@@ -35,6 +35,7 @@ export default function Moon() {
   const handleLocationChange = (selectedLocation) => {
     const locationToUse = selectedLocation || editingLocation;
     if (locationToUse.trim()) {
+      setEditingLocation(locationToUse);
       setLocation(locationToUse);
       setShowSuggestions(false);
     }
