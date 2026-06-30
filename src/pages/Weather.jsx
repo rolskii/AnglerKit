@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Cloud, CloudRain, Sun, Wind, Droplets, Eye, Gauge } from 'lucide-react';
+import { Cloud, CloudRain, Sun, Wind, Droplets, Eye, Gauge, MapPin } from 'lucide-react';
 
 export default function Weather() {
   const [weather, setWeather] = useState(null);
@@ -8,6 +8,40 @@ export default function Weather() {
   const [editingLocation, setEditingLocation] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const fetchUserLocation = async () => {
+    setLoading(true);
+    setError(null);
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          const response = await fetch(
+            `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&temperature_unit=fahrenheit&wind_speed_unit=mph&forecast_days=7`
+          );
+          const data = await response.json();
+          const geoResponse = await fetch(
+            `https://geocoding-api.open-meteo.com/v1/search?latitude=${latitude}&longitude=${longitude}&language=en&count=1&format=json`
+          );
+          const geoData = await geoResponse.json();
+          const locationName = geoData.results?.[0]
+            ? `${geoData.results[0].name}${geoData.results[0].admin1 ? ', ' + geoData.results[0].admin1 : ''}`
+            : 'Current Location';
+          setLocation(locationName);
+          setEditingLocation(locationName);
+          setWeather({ current: data.current, daily: data.daily });
+          setLoading(false);
+        },
+        (err) => {
+          setError('Unable to get your location. Please enable location services.');
+          setLoading(false);
+        }
+      );
+    } else {
+      setError('Geolocation not supported by your browser.');
+      setLoading(false);
+    }
+  };
 
   const handleLocationChange = async () => {
     if (!editingLocation.trim()) return;
@@ -45,56 +79,7 @@ export default function Weather() {
   };
 
   useEffect(() => {
-    const fetchWeather = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        // Get user location
-        if ('geolocation' in navigator) {
-          navigator.geolocation.getCurrentPosition(
-            async (position) => {
-              const { latitude, longitude } = position.coords;
-              
-              // Fetch weather from Open-Meteo (free API, no key needed)
-              const response = await fetch(
-                `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&temperature_unit=fahrenheit&wind_speed_unit=mph&forecast_days=7`
-              );
-              const data = await response.json();
-
-              // Get location name (reverse geocode using Open-Meteo)
-              const geoResponse = await fetch(
-                `https://geocoding-api.open-meteo.com/v1/search?latitude=${latitude}&longitude=${longitude}&language=en&count=1&format=json`
-              );
-              const geoData = await geoResponse.json();
-              const locationName = geoData.results?.[0]
-                ? `${geoData.results[0].name}${geoData.results[0].admin1 ? ', ' + geoData.results[0].admin1 : ''}`
-                : `${latitude.toFixed(4)}°, ${longitude.toFixed(4)}°`;
-
-              setLocation(locationName);
-              setEditingLocation(locationName);
-              setWeather({
-                current: data.current,
-                daily: data.daily,
-              });
-              setLoading(false);
-            },
-            (err) => {
-              setError('Unable to get your location. Please enable location services.');
-              setLoading(false);
-            }
-          );
-        } else {
-          setError('Geolocation not supported by your browser.');
-          setLoading(false);
-        }
-      } catch (err) {
-        setError('Failed to fetch weather data.');
-        setLoading(false);
-      }
-    };
-
-    fetchWeather();
+    fetchUserLocation();
   }, []);
 
   const getWeatherDescription = (code) => {
@@ -188,12 +173,21 @@ export default function Weather() {
                   className="flex-1 px-3 py-2 text-sm border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground"
                   onKeyPress={(e) => e.key === 'Enter' && handleLocationChange()}
                 />
-                <button
-                  onClick={handleLocationChange}
-                  className="px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity whitespace-nowrap"
-                >
-                  Update
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleLocationChange}
+                    className="px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity whitespace-nowrap"
+                  >
+                    Update
+                  </button>
+                  <button
+                    onClick={fetchUserLocation}
+                    className="px-3 py-2 text-sm font-medium bg-secondary text-secondary-foreground rounded-lg hover:opacity-90 transition-opacity"
+                    title="Refresh current location"
+                  >
+                    <MapPin className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
               {location && (
                 <p className="text-xs text-muted-foreground">Currently showing: {location}</p>
