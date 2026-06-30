@@ -152,7 +152,7 @@ export default function Home() {
 
       {/* Status bar */}
       {(moonPhase || weatherInfo) && (
-        <div className="flex items-center justify-between gap-4 px-1">
+        <div className="flex items-center justify-between gap-4 px-4 py-3 rounded-2xl bg-card shadow-sm">
           {moonPhase && (
             <Link to="/moon" className="flex items-center gap-2 group">
               <MoonIcon className="w-4 h-4 text-muted-foreground shrink-0" />
