@@ -3,15 +3,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Cloud, CloudRain, Sun, Wind, Droplets, Eye, Gauge, MapPin, ChevronDown } from 'lucide-react';
 
 export default function Weather() {
+  const savedLocation = localStorage.getItem('weatherLocation');
+  const savedCoords = localStorage.getItem('weatherCoords');
   const [weather, setWeather] = useState(null);
-  const [location, setLocation] = useState('Toronto, ON');
-  const [editingLocation, setEditingLocation] = useState('Toronto, ON');
+  const [location, setLocation] = useState(savedLocation || 'Toronto, ON');
+  const [editingLocation, setEditingLocation] = useState(savedLocation || 'Toronto, ON');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [tempUnit, setTempUnit] = useState(() => localStorage.getItem('weatherTempUnit') || 'fahrenheit');
-  const [lastCoords, setLastCoords] = useState(null);
+  const [lastCoords, setLastCoords] = useState(savedCoords ? JSON.parse(savedCoords) : null);
   const [userCoords, setUserCoords] = useState(null);
   const [selectedDay, setSelectedDay] = useState(null);
 
@@ -25,6 +27,11 @@ export default function Weather() {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   };
 
+  const saveLocation = (coords, locationName) => {
+    localStorage.setItem('weatherLocation', locationName);
+    localStorage.setItem('weatherCoords', JSON.stringify(coords));
+  };
+
   const fetchWeatherByCoords = async (lat, lon, locationName, unit = tempUnit) => {
     if (!lat || !lon) return;
     try {
@@ -34,7 +41,9 @@ export default function Weather() {
         `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&temperature_unit=${unit}&wind_speed_unit=mph&hourly=temperature_2m,weather_code,precipitation_probability,wind_speed_10m&forecast_days=10`
       );
       const data = await response.json();
-      setLastCoords({ lat, lon, name: locationName });
+      const coords = { lat, lon, name: locationName };
+      setLastCoords(coords);
+      saveLocation(coords, locationName);
       setLocation(locationName);
       setEditingLocation(locationName);
       setShowSuggestions(false);
@@ -64,7 +73,9 @@ export default function Weather() {
         `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&temperature_unit=${tempUnit}&wind_speed_unit=mph&hourly=temperature_2m,weather_code,precipitation_probability,wind_speed_10m&forecast_days=10`
       );
       const data = await response.json();
-      setLastCoords({ lat, lon, name: locationName });
+      const coords = { lat, lon, name: locationName };
+      setLastCoords(coords);
+      saveLocation(coords, locationName);
       setLocation(locationName);
       setEditingLocation(locationName);
       setWeather({ current: data.current, daily: data.daily, hourly: data.hourly });
@@ -144,7 +155,9 @@ export default function Weather() {
         `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&temperature_unit=${tempUnit}&wind_speed_unit=mph&hourly=temperature_2m,weather_code,precipitation_probability,wind_speed_10m&forecast_days=10`
       );
       const data = await response.json();
-      setLastCoords({ lat, lon, name: locationName });
+      const coords = { lat, lon, name: locationName };
+      setLastCoords(coords);
+      saveLocation(coords, locationName);
       setLocation(locationName);
       setEditingLocation(locationName);
       setShowSuggestions(false);
@@ -169,7 +182,11 @@ export default function Weather() {
         { timeout: 5000 }
       );
     }
-    fetchUserLocation();
+    if (lastCoords) {
+      fetchWeatherByCoords(lastCoords.lat, lastCoords.lon, lastCoords.name || location);
+    } else {
+      fetchUserLocation();
+    }
   }, []);
 
   const getWeatherDescription = (code) => {
