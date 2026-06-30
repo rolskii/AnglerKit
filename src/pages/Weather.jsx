@@ -69,7 +69,7 @@ export default function Weather() {
               const geoData = await geoResponse.json();
               const locationName = geoData.results?.[0]
                 ? `${geoData.results[0].name}${geoData.results[0].admin1 ? ', ' + geoData.results[0].admin1 : ''}`
-                : 'Your Location';
+                : `${latitude.toFixed(4)}°, ${longitude.toFixed(4)}°`;
 
               setLocation(locationName);
               setEditingLocation(locationName);
