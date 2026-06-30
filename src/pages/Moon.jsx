@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Moon as MoonIcon, Sun, Waves, MapPin, Bell, BellOff } from 'lucide-react';
 import FishIcon from '@/components/FishIcon';
@@ -14,6 +14,7 @@ export default function Moon() {
     return stored ? JSON.parse(stored) : {};
   });
   const currentDayAlarms = alarmsByDate[selectedDate] || { time: null, enabled: false, offset: 15 };
+  const alarmIntervalRef = useRef(null);
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
@@ -80,6 +81,12 @@ export default function Moon() {
   };
 
   const toggleAlarm = (timeStr) => {
+    // Clear any existing interval
+    if (alarmIntervalRef.current) {
+      clearInterval(alarmIntervalRef.current);
+      alarmIntervalRef.current = null;
+    }
+
     if (currentDayAlarms.time === timeStr) {
       const updated = { ...alarmsByDate };
       delete updated[selectedDate];
@@ -90,44 +97,58 @@ export default function Moon() {
     const timeInMinutes = parseTimeToMinutes(timeStr);
     if (!timeInMinutes) return;
 
+    const offset = currentDayAlarms.offset;
+
     const alarmTime = new Date();
     const alarmHours = Math.floor(timeInMinutes / 60);
     const alarmMinutes = timeInMinutes % 60;
     alarmTime.setHours(alarmHours, alarmMinutes, 0);
 
     // Subtract selected offset
-    alarmTime.setMinutes(alarmTime.getMinutes() - currentDayAlarms.offset);
+    alarmTime.setMinutes(alarmTime.getMinutes() - offset);
 
     setAlarmsByDate({
       ...alarmsByDate,
-      [selectedDate]: { time: timeStr, enabled: true, offset: currentDayAlarms.offset }
+      [selectedDate]: { time: timeStr, enabled: true, offset }
     });
 
     // Check alarm every minute
-    const alarmInterval = setInterval(() => {
+    alarmIntervalRef.current = setInterval(() => {
       const now = new Date();
-      if (now >= alarmTime && currentDayAlarms.enabled) {
-        playAlarm();
-        clearInterval(alarmInterval);
+      if (now >= alarmTime) {
+        playAlarm(timeStr, offset);
+        if (alarmIntervalRef.current) {
+          clearInterval(alarmIntervalRef.current);
+          alarmIntervalRef.current = null;
+        }
       }
     }, 60000);
   };
 
-  const playAlarm = () => {
-    const timeText = currentDayAlarms.offset === 0 ? 'now' : `in ${currentDayAlarms.offset} minutes`;
+  const playAlarm = (time, offset) => {
+    const timeText = offset === 0 ? 'now' : `in ${offset} minutes`;
     if ('Notification' in window && Notification.permission === 'granted') {
       new Notification('Fishing Time!', {
-        body: `Your selected feeding time (${currentDayAlarms.time}) starts ${timeText}. Time to head out!`,
+        body: `Your selected feeding time (${time}) starts ${timeText}. Time to head out!`,
         icon: '🎣',
       });
     }
     // Fallback: alert
-    alert(`🎣 Time to fish! Your feeding window (${currentDayAlarms.time}) is starting ${timeText}!`);
+    alert(`🎣 Time to fish! Your feeding window (${time}) is starting ${timeText}!`);
   };
 
   useEffect(() => {
     localStorage.setItem('alarmsByDate', JSON.stringify(alarmsByDate));
   }, [alarmsByDate]);
+
+  // Cleanup interval on unmount
+  useEffect(() => {
+    return () => {
+      if (alarmIntervalRef.current) {
+        clearInterval(alarmIntervalRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (currentDayAlarms.enabled && 'Notification' in window && Notification.permission === 'default') {
