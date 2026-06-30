@@ -166,6 +166,7 @@ export default function Weather() {
                   placeholder="Enter city, state or coordinates"
                   className="flex-1 px-3 py-2 text-sm border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground"
                   onKeyPress={(e) => e.key === 'Enter' && handleLocationChange()}
+                  onFocus={(e) => e.target.select()}
                 />
                 <div className="flex gap-2">
                   <button
