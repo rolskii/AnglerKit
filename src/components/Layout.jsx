@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Outlet, NavLink, useNavigate, Link } from "react-router-dom";
 import {
   LogOut, Menu, X,
-  Home as HomeIcon, Camera, Package,
+  Home as HomeIcon, Camera, Package, Cloud,
   Settings as SettingsIcon, Info,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ const navItems = [
   { to: "/misc", label: "Misc. Gear", icon: Package },
   { to: "/catches", label: "Fish Log", icon: Camera },
   { to: "/moon", label: "Moon Phase", icon: MoonIcon },
+  { to: "/weather", label: "Weather", icon: Cloud },
   { to: "/settings", label: "Settings", icon: SettingsIcon },
   { to: "/about", label: "About", icon: Info },
 ];
