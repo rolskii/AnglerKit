@@ -188,14 +188,11 @@ export default function Moon() {
                 onBlur={() => setTimeout(() => setShowSuggestions(false), 100)}
               />
               {showSuggestions && suggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-50 max-h-40 overflow-y-auto">
+                <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-50 max-h-40 overflow-y-auto" onMouseDown={(e) => e.preventDefault()}>
                   {suggestions.map((suggestion, idx) => (
                     <div
                       key={idx}
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        handleLocationChange(suggestion);
-                      }}
+                      onClick={() => handleLocationChange(suggestion)}
                       className="w-full px-3 py-2.5 text-xs text-left hover:bg-primary/10 border-b border-border/50 last:border-b-0 transition-colors cursor-pointer"
                     >
                       {suggestion}
