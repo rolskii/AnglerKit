@@ -4,43 +4,35 @@ import { Cloud, CloudRain, Sun, Wind, Droplets, Eye, Gauge, MapPin } from 'lucid
 
 export default function Weather() {
   const [weather, setWeather] = useState(null);
-  const [location, setLocation] = useState(null);
-  const [editingLocation, setEditingLocation] = useState('');
+  const [location, setLocation] = useState('Toronto, ON');
+  const [editingLocation, setEditingLocation] = useState('Toronto, ON');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const fetchUserLocation = async () => {
     setLoading(true);
     setError(null);
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
-          const response = await fetch(
-            `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&temperature_unit=fahrenheit&wind_speed_unit=mph&forecast_days=7`
-          );
-          const data = await response.json();
-          const geoResponse = await fetch(
-            `https://geocoding-api.open-meteo.com/v1/search?latitude=${latitude}&longitude=${longitude}&language=en&count=1&format=json`
-          );
-          const geoData = await geoResponse.json();
-          let locationName = `${latitude.toFixed(4)}°, ${longitude.toFixed(4)}°`;
-          if (geoData.results?.length > 0) {
-            const result = geoData.results[0];
-            locationName = `${result.name}${result.admin1 ? ', ' + result.admin1 : ''}`;
-          }
-          setLocation(locationName);
-          setEditingLocation(locationName);
-          setWeather({ current: data.current, daily: data.daily });
-          setLoading(false);
-        },
-        (err) => {
-          setError('Unable to get your location. Please enable location services.');
-          setLoading(false);
-        }
+    try {
+      const geoResponse = await fetch(
+        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent('Toronto')}&language=en&count=1&format=json`
       );
-    } else {
-      setError('Geolocation not supported by your browser.');
+      const geoData = await geoResponse.json();
+      if (!geoData.results?.[0]) throw new Error('Location not found');
+      const result = geoData.results[0];
+      const lat = result.latitude;
+      const lon = result.longitude;
+      const locationName = `${result.name}${result.admin1 ? ', ' + result.admin1 : ''}`;
+      
+      const response = await fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&temperature_unit=fahrenheit&wind_speed_unit=mph&forecast_days=7`
+      );
+      const data = await response.json();
+      setLocation(locationName);
+      setEditingLocation(locationName);
+      setWeather({ current: data.current, daily: data.daily });
+      setLoading(false);
+    } catch (err) {
+      setError('Unable to fetch weather. Please try updating location manually.');
       setLoading(false);
     }
   };
