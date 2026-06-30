@@ -252,6 +252,23 @@ export default function Moon() {
               <CardHeader className="text-center">
                 <CardTitle className="text-2xl">{moonData.phase}</CardTitle>
                 <CardDescription>{moonData.date}</CardDescription>
+                <div className="flex justify-center gap-1.5 mt-3">
+                  {[1, 2, 3, 4, 5, 6, 7].map((n) => (
+                    <div
+                      key={n}
+                      className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-semibold ${
+                        n <= moonData.fishingRating
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted text-muted-foreground'
+                      }`}
+                    >
+                      {n}
+                    </div>
+                  ))}
+                </div>
+                <p className="text-sm font-medium text-primary mt-2">
+                  {moonData.fishingRating}/7 — {getRatingLabel(moonData.fishingRating)}
+                </p>
                 <div className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground mt-2">
                   <MapPin className="w-4 h-4" />
                   {moonData.location}
@@ -291,33 +308,6 @@ export default function Moon() {
                     <p className="font-semibold">8:54 PM</p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* Fishing Rating Card */}
-            <Card className="bg-primary/10">
-              <CardHeader className="text-center">
-                <CardTitle className="text-lg">Fishing Forecast</CardTitle>
-                <CardDescription>Solunar activity rating for the selected day</CardDescription>
-              </CardHeader>
-              <CardContent className="text-center space-y-4">
-                <div className="flex justify-center gap-2">
-                  {[1, 2, 3, 4, 5, 6, 7].map((n) => (
-                    <div
-                      key={n}
-                      className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold ${
-                        n <= moonData.fishingRating
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted text-muted-foreground'
-                      }`}
-                    >
-                      {n}
-                    </div>
-                  ))}
-                </div>
-                <p className="text-2xl font-bold text-primary">
-                  {moonData.fishingRating}/7 — {getRatingLabel(moonData.fishingRating)}
-                </p>
               </CardContent>
             </Card>
 
