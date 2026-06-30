@@ -8,6 +8,9 @@ const ENTITIES = [
   { name: "FlyLine", label: "Lines" },
   { name: "Reel", label: "Reels" },
   { name: "Rod", label: "Rods" },
+  { name: "Lure", label: "Lures & Flies" },
+  { name: "MiscItem", label: "Misc. Gear" },
+  { name: "Catch", label: "Fish Log" },
 ];
 
 const ALL_ENTITIES = [
@@ -23,6 +26,9 @@ const COLUMNS = {
   FlyLine: ["species", "brand", "model", "type", "description", "line_weight", "grain_weight", "head_length", "total_length", "colour", "condition", "reel", "rod", "notes"],
   Reel: ["name", "brand", "model", "size", "condition", "notes"],
   Rod: ["name", "brand", "length", "line_weight", "type", "material", "condition", "notes"],
+  Lure: ["name", "type", "category", "brand", "size", "colour", "quantity", "condition", "notes"],
+  MiscItem: ["name", "category", "brand", "model", "colour", "quantity", "condition", "notes"],
+  Catch: ["species", "date", "location", "length", "girth", "weight", "fly_used", "rod", "reel", "line", "conditions", "water_temp", "released", "notes"],
 };
 
 const SAMPLES = {
@@ -250,15 +256,14 @@ export default function ImportExportSection() {
   const handleExportAll = async () => {
     setExporting(true);
     try {
-      const [lines, reels, rods] = await Promise.all([
-        base44.entities.FlyLine.list("-updated_date", 500),
-        base44.entities.Reel.list("-updated_date", 500),
-        base44.entities.Rod.list("-updated_date", 500),
-      ]);
+      const results = await Promise.all(
+        ENTITIES.map((ent) => base44.entities[ent.name].list("-updated_date", 500))
+      );
       const date = new Date().toISOString().slice(0, 10);
-      downloadFile(`flyfish-lines-${date}.csv`, toCsv(lines, COLUMNS.FlyLine));
-      downloadFile(`flyfish-reels-${date}.csv`, toCsv(reels, COLUMNS.Reel));
-      downloadFile(`flyfish-rods-${date}.csv`, toCsv(rods, COLUMNS.Rod));
+      ENTITIES.forEach((ent, idx) => {
+        const slug = ent.label.toLowerCase().replace(/[^a-z]+/g, "-").replace(/^-|-$/g, "");
+        downloadFile(`flyfish-${slug}-${date}.csv`, toCsv(results[idx], COLUMNS[ent.name]));
+      });
       toast.success("Export complete");
     } catch (e) {
       toast.error("Export failed");
@@ -316,7 +321,7 @@ export default function ImportExportSection() {
           <Download className="w-5 h-5 text-primary" />
           <h2 className="text-lg font-heading font-semibold">Export (CSV)</h2>
         </div>
-        <p className="text-sm text-muted-foreground">Download individual collections as CSV files. Use "Export All" for lines, reels, and rods together, or grab a sample template to see the expected format.</p>
+        <p className="text-sm text-muted-foreground">Download individual collections as CSV files. Use "Export All" to export every collection — lines, reels, rods, lures & flies, misc. gear, and fish log — all at once.</p>
         <div className="flex flex-wrap gap-3">
           <Button onClick={handleExportAll} disabled={exporting}>
             {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
