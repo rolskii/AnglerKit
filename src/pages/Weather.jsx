@@ -31,7 +31,7 @@ export default function Weather() {
       setLoading(true);
       setError(null);
       const response = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&temperature_unit=${unit}&wind_speed_unit=mph&hourly=temperature_2m,weather_code,precipitation_probability,wind_speed_10m&forecast_days=8`
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&temperature_unit=${unit}&wind_speed_unit=mph&hourly=temperature_2m,weather_code,precipitation_probability,wind_speed_10m&forecast_days=10`
       );
       const data = await response.json();
       setLastCoords({ lat, lon, name: locationName });
@@ -61,7 +61,7 @@ export default function Weather() {
       const locationName = `${result.name}${result.admin1 ? ', ' + result.admin1 : ''}`;
       
       const response = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&temperature_unit=${tempUnit}&wind_speed_unit=mph&hourly=temperature_2m,weather_code,precipitation_probability,wind_speed_10m&forecast_days=8`
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&temperature_unit=${tempUnit}&wind_speed_unit=mph&hourly=temperature_2m,weather_code,precipitation_probability,wind_speed_10m&forecast_days=10`
       );
       const data = await response.json();
       setLastCoords({ lat, lon, name: locationName });
@@ -141,7 +141,7 @@ export default function Weather() {
       const locationName = `${result.name}${result.admin1 ? ', ' + result.admin1 : ''}`;
 
       const response = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&temperature_unit=${tempUnit}&wind_speed_unit=mph&hourly=temperature_2m,weather_code,precipitation_probability,wind_speed_10m&forecast_days=8`
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&temperature_unit=${tempUnit}&wind_speed_unit=mph&hourly=temperature_2m,weather_code,precipitation_probability,wind_speed_10m&forecast_days=10`
       );
       const data = await response.json();
       setLastCoords({ lat, lon, name: locationName });
@@ -369,7 +369,7 @@ export default function Weather() {
         {/* 7-Day Forecast */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">7-Day Forecast</CardTitle>
+            <CardTitle className="text-lg">10-Day Forecast</CardTitle>
             <CardDescription>Daily high and low temperatures</CardDescription>
           </CardHeader>
           <CardContent>
