@@ -12,7 +12,18 @@ export default function Weather() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [tempUnit, setTempUnit] = useState('fahrenheit');
   const [lastCoords, setLastCoords] = useState(null);
+  const [userCoords, setUserCoords] = useState(null);
   const [selectedDay, setSelectedDay] = useState(null);
+
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 3959;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) ** 2 +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  };
 
   const fetchWeatherByCoords = async (lat, lon, locationName, unit = tempUnit) => {
     if (!lat || !lon) return;
@@ -77,12 +88,16 @@ export default function Weather() {
       );
       const data = await response.json();
       if (data.results) {
-        setSuggestions(data.results.map(r => ({
+        const ref = userCoords || lastCoords;
+        const mapped = data.results.map(r => ({
           label: `${r.name}${r.admin1 ? ', ' + r.admin1 : ''}${r.country ? ', ' + r.country : ''}`,
           lat: r.latitude,
           lon: r.longitude,
           name: `${r.name}${r.admin1 ? ', ' + r.admin1 : ''}`,
-        })));
+          distance: ref ? calculateDistance(ref.lat, ref.lon, r.latitude, r.longitude) : null,
+        }));
+        if (ref) mapped.sort((a, b) => a.distance - b.distance);
+        setSuggestions(mapped);
         setShowSuggestions(true);
       }
     } catch (err) {
@@ -146,6 +161,13 @@ export default function Weather() {
   };
 
   useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => setUserCoords({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+        () => {},
+        { timeout: 5000 }
+      );
+    }
     fetchUserLocation();
   }, []);
 
