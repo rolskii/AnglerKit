@@ -91,7 +91,7 @@ export default function Moon() {
               value={editingLocation}
               onChange={(e) => setEditingLocation(e.target.value)}
               placeholder="Enter location"
-              className="flex-1 px-3 py-2 text-sm border border-border rounded-lg bg-card text-foreground placeholder:text-muted-foreground"
+              className="flex-1 px-3 py-2 text-sm border border-border rounded-lg bg-card text-foreground placeholder:text-muted-foreground text-center"
               onKeyPress={(e) => e.key === 'Enter' && handleLocationChange()}
             />
             <input
