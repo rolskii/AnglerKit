@@ -10,6 +10,8 @@ export default function Moon() {
   const [selectedAlarmTime, setSelectedAlarmTime] = useState(null);
   const [alarmEnabled, setAlarmEnabled] = useState(false);
   const [alarmOffset, setAlarmOffset] = useState(15);
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   useEffect(() => {
     const calculateMoonData = () => {
@@ -30,9 +32,32 @@ export default function Moon() {
     calculateMoonData();
   }, [location, selectedDate]);
 
-  const handleLocationChange = () => {
-    if (editingLocation.trim()) {
-      setLocation(editingLocation);
+  const handleLocationChange = (selectedLocation) => {
+    const locationToUse = selectedLocation || editingLocation;
+    if (locationToUse.trim()) {
+      setLocation(locationToUse);
+      setShowSuggestions(false);
+    }
+  };
+
+  const handleLocationInput = async (value) => {
+    setEditingLocation(value);
+    if (value.trim().length < 2) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+    try {
+      const response = await fetch(
+        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(value)}&language=en&count=5&format=json`
+      );
+      const data = await response.json();
+      if (data.results) {
+        setSuggestions(data.results.map(r => `${r.name}${r.admin1 ? ', ' + r.admin1 : ''}${r.country ? ', ' + r.country : ''}`));
+        setShowSuggestions(true);
+      }
+    } catch (err) {
+      setSuggestions([]);
     }
   };
 
@@ -151,14 +176,30 @@ export default function Moon() {
           
           {/* Location & Date Selector */}
           <div className="mt-6 flex gap-2 max-w-md mx-auto flex-col sm:flex-row">
-            <input
-              type="text"
-              value={editingLocation}
-              onChange={(e) => setEditingLocation(e.target.value)}
-              placeholder="Enter location"
-              className="flex-1 px-3 py-2 text-sm border border-border rounded-lg bg-card text-foreground placeholder:text-muted-foreground text-center"
-              onKeyPress={(e) => e.key === 'Enter' && handleLocationChange()}
-            />
+            <div className="flex-1 relative">
+              <input
+                type="text"
+                value={editingLocation}
+                onChange={(e) => handleLocationInput(e.target.value)}
+                placeholder="Enter location"
+                className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-card text-foreground placeholder:text-muted-foreground text-center"
+                onKeyPress={(e) => e.key === 'Enter' && handleLocationChange()}
+                onFocus={() => editingLocation.trim().length >= 2 && setShowSuggestions(true)}
+              />
+              {showSuggestions && suggestions.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-10 max-h-40 overflow-y-auto">
+                  {suggestions.map((suggestion, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => handleLocationChange(suggestion)}
+                      className="w-full px-3 py-2 text-xs text-left hover:bg-primary/10 border-b border-border/50 last:border-b-0 transition-colors"
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
             <input
               type="date"
               value={selectedDate}
@@ -166,7 +207,7 @@ export default function Moon() {
               className="flex-1 px-3 py-2 text-sm border border-border rounded-lg bg-card text-foreground"
             />
             <button
-              onClick={handleLocationChange}
+              onClick={() => handleLocationChange()}
               className="px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity"
             >
               Update
