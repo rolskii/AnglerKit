@@ -29,38 +29,6 @@ export default function About() {
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <FeatureCard
-          icon={<HorizontalLinesIcon className="w-5 h-5" />}
-          title="Lines"
-          description="Track brand, model, weight, grain, head length, rod type, and detailed condition for every fly line."
-        />
-        <FeatureCard
-          icon={<ReelDiscIcon className="w-5 h-5" />}
-          title="Rods & Reels"
-          description="Catalog rods and reels with full specs, materials, types, and link them to your lines and setups."
-        />
-        <FeatureCard
-          icon={<BugWingsIcon className="w-5 h-5" />}
-          title="Lures & Misc"
-          description="Manage flies, lures, apparel, tools, and all your fishing accessories with photos and notes."
-        />
-        <FeatureCard
-          icon={<Camera className="w-5 h-5" />}
-          title="Catch Logging"
-          description="Record every catch with species, location, gear used, water conditions, and multiple photos."
-        />
-        <FeatureCard
-          icon={<HardDrive className="w-5 h-5" />}
-          title="Full Backup & Restore"
-          description="Backup your entire collection as JSON and restore instantly — all data and photos included."
-        />
-        <FeatureCard
-          icon={<><Download className="w-2.5 h-2.5 inline mr-0.5" /><Upload className="w-2.5 h-2.5 inline" /></>}
-          title="Import / Export"
-          description="Import gear from CSV templates and export your collection for spreadsheet analysis."
-        />
-      </div>
 
       <div className="rounded-lg border-0 bg-primary/10 p-4 text-sm text-muted-foreground">
         Built with the Base44 platform.
