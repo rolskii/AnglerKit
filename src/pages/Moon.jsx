@@ -9,6 +9,7 @@ export default function Moon() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [selectedAlarmTime, setSelectedAlarmTime] = useState(null);
   const [alarmEnabled, setAlarmEnabled] = useState(false);
+  const [alarmOffset, setAlarmOffset] = useState(15);
 
   useEffect(() => {
     const calculateMoonData = () => {
@@ -54,8 +55,8 @@ export default function Moon() {
     const alarmMinutes = timeInMinutes % 60;
     alarmTime.setHours(alarmHours, alarmMinutes, 0);
 
-    // Subtract 15 minutes
-    alarmTime.setMinutes(alarmTime.getMinutes() - 15);
+    // Subtract selected offset
+    alarmTime.setMinutes(alarmTime.getMinutes() - alarmOffset);
 
     setSelectedAlarmTime(timeStr);
     setAlarmEnabled(true);
@@ -72,14 +73,15 @@ export default function Moon() {
   };
 
   const playAlarm = () => {
+    const timeText = alarmOffset === 0 ? 'now' : `in ${alarmOffset} minutes`;
     if ('Notification' in window && Notification.permission === 'granted') {
       new Notification('Fishing Time!', {
-        body: `Your selected feeding time (${selectedAlarmTime}) starts in 15 minutes. Time to head out!`,
+        body: `Your selected feeding time (${selectedAlarmTime}) starts ${timeText}. Time to head out!`,
         icon: '🎣',
       });
     }
     // Fallback: alert
-    alert(`🎣 Time to fish! Your feeding window (${selectedAlarmTime}) is starting in 15 minutes!`);
+    alert(`🎣 Time to fish! Your feeding window (${selectedAlarmTime}) is starting ${timeText}!`);
   };
 
   useEffect(() => {
@@ -260,10 +262,25 @@ export default function Moon() {
                       ))}
                     </ul>
                     {selectedAlarmTime && (
-                      <div className="mt-4 p-3 bg-primary/10 rounded-lg border border-primary/20">
+                      <div className="mt-4 space-y-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
                         <p className="text-xs font-medium text-primary">
-                          ⏰ Alarm set for 15 minutes before {selectedAlarmTime}
+                          ⏰ Alarm set for {alarmOffset === 0 ? 'at' : alarmOffset + ' minutes before'} {selectedAlarmTime}
                         </p>
+                        <div className="flex gap-2">
+                          {[0, 5, 10, 15].map((min) => (
+                            <button
+                              key={min}
+                              onClick={() => setAlarmOffset(min)}
+                              className={`flex-1 px-2 py-1.5 rounded text-xs font-medium transition-colors ${
+                                alarmOffset === min
+                                  ? 'bg-primary text-primary-foreground'
+                                  : 'bg-background text-primary border border-primary/30 hover:bg-primary/20'
+                              }`}
+                            >
+                              {min}m
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     )}
                     <p className="text-xs text-muted-foreground mt-4">
