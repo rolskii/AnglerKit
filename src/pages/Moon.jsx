@@ -29,6 +29,7 @@ export default function Moon() {
         moonrise: 'Sunrise: 5:48 AM',
         moonset: 'Sunset: 8:54 PM',
         location: location,
+        fishingRating: calculateFishingRating(phase.daysInCycle),
       });
     };
 
@@ -150,7 +151,27 @@ export default function Moon() {
     else if (daysInCycle < 25) name = 'Last Quarter';
     else name = 'Waning Crescent';
     
-    return { name, illumination };
+    return { name, illumination, daysInCycle };
+  };
+
+  const calculateFishingRating = (daysInCycle) => {
+    const lunarMonth = 29.53058867;
+    const distFromNew = Math.min(daysInCycle, lunarMonth - daysInCycle);
+    const distFromFull = Math.abs(daysInCycle - lunarMonth / 2);
+    const distFromMajor = Math.min(distFromNew, distFromFull);
+    if (distFromMajor < 1) return 7;
+    if (distFromMajor < 2.5) return 6;
+    if (distFromMajor < 4.5) return 5;
+    if (distFromMajor < 6) return 4;
+    return 3;
+  };
+
+  const getRatingLabel = (rating) => {
+    if (rating >= 7) return 'Excellent';
+    if (rating >= 6) return 'Very Good';
+    if (rating >= 5) return 'Good';
+    if (rating >= 4) return 'Fair';
+    return 'Moderate';
   };
 
   const getSolunarTimes = (phase) => {
@@ -270,6 +291,33 @@ export default function Moon() {
                     <p className="font-semibold">8:54 PM</p>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Fishing Rating Card */}
+            <Card className="bg-primary/10">
+              <CardHeader className="text-center">
+                <CardTitle className="text-lg">Fishing Forecast</CardTitle>
+                <CardDescription>Solunar activity rating for the selected day</CardDescription>
+              </CardHeader>
+              <CardContent className="text-center space-y-4">
+                <div className="flex justify-center gap-2">
+                  {[1, 2, 3, 4, 5, 6, 7].map((n) => (
+                    <div
+                      key={n}
+                      className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold ${
+                        n <= moonData.fishingRating
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted text-muted-foreground'
+                      }`}
+                    >
+                      {n}
+                    </div>
+                  ))}
+                </div>
+                <p className="text-2xl font-bold text-primary">
+                  {moonData.fishingRating}/7 — {getRatingLabel(moonData.fishingRating)}
+                </p>
               </CardContent>
             </Card>
 
