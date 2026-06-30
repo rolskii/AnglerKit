@@ -6,14 +6,15 @@ export default function Moon() {
   const [moonData, setMoonData] = useState(null);
   const [location, setLocation] = useState('Toronto, ON');
   const [editingLocation, setEditingLocation] = useState('Toronto, ON');
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
 
   useEffect(() => {
     const calculateMoonData = () => {
-      const now = new Date();
-      const phase = calculateMoonPhase(now);
+      const date = new Date(selectedDate);
+      const phase = calculateMoonPhase(date);
       
       setMoonData({
-        date: now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }),
+        date: date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }),
         phase: phase.name,
         illumination: Math.round(phase.illumination * 100),
         moonrise: 'Sunrise: 5:48 AM',
@@ -23,7 +24,7 @@ export default function Moon() {
     };
 
     calculateMoonData();
-  }, [location]);
+  }, [location, selectedDate]);
 
   const handleLocationChange = () => {
     if (editingLocation.trim()) {
@@ -83,8 +84,8 @@ export default function Moon() {
           <h1 className="text-3xl font-display font-bold mb-2">Moon Phase</h1>
           <p className="text-muted-foreground">Lunar forecasting for your next fishing trip</p>
           
-          {/* Location Selector */}
-          <div className="mt-6 flex gap-2 max-w-md mx-auto">
+          {/* Location & Date Selector */}
+          <div className="mt-6 flex gap-2 max-w-md mx-auto flex-col sm:flex-row">
             <input
               type="text"
               value={editingLocation}
@@ -92,6 +93,12 @@ export default function Moon() {
               placeholder="Enter location"
               className="flex-1 px-3 py-2 text-sm border border-border rounded-lg bg-card text-foreground placeholder:text-muted-foreground"
               onKeyPress={(e) => e.key === 'Enter' && handleLocationChange()}
+            />
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="flex-1 px-3 py-2 text-sm border border-border rounded-lg bg-card text-foreground"
             />
             <button
               onClick={handleLocationChange}
