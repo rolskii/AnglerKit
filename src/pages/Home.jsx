@@ -1,38 +1,72 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { ChevronRight, Camera, Moon as MoonIcon, Cloud } from "lucide-react";
 import ReelDiscIcon from "@/components/ReelDiscIcon";
+import { base44 } from "@/api/base44Client";
+
+const calculateMoonPhase = (date) => {
+  const knownNewMoon = new Date(2000, 0, 6);
+  const lunarMonth = 29.53058867;
+  const daysSinceNewMoon = (date - knownNewMoon) / (1000 * 60 * 60 * 24);
+  const daysInCycle = daysSinceNewMoon % lunarMonth;
+  const illumination = (1 + Math.cos(Math.PI * 2 * (daysInCycle / lunarMonth))) / 2;
+
+  let name = "New Moon";
+  if (daysInCycle < 1.84) name = "New Moon";
+  else if (daysInCycle < 7.38) name = "Waxing Crescent";
+  else if (daysInCycle < 9.23) name = "First Quarter";
+  else if (daysInCycle < 14.77) name = "Waxing Gibbous";
+  else if (daysInCycle < 16.61) name = "Full Moon";
+  else if (daysInCycle < 23.15) name = "Waning Gibbous";
+  else if (daysInCycle < 25) name = "Last Quarter";
+  else name = "Waning Crescent";
+
+  return { name, illumination: Math.round(illumination * 100) };
+};
+
+const getWeatherDescription = (code) => {
+  const codes = {
+    0: "Clear", 1: "Mostly Clear", 2: "Partly Cloudy", 3: "Cloudy",
+    45: "Foggy", 48: "Foggy", 51: "Light Drizzle", 53: "Drizzle",
+    55: "Heavy Drizzle", 61: "Light Rain", 63: "Rain", 65: "Heavy Rain",
+    71: "Light Snow", 73: "Snow", 75: "Heavy Snow",
+    80: "Light Showers", 81: "Showers", 82: "Heavy Showers",
+    85: "Light Snow Showers", 86: "Snow Showers",
+    95: "Thunderstorm", 96: "Thunderstorm", 99: "Thunderstorm",
+  };
+  return codes[code] || "Unknown";
+};
+
+const parseTimeToMinutes = (timeStr) => {
+  const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+  if (!match) return null;
+  let hours = parseInt(match[1]);
+  const minutes = parseInt(match[2]);
+  const period = match[3].toUpperCase();
+  if (period === "PM" && hours !== 12) hours += 12;
+  if (period === "AM" && hours === 12) hours = 0;
+  return hours * 60 + minutes;
+};
+
+const getNextBiteWindow = () => {
+  const periods = [
+    { start: "5:48 AM", end: "7:48 AM" },
+    { start: "8:54 PM", end: "10:54 PM" },
+  ];
+  const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
+  for (const p of periods) {
+    const startMin = parseTimeToMinutes(p.start);
+    if (startMin && startMin > nowMin) return p;
+  }
+  return periods[0];
+};
 
 const items = [
-  {
-    to: "/gear/lines",
-    title: "Gear",
-    description: "Lines, reels, rods, lures, flies and other gear — all in one place.",
-    icon: ReelDiscIcon,
-    tint: "orange",
-  },
-  {
-    to: "/catches",
-    title: "Fish Log",
-    description: "Log in your catches with measurements, photos and gear used.",
-    icon: Camera,
-    tint: "blue",
-  },
-  {
-    to: "/moon",
-    title: "Moon Phase",
-    description: "Check lunar phases and solunar feeding times to plan your fishing trips.",
-    icon: MoonIcon,
-    tint: "purple",
-  },
-  {
-    to: "/weather",
-    title: "Weather",
-    description: "Check current weather conditions and 7-day forecast for your fishing location.",
-    icon: Cloud,
-    tint: "teal",
-  },
+  { to: "/gear/lines", title: "Gear", icon: ReelDiscIcon, tint: "orange", key: "gear" },
+  { to: "/catches", title: "Fish Log", icon: Camera, tint: "blue", key: "catch" },
+  { to: "/moon", title: "Moon Phase", icon: MoonIcon, tint: "purple", key: "moon" },
+  { to: "/weather", title: "Weather", icon: Cloud, tint: "teal", key: "weather" },
 ];
 
 const tintClasses = {
@@ -43,29 +77,126 @@ const tintClasses = {
 };
 
 export default function Home() {
+  const [moonPhase, setMoonPhase] = useState(null);
+  const [weatherInfo, setWeatherInfo] = useState(null);
+  const [descriptions, setDescriptions] = useState({});
+  const [biteWindow, setBiteWindow] = useState(null);
+
+  useEffect(() => {
+    const phase = calculateMoonPhase(new Date());
+    setMoonPhase(phase);
+    setBiteWindow(getNextBiteWindow());
+    setDescriptions(prev => ({ ...prev, moon: `${phase.illumination}% illuminated` }));
+
+    const coords = JSON.parse(localStorage.getItem("weatherCoords") || "null");
+    const tempUnit = localStorage.getItem("weatherTempUnit") || "fahrenheit";
+    if (coords) fetchWeather(coords, tempUnit);
+
+    fetchGearCount();
+    fetchLastCatch();
+  }, []);
+
+  const fetchWeather = async (coords, tempUnit) => {
+    try {
+      const res = await fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current=temperature_2m,weather_code,wind_speed_10m&temperature_unit=${tempUnit}&wind_speed_unit=mph`
+      );
+      const data = await res.json();
+      const temp = Math.round(data.current.temperature_2m);
+      const desc = getWeatherDescription(data.current.weather_code);
+      const wind = data.current.wind_speed_10m;
+      const windLabel = wind < 8 ? "Light wind" : wind < 15 ? "Breezy" : "Windy";
+      const tempSymbol = tempUnit === "fahrenheit" ? "°F" : "°C";
+      setWeatherInfo({ temp: `${temp}${tempSymbol}`, windLabel, desc });
+      setDescriptions(prev => ({ ...prev, weather: desc }));
+    } catch (e) {}
+  };
+
+  const fetchGearCount = async () => {
+    try {
+      const [lines, reels, rods, lures, misc] = await Promise.all([
+        base44.entities.FlyLine.list("-created_date", 500),
+        base44.entities.Reel.list("-created_date", 500),
+        base44.entities.Rod.list("-created_date", 500),
+        base44.entities.Lure.list("-created_date", 500),
+        base44.entities.MiscItem.list("-created_date", 500),
+      ]);
+      const total = lines.length + reels.length + rods.length + lures.length + misc.length;
+      setDescriptions(prev => ({ ...prev, gear: `${total} ${total === 1 ? "item" : "items"}` }));
+    } catch (e) {}
+  };
+
+  const fetchLastCatch = async () => {
+    try {
+      const catches = await base44.entities.Catch.list("-date", 1);
+      if (catches.length > 0 && catches[0].date) {
+        const days = Math.floor((Date.now() - new Date(catches[0].date)) / (1000 * 60 * 60 * 24));
+        const text = days === 0 ? "Today" : days === 1 ? "Yesterday" : `${days} days ago`;
+        setDescriptions(prev => ({ ...prev, catch: `Last catch: ${text}` }));
+      } else {
+        setDescriptions(prev => ({ ...prev, catch: "No catches yet" }));
+      }
+    } catch (e) {}
+  };
+
   return (
     <div className="space-y-6 md:space-y-8">
+      {/* Hero */}
       <div className="space-y-2 px-1">
+        <p className="text-sm font-medium text-muted-foreground">Built for the water</p>
         <h1 className="text-2xl md:text-[34px] font-heading font-extrabold tracking-tight leading-tight">Angler's Log</h1>
-        <p className="text-sm md:text-[17px] text-muted-foreground">Organize your entire fishing arsenal—track gear, predict best fishing times with moon phases, check weather and log every catch in one place.</p>
+        <p className="text-sm md:text-[17px] text-muted-foreground">
+          Track your gear, predict the bite with moon phases, check the water, and log every catch — all in one place.
+        </p>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+      {/* Status bar */}
+      {(moonPhase || weatherInfo) && (
+        <div className="flex items-center justify-between gap-4 px-1">
+          {moonPhase && (
+            <Link to="/moon" className="flex items-center gap-2 group">
+              <MoonIcon className="w-4 h-4 text-muted-foreground shrink-0" />
+              <div>
+                <p className="text-xs text-muted-foreground">Moon phase</p>
+                <p className="text-sm font-medium">{moonPhase.name}</p>
+              </div>
+            </Link>
+          )}
+          {weatherInfo && (
+            <Link to="/weather" className="flex items-center gap-2 text-right group">
+              <div>
+                <p className="text-xs text-muted-foreground">Right now</p>
+                <p className="text-sm font-medium">{weatherInfo.temp} · {weatherInfo.windLabel}</p>
+              </div>
+              <Cloud className="w-4 h-4 text-muted-foreground shrink-0" />
+            </Link>
+          )}
+        </div>
+      )}
+
+      {/* Category grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         {items.map((item) => {
           const Icon = item.icon;
-          const isGear = item.to === '/gear/lines';
+          const isGear = item.to === "/gear/lines";
+          const desc = descriptions[item.key];
           return (
             <Link key={item.to} to={item.to} className="group">
               <Card className="relative p-4 md:p-5 h-full rounded-2xl border-0 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer bg-card">
                 <div className="flex flex-col gap-3">
                   <div className="flex items-start justify-between">
-                    <div className={`flex h-12 md:h-11 w-12 md:w-11 items-center justify-center rounded-xl md:rounded-xl flex-shrink-0 ${tintClasses[item.tint]}`}>
+                    <div className={`flex h-12 md:h-11 w-12 md:w-11 items-center justify-center rounded-xl flex-shrink-0 ${tintClasses[item.tint]}`}>
                       <Icon className={isGear ? "w-8 md:w-10 h-8 md:h-10" : "w-6 md:w-8 h-6 md:h-8"} strokeWidth={2} />
                     </div>
                     <ChevronRight className="w-5 h-5 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors flex-shrink-0" />
                   </div>
-                  <div className="space-y-1.5">
+                  <div className="space-y-1">
                     <h2 className="text-base md:text-lg font-heading font-semibold tracking-tight">{item.title}</h2>
+                    {desc ? (
+                      <p className="text-xs md:text-sm text-muted-foreground">{desc}</p>
+                    ) : (
+                      <p className="text-xs md:text-sm text-muted-foreground/40">—</p>
+                    )}
                   </div>
                 </div>
               </Card>
@@ -73,6 +204,16 @@ export default function Home() {
           );
         })}
       </div>
+
+      {/* Footer: best bite window */}
+      {biteWindow && (
+        <div className="flex items-center gap-2 px-1 pt-2">
+          <span className="w-2 h-2 rounded-full bg-tint-teal shrink-0"></span>
+          <p className="text-sm text-muted-foreground">
+            Best bite window today: {biteWindow.start}–{biteWindow.end}
+          </p>
+        </div>
+      )}
     </div>
   );
 }
