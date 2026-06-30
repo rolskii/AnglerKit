@@ -44,8 +44,15 @@ export default function Moon() {
   };
 
   const getSolunarTimes = (phase) => {
-    const major = ['Moonrise to 2 hrs after', 'Moon highest point', 'Moonset to 2 hrs after'];
-    const minor = ['Sun rise to 30 min after', 'Sun set to 30 min after'];
+    const major = [
+      { text: 'Moonrise to 2 hrs after', time: '5:48 AM - 7:48 AM' },
+      { text: 'Moon highest point', time: '12:30 PM' },
+      { text: 'Moonset to 2 hrs after', time: '8:54 PM - 10:54 PM' }
+    ];
+    const minor = [
+      { text: 'Sun rise to 30 min after', time: '5:48 AM - 6:18 AM' },
+      { text: 'Sun set to 30 min after', time: '8:54 PM - 9:24 PM' }
+    ];
     
     return { major, minor };
   };
@@ -131,10 +138,13 @@ export default function Moon() {
                   </CardHeader>
                   <CardContent>
                     <ul className="space-y-3">
-                      {solunar.major.map((time, idx) => (
+                      {solunar.major.map((item, idx) => (
                         <li key={idx} className="flex items-start gap-3">
                           <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0"></div>
-                          <span className="text-sm">{time}</span>
+                          <div className="flex-1">
+                            <span className="text-sm">{item.text}</span>
+                            <p className="text-xs text-muted-foreground mt-0.5">{item.time}</p>
+                          </div>
                         </li>
                       ))}
                     </ul>
@@ -154,10 +164,13 @@ export default function Moon() {
                   </CardHeader>
                   <CardContent>
                     <ul className="space-y-3">
-                      {solunar.minor.map((time, idx) => (
+                      {solunar.minor.map((item, idx) => (
                         <li key={idx} className="flex items-start gap-3">
                           <div className="w-2 h-2 rounded-full bg-amber-500 mt-2 flex-shrink-0"></div>
-                          <span className="text-sm">{time}</span>
+                          <div className="flex-1">
+                            <span className="text-sm">{item.text}</span>
+                            <p className="text-xs text-muted-foreground mt-0.5">{item.time}</p>
+                          </div>
                         </li>
                       ))}
                     </ul>
