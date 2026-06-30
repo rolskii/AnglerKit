@@ -185,13 +185,17 @@ export default function Moon() {
                 className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-card text-foreground placeholder:text-muted-foreground text-center"
                 onKeyPress={(e) => e.key === 'Enter' && handleLocationChange()}
                 onFocus={() => editingLocation.trim().length >= 2 && setShowSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 100)}
               />
               {showSuggestions && suggestions.length > 0 && (
                 <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-50 max-h-40 overflow-y-auto">
                   {suggestions.map((suggestion, idx) => (
                     <div
                       key={idx}
-                      onClick={() => handleLocationChange(suggestion)}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        handleLocationChange(suggestion);
+                      }}
                       className="w-full px-3 py-2.5 text-xs text-left hover:bg-primary/10 border-b border-border/50 last:border-b-0 transition-colors cursor-pointer"
                     >
                       {suggestion}
