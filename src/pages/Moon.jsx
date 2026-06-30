@@ -36,8 +36,8 @@ export default function Moon() {
   }, [location, selectedDate]);
 
   const handleLocationChange = (selectedLocation) => {
-    const locationToUse = selectedLocation || editingLocation;
-    if (locationToUse.trim()) {
+    const locationToUse = (typeof selectedLocation === 'string' && selectedLocation) || editingLocation;
+    if (locationToUse && locationToUse.trim()) {
       localStorage.setItem('moonLocation', locationToUse);
       setEditingLocation(locationToUse);
       setLocation(locationToUse);
