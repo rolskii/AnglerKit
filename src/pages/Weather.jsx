@@ -52,7 +52,12 @@ export default function Weather() {
       );
       const data = await response.json();
       if (data.results) {
-        setSuggestions(data.results.map(r => `${r.name}${r.admin1 ? ', ' + r.admin1 : ''}${r.country ? ', ' + r.country : ''}`));
+        setSuggestions(data.results.map(r => ({
+          label: `${r.name}${r.admin1 ? ', ' + r.admin1 : ''}${r.country ? ', ' + r.country : ''}`,
+          lat: r.latitude,
+          lon: r.longitude,
+          name: `${r.name}${r.admin1 ? ', ' + r.admin1 : ''}`,
+        })));
         setShowSuggestions(true);
       }
     } catch (err) {
@@ -61,10 +66,30 @@ export default function Weather() {
   };
 
   const handleSuggestionSelect = (suggestion) => {
-    setEditingLocation(suggestion);
+    setEditingLocation(suggestion.label);
     setShowSuggestions(false);
     setSuggestions([]);
-    handleLocationChange(suggestion);
+    fetchWeatherByCoords(suggestion.lat, suggestion.lon, suggestion.name);
+  };
+
+  const fetchWeatherByCoords = async (lat, lon, locationName) => {
+    if (!lat || !lon) return;
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&temperature_unit=fahrenheit&wind_speed_unit=mph&forecast_days=7`
+      );
+      const data = await response.json();
+      setLocation(locationName);
+      setEditingLocation(locationName);
+      setShowSuggestions(false);
+      setWeather({ current: data.current, daily: data.daily });
+      setLoading(false);
+    } catch (err) {
+      setError('Failed to fetch weather for that location.');
+      setLoading(false);
+    }
   };
 
   const handleLocationChange = async (overrideLocation) => {
@@ -214,7 +239,7 @@ export default function Weather() {
                           onClick={() => handleSuggestionSelect(suggestion)}
                           className="w-full px-3 py-2.5 text-xs text-left hover:bg-primary/10 border-b border-border/50 last:border-b-0 transition-colors cursor-pointer"
                         >
-                          {suggestion}
+                          {suggestion.label}
                         </div>
                       ))}
                     </div>
