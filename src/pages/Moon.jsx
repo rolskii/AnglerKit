@@ -4,6 +4,8 @@ import { Moon as MoonIcon, Sun, Waves, MapPin } from 'lucide-react';
 
 export default function Moon() {
   const [moonData, setMoonData] = useState(null);
+  const [location, setLocation] = useState('Toronto, ON');
+  const [editingLocation, setEditingLocation] = useState('Toronto, ON');
 
   useEffect(() => {
     const calculateMoonData = () => {
@@ -16,12 +18,18 @@ export default function Moon() {
         illumination: Math.round(phase.illumination * 100),
         moonrise: 'Sunrise: 5:48 AM',
         moonset: 'Sunset: 8:54 PM',
-        location: 'Toronto, ON',
+        location: location,
       });
     };
 
     calculateMoonData();
-  }, []);
+  }, [location]);
+
+  const handleLocationChange = () => {
+    if (editingLocation.trim()) {
+      setLocation(editingLocation);
+    }
+  };
 
   const calculateMoonPhase = (date) => {
     const knownNewMoon = new Date(2000, 0, 6);
@@ -74,6 +82,24 @@ export default function Moon() {
         <div className="text-center mb-8">
           <h1 className="text-3xl font-display font-bold mb-2">Moon Phase</h1>
           <p className="text-muted-foreground">Lunar forecasting for your next fishing trip</p>
+          
+          {/* Location Selector */}
+          <div className="mt-6 flex gap-2 max-w-md mx-auto">
+            <input
+              type="text"
+              value={editingLocation}
+              onChange={(e) => setEditingLocation(e.target.value)}
+              placeholder="Enter location"
+              className="flex-1 px-3 py-2 text-sm border border-border rounded-lg bg-card text-foreground placeholder:text-muted-foreground"
+              onKeyPress={(e) => e.key === 'Enter' && handleLocationChange()}
+            />
+            <button
+              onClick={handleLocationChange}
+              className="px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity"
+            >
+              Update
+            </button>
+          </div>
         </div>
 
         {moonData && (
