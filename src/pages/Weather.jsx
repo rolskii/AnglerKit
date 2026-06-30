@@ -26,7 +26,7 @@ export default function Weather() {
           const geoData = await geoResponse.json();
           const locationName = geoData.results?.[0]
             ? `${geoData.results[0].name}${geoData.results[0].admin1 ? ', ' + geoData.results[0].admin1 : ''}`
-            : 'Current Location';
+            : `${latitude.toFixed(4)}°, ${longitude.toFixed(4)}°`;
           setLocation(locationName);
           setEditingLocation(locationName);
           setWeather({ current: data.current, daily: data.daily });
