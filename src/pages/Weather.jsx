@@ -72,6 +72,7 @@ export default function Weather() {
                 : `${latitude.toFixed(2)}°, ${longitude.toFixed(2)}°`;
 
               setLocation(locationName);
+              setEditingLocation(locationName);
               setWeather({
                 current: data.current,
                 daily: data.daily,
