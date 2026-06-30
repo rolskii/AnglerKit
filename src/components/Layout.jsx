@@ -12,6 +12,7 @@ import HorizontalLinesIcon from "@/components/HorizontalLinesIcon";
 import VerticalLinesIcon from "@/components/VerticalLinesIcon";
 import ReelDiscIcon from "@/components/ReelDiscIcon";
 import FishingHookIcon from "@/components/FishingHookIcon";
+import { Moon as MoonIcon } from "lucide-react";
 
 const navItems = [
   { to: "/", label: "Home", icon: HomeIcon },
@@ -21,6 +22,7 @@ const navItems = [
   { to: "/lures", label: "Lures & Flies", icon: FishingHookIcon },
   { to: "/misc", label: "Misc. Gear", icon: Package },
   { to: "/catches", label: "Fish Log", icon: Camera },
+  { to: "/moon", label: "Moon Phase", icon: MoonIcon },
   { to: "/settings", label: "Settings", icon: SettingsIcon },
   { to: "/about", label: "About", icon: Info },
 ];
