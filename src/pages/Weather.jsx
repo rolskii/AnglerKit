@@ -10,6 +10,29 @@ export default function Weather() {
   const [error, setError] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [tempUnit, setTempUnit] = useState('fahrenheit');
+  const [lastCoords, setLastCoords] = useState(null);
+
+  const fetchWeatherByCoords = async (lat, lon, locationName, unit = tempUnit) => {
+    if (!lat || !lon) return;
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&temperature_unit=${unit}&wind_speed_unit=mph&forecast_days=7`
+      );
+      const data = await response.json();
+      setLastCoords({ lat, lon, name: locationName });
+      setLocation(locationName);
+      setEditingLocation(locationName);
+      setShowSuggestions(false);
+      setWeather({ current: data.current, daily: data.daily });
+      setLoading(false);
+    } catch (err) {
+      setError('Failed to fetch weather for that location.');
+      setLoading(false);
+    }
+  };
 
   const fetchUserLocation = async () => {
     setLoading(true);
@@ -26,9 +49,10 @@ export default function Weather() {
       const locationName = `${result.name}${result.admin1 ? ', ' + result.admin1 : ''}`;
       
       const response = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&temperature_unit=fahrenheit&wind_speed_unit=mph&forecast_days=7`
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&temperature_unit=${tempUnit}&wind_speed_unit=mph&forecast_days=7`
       );
       const data = await response.json();
+      setLastCoords({ lat, lon, name: locationName });
       setLocation(locationName);
       setEditingLocation(locationName);
       setWeather({ current: data.current, daily: data.daily });
@@ -65,31 +89,19 @@ export default function Weather() {
     }
   };
 
+  const toggleTempUnit = () => {
+    const next = tempUnit === 'fahrenheit' ? 'celsius' : 'fahrenheit';
+    setTempUnit(next);
+    if (lastCoords) {
+      fetchWeatherByCoords(lastCoords.lat, lastCoords.lon, lastCoords.name, next);
+    }
+  };
+
   const handleSuggestionSelect = (suggestion) => {
     setEditingLocation(suggestion.label);
     setShowSuggestions(false);
     setSuggestions([]);
     fetchWeatherByCoords(suggestion.lat, suggestion.lon, suggestion.name);
-  };
-
-  const fetchWeatherByCoords = async (lat, lon, locationName) => {
-    if (!lat || !lon) return;
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&temperature_unit=fahrenheit&wind_speed_unit=mph&forecast_days=7`
-      );
-      const data = await response.json();
-      setLocation(locationName);
-      setEditingLocation(locationName);
-      setShowSuggestions(false);
-      setWeather({ current: data.current, daily: data.daily });
-      setLoading(false);
-    } catch (err) {
-      setError('Failed to fetch weather for that location.');
-      setLoading(false);
-    }
   };
 
   const handleLocationChange = async (overrideLocation) => {
@@ -112,9 +124,10 @@ export default function Weather() {
       const locationName = `${result.name}${result.admin1 ? ', ' + result.admin1 : ''}`;
 
       const response = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&temperature_unit=fahrenheit&wind_speed_unit=mph&forecast_days=7`
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&temperature_unit=${tempUnit}&wind_speed_unit=mph&forecast_days=7`
       );
       const data = await response.json();
+      setLastCoords({ lat, lon, name: locationName });
       setLocation(locationName);
       setEditingLocation(locationName);
       setShowSuggestions(false);
@@ -207,7 +220,16 @@ export default function Weather() {
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-display font-bold mb-2">Weather</h1>
+          <div className="flex items-center justify-center gap-3 mb-2">
+            <h1 className="text-3xl font-display font-bold">Weather</h1>
+            <button
+              onClick={toggleTempUnit}
+              className="px-3 py-1 text-sm font-medium rounded-full bg-primary/15 text-primary hover:bg-primary/25 transition-colors"
+              title="Toggle temperature unit"
+            >
+              °{tempUnit === 'fahrenheit' ? 'F' : 'C'}
+            </button>
+          </div>
           <p className="text-muted-foreground">Current conditions and forecast</p>
         </div>
 
@@ -369,7 +391,8 @@ export default function Weather() {
             {current.relative_humidity_2m > 70 && (
               <p>✓ High humidity — great for insect activity and hatches</p>
             )}
-            {current.temperature_2m > 70 && current.temperature_2m < 85 && (
+            {((tempUnit === 'fahrenheit' && current.temperature_2m > 70 && current.temperature_2m < 85) ||
+              (tempUnit === 'celsius' && current.temperature_2m > 21 && current.temperature_2m < 29)) && (
               <p>✓ Optimal temperature range for most freshwater species</p>
             )}
           </CardContent>
