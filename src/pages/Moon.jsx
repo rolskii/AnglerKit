@@ -187,15 +187,15 @@ export default function Moon() {
                 onFocus={() => editingLocation.trim().length >= 2 && setShowSuggestions(true)}
               />
               {showSuggestions && suggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-10 max-h-40 overflow-y-auto">
+                <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-50 max-h-40 overflow-y-auto">
                   {suggestions.map((suggestion, idx) => (
-                    <button
+                    <div
                       key={idx}
                       onClick={() => handleLocationChange(suggestion)}
-                      className="w-full px-3 py-2 text-xs text-left hover:bg-primary/10 border-b border-border/50 last:border-b-0 transition-colors"
+                      className="w-full px-3 py-2.5 text-xs text-left hover:bg-primary/10 border-b border-border/50 last:border-b-0 transition-colors cursor-pointer"
                     >
                       {suggestion}
-                    </button>
+                    </div>
                   ))}
                 </div>
               )}
