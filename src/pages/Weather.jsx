@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Cloud, CloudRain, Sun, Wind, Droplets, Eye, Gauge, MapPin } from 'lucide-react';
+import { Cloud, CloudRain, Sun, Wind, Droplets, Eye, Gauge, MapPin, ChevronDown } from 'lucide-react';
 
 export default function Weather() {
   const [weather, setWeather] = useState(null);
@@ -12,6 +12,7 @@ export default function Weather() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [tempUnit, setTempUnit] = useState('fahrenheit');
   const [lastCoords, setLastCoords] = useState(null);
+  const [selectedDay, setSelectedDay] = useState(null);
 
   const fetchWeatherByCoords = async (lat, lon, locationName, unit = tempUnit) => {
     if (!lat || !lon) return;
@@ -19,14 +20,14 @@ export default function Weather() {
       setLoading(true);
       setError(null);
       const response = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&temperature_unit=${unit}&wind_speed_unit=mph&forecast_days=7`
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&temperature_unit=${unit}&wind_speed_unit=mph&hourly=temperature_2m,weather_code,precipitation_probability,wind_speed_10m&forecast_days=7`
       );
       const data = await response.json();
       setLastCoords({ lat, lon, name: locationName });
       setLocation(locationName);
       setEditingLocation(locationName);
       setShowSuggestions(false);
-      setWeather({ current: data.current, daily: data.daily });
+      setWeather({ current: data.current, daily: data.daily, hourly: data.hourly });
       setLoading(false);
     } catch (err) {
       setError('Failed to fetch weather for that location.');
@@ -49,13 +50,13 @@ export default function Weather() {
       const locationName = `${result.name}${result.admin1 ? ', ' + result.admin1 : ''}`;
       
       const response = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&temperature_unit=${tempUnit}&wind_speed_unit=mph&forecast_days=7`
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&temperature_unit=${tempUnit}&wind_speed_unit=mph&hourly=temperature_2m,weather_code,precipitation_probability,wind_speed_10m&forecast_days=7`
       );
       const data = await response.json();
       setLastCoords({ lat, lon, name: locationName });
       setLocation(locationName);
       setEditingLocation(locationName);
-      setWeather({ current: data.current, daily: data.daily });
+      setWeather({ current: data.current, daily: data.daily, hourly: data.hourly });
       setLoading(false);
     } catch (err) {
       setError('Unable to fetch weather. Please try updating location manually.');
@@ -124,7 +125,7 @@ export default function Weather() {
       const locationName = `${result.name}${result.admin1 ? ', ' + result.admin1 : ''}`;
 
       const response = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&temperature_unit=${tempUnit}&wind_speed_unit=mph&forecast_days=7`
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&temperature_unit=${tempUnit}&wind_speed_unit=mph&hourly=temperature_2m,weather_code,precipitation_probability,wind_speed_10m&forecast_days=7`
       );
       const data = await response.json();
       setLastCoords({ lat, lon, name: locationName });
@@ -134,6 +135,7 @@ export default function Weather() {
       setWeather({
         current: data.current,
         daily: data.daily,
+        hourly: data.hourly,
       });
       setError(null);
       setLoading(false);
@@ -352,20 +354,52 @@ export default function Weather() {
               {daily.time.slice(0, 7).map((date, idx) => {
                 const ForecastIcon = getWeatherIcon(daily.weather_code[idx]);
                 return (
-                  <div key={idx} className="flex items-center justify-between p-3 bg-card rounded-lg">
-                    <div className="flex items-center gap-3 flex-1">
-                      <ForecastIcon className="w-6 h-6 text-primary flex-shrink-0" />
-                      <div>
-                        <p className="text-sm font-medium">
-                          {new Date(date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-                        </p>
-                        <p className="text-xs text-muted-foreground">{getWeatherDescription(daily.weather_code[idx])}</p>
+                  <div key={idx}>
+                    <button
+                      onClick={() => setSelectedDay(selectedDay === date ? null : date)}
+                      className="w-full flex items-center justify-between p-3 bg-card rounded-lg hover:bg-primary/5 transition-colors text-left"
+                    >
+                      <div className="flex items-center gap-3 flex-1">
+                        <ForecastIcon className="w-6 h-6 text-primary flex-shrink-0" />
+                        <div>
+                          <p className="text-sm font-medium">
+                            {new Date(date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                          </p>
+                          <p className="text-xs text-muted-foreground">{getWeatherDescription(daily.weather_code[idx])}</p>
+                        </div>
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-semibold">{Math.round(daily.temperature_2m_max[idx])}°</p>
-                      <p className="text-xs text-muted-foreground">{Math.round(daily.temperature_2m_min[idx])}°</p>
-                    </div>
+                      <div className="flex items-center gap-3">
+                        <div className="text-right">
+                          <p className="text-sm font-semibold">{Math.round(daily.temperature_2m_max[idx])}°</p>
+                          <p className="text-xs text-muted-foreground">{Math.round(daily.temperature_2m_min[idx])}°</p>
+                        </div>
+                        <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${selectedDay === date ? 'rotate-180' : ''}`} />
+                      </div>
+                    </button>
+                    {selectedDay === date && weather.hourly && (
+                      <div className="mt-2 pb-2 overflow-x-auto">
+                        <div className="flex gap-3 px-1 min-w-max">
+                          {weather.hourly.time
+                            .map((hTime, hIdx) => ({ hTime, hIdx }))
+                            .filter(({ hTime }) => hTime.startsWith(date))
+                            .map(({ hTime, hIdx }) => {
+                              const HourIcon = getWeatherIcon(weather.hourly.weather_code[hIdx]);
+                              const hourLabel = new Date(hTime).toLocaleTimeString('en-US', { hour: 'numeric', hour12: true });
+                              return (
+                                <div key={hIdx} className="flex flex-col items-center gap-1.5 w-16 p-2 rounded-lg bg-secondary/40">
+                                  <p className="text-xs text-muted-foreground">{hourLabel}</p>
+                                  <HourIcon className="w-6 h-6 text-primary" />
+                                  <p className="text-sm font-semibold">{Math.round(weather.hourly.temperature_2m[hIdx])}°</p>
+                                  <p className="text-xs text-primary flex items-center gap-0.5">
+                                    <Droplets className="w-3 h-3" />
+                                    {weather.hourly.precipitation_probability[hIdx]}%
+                                  </p>
+                                </div>
+                              );
+                            })}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 );
               })}
