@@ -7,9 +7,9 @@ export default function Moon() {
   const [location, setLocation] = useState('Toronto, ON');
   const [editingLocation, setEditingLocation] = useState('Toronto, ON');
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [selectedAlarmTime, setSelectedAlarmTime] = useState(null);
-  const [alarmEnabled, setAlarmEnabled] = useState(false);
-  const [alarmOffset, setAlarmOffset] = useState(15);
+  const [selectedAlarmTime, setSelectedAlarmTime] = useState(() => localStorage.getItem('alarmTime') || null);
+  const [alarmEnabled, setAlarmEnabled] = useState(() => localStorage.getItem('alarmEnabled') === 'true');
+  const [alarmOffset, setAlarmOffset] = useState(() => parseInt(localStorage.getItem('alarmOffset') || '15'));
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
@@ -116,6 +116,12 @@ export default function Moon() {
     // Fallback: alert
     alert(`🎣 Time to fish! Your feeding window (${selectedAlarmTime}) is starting ${timeText}!`);
   };
+
+  useEffect(() => {
+    localStorage.setItem('alarmTime', selectedAlarmTime || '');
+    localStorage.setItem('alarmEnabled', alarmEnabled);
+    localStorage.setItem('alarmOffset', alarmOffset);
+  }, [selectedAlarmTime, alarmEnabled, alarmOffset]);
 
   useEffect(() => {
     if (alarmEnabled && 'Notification' in window && Notification.permission === 'default') {
