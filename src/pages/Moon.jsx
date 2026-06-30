@@ -13,7 +13,8 @@ export default function Moon() {
 
   useEffect(() => {
     const calculateMoonData = () => {
-      const date = new Date(selectedDate);
+      const [year, month, day] = selectedDate.split('-');
+      const date = new Date(year, month - 1, day);
       const phase = calculateMoonPhase(date);
       
       setMoonData({
