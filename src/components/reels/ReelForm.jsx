@@ -57,7 +57,7 @@ export default function ReelForm({ open, onOpenChange, onSubmit, initial, loadin
             <div className="space-y-1.5">
               <Label>Type</Label>
               <Select value={form.type} onValueChange={(v) => set("type", v)}>
-                <SelectTrigger className="bg-muted"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="bg-muted"><SelectValue placeholder="Select type" /></SelectTrigger>
                 <SelectContent>
                   {TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                 </SelectContent>

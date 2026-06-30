@@ -9,14 +9,10 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import Layout from '@/components/Layout';
 import Home from '@/pages/Home';
-import Lines from '@/pages/Lines';
-import Reels from '@/pages/Reels';
-import Rods from '@/pages/Rods';
+import Gear from '@/pages/Gear';
 import About from '@/pages/About';
 import Settings from '@/pages/Settings';
 import Catches from '@/pages/Catches';
-import Lures from '@/pages/Lures';
-import Misc from '@/pages/Misc';
 import Moon from '@/pages/Moon';
 import Weather from '@/pages/Weather';
 // Add page imports here
@@ -59,12 +55,14 @@ const AuthenticatedApp = () => {
     <Routes>
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />
-        <Route path="/lines" element={<Lines />} />
-        <Route path="/reels" element={<Reels />} />
-        <Route path="/rods" element={<Rods />} />
+        <Route path="/gear" element={<Navigate to="/gear/lines" replace />} />
+        <Route path="/gear/:tab" element={<Gear />} />
+        <Route path="/lines" element={<Navigate to="/gear/lines" replace />} />
+        <Route path="/reels" element={<Navigate to="/gear/reels" replace />} />
+        <Route path="/rods" element={<Navigate to="/gear/rods" replace />} />
+        <Route path="/lures" element={<Navigate to="/gear/lures" replace />} />
+        <Route path="/misc" element={<Navigate to="/gear/misc" replace />} />
         <Route path="/catches" element={<Catches />} />
-        <Route path="/lures" element={<Lures />} />
-        <Route path="/misc" element={<Misc />} />
         <Route path="/moon" element={<Moon />} />
         <Route path="/weather" element={<Weather />} />
         <Route path="/about" element={<About />} />

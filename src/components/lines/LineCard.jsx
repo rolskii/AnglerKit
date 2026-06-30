@@ -79,11 +79,12 @@ export default function LineCard({ line, onEdit, onDelete }) {
         <p className="text-sm text-muted-foreground italic border-t border-border pt-2">{line.notes}</p>
       )}
 
-      <div className="flex gap-2 mt-auto pt-1" data-html2canvas-ignore="true">
+      <div className="flex items-center gap-2 mt-auto pt-1" data-html2canvas-ignore="true">
         <Button size="sm" variant="outline" className="flex-1" onClick={() => onEdit(line)}>
           <Pencil className="w-3.5 h-3.5 mr-1.5" /> Edit
         </Button>
         <ShareButton card={card} photoUrls={getItemImages(line)} />
+        <div className="w-px self-stretch bg-border mx-1" aria-hidden="true" />
         <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => onDelete(line)}>
           <Trash2 className="w-3.5 h-3.5" />
         </Button>

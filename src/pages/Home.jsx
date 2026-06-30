@@ -1,69 +1,40 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { ChevronRight, Camera, Package, Moon as MoonIcon, Cloud } from "lucide-react";
-import HorizontalLinesIcon from "@/components/HorizontalLinesIcon";
-import VerticalLinesIcon from "@/components/VerticalLinesIcon";
-import FishingHookIcon from "@/components/FishingHookIcon";
+import { ChevronRight, Camera, Moon as MoonIcon, Cloud } from "lucide-react";
 import ReelDiscIcon from "@/components/ReelDiscIcon";
 import { base44 } from "@/api/base44Client";
 
+const GEAR_ENTITIES = ["FlyLine", "Reel", "Rod", "Lure", "MiscItem"];
+
 const items = [
   {
-    to: "/lines",
-    title: "Lines",
-    description: "Manage your different kinds of lines and fly lines - brands, weights, conditions and rod & reel pairings.",
-    icon: HorizontalLinesIcon,
-    entity: "FlyLine",
-  },
-  {
-    to: "/reels",
-    title: "Reels",
-    description: "Track your reels and see which ones are in use along with the lines spooled on each.",
+    to: "/gear/lines",
+    title: "Gear",
+    description: "Lines, reels, rods, lures, flies and other gear — all in one place.",
     icon: ReelDiscIcon,
-    entity: "Reel",
-  },
-  {
-    to: "/rods",
-    title: "Rods",
-    description: "Catalog your rods and view their paired lines.",
-    icon: VerticalLinesIcon,
-    entity: "Rod",
-  },
-  {
-    to: "/lures",
-    title: "Lures & Flies",
-    description: "Catalog your lures, tackle and flies with photos, sizes and quantities.",
-    icon: FishingHookIcon,
-    entity: "Lure",
-  },
-  {
-    to: "/misc",
-    title: "Misc. Gear",
-    description: "Track other fishing gear - apparel, tools and accessories.",
-    icon: Package,
-    entity: "MiscItem",
+    entities: GEAR_ENTITIES,
   },
   {
     to: "/catches",
     title: "Fish Log",
     description: "Log in your catches with measurements, photos and gear used.",
     icon: Camera,
-    entity: null,
+    entities: [],
   },
   {
     to: "/moon",
     title: "Moon Phase",
     description: "Check lunar phases and solunar feeding times to plan your fishing trips.",
     icon: MoonIcon,
-    entity: null,
+    entities: [],
   },
   {
     to: "/weather",
     title: "Weather",
     description: "Check current weather conditions and 7-day forecast for your fishing location.",
     icon: Cloud,
-    entity: null,
+    entities: [],
   },
 ];
 
@@ -76,10 +47,12 @@ export default function Home() {
     (async () => {
       const result = {};
       await Promise.all(
-        items.filter((i) => i.entity).map(async (i) => {
+        items.filter((i) => i.entities.length).map(async (i) => {
           try {
-            const records = await base44.entities[i.entity].list("-updated_date", 500);
-            result[i.to] = records.reduce((sum, r) => sum + (r.value || 0), 0);
+            const lists = await Promise.all(
+              i.entities.map((entity) => base44.entities[entity].list("-updated_date", 500))
+            );
+            result[i.to] = lists.flat().reduce((sum, r) => sum + (r.value || 0), 0);
           } catch (e) {
             result[i.to] = 0;
           }
@@ -100,21 +73,21 @@ export default function Home() {
         {items.map((item) => {
           const Icon = item.icon;
            const total = totals[item.to];
-           const showTotal =
-             item.entity && !["/rods", "/reels", "/lines", "/lures", "/misc"].includes(item.to) && total != null && total > 0;
-          const isReels = item.to === '/reels';
+           const showTotal = item.entities.length && total != null && total > 0;
+          const isGear = item.to === '/gear/lines';
           return (
             <Link key={item.to} to={item.to} className="group">
               <Card className="relative p-4 md:p-5 h-full rounded-2xl border-0 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer bg-primary/10">
                 <div className="flex flex-col gap-3">
                   <div className="flex items-start justify-between">
                     <div className="flex h-12 md:h-11 w-12 md:w-11 items-center justify-center rounded-lg md:rounded-xl bg-primary/20 text-primary flex-shrink-0">
-                      <Icon className={isReels ? "w-8 md:w-10 h-8 md:h-10" : "w-6 md:w-8 h-6 md:h-8"} strokeWidth={2} />
+                      <Icon className={isGear ? "w-8 md:w-10 h-8 md:h-10" : "w-6 md:w-8 h-6 md:h-8"} strokeWidth={2} />
                     </div>
                     <ChevronRight className="w-5 h-5 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors flex-shrink-0" />
                   </div>
                   <div className="space-y-1.5">
                     <h2 className="text-base md:text-lg font-heading font-semibold tracking-tight">{item.title}</h2>
+                    <p className="text-xs md:text-sm text-muted-foreground">{item.description}</p>
                   </div>
                   {showTotal && (
                     <div className="mt-auto pt-2 flex items-baseline gap-1.5">

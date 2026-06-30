@@ -64,11 +64,12 @@ export default function LureCard({ lure, onEdit, onDelete }) {
 
       {lure.notes && <p className="text-sm text-muted-foreground italic border-t border-border pt-2">{lure.notes}</p>}
 
-      <div className="flex gap-2 mt-auto pt-1" data-html2canvas-ignore="true">
+      <div className="flex items-center gap-2 mt-auto pt-1" data-html2canvas-ignore="true">
         <Button size="sm" variant="outline" className="flex-1" onClick={() => onEdit(lure)}>
           <Pencil className="w-3.5 h-3.5 mr-1.5" /> Edit
         </Button>
         <ShareButton card={card} photoUrls={getItemImages(lure)} />
+        <div className="w-px self-stretch bg-border mx-1" aria-hidden="true" />
         <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => onDelete(lure)}>
           <Trash2 className="w-3.5 h-3.5" />
         </Button>

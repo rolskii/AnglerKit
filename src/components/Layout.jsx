@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Outlet, NavLink, useNavigate, Link } from "react-router-dom";
+import { Outlet, NavLink, useNavigate, useLocation, Link } from "react-router-dom";
 import {
   LogOut, Menu, X,
   Home as HomeIcon, Camera, Package, Cloud,
@@ -8,19 +8,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import TroutIcon from "@/components/TroutIcon";
-import HorizontalLinesIcon from "@/components/HorizontalLinesIcon";
-import VerticalLinesIcon from "@/components/VerticalLinesIcon";
 import ReelDiscIcon from "@/components/ReelDiscIcon";
-import FishingHookIcon from "@/components/FishingHookIcon";
 import { Moon as MoonIcon } from "lucide-react";
 
 const navItems = [
   { to: "/", label: "Home", icon: HomeIcon },
-  { to: "/lines", label: "Lines", icon: HorizontalLinesIcon },
-  { to: "/reels", label: "Reels", icon: ReelDiscIcon },
-  { to: "/rods", label: "Rods", icon: VerticalLinesIcon },
-  { to: "/lures", label: "Lures & Flies", icon: FishingHookIcon },
-  { to: "/misc", label: "Misc. Gear", icon: Package },
+  { to: "/gear/lines", label: "Gear", icon: ReelDiscIcon, matchPrefix: "/gear" },
   { to: "/catches", label: "Fish Log", icon: Camera },
   { to: "/moon", label: "Moon Phase", icon: MoonIcon },
   { to: "/weather", label: "Weather", icon: Cloud },
@@ -37,33 +30,37 @@ export default function Layout() {
     await base44.auth.logout();
   };
 
-  const NavLinks = () => (
-    <nav>
-      <ul className="flex flex-col gap-0.5 list-none m-0 p-0">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <li key={item.to}>
-              <NavLink
-                to={item.to}
-                onClick={() => setOpen(false)}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] font-medium transition-colors ${
+  const NavLinks = () => {
+    const location = useLocation();
+    return (
+      <nav>
+        <ul className="flex flex-col gap-0.5 list-none m-0 p-0">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = item.matchPrefix
+              ? location.pathname.startsWith(item.matchPrefix)
+              : location.pathname === item.to;
+            return (
+              <li key={item.to}>
+                <NavLink
+                  to={item.to}
+                  onClick={() => setOpen(false)}
+                  className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] font-medium transition-colors ${
                     isActive
                       ? "bg-primary/10 text-primary"
                       : "text-foreground/70 hover:bg-accent hover:text-foreground"
-                  }`
-                }
-              >
-                <Icon className="w-5 h-5 shrink-0" strokeWidth={2} />
-                {item.label}
-              </NavLink>
-            </li>
-          );
-        })}
-      </ul>
-    </nav>
-  );
+                  }`}
+                >
+                  <Icon className="w-5 h-5 shrink-0" strokeWidth={2} />
+                  {item.label}
+                </NavLink>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-background">

@@ -173,7 +173,7 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
                 className="flex h-9 w-full appearance-none rounded-md border border-input bg-card px-3 py-1 pr-8 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
                 style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 0.5rem center" }}
               >
-                <option value="">—</option>
+                <option value="">{sortedRods.length ? "Select a rod (optional)" : "No rods added yet"}</option>
                 {sortedRods.map((r) => (
                   <option key={r.id} value={r.id}>{r.name}</option>
                 ))}
@@ -190,7 +190,7 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
                 className="flex h-9 w-full appearance-none rounded-md border border-input bg-card px-3 py-1 pr-8 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
                 style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 0.5rem center" }}
               >
-                <option value="">—</option>
+                <option value="">{sortedReels.length ? "Select a reel (optional)" : "No reels added yet"}</option>
                 {sortedReels.map((r) => (
                   <option key={r.id} value={r.id}>{r.name}</option>
                 ))}

@@ -278,7 +278,7 @@ export default function Moon() {
                   {[1, 2, 3, 4, 5, 6, 7].map((n) => (
                     <FishIcon
                       key={n}
-                      className={`w-7 h-7 transition-opacity ${
+                      className={`w-7 h-7 text-primary transition-opacity ${
                         n <= moonData.fishingRating
                           ? 'opacity-100'
                           : 'opacity-25'

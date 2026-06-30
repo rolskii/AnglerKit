@@ -8,9 +8,6 @@ const ENTITIES = [
   { name: "FlyLine", label: "Lines" },
   { name: "Reel", label: "Reels" },
   { name: "Rod", label: "Rods" },
-  { name: "Lure", label: "Lures & Flies" },
-  { name: "MiscItem", label: "Misc. Gear" },
-  { name: "Catch", label: "Fish Log" },
 ];
 
 const ALL_ENTITIES = [
@@ -23,12 +20,9 @@ const ALL_ENTITIES = [
 ];
 
 const COLUMNS = {
-  FlyLine: ["species", "brand", "model", "type", "description", "line_weight", "grain_weight", "head_length", "total_length", "colour", "condition", "reel", "rod", "notes", "images"],
-  Reel: ["name", "brand", "model", "size", "condition", "notes", "images"],
-  Rod: ["name", "brand", "length", "line_weight", "type", "material", "condition", "notes", "images"],
-  Lure: ["name", "type", "category", "brand", "size", "colour", "quantity", "condition", "notes", "images"],
-  MiscItem: ["name", "category", "brand", "model", "colour", "quantity", "condition", "notes", "images"],
-  Catch: ["species", "date", "location", "length", "girth", "weight", "fly_used", "rod", "reel", "line", "conditions", "water_temp", "released", "notes", "images"],
+  FlyLine: ["species", "brand", "model", "type", "description", "line_weight", "grain_weight", "head_length", "total_length", "colour", "condition", "reel", "rod", "notes"],
+  Reel: ["name", "brand", "model", "size", "condition", "notes"],
+  Rod: ["name", "brand", "length", "line_weight", "type", "material", "condition", "notes"],
 };
 
 const SAMPLES = {
@@ -86,13 +80,7 @@ const parseCsv = (text) => {
 const toCsv = (records, columns) => {
   const escape = (v) => {
     if (v == null) return "";
-    let s;
-    if (Array.isArray(v)) {
-      s = v.filter(Boolean).join(" | ");
-    } else {
-      s = String(v);
-    }
-    s = s.replace(/"/g, '""');
+    const s = String(v).replace(/"/g, '""');
     return /[",\n]/.test(s) ? `"${s}"` : s;
   };
   const rows = [columns.join(",")];
@@ -165,15 +153,16 @@ export default function ImportExportSection() {
 
   const handleBackup = async () => {
     setBacking(true);
-    setBackupProgress({ entity: "", done: 0, total: 0 });
+    setBackupProgress({ done: 0, total: 0 });
     try {
-      const date = new Date().toISOString().slice(0, 10);
+      const data = {};
       for (const ent of ALL_ENTITIES) {
-        setBackupProgress({ entity: ent.label, done: 0, total: 0 });
         const records = await base44.entities[ent.name].list("-updated_date", 2000);
-        const cleaned = records.map(({ id, created_date, updated_date, created_by_id, ...rest }) => rest);
-        const tasks = [];
-        for (const rec of cleaned) {
+        data[ent.name] = records.map(({ id, created_date, updated_date, created_by_id, ...rest }) => rest);
+      }
+      const tasks = [];
+      for (const ent of ALL_ENTITIES) {
+        for (const rec of data[ent.name]) {
           if (Array.isArray(rec.images)) {
             rec.images.forEach((url, idx) => {
               if (url) tasks.push({ url, set: (v) => { rec.images[idx] = v; } });
@@ -184,29 +173,22 @@ export default function ImportExportSection() {
             tasks.push({ url, set: (v) => { rec.image_url = v; } });
           }
         }
-        let done = 0;
-        const POOL = 6;
-        for (let i = 0; i < tasks.length; i += POOL) {
-          const batch = tasks.slice(i, i + POOL);
-          await Promise.all(batch.map(async (t) => {
-            const dataUri = await fetchAsDataUri(t.url);
-            t.set(dataUri || t.url);
-            done++;
-            setBackupProgress({ entity: ent.label, done, total: tasks.length });
-          }));
-        }
-        const payload = {
-          app: "AnglersLog",
-          version: 2,
-          entity: ent.name,
-          label: ent.label,
-          exported_at: new Date().toISOString(),
-          data: cleaned,
-        };
-        const slug = ent.label.toLowerCase().replace(/[^a-z]+/g, "-").replace(/^-|-$/g, "");
-        downloadFile(`anglerslog-backup-${slug}-${date}.json`, JSON.stringify(payload, null, 2), "application/json");
-        await new Promise((r) => setTimeout(r, 300));
       }
+      setBackupProgress({ done: 0, total: tasks.length });
+      let done = 0;
+      const POOL = 6;
+      for (let i = 0; i < tasks.length; i += POOL) {
+        const batch = tasks.slice(i, i + POOL);
+        await Promise.all(batch.map(async (t) => {
+          const dataUri = await fetchAsDataUri(t.url);
+          t.set(dataUri || t.url);
+          done++;
+          setBackupProgress({ done, total: tasks.length });
+        }));
+      }
+      const date = new Date().toISOString().slice(0, 10);
+      const payload = { app: "AnglersLog", version: 2, exported_at: new Date().toISOString(), data };
+      downloadFile(`anglerslog-backup-${date}.json`, JSON.stringify(payload, null, 2), "application/json");
       toast.success("Backup downloaded");
     } catch (e) {
       toast.error("Backup failed");
@@ -216,52 +198,47 @@ export default function ImportExportSection() {
     }
   };
 
-  const restoreSingleFile = async (parsed, summary) => {
-    const entityName = parsed.entity || Object.keys(parsed.data || parsed)[0];
-    const ent = ALL_ENTITIES.find((e) => e.name === entityName);
-    if (!ent) throw new Error(`Unknown category: ${entityName}`);
-    const records = parsed.data && Array.isArray(parsed.data) ? parsed.data : (parsed.data ? parsed.data[entityName] : parsed[entityName]);
-    if (!records || !Array.isArray(records) || records.length === 0) return;
-    const cleaned = records.map(({ id, created_date, updated_date, created_by_id, ...rest }) => rest);
-    let imgCount = 0;
-    for (const rec of cleaned) {
-      if (Array.isArray(rec.images)) imgCount += rec.images.filter((i) => i && i.startsWith("data:")).length;
-      if (rec.image_url && rec.image_url.startsWith("data:")) imgCount += 1;
-    }
-    setRestoreProgress({ entity: ent.label, done: 0, total: imgCount });
-    let done = 0;
-    for (const rec of cleaned) {
-      if (Array.isArray(rec.images)) {
-        rec.images = await Promise.all(rec.images.map((img, idx) => reuploadImage(img, `${ent.name}-${idx}`)));
-        done += rec.images.filter((i) => i && i.startsWith("data:")).length;
-      }
-      if (rec.image_url) {
-        rec.image_url = await reuploadImage(rec.image_url, `${ent.name}-img`);
-        if (rec.image_url && rec.image_url.startsWith("data:")) done++;
-      }
-      setRestoreProgress({ entity: ent.label, done, total: imgCount });
-    }
-    const created = await base44.entities[ent.name].bulkCreate(cleaned);
-    summary.push(`${ent.label}: ${created.length}`);
-  };
-
   const handleRestore = async (e) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
+    const file = e.target.files?.[0];
+    if (!file) return;
     setRestoring(true);
     setRestoreResult(null);
     setRestoreProgress({ entity: "", done: 0, total: 0 });
     try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      const data = parsed.data || parsed;
+      if (!data || typeof data !== "object") throw new Error("Invalid backup file");
       const summary = [];
-      for (const file of Array.from(files)) {
-        const text = await file.text();
-        const parsed = JSON.parse(text);
-        await restoreSingleFile(parsed, summary);
+      for (const ent of ALL_ENTITIES) {
+        const records = data[ent.name];
+        if (!records || !Array.isArray(records) || records.length === 0) continue;
+        const cleaned = records.map(({ id, created_date, updated_date, created_by_id, ...rest }) => rest);
+        let imgCount = 0;
+        for (const rec of cleaned) {
+          if (Array.isArray(rec.images)) imgCount += rec.images.filter((i) => i && i.startsWith("data:")).length;
+          if (rec.image_url && rec.image_url.startsWith("data:")) imgCount += 1;
+        }
+        setRestoreProgress({ entity: ent.label, done: 0, total: imgCount });
+        let done = 0;
+        for (const rec of cleaned) {
+          if (Array.isArray(rec.images)) {
+            rec.images = await Promise.all(rec.images.map((img, idx) => reuploadImage(img, `${ent.name}-${idx}`)));
+            done += rec.images.filter((i) => i && i.startsWith("data:")).length;
+          }
+          if (rec.image_url) {
+            rec.image_url = await reuploadImage(rec.image_url, `${ent.name}-img`);
+            if (rec.image_url && rec.image_url.startsWith("data:")) done++;
+          }
+          setRestoreProgress({ entity: ent.label, done, total: imgCount });
+        }
+        const created = await base44.entities[ent.name].bulkCreate(cleaned);
+        summary.push(`${ent.label}: ${created.length}`);
       }
       setRestoreResult({ summary });
       toast.success("Restore complete");
-    } catch (err) {
-      setRestoreResult({ error: err.message || "Invalid backup file" });
+    } catch (e) {
+      setRestoreResult({ error: e.message || "Invalid backup file" });
       toast.error("Restore failed");
     } finally {
       setRestoring(false);
@@ -273,14 +250,15 @@ export default function ImportExportSection() {
   const handleExportAll = async () => {
     setExporting(true);
     try {
-      const results = await Promise.all(
-        ENTITIES.map((ent) => base44.entities[ent.name].list("-updated_date", 500))
-      );
+      const [lines, reels, rods] = await Promise.all([
+        base44.entities.FlyLine.list("-updated_date", 500),
+        base44.entities.Reel.list("-updated_date", 500),
+        base44.entities.Rod.list("-updated_date", 500),
+      ]);
       const date = new Date().toISOString().slice(0, 10);
-      ENTITIES.forEach((ent, idx) => {
-        const slug = ent.label.toLowerCase().replace(/[^a-z]+/g, "-").replace(/^-|-$/g, "");
-        downloadFile(`flyfish-${slug}-${date}.csv`, toCsv(results[idx], COLUMNS[ent.name]));
-      });
+      downloadFile(`flyfish-lines-${date}.csv`, toCsv(lines, COLUMNS.FlyLine));
+      downloadFile(`flyfish-reels-${date}.csv`, toCsv(reels, COLUMNS.Reel));
+      downloadFile(`flyfish-rods-${date}.csv`, toCsv(rods, COLUMNS.Rod));
       toast.success("Export complete");
     } catch (e) {
       toast.error("Export failed");
@@ -338,7 +316,7 @@ export default function ImportExportSection() {
           <Download className="w-5 h-5 text-primary" />
           <h2 className="text-lg font-heading font-semibold">Export (CSV)</h2>
         </div>
-        <p className="text-sm text-muted-foreground">Download individual collections as CSV files. Use "Export All" to export every collection — lines, reels, rods, lures & flies, misc. gear, and fish log — all at once.</p>
+        <p className="text-sm text-muted-foreground">Download individual collections as CSV files. Use "Export All" for lines, reels, and rods together, or grab a sample template to see the expected format.</p>
         <div className="flex flex-wrap gap-3">
           <Button onClick={handleExportAll} disabled={exporting}>
             {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
@@ -416,7 +394,7 @@ export default function ImportExportSection() {
           Your data is always safe: Everything is stored securely in the cloud database tied to your account, not just on your device. If you lose your phone, simply sign in on any new device and all your gear, catches, and photos reappear automatically.
         </p>
         <p className="text-sm text-muted-foreground">
-          But if you want complete control, you can also download a backup file for each category — lines, reels, rods, lures & flies, misc. gear, and fish log — with all photos embedded. Use 'Restore from Backup' to bring everything back, photos included. You can select one or multiple backup files at once.
+          But if you want complete control, you can also download a single backup file containing all your data — lines, reels, rods, catches, lures, and misc gear — with all photos embedded. Use 'Restore from Backup' to bring everything back, photos included.
         </p>
         <div className="flex flex-wrap gap-3">
           <Button onClick={handleBackup} disabled={backing}>
@@ -424,16 +402,16 @@ export default function ImportExportSection() {
             Create Backup
           </Button>
           <label className="cursor-pointer">
-            <input type="file" accept=".json" multiple className="hidden" onChange={handleRestore} disabled={restoring} />
+            <input type="file" accept=".json" className="hidden" onChange={handleRestore} disabled={restoring} />
             <span className="inline-flex h-9 items-center gap-2 rounded-md border border-input bg-transparent px-4 py-2 text-sm font-medium shadow-sm hover:bg-accent hover:text-accent-foreground">
               {restoring ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
               Restore from Backup
             </span>
           </label>
         </div>
-        {backing && backupProgress && (
+        {backing && backupProgress && backupProgress.total > 0 && (
           <p className="text-sm text-muted-foreground">
-            {backupProgress.entity ? `${backupProgress.entity}: ` : ""}Embedding photos… {backupProgress.done} / {backupProgress.total}
+            Embedding photos… {backupProgress.done} / {backupProgress.total}
           </p>
         )}
         {restoring && restoreProgress && (
