@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Moon as MoonIcon, Sun, Waves, MapPin } from 'lucide-react';
+import { Moon as MoonIcon, Sun, Waves, MapPin, Bell, BellOff } from 'lucide-react';
 
 export default function Moon() {
   const [moonData, setMoonData] = useState(null);
   const [location, setLocation] = useState('Toronto, ON');
   const [editingLocation, setEditingLocation] = useState('Toronto, ON');
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedAlarmTime, setSelectedAlarmTime] = useState(null);
+  const [alarmEnabled, setAlarmEnabled] = useState(false);
 
   useEffect(() => {
     const calculateMoonData = () => {
@@ -31,6 +33,60 @@ export default function Moon() {
       setLocation(editingLocation);
     }
   };
+
+  const parseTimeToMinutes = (timeStr) => {
+    const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+    if (!match) return null;
+    let hours = parseInt(match[1]);
+    const minutes = parseInt(match[2]);
+    const period = match[3].toUpperCase();
+    if (period === 'PM' && hours !== 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
+    return hours * 60 + minutes;
+  };
+
+  const setAlarm = (timeStr) => {
+    const timeInMinutes = parseTimeToMinutes(timeStr);
+    if (!timeInMinutes) return;
+
+    const alarmTime = new Date();
+    const alarmHours = Math.floor(timeInMinutes / 60);
+    const alarmMinutes = timeInMinutes % 60;
+    alarmTime.setHours(alarmHours, alarmMinutes, 0);
+
+    // Subtract 15 minutes
+    alarmTime.setMinutes(alarmTime.getMinutes() - 15);
+
+    setSelectedAlarmTime(timeStr);
+    setAlarmEnabled(true);
+
+    // Check alarm every minute
+    const alarmInterval = setInterval(() => {
+      const now = new Date();
+      if (now >= alarmTime && alarmEnabled) {
+        playAlarm();
+        clearInterval(alarmInterval);
+        setAlarmEnabled(false);
+      }
+    }, 60000);
+  };
+
+  const playAlarm = () => {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification('Fishing Time!', {
+        body: `Your selected feeding time (${selectedAlarmTime}) starts in 15 minutes. Time to head out!`,
+        icon: '🎣',
+      });
+    }
+    // Fallback: alert
+    alert(`🎣 Time to fish! Your feeding window (${selectedAlarmTime}) is starting in 15 minutes!`);
+  };
+
+  useEffect(() => {
+    if (alarmEnabled && 'Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }, [alarmEnabled]);
 
   const calculateMoonPhase = (date) => {
     const knownNewMoon = new Date(2000, 0, 6);
@@ -172,15 +228,44 @@ export default function Moon() {
                   <CardContent>
                     <ul className="space-y-3">
                       {solunar.major.map((item, idx) => (
-                        <li key={idx} className="flex items-start gap-3">
-                          <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0"></div>
-                          <div className="flex-1">
-                            <span className="text-sm">{item.text}</span>
-                            <p className="text-xs text-muted-foreground mt-0.5">{item.time}</p>
+                        <li key={idx} className="flex items-start justify-between gap-3">
+                          <div className="flex items-start gap-3 flex-1">
+                            <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0"></div>
+                            <div className="flex-1">
+                              <span className="text-sm">{item.text}</span>
+                              <p className="text-xs text-muted-foreground mt-0.5">{item.time}</p>
+                            </div>
                           </div>
+                          <button
+                            onClick={() => setAlarm(item.time.split(' - ')[0])}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 flex-shrink-0 transition-colors ${
+                              selectedAlarmTime === item.time.split(' - ')[0]
+                                ? 'bg-primary text-primary-foreground'
+                                : 'bg-primary/20 text-primary hover:bg-primary/30'
+                            }`}
+                          >
+                            {selectedAlarmTime === item.time.split(' - ')[0] ? (
+                              <>
+                                <Bell className="w-3.5 h-3.5" />
+                                Set
+                              </>
+                            ) : (
+                              <>
+                                <Bell className="w-3.5 h-3.5" />
+                                Alarm
+                              </>
+                            )}
+                          </button>
                         </li>
                       ))}
                     </ul>
+                    {selectedAlarmTime && (
+                      <div className="mt-4 p-3 bg-primary/10 rounded-lg border border-primary/20">
+                        <p className="text-xs font-medium text-primary">
+                          ⏰ Alarm set for 15 minutes before {selectedAlarmTime}
+                        </p>
+                      </div>
+                    )}
                     <p className="text-xs text-muted-foreground mt-4">
                       Duration: ~1.5-2 hours per period. Fish are most active during these times.
                     </p>
