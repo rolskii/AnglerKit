@@ -134,7 +134,14 @@ export default function Weather() {
 
   const handleLocationChange = async (overrideLocation) => {
     const loc = (typeof overrideLocation === 'string' && overrideLocation) || editingLocation;
-    if (!loc.trim()) return;
+    if (!loc || !loc.trim()) return;
+
+    // If the location text hasn't changed and we already have coords, refetch directly
+    if (lastCoords && loc.trim() === location) {
+      fetchWeatherByCoords(lastCoords.lat, lastCoords.lon, lastCoords.name || loc);
+      return;
+    }
+
     try {
       setLoading(true);
       const geoResponse = await fetch(
