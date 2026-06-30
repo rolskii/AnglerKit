@@ -102,13 +102,14 @@ export default function Home() {
            const total = totals[item.to];
            const showTotal =
              item.entity && !["/rods", "/reels", "/lines", "/lures", "/misc"].includes(item.to) && total != null && total > 0;
+          const isReels = item.to === '/reels';
           return (
             <Link key={item.to} to={item.to} className="group">
               <Card className="relative p-4 md:p-5 h-full rounded-2xl border-0 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer bg-primary/10">
                 <div className="flex flex-col gap-3">
                   <div className="flex items-start justify-between">
                     <div className="flex h-12 md:h-11 w-12 md:w-11 items-center justify-center rounded-lg md:rounded-xl bg-primary/20 text-primary flex-shrink-0">
-                      <Icon className="w-6 md:w-8 h-6 md:h-8" strokeWidth={2} />
+                      <Icon className={isReels ? "w-7 md:w-9 h-7 md:h-9" : "w-6 md:w-8 h-6 md:h-8"} strokeWidth={2} />
                     </div>
                     <ChevronRight className="w-5 h-5 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors flex-shrink-0" />
                   </div>
