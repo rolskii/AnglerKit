@@ -5,8 +5,44 @@ import { Cloud, CloudRain, Sun, Wind, Droplets, Eye, Gauge } from 'lucide-react'
 export default function Weather() {
   const [weather, setWeather] = useState(null);
   const [location, setLocation] = useState(null);
+  const [editingLocation, setEditingLocation] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const handleLocationChange = async () => {
+    if (!editingLocation.trim()) return;
+    try {
+      setLoading(true);
+      const geoResponse = await fetch(
+        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(editingLocation)}&language=en&count=1&format=json`
+      );
+      const geoData = await geoResponse.json();
+      if (!geoData.results?.[0]) {
+        setError('Location not found. Please try another search.');
+        setLoading(false);
+        return;
+      }
+      const result = geoData.results[0];
+      const lat = result.latitude;
+      const lon = result.longitude;
+      const locationName = `${result.name}${result.admin1 ? ', ' + result.admin1 : ''}`;
+
+      const response = await fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&temperature_unit=fahrenheit&wind_speed_unit=mph&forecast_days=7`
+      );
+      const data = await response.json();
+      setLocation(locationName);
+      setWeather({
+        current: data.current,
+        daily: data.daily,
+      });
+      setError(null);
+      setLoading(false);
+    } catch (err) {
+      setError('Failed to fetch weather for that location.');
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     const fetchWeather = async () => {
@@ -135,10 +171,35 @@ export default function Weather() {
         <div className="text-center mb-8">
           <h1 className="text-3xl font-display font-bold mb-2">Weather</h1>
           <p className="text-muted-foreground">Current conditions and forecast</p>
-          {location && (
-            <p className="text-sm text-muted-foreground mt-2">{location}</p>
-          )}
         </div>
+
+        {/* Location Controls */}
+        <Card>
+          <CardContent className="pt-6">
+            <div className="space-y-3">
+              <label className="block text-sm font-medium text-foreground">Location</label>
+              <div className="flex gap-2 flex-col sm:flex-row">
+                <input
+                  type="text"
+                  value={editingLocation}
+                  onChange={(e) => setEditingLocation(e.target.value)}
+                  placeholder="Enter city, state or coordinates"
+                  className="flex-1 px-3 py-2 text-sm border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground"
+                  onKeyPress={(e) => e.key === 'Enter' && handleLocationChange()}
+                />
+                <button
+                  onClick={handleLocationChange}
+                  className="px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity whitespace-nowrap"
+                >
+                  Update
+                </button>
+              </div>
+              {location && (
+                <p className="text-xs text-muted-foreground">Currently showing: {location}</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Current Weather Card */}
         <Card className="bg-primary/10">
