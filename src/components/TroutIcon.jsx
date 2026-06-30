@@ -10,7 +10,7 @@ export default function TroutIcon({ className = "w-7 h-7" }) {
       alt=""
       aria-hidden="true"
       className={`${className} object-contain`}
-      style={{ mixBlendMode: "screen" }}
+      style={{ mixBlendMode: "screen", transform: "scaleX(-1)" }}
     />
   );
 }
