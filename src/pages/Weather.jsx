@@ -24,9 +24,11 @@ export default function Weather() {
             `https://geocoding-api.open-meteo.com/v1/search?latitude=${latitude}&longitude=${longitude}&language=en&count=1&format=json`
           );
           const geoData = await geoResponse.json();
-          const locationName = geoData.results?.[0]
-            ? `${geoData.results[0].name}${geoData.results[0].admin1 ? ', ' + geoData.results[0].admin1 : ''}`
-            : `${latitude.toFixed(4)}°, ${longitude.toFixed(4)}°`;
+          let locationName = `${latitude.toFixed(4)}°, ${longitude.toFixed(4)}°`;
+          if (geoData.results?.length > 0) {
+            const result = geoData.results[0];
+            locationName = `${result.name}${result.admin1 ? ', ' + result.admin1 : ''}`;
+          }
           setLocation(locationName);
           setEditingLocation(locationName);
           setWeather({ current: data.current, daily: data.daily });
