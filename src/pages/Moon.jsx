@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Moon as MoonIcon, Sun, Waves, MapPin, Bell, BellOff, Fish } from 'lucide-react';
+import { Moon as MoonIcon, Sun, Waves, MapPin, Bell, BellOff } from 'lucide-react';
+import FishIcon from '@/components/FishIcon';
 
 export default function Moon() {
   const [moonData, setMoonData] = useState(null);
@@ -254,7 +255,7 @@ export default function Moon() {
                 <CardDescription>{moonData.date}</CardDescription>
                 <div className="flex justify-center gap-2 mt-3">
                   {[1, 2, 3, 4, 5, 6, 7].map((n) => (
-                    <Fish
+                    <FishIcon
                       key={n}
                       className={`w-7 h-7 ${
                         n <= moonData.fishingRating
