@@ -8,6 +8,8 @@ export default function Weather() {
   const [editingLocation, setEditingLocation] = useState('Toronto, ON');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const fetchUserLocation = async () => {
     setLoading(true);
@@ -37,12 +39,41 @@ export default function Weather() {
     }
   };
 
-  const handleLocationChange = async () => {
-    if (!editingLocation.trim()) return;
+  const handleLocationInput = async (value) => {
+    setEditingLocation(value);
+    if (value.trim().length < 2) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+    try {
+      const response = await fetch(
+        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(value)}&language=en&count=5&format=json`
+      );
+      const data = await response.json();
+      if (data.results) {
+        setSuggestions(data.results.map(r => `${r.name}${r.admin1 ? ', ' + r.admin1 : ''}${r.country ? ', ' + r.country : ''}`));
+        setShowSuggestions(true);
+      }
+    } catch (err) {
+      setSuggestions([]);
+    }
+  };
+
+  const handleSuggestionSelect = (suggestion) => {
+    setEditingLocation(suggestion);
+    setShowSuggestions(false);
+    setSuggestions([]);
+    handleLocationChange(suggestion);
+  };
+
+  const handleLocationChange = async (overrideLocation) => {
+    const loc = overrideLocation || editingLocation;
+    if (!loc.trim()) return;
     try {
       setLoading(true);
       const geoResponse = await fetch(
-        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(editingLocation)}&language=en&count=1&format=json`
+        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(loc)}&language=en&count=1&format=json`
       );
       const geoData = await geoResponse.json();
       if (!geoData.results?.[0]) {
@@ -60,6 +91,8 @@ export default function Weather() {
       );
       const data = await response.json();
       setLocation(locationName);
+      setEditingLocation(locationName);
+      setShowSuggestions(false);
       setWeather({
         current: data.current,
         daily: data.daily,
@@ -159,15 +192,34 @@ export default function Weather() {
             <div className="space-y-3">
               <label className="block text-sm font-medium text-foreground">Location</label>
               <div className="flex gap-2 flex-col sm:flex-row">
-                <input
-                  type="text"
-                  value={editingLocation}
-                  onChange={(e) => setEditingLocation(e.target.value)}
-                  placeholder="Enter city, state or coordinates"
-                  className="flex-1 px-3 py-2 text-sm border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground"
-                  onKeyPress={(e) => e.key === 'Enter' && handleLocationChange()}
-                  onFocus={(e) => e.target.select()}
-                />
+                <div className="flex-1 relative">
+                  <input
+                    type="text"
+                    value={editingLocation}
+                    onChange={(e) => handleLocationInput(e.target.value)}
+                    placeholder="Enter city, state or coordinates"
+                    className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground"
+                    onKeyPress={(e) => e.key === 'Enter' && handleLocationChange()}
+                    onFocus={(e) => {
+                      e.target.select();
+                      editingLocation.trim().length >= 2 && setShowSuggestions(true);
+                    }}
+                    onBlur={() => setTimeout(() => setShowSuggestions(false), 100)}
+                  />
+                  {showSuggestions && suggestions.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-50 max-h-40 overflow-y-auto" onMouseDown={(e) => e.preventDefault()}>
+                      {suggestions.map((suggestion, idx) => (
+                        <div
+                          key={idx}
+                          onClick={() => handleSuggestionSelect(suggestion)}
+                          className="w-full px-3 py-2.5 text-xs text-left hover:bg-primary/10 border-b border-border/50 last:border-b-0 transition-colors cursor-pointer"
+                        >
+                          {suggestion}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <div className="flex gap-2">
                   <button
                     onClick={handleLocationChange}
