@@ -4,8 +4,9 @@ import { Moon as MoonIcon, Sun, Waves, MapPin, Bell, BellOff } from 'lucide-reac
 
 export default function Moon() {
   const [moonData, setMoonData] = useState(null);
-  const [location, setLocation] = useState('Toronto, ON');
-  const [editingLocation, setEditingLocation] = useState('Toronto, ON');
+  const savedLocation = localStorage.getItem('moonLocation');
+  const [location, setLocation] = useState(savedLocation || 'Toronto, ON');
+  const [editingLocation, setEditingLocation] = useState(savedLocation || 'Toronto, ON');
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [alarmsByDate, setAlarmsByDate] = useState(() => {
     const stored = localStorage.getItem('alarmsByDate');
@@ -37,6 +38,7 @@ export default function Moon() {
   const handleLocationChange = (selectedLocation) => {
     const locationToUse = selectedLocation || editingLocation;
     if (locationToUse.trim()) {
+      localStorage.setItem('moonLocation', locationToUse);
       setEditingLocation(locationToUse);
       setLocation(locationToUse);
       setShowSuggestions(false);
