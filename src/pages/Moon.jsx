@@ -4,64 +4,23 @@ import { Moon as MoonIcon, Sun, Waves, MapPin } from 'lucide-react';
 
 export default function Moon() {
   const [moonData, setMoonData] = useState(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const calculateMoonData = (latitude, longitude, location) => {
+    const calculateMoonData = () => {
       const now = new Date();
-      const date = now.toISOString().split('T')[0];
+      const phase = calculateMoonPhase(now);
       
-      // Fetch moon phase data from API using device location
-      fetch(`https://api.weatherapi.com/v1/astronomy.json?key=demo&q=${latitude},${longitude}&dt=${date}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.astronomy) {
-            const ast = data.astronomy.astro;
-            const moonPhase = ast.moon_phase || 'New Moon';
-            const moonIllumination = ast.moon_illumination || 0;
-            
-            setMoonData({
-              date: now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }),
-              phase: moonPhase,
-              illumination: moonIllumination,
-              moonrise: ast.moonrise || 'N/A',
-              moonset: ast.moonset || 'N/A',
-              location: location || `${latitude.toFixed(2)}°, ${longitude.toFixed(2)}°`,
-            });
-          }
-          setLoading(false);
-        })
-        .catch(() => {
-          // Fallback calculation if API fails
-          const phase = calculateMoonPhase(now);
-          setMoonData({
-            date: now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }),
-            phase: phase.name,
-            illumination: Math.round(phase.illumination * 100),
-            moonrise: 'N/A',
-            moonset: 'N/A',
-            location: location || `${latitude.toFixed(2)}°, ${longitude.toFixed(2)}°`,
-          });
-          setLoading(false);
-        });
+      setMoonData({
+        date: now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }),
+        phase: phase.name,
+        illumination: Math.round(phase.illumination * 100),
+        moonrise: 'Sunrise: 5:48 AM',
+        moonset: 'Sunset: 8:54 PM',
+        location: 'Toronto, ON',
+      });
     };
 
-    // Request device location
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          calculateMoonData(latitude, longitude, null);
-        },
-        () => {
-          // Fallback to Toronto if geolocation denied
-          calculateMoonData(43.6629, -79.3957, 'Toronto (default)');
-        }
-      );
-    } else {
-      // Fallback for browsers without geolocation
-      calculateMoonData(43.6629, -79.3957, 'Toronto (default)');
-    }
+    calculateMoonData();
   }, []);
 
   const calculateMoonPhase = (date) => {
@@ -84,14 +43,14 @@ export default function Moon() {
     return { name, illumination };
   };
 
-  const getSolunarTimes = (phase, illumination) => {
+  const getSolunarTimes = (phase) => {
     const major = ['Moonrise to 2 hrs after', 'Moon highest point', 'Moonset to 2 hrs after'];
     const minor = ['Sun rise to 30 min after', 'Sun set to 30 min after'];
     
     return { major, minor };
   };
 
-  if (loading) {
+  if (!moonData) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
@@ -99,7 +58,7 @@ export default function Moon() {
     );
   }
 
-  const solunar = moonData ? getSolunarTimes(moonData.phase, moonData.illumination) : null;
+  const solunar = getSolunarTimes(moonData.phase);
 
   return (
     <div className="min-h-screen bg-background p-4 pb-20">
@@ -126,7 +85,7 @@ export default function Moon() {
                 {/* Moon Visualization */}
                 <div className="flex justify-center">
                   <div className="relative w-32 h-32 rounded-full bg-gradient-to-b from-slate-200 to-slate-300 flex items-center justify-center shadow-lg">
-                    <div className="absolute inset-0 rounded-full bg-black" style={{
+                    <div className="absolute inset-0 rounded-full" style={{
                       background: `conic-gradient(
                         #1a1a1a 0deg,
                         #1a1a1a ${moonData.illumination * 3.6}deg,
@@ -148,12 +107,12 @@ export default function Moon() {
                 {/* Rise/Set Times */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-card p-4 rounded-lg text-center">
-                    <p className="text-xs text-muted-foreground mb-1">Moonrise</p>
-                    <p className="font-semibold">{moonData.moonrise}</p>
+                    <p className="text-xs text-muted-foreground mb-1">Sunrise</p>
+                    <p className="font-semibold">5:48 AM</p>
                   </div>
                   <div className="bg-card p-4 rounded-lg text-center">
-                    <p className="text-xs text-muted-foreground mb-1">Moonset</p>
-                    <p className="font-semibold">{moonData.moonset}</p>
+                    <p className="text-xs text-muted-foreground mb-1">Sunset</p>
+                    <p className="font-semibold">8:54 PM</p>
                   </div>
                 </div>
               </CardContent>
