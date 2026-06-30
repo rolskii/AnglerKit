@@ -17,6 +17,7 @@ import Settings from '@/pages/Settings';
 import Catches from '@/pages/Catches';
 import Lures from '@/pages/Lures';
 import Misc from '@/pages/Misc';
+import Moon from '@/pages/Moon';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -63,6 +64,7 @@ const AuthenticatedApp = () => {
         <Route path="/catches" element={<Catches />} />
         <Route path="/lures" element={<Lures />} />
         <Route path="/misc" element={<Misc />} />
+        <Route path="/moon" element={<Moon />} />
         <Route path="/about" element={<About />} />
         <Route path="/settings" element={<Settings />} />
       </Route>
