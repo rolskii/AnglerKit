@@ -7,9 +7,11 @@ export default function Moon() {
   const [location, setLocation] = useState('Toronto, ON');
   const [editingLocation, setEditingLocation] = useState('Toronto, ON');
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [selectedAlarmTime, setSelectedAlarmTime] = useState(() => localStorage.getItem('alarmTime') || null);
-  const [alarmEnabled, setAlarmEnabled] = useState(() => localStorage.getItem('alarmEnabled') === 'true');
-  const [alarmOffset, setAlarmOffset] = useState(() => parseInt(localStorage.getItem('alarmOffset') || '15'));
+  const [alarmsByDate, setAlarmsByDate] = useState(() => {
+    const stored = localStorage.getItem('alarmsByDate');
+    return stored ? JSON.parse(stored) : {};
+  });
+  const currentDayAlarms = alarmsByDate[selectedDate] || { time: null, enabled: false, offset: 15 };
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
@@ -74,9 +76,10 @@ export default function Moon() {
   };
 
   const toggleAlarm = (timeStr) => {
-    if (selectedAlarmTime === timeStr) {
-      setSelectedAlarmTime(null);
-      setAlarmEnabled(false);
+    if (currentDayAlarms.time === timeStr) {
+      const updated = { ...alarmsByDate };
+      delete updated[selectedDate];
+      setAlarmsByDate(updated);
       return;
     }
 
@@ -89,45 +92,44 @@ export default function Moon() {
     alarmTime.setHours(alarmHours, alarmMinutes, 0);
 
     // Subtract selected offset
-    alarmTime.setMinutes(alarmTime.getMinutes() - alarmOffset);
+    alarmTime.setMinutes(alarmTime.getMinutes() - currentDayAlarms.offset);
 
-    setSelectedAlarmTime(timeStr);
-    setAlarmEnabled(true);
+    setAlarmsByDate({
+      ...alarmsByDate,
+      [selectedDate]: { time: timeStr, enabled: true, offset: currentDayAlarms.offset }
+    });
 
     // Check alarm every minute
     const alarmInterval = setInterval(() => {
       const now = new Date();
-      if (now >= alarmTime && alarmEnabled) {
+      if (now >= alarmTime && currentDayAlarms.enabled) {
         playAlarm();
         clearInterval(alarmInterval);
-        setAlarmEnabled(false);
       }
     }, 60000);
   };
 
   const playAlarm = () => {
-    const timeText = alarmOffset === 0 ? 'now' : `in ${alarmOffset} minutes`;
+    const timeText = currentDayAlarms.offset === 0 ? 'now' : `in ${currentDayAlarms.offset} minutes`;
     if ('Notification' in window && Notification.permission === 'granted') {
       new Notification('Fishing Time!', {
-        body: `Your selected feeding time (${selectedAlarmTime}) starts ${timeText}. Time to head out!`,
+        body: `Your selected feeding time (${currentDayAlarms.time}) starts ${timeText}. Time to head out!`,
         icon: '🎣',
       });
     }
     // Fallback: alert
-    alert(`🎣 Time to fish! Your feeding window (${selectedAlarmTime}) is starting ${timeText}!`);
+    alert(`🎣 Time to fish! Your feeding window (${currentDayAlarms.time}) is starting ${timeText}!`);
   };
 
   useEffect(() => {
-    localStorage.setItem('alarmTime', selectedAlarmTime || '');
-    localStorage.setItem('alarmEnabled', alarmEnabled);
-    localStorage.setItem('alarmOffset', alarmOffset);
-  }, [selectedAlarmTime, alarmEnabled, alarmOffset]);
+    localStorage.setItem('alarmsByDate', JSON.stringify(alarmsByDate));
+  }, [alarmsByDate]);
 
   useEffect(() => {
-    if (alarmEnabled && 'Notification' in window && Notification.permission === 'default') {
+    if (currentDayAlarms.enabled && 'Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
     }
-  }, [alarmEnabled]);
+  }, [currentDayAlarms.enabled]);
 
   const calculateMoonPhase = (date) => {
     const knownNewMoon = new Date(2000, 0, 6);
@@ -300,12 +302,12 @@ export default function Moon() {
                           <button
                             onClick={() => toggleAlarm(item.time.split(' - ')[0])}
                             className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 flex-shrink-0 transition-colors ${
-                              selectedAlarmTime === item.time.split(' - ')[0]
+                              currentDayAlarms.time === item.time.split(' - ')[0]
                                 ? 'bg-primary text-primary-foreground'
                                 : 'bg-primary/20 text-primary hover:bg-primary/30'
                             }`}
                           >
-                            {selectedAlarmTime === item.time.split(' - ')[0] ? (
+                            {currentDayAlarms.time === item.time.split(' - ')[0] ? (
                               <>
                                 <BellOff className="w-3.5 h-3.5" />
                                 Cancel
@@ -320,18 +322,21 @@ export default function Moon() {
                         </li>
                       ))}
                     </ul>
-                    {selectedAlarmTime && (
+                    {currentDayAlarms.time && (
                       <div className="mt-4 space-y-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
                         <p className="text-xs font-medium text-primary">
-                          ⏰ Alarm set for {alarmOffset === 0 ? 'at' : alarmOffset + ' minutes before'} {selectedAlarmTime}
+                          ⏰ Alarm set for {currentDayAlarms.offset === 0 ? 'at' : currentDayAlarms.offset + ' minutes before'} {currentDayAlarms.time}
                         </p>
                         <div className="flex gap-2">
                           {[0, 5, 10, 15].map((min) => (
                             <button
                               key={min}
-                              onClick={() => setAlarmOffset(min)}
+                              onClick={() => setAlarmsByDate({
+                                ...alarmsByDate,
+                                [selectedDate]: { ...currentDayAlarms, offset: min }
+                              })}
                               className={`flex-1 px-2 py-1.5 rounded text-xs font-medium transition-colors ${
-                                alarmOffset === min
+                                currentDayAlarms.offset === min
                                   ? 'bg-primary text-primary-foreground'
                                   : 'bg-background text-primary border border-primary/30 hover:bg-primary/20'
                               }`}
