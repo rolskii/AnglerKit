@@ -185,7 +185,10 @@ export default function Moon() {
                 placeholder="Enter location"
                 className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-card text-foreground placeholder:text-muted-foreground text-center"
                 onKeyPress={(e) => e.key === 'Enter' && handleLocationChange()}
-                onFocus={() => editingLocation.trim().length >= 2 && setShowSuggestions(true)}
+                onFocus={(e) => {
+                  e.target.select();
+                  editingLocation.trim().length >= 2 && setShowSuggestions(true);
+                }}
                 onBlur={() => setTimeout(() => setShowSuggestions(false), 100)}
               />
               {showSuggestions && suggestions.length > 0 && (
