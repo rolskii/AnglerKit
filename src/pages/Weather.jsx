@@ -121,7 +121,7 @@ export default function Weather() {
   };
 
   const handleLocationChange = async (overrideLocation) => {
-    const loc = overrideLocation || editingLocation;
+    const loc = (typeof overrideLocation === 'string' && overrideLocation) || editingLocation;
     if (!loc.trim()) return;
     try {
       setLoading(true);
