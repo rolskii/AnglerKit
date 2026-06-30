@@ -93,7 +93,7 @@ export default function Home() {
     <div className="space-y-6 md:space-y-8">
       <div className="space-y-2 px-1">
         <h1 className="text-2xl md:text-[34px] font-heading font-bold tracking-tight leading-tight">Angler's Log</h1>
-        <p className="text-sm md:text-[17px] text-muted-foreground">Organize your entire fishing arsenal—track gear, predict the best fishing times with moon phases, check weather and log every catch in one place.</p>
+        <p className="text-sm md:text-[17px] text-muted-foreground">Organize your entire fishing arsenal—track gear, predict best fishing times with moon phases, check weather and log every catch in one place.</p>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
