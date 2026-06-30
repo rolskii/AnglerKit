@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { ChevronRight, Camera, Package, Moon as MoonIcon } from "lucide-react";
+import { ChevronRight, Camera, Package, Moon as MoonIcon, Cloud } from "lucide-react";
 import HorizontalLinesIcon from "@/components/HorizontalLinesIcon";
 import VerticalLinesIcon from "@/components/VerticalLinesIcon";
 import FishingHookIcon from "@/components/FishingHookIcon";
@@ -56,6 +56,13 @@ const items = [
     title: "Moon Phase",
     description: "Check lunar phases and solunar feeding times to plan your fishing trips.",
     icon: MoonIcon,
+    entity: null,
+  },
+  {
+    to: "/weather",
+    title: "Weather",
+    description: "Check current weather conditions and 7-day forecast for your fishing location.",
+    icon: Cloud,
     entity: null,
   },
 ];
