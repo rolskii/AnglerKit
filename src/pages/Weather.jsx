@@ -48,7 +48,7 @@ export default function Weather() {
     }
     try {
       const response = await fetch(
-        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(value)}&language=en&count=5&format=json`
+        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(value)}&language=en&count=10&format=json`
       );
       const data = await response.json();
       if (data.results) {
@@ -207,7 +207,7 @@ export default function Weather() {
                     onBlur={() => setTimeout(() => setShowSuggestions(false), 100)}
                   />
                   {showSuggestions && suggestions.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-50 max-h-40 overflow-y-auto" onMouseDown={(e) => e.preventDefault()}>
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto" onMouseDown={(e) => e.preventDefault()}>
                       {suggestions.map((suggestion, idx) => (
                         <div
                           key={idx}
