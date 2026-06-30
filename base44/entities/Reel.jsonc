@@ -38,6 +38,11 @@
       "type": "number",
       "description": "Dollar value of the reel"
     },
+    "date_acquired": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the reel was acquired"
+    },
     "image_url": {
       "type": "string",
       "description": "Legacy single photo (superseded by images)"

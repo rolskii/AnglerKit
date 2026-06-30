@@ -27,6 +27,7 @@ export default function MiscCard({ item, onEdit, onDelete }) {
       { label: "Quantity", value: item.quantity != null ? item.quantity : null },
       { label: "Condition", value: item.condition },
       { label: "Value", value: item.value != null ? `$${item.value}` : null },
+      { label: "Acquired", value: item.date_acquired },
     ],
     sections: [],
     notes: item.notes,
@@ -56,6 +57,7 @@ export default function MiscCard({ item, onEdit, onDelete }) {
         <Detail label="Quantity" value={item.quantity != null ? item.quantity : null} />
         <Detail label="Condition" value={item.condition} />
         <Detail label="Value" value={item.value != null ? `$${item.value}` : null} />
+        <Detail label="Acquired" value={item.date_acquired} />
       </div>
 
       {item.notes && <p className="text-sm text-muted-foreground italic border-t border-border pt-2">{item.notes}</p>}

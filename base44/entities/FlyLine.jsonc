@@ -93,6 +93,11 @@
       "default": false,
       "description": "Whether this line is on a spare spool (not on a reel)"
     },
+    "date_acquired": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the line was acquired"
+    },
     "image_url": {
       "type": "string",
       "description": "Legacy single photo (superseded by images)"

@@ -29,6 +29,7 @@ export default function LineCard({ line, onEdit, onDelete }) {
       { label: "Value", value: line.value != null ? `$${line.value}` : null },
       { label: "Reel", value: line.reel },
       { label: "Rod", value: line.rod },
+      { label: "Acquired", value: line.date_acquired },
     ],
     sections: [],
     notes: line.notes,
@@ -60,6 +61,7 @@ export default function LineCard({ line, onEdit, onDelete }) {
         <Detail label="Total Len" value={line.total_length ? `${line.total_length} ft` : null} />
         <Detail label="Colour" value={line.colour} />
         <Detail label="Value" value={line.value != null ? `$${line.value}` : null} />
+        <Detail label="Acquired" value={line.date_acquired} />
       </div>
 
       <div className="flex flex-col gap-1.5 text-sm border-t border-border pt-3">

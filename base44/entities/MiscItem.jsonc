@@ -50,6 +50,11 @@
       "type": "number",
       "description": "Dollar value of the item"
     },
+    "date_acquired": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the item was acquired"
+    },
     "image_url": {
       "type": "string",
       "description": "Legacy single photo (superseded by images)"

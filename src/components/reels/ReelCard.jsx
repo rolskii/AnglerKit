@@ -26,6 +26,7 @@ export default function ReelCard({ reel, lineCount, spooledLines, onEdit, onDele
       { label: "Size", value: reel.size },
       { label: "Condition", value: reel.condition },
       { label: "Value", value: reel.value != null ? `$${reel.value}` : null },
+      { label: "Acquired", value: reel.date_acquired },
     ],
     sections: spooledLines && spooledLines.length > 0 ? [{
       title: "Currently Spooled with",
@@ -69,6 +70,7 @@ export default function ReelCard({ reel, lineCount, spooledLines, onEdit, onDele
          <Detail label="Type" value={reel.type} />
          <Detail label="Condition" value={reel.condition} />
          <Detail label="Value" value={reel.value != null ? `$${reel.value}` : null} />
+         <Detail label="Acquired" value={reel.date_acquired} />
        </div>
 
       <div className="flex flex-col gap-2 border-t border-border pt-3">

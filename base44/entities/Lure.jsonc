@@ -48,6 +48,11 @@
       "type": "number",
       "description": "Dollar value of the lure or fly"
     },
+    "date_acquired": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the lure or fly was acquired"
+    },
     "image_url": {
       "type": "string",
       "description": "Legacy single photo (superseded by images)"

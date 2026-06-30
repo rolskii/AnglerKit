@@ -15,7 +15,7 @@ import ImageUpload from "@/components/ImageUpload";
 const TYPES = ["Casting", "Fly", "Spinning", "Other"];
 const MATERIALS = ["Carbon", "Cane", "Fiberglass", "Other"];
 const CONDITIONS = ["New", "Like New", "Good", "Fair", "Poor"];
-const empty = { name: "", brand: "", length: "", line_weight: "", type: "Fly", material: "Carbon", condition: "Good", value: "", notes: "", images: [] };
+const empty = { name: "", brand: "", length: "", line_weight: "", type: "Fly", material: "Carbon", condition: "Good", value: "", date_acquired: "", notes: "", images: [] };
 
 export default function RodForm({ open, onOpenChange, onSubmit, initial, loading }) {
   const [form, setForm] = useState(empty);
@@ -91,6 +91,10 @@ export default function RodForm({ open, onOpenChange, onSubmit, initial, loading
             <div className="space-y-1.5">
               <Label>Value ($)</Label>
               <Input className="bg-muted" type="number" value={form.value} onChange={(e) => set("value", e.target.value)} placeholder="0.00" />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Date Acquired</Label>
+              <Input className="bg-muted" type="date" value={form.date_acquired || ""} onChange={(e) => set("date_acquired", e.target.value)} />
             </div>
           </div>
           <div className="space-y-1.5">

@@ -23,7 +23,7 @@ const DEFAULT_DESCRIPTIONS = ["Floating", "Sink Tip", "Full Sinking", "Intermedi
 const empty = {
   species: "Trout", brand: "", model: "", type: "Head", rod_type: "", description: "",
   line_weight: "", grain_weight: "", head_length: "", total_length: "",
-  colour: "", condition: "Good", value: "", reel: "", rod: "", spooled: false, notes: "", images: [],
+  colour: "", condition: "Good", value: "", reel: "", rod: "", spooled: false, date_acquired: "", notes: "", images: [],
 };
 
 export default function LineForm({ open, onOpenChange, onSubmit, initial, reels, rods, loading, existingBrands = [], existingDescriptions = [] }) {
@@ -212,6 +212,10 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
              <div className="space-y-1.5">
                <Label>Value ($)</Label>
                <Input className="bg-muted" type="number" value={form.value} onChange={(e) => set("value", e.target.value)} placeholder="0.00" />
+             </div>
+             <div className="space-y-1.5">
+               <Label>Date Acquired</Label>
+               <Input className="bg-muted" type="date" value={form.date_acquired || ""} onChange={(e) => set("date_acquired", e.target.value)} />
              </div>
              <div className="space-y-1.5 col-span-2">
               <Label>Notes</Label>
