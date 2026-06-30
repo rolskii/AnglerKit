@@ -6,8 +6,8 @@ export default function Moon() {
   const [moonData, setMoonData] = useState(null);
   const savedLocation = localStorage.getItem('moonLocation');
   const savedCoords = localStorage.getItem('moonCoords');
-  const [location, setLocation] = useState(savedLocation || 'Toronto, ON');
-  const [editingLocation, setEditingLocation] = useState(savedLocation || 'Toronto, ON');
+  const [location, setLocation] = useState(savedLocation || 'Toronto');
+  const [editingLocation, setEditingLocation] = useState(savedLocation || 'Toronto');
   const [lastCoords, setLastCoords] = useState(savedCoords ? JSON.parse(savedCoords) : null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -25,7 +25,7 @@ export default function Moon() {
     if (lastCoords) {
       fetchMoonData(lastCoords.lat, lastCoords.lon, lastCoords.name || location, selectedDate);
     } else {
-      handleLocationChange();
+      handleLocationChange(editingLocation);
     }
   }, [selectedDate]);
 
