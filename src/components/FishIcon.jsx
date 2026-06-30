@@ -1,20 +1,14 @@
+const FISH_IMG_URL =
+  "https://media.base44.com/images/public/6a3f2458eb55a5d860886e35/552bbaffa_PermitWt.png";
+
 export default function FishIcon({ className = "", ...props }) {
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
+    <img
+      src={FISH_IMG_URL}
+      alt=""
+      aria-hidden="true"
+      className={`${className} object-contain`}
       {...props}
-    >
-      <path d="M3 12c3-4 7-6 12-6 3 0 6 2 6 6s-3 6-6 6c-5 0-9-2-12-6Z" />
-      <path d="M1 12l2-3v6l-2-3Z" />
-      <circle cx="15" cy="10.5" r="0.8" fill="currentColor" stroke="none" />
-    </svg>
+    />
   );
 }
