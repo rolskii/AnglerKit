@@ -1,12 +1,13 @@
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { Home as HomeIcon, Camera, Cloud } from "lucide-react";
+import { Home as HomeIcon, Camera, Cloud, Moon as MoonIcon } from "lucide-react";
 import ReelDiscIcon from "@/components/ReelDiscIcon";
 
 const tabs = [
   { to: "/", label: "Home", icon: HomeIcon, matchExact: true },
   { to: "/gear/lines", label: "Gear", icon: ReelDiscIcon, matchPrefix: "/gear" },
   { to: "/catches", label: "Fish Log", icon: Camera, matchPrefix: "/catches" },
+  { to: "/moon", label: "Moon", icon: MoonIcon, matchExact: true },
   { to: "/weather", label: "Weather", icon: Cloud, matchExact: true },
 ];
 
