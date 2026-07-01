@@ -173,36 +173,36 @@ export default function Moon() {
       });
     }
 
-    // Modern morning alarm — gentle rising melody that repeats
+    // Modern pulsing alarm — urgent two-tone with sharp edge
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (AudioCtx) {
         const ctx = new AudioCtx();
         const master = ctx.createGain();
-        master.gain.value = 0.5;
+        master.gain.value = 0.7;
         master.connect(ctx.destination);
 
-        // Pleasant ascending notes (C5-E5-G5-C6) with soft sine tone
-        const notes = [523.25, 659.25, 783.99, 1046.50];
-        const noteDur = 0.3;
-        const gap = 0.08;
-        const cycleDur = notes.length * (noteDur + gap) + 0.3;
-        // Play the melody twice
-        for (let round = 0; round < 2; round++) {
-          notes.forEach((freq, i) => {
-            const s = ctx.currentTime + round * cycleDur + i * (noteDur + gap);
+        const pulseDur = 0.12;
+        const pulseGap = 0.05;
+        const cycleGap = 0.25;
+        // Alternating high-low tones, repeated in bursts
+        const tones = [988, 740];
+        const burstLen = tones.length * (pulseDur + pulseGap);
+        for (let burst = 0; burst < 4; burst++) {
+          tones.forEach((freq, i) => {
+            const s = ctx.currentTime + burst * (burstLen + cycleGap) + i * (pulseDur + pulseGap);
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
             osc.connect(gain);
             gain.connect(master);
-            osc.type = 'sine';
+            osc.type = 'sawtooth';
             osc.frequency.value = freq;
             gain.gain.setValueAtTime(0, s);
-            gain.gain.linearRampToValueAtTime(0.5, s + 0.05);
-            gain.gain.setValueAtTime(0.5, s + noteDur - 0.08);
-            gain.gain.linearRampToValueAtTime(0, s + noteDur);
+            gain.gain.linearRampToValueAtTime(0.6, s + 0.005);
+            gain.gain.setValueAtTime(0.6, s + pulseDur - 0.01);
+            gain.gain.linearRampToValueAtTime(0, s + pulseDur);
             osc.start(s);
-            osc.stop(s + noteDur + 0.01);
+            osc.stop(s + pulseDur + 0.005);
           });
         }
       }
