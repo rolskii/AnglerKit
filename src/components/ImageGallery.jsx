@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Star } from "lucide-react";
 import { setFeaturedImage } from "@/lib/featuredImage";
 
@@ -10,6 +10,18 @@ export function getItemImages(item) {
 
 export default function ImageGallery({ images = [], featuredLabel, featuredSubtitle, featuredLink }) {
   const [active, setActive] = useState(0);
+  const [featuredUrl, setFeaturedUrl] = useState(null);
+  useEffect(() => {
+    const update = () => {
+      try {
+        const stored = JSON.parse(localStorage.getItem("featuredImageUser") || "null");
+        setFeaturedUrl(stored?.image_url || null);
+      } catch { setFeaturedUrl(null); }
+    };
+    update();
+    window.addEventListener("featured-image-changed", update);
+    return () => window.removeEventListener("featured-image-changed", update);
+  }, []);
   if (!images || images.length === 0) return null;
 
   const handleSetFeatured = () => {
@@ -32,8 +44,8 @@ export default function ImageGallery({ images = [], featuredLabel, featuredSubti
             className="absolute top-2 right-2 flex items-center gap-1 bg-black/50 backdrop-blur-sm text-white text-xs font-medium rounded-full px-2.5 py-1 hover:bg-black/70 transition-colors"
             title="Set as featured image"
           >
-            <Star className="w-3.5 h-3.5" />
-            Feature
+            <Star className={`w-3.5 h-3.5 ${featuredUrl === images[active] ? "text-yellow-400 fill-yellow-400" : ""}`} />
+            {featuredUrl === images[active] ? "Featured" : "Feature"}
           </button>
         )}
       </div>
@@ -61,10 +73,10 @@ export default function ImageGallery({ images = [], featuredLabel, featuredSubti
                       link: featuredLink || "/gear/lines",
                     });
                   }}
-                  className="absolute -top-1.5 -right-1.5 z-20 flex items-center justify-center w-6 h-6 bg-primary text-primary-foreground rounded-full shadow-md hover:bg-primary/90 transition-colors"
+                  className={`absolute -top-1.5 -right-1.5 z-20 flex items-center justify-center w-6 h-6 ${featuredUrl === url ? "bg-yellow-400 text-primary-foreground" : "bg-primary text-primary-foreground"} rounded-full shadow-md hover:bg-primary/90 transition-colors`}
                   title="Set this image as featured"
                 >
-                  <Star className="w-3.5 h-3.5" />
+                  <Star className={`w-3.5 h-3.5 ${featuredUrl === url ? "fill-primary" : ""}`} />
                 </button>
               )}
             </div>
