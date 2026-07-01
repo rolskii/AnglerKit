@@ -6,7 +6,7 @@ import { ReelIcon as ReelDiscIcon } from "@/components/GearIcons";
 import FishIcon from "@/components/FishIcon";
 import { base44 } from "@/api/base44Client";
 import PullToRefresh from "@/components/PullToRefresh";
-import FeaturedCatch from "@/components/FeaturedCatch";
+import FeaturedImage from "@/components/FeaturedImage";
 
 const calculateMoonPhase = (date) => {
   const knownNewMoon = new Date(2000, 0, 6);
@@ -268,7 +268,7 @@ export default function Home() {
         })}
       </div>
 
-      <FeaturedCatch />
+      <FeaturedImage />
 </div>
     </PullToRefresh>
   );
