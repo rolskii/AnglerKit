@@ -40,14 +40,33 @@ export default function ImageGallery({ images = [], featuredLabel, featuredSubti
       {images.length > 1 && (
         <div className="flex flex-wrap gap-1.5 pb-1">
           {images.map((url, idx) => (
-            <button
-              key={idx}
-              type="button"
-              onClick={() => setActive(idx)}
-              className={`shrink-0 w-14 h-14 rounded-md overflow-hidden border-2 transition-colors ${idx === active ? "border-primary" : "border-border"}`}
-            >
-              <img src={url} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
-            </button>
+            <div key={idx} className="relative shrink-0">
+              <button
+                type="button"
+                onClick={() => setActive(idx)}
+                className={`block w-14 h-14 rounded-md overflow-hidden border-2 transition-colors ${idx === active ? "border-primary" : "border-border"}`}
+              >
+                <img src={url} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+              </button>
+              {featuredLabel && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setFeaturedImage({
+                      image_url: url,
+                      label: featuredLabel || "Gear",
+                      subtitle: featuredSubtitle || "",
+                      link: featuredLink || "/gear/lines",
+                    });
+                  }}
+                  className="absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 bg-primary text-primary-foreground rounded-full shadow-sm hover:bg-primary/90 transition-colors"
+                  title="Set this image as featured"
+                >
+                  <Star className="w-3 h-3" />
+                </button>
+              )}
+            </div>
           ))}
         </div>
       )}
