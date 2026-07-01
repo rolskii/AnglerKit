@@ -220,7 +220,7 @@ export default function Home() {
               </p>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-1">
+          <div className="flex items-start gap-6">
             <div>
               <p className="text-xs font-semibold text-muted-foreground mb-1">Major</p>
               <p className="text-xs text-foreground flex items-center gap-1">
