@@ -270,16 +270,7 @@ export default function Home() {
         })}
       </div>
 
-      {/* Footer: best bite window */}
-      {biteWindow && (
-        <div className="flex items-center gap-2 px-1 pt-2">
-          <span className="w-2 h-2 rounded-full bg-tint-teal shrink-0"></span>
-          <p className="text-sm text-muted-foreground">
-            Best bite window today: {biteWindow.start}–{biteWindow.end}
-          </p>
-        </div>
-      )}
-    </div>
+</div>
     </PullToRefresh>
   );
 }
