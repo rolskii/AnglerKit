@@ -292,7 +292,7 @@ export default function Moon() {
   const solunar = getSolunarTimes(moonData.phase);
 
   return (
-    <div className="min-h-screen bg-background p-4 pb-20">
+    <div className="min-h-screen bg-background px-4 pb-20 pt-0">
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Header */}
         <div className="text-center mb-8">
