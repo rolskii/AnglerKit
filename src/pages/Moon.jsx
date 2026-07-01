@@ -308,7 +308,7 @@ export default function Moon() {
                 value={editingLocation}
                 onChange={(e) => handleLocationInput(e.target.value)}
                 placeholder="Enter location"
-                className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-card text-foreground placeholder:text-muted-foreground text-center"
+                className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-card text-foreground placeholder:text-muted-foreground text-left"
                 onKeyPress={(e) => e.key === 'Enter' && handleLocationChange()}
                 onFocus={(e) => {
                   e.target.select();
@@ -336,7 +336,7 @@ export default function Moon() {
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-card text-foreground"
+                className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-card text-foreground text-left"
               />
             </div>
           </div>
