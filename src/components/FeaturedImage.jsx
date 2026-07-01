@@ -112,9 +112,6 @@ export default function FeaturedImage() {
             <img src={featured.image_url} alt={featured.label} className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-4 md:p-5">
-              <span className="inline-block text-white/80 text-[10px] md:text-xs font-semibold uppercase tracking-wide bg-black/30 backdrop-blur-sm rounded-full px-2 py-0.5 mb-1">
-                {featured.subtitle}
-              </span>
               <h3 className="text-white text-xl md:text-2xl font-heading font-bold tracking-tight">
                 {featured.label}
               </h3>
