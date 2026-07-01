@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { ChevronRight, Camera, Moon as MoonIcon, Cloud } from "lucide-react";
 import { ReelIcon as ReelDiscIcon } from "@/components/GearIcons";
+import FishIcon from "@/components/FishIcon";
 import { base44 } from "@/api/base44Client";
 import PullToRefresh from "@/components/PullToRefresh";
 
@@ -23,7 +24,17 @@ const calculateMoonPhase = (date) => {
   else if (daysInCycle < 25) name = "Last Quarter";
   else name = "Waning Crescent";
 
-  return { name, illumination: Math.round(illumination * 100) };
+  const lunarMonthLen = 29.53058867;
+  const distFromNew = Math.min(daysInCycle, lunarMonthLen - daysInCycle);
+  const distFromFull = Math.abs(daysInCycle - lunarMonthLen / 2);
+  const distFromMajor = Math.min(distFromNew, distFromFull);
+  let fishingRating = 3;
+  if (distFromMajor < 1) fishingRating = 7;
+  else if (distFromMajor < 2.5) fishingRating = 6;
+  else if (distFromMajor < 4.5) fishingRating = 5;
+  else if (distFromMajor < 6) fishingRating = 4;
+
+  return { name, illumination: Math.round(illumination * 100), fishingRating };
 };
 
 const getWeatherDescription = (code) => {
@@ -155,8 +166,30 @@ export default function Home() {
 
       {/* Status bar */}
       {moonPhase && (
-        <div className="flex items-center justify-between gap-4 px-4 py-3 rounded-2xl bg-card shadow-sm">
-          <p className="text-base font-bold text-primary">Bite: 5:48–7:48 AM · 8:54–10:54 PM</p>
+        <div className="px-4 py-3 rounded-2xl bg-card shadow-sm space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1">
+              {[1, 2, 3, 4, 5, 6, 7].map((n) => (
+                <FishIcon
+                  key={n}
+                  className={`w-5 h-5 text-primary transition-opacity ${n <= moonPhase.fishingRating ? "opacity-100" : "opacity-25"}`}
+                />
+              ))}
+            </div>
+            <Link to="/moon" className="text-xs font-semibold text-primary hover:underline">Details</Link>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground mb-1">Major</p>
+              <p className="text-xs text-foreground">5:48–7:48 AM</p>
+              <p className="text-xs text-foreground">8:54–10:54 PM</p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground mb-1">Minor</p>
+              <p className="text-xs text-foreground">5:48–6:18 AM</p>
+              <p className="text-xs text-foreground">8:54–9:24 PM</p>
+            </div>
+          </div>
         </div>
       )}
 
