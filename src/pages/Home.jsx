@@ -236,31 +236,28 @@ export default function Home() {
       )}
 
       {/* Category grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+      <div className="grid grid-cols-4 gap-2 md:gap-4">
         {items.map((item) => {
           const Icon = item.icon;
           const isGear = item.to === "/gear/lines";
           const desc = descriptions[item.key];
           return (
             <Link key={item.to} to={item.to} className="group">
-              <Card className="relative p-4 md:p-5 h-full rounded-2xl border-0 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer bg-card">
-                <div className="flex flex-col gap-3">
-                  <div className="flex items-start justify-between">
-                    <div className={`flex h-12 md:h-11 w-12 md:w-11 items-center justify-center rounded-xl flex-shrink-0 ${tintClasses[item.tint]}`}>
-                      <Icon className={isGear ? "w-8 md:w-10 h-8 md:h-10" : "w-6 md:w-8 h-6 md:h-8"} strokeWidth={2} />
-                    </div>
-                    <ChevronRight className="w-5 h-5 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors flex-shrink-0" />
+              <Card className="relative p-2.5 md:p-5 h-full rounded-2xl border-0 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer bg-card">
+                <div className="flex flex-col gap-2 md:gap-3">
+                  <div className={`flex h-9 w-9 md:h-11 md:w-11 items-center justify-center rounded-xl flex-shrink-0 ${tintClasses[item.tint]}`}>
+                    <Icon className={isGear ? "w-6 md:w-10 h-6 md:h-10" : "w-5 md:w-8 h-5 md:h-8"} strokeWidth={2} />
                   </div>
-                  <div className="space-y-1">
-                    <h2 className="text-base md:text-lg font-heading font-semibold tracking-tight">{item.title}</h2>
+                  <div className="space-y-0.5 md:space-y-1">
+                    <h2 className="text-xs md:text-lg font-heading font-semibold tracking-tight leading-tight">{item.title}</h2>
                     {item.key === "weather" && weatherInfo ? (
-                      <p className="text-xs md:text-sm text-muted-foreground">{weatherInfo.temp} · {weatherInfo.windLabel} · {weatherInfo.desc}</p>
+                      <p className="text-[10px] md:text-sm text-muted-foreground leading-tight">{weatherInfo.temp} · {weatherInfo.windLabel} · {weatherInfo.desc}</p>
                     ) : item.key === "moon" && moonPhase ? (
-                      <p className="text-xs md:text-sm text-muted-foreground">{moonPhase.name} · {moonPhase.illumination}% lit</p>
+                      <p className="text-[10px] md:text-sm text-muted-foreground leading-tight">{moonPhase.name} · {moonPhase.illumination}% lit</p>
                     ) : desc ? (
-                      <p className="text-xs md:text-sm text-muted-foreground">{desc}</p>
+                      <p className="text-[10px] md:text-sm text-muted-foreground leading-tight">{desc}</p>
                     ) : (
-                      <p className="text-xs md:text-sm text-muted-foreground/40">—</p>
+                      <p className="text-[10px] md:text-sm text-muted-foreground/40">—</p>
                     )}
                   </div>
                 </div>
