@@ -32,17 +32,17 @@ export default function Gear() {
       </div>
 
       <Tabs value={active} onValueChange={(v) => navigate(`/gear/${v}`, { replace: true })}>
-        <TabsList className="h-auto flex-wrap gap-1 bg-muted/60 p-1">
+        <div className="grid grid-cols-5 gap-2">
           {TABS.map((t) => {
             const Icon = t.icon;
             return (
-              <TabsTrigger key={t.value} value={t.value} className="gap-1.5 px-3 py-1.5">
-                <Icon className="w-4 h-4" strokeWidth={2} />
-                {t.label}
+              <TabsTrigger key={t.value} value={t.value} className="flex flex-col items-center gap-1.5 rounded-xl bg-card border border-border/60 px-1 py-3 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary shadow-sm">
+                <Icon className="w-6 h-6" strokeWidth={1.75} />
+                <span className="text-[11px] font-medium leading-tight text-center">{t.label}</span>
               </TabsTrigger>
             );
           })}
-        </TabsList>
+        </div>
 
         {TABS.map((t) => (
           <TabsContent key={t.value} value={t.value} className="mt-5 focus-visible:outline-none">
