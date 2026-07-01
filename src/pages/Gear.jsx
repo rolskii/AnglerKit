@@ -13,7 +13,7 @@ const TABS = [
   { value: "lines", label: "Lines", icon: LinesIcon, Component: Lines },
   { value: "reels", label: "Reels", icon: ReelIcon, Component: Reels },
   { value: "rods", label: "Rods", icon: RodIcon, Component: Rods },
-  { value: "lures", label: "Lures & Flies", icon: LureIcon, Component: Lures },
+  { value: "lures", label: "Tackle", icon: LureIcon, Component: Lures },
   { value: "misc", label: "Misc. Gear", icon: Package, Component: Misc },
 ];
 
