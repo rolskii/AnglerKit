@@ -20,19 +20,16 @@ export default function About() {
 
       <div className="prose prose-sm max-w-none text-foreground/90 space-y-4">
         <p>
-          Every serious angler knows the feeling — the perfect rod for the conditions, the right fly tied on, everything working together. Angler's Log is built around that attention to detail.
+          Angler's Log is a purpose-built companion for the discerning angler — one place to manage every piece of equipment, record every catch and time every trip around the natural rhythms that move fish.
         </p>
         <p>
-          Catalog your entire collection — lines, rods, reels, lures, flies and all your gear — with specs, condition, photos and value. Pair lines with rods and reels, track what's spooled on what, and know exactly what you own and what it's worth. When you're on the water, log every catch with measurements, gear used and conditions.
+          Maintain a detailed inventory of lines, rods, reels, lures, flies, and miscellaneous gear, each captured with specifications, condition, photographs, and value. Connect lines to the rods and reels they're paired with, track what's spooled and what's on a spare, and always know precisely what you own and what it's worth.
         </p>
         <p>
-          When you're off it, plan your next trip with moon phase and solunar data alongside local weather.
+          On the water, log every catch with species, measurements, conditions, and the exact gear that hooked it. Off the water, plan your next outing with lunar phase and solunar feeding tables alongside live local weather.
         </p>
         <p>
-          Conveniently, each logged in item including all of your catches are individually shareable like an aesthetically pleasing trading card.
-        </p>
-        <p>
-          Your data stays yours — Although your data is always backed up, you can export and download your full collection at any time.
+          Your records displayed individually in a neat digital card remain entirely yours. You can share them with your friends & family. Or Export and back up your full collection at any time, in a format you control.
         </p>
       </div>
 
