@@ -173,42 +173,37 @@ export default function Moon() {
       });
     }
 
-    // Classic morning alarm — repeating beep-beep-beep pattern
+    // Modern morning alarm — gentle rising melody that repeats
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (AudioCtx) {
         const ctx = new AudioCtx();
-        const comp = ctx.createDynamicsCompressor();
-        comp.threshold.value = -50;
-        comp.knee.value = 0;
-        comp.ratio.value = 20;
-        comp.attack.value = 0.003;
-        comp.release.value = 0.25;
         const master = ctx.createGain();
-        master.gain.value = 1.0;
-        comp.connect(master);
+        master.gain.value = 0.5;
         master.connect(ctx.destination);
 
-        const beepFreq = 880;
-        const beepDur = 0.15;
-        const gap = 0.1;
-        // 3 groups of beep-beep-beep with a longer pause between groups
-        for (let group = 0; group < 3; group++) {
-          for (let i = 0; i < 3; i++) {
-            const s = ctx.currentTime + group * (3 * (beepDur + gap) + 0.4) + i * (beepDur + gap);
+        // Pleasant ascending notes (C5-E5-G5-C6) with soft sine tone
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        const noteDur = 0.3;
+        const gap = 0.08;
+        const cycleDur = notes.length * (noteDur + gap) + 0.3;
+        // Play the melody twice
+        for (let round = 0; round < 2; round++) {
+          notes.forEach((freq, i) => {
+            const s = ctx.currentTime + round * cycleDur + i * (noteDur + gap);
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
             osc.connect(gain);
-            gain.connect(comp);
-            osc.type = 'square';
-            osc.frequency.value = beepFreq;
+            gain.connect(master);
+            osc.type = 'sine';
+            osc.frequency.value = freq;
             gain.gain.setValueAtTime(0, s);
-            gain.gain.linearRampToValueAtTime(0.6, s + 0.01);
-            gain.gain.setValueAtTime(0.6, s + beepDur - 0.02);
-            gain.gain.linearRampToValueAtTime(0, s + beepDur);
+            gain.gain.linearRampToValueAtTime(0.5, s + 0.05);
+            gain.gain.setValueAtTime(0.5, s + noteDur - 0.08);
+            gain.gain.linearRampToValueAtTime(0, s + noteDur);
             osc.start(s);
-            osc.stop(s + beepDur + 0.01);
-          }
+            osc.stop(s + noteDur + 0.01);
+          });
         }
       }
     } catch (e) {}
