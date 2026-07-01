@@ -227,7 +227,6 @@ export default function Home() {
               <p className={`text-sm font-bold ${moonPhase.fishingRating >= 5 ? "text-green-600" : moonPhase.fishingRating <= 3 ? "text-yellow-600" : "text-primary"}`}>
                 {moonPhase.fishingRating <= 2 ? "Bad" : moonPhase.fishingRating === 3 ? "Fair" : moonPhase.fishingRating === 4 ? "OK" : moonPhase.fishingRating === 5 ? "Good" : moonPhase.fishingRating === 6 ? "Very Good" : "Excellent"}
               </p>
-              <Link to="/moon" className="text-xs font-semibold text-primary hover:underline">Details</Link>
               <p className="text-xs text-muted-foreground flex items-center justify-end gap-1 mt-1">
                 <MapPin className="w-3 h-3" />{location}
               </p>
