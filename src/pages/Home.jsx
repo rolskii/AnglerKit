@@ -14,7 +14,7 @@ const calculateMoonPhase = (date) => {
   const lunarMonth = 29.53058867;
   const daysSinceNewMoon = (date - knownNewMoon) / (1000 * 60 * 60 * 24);
   const daysInCycle = daysSinceNewMoon % lunarMonth;
-  const illumination = (1 + Math.cos(Math.PI * 2 * (daysInCycle / lunarMonth))) / 2;
+  const illumination = (1 - Math.cos(Math.PI * 2 * (daysInCycle / lunarMonth))) / 2;
 
   let name = "New Moon";
   if (daysInCycle < 1.84) name = "New Moon";
