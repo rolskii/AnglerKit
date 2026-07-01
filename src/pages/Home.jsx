@@ -93,11 +93,22 @@ export default function Home() {
   const [weatherInfo, setWeatherInfo] = useState(null);
   const [descriptions, setDescriptions] = useState({});
   const [biteWindow, setBiteWindow] = useState(null);
-  const [alarmTime, setAlarmTime] = useState(null);
+  const [alarmTick, setAlarmTick] = useState(0);
 
   const todayStr = () => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  };
+
+  const getAlarmTime = () => {
+    try {
+      const stored = localStorage.getItem('alarmsByDate');
+      if (!stored) return null;
+      const alarms = JSON.parse(stored);
+      const todayAlarm = alarms[todayStr()];
+      if (todayAlarm && todayAlarm.enabled) return todayAlarm.time;
+    } catch {}
+    return null;
   };
 
   const refreshData = async () => {
@@ -105,18 +116,7 @@ export default function Home() {
     setMoonPhase(phase);
     setBiteWindow(getNextBiteWindow());
     setDescriptions(prev => ({ ...prev, moon: `${phase.illumination}% illuminated` }));
-
-    const stored = localStorage.getItem('alarmsByDate');
-    if (stored) {
-      try {
-        const alarms = JSON.parse(stored);
-        const todayAlarm = alarms[todayStr()];
-        if (todayAlarm && todayAlarm.enabled) setAlarmTime(todayAlarm.time);
-        else setAlarmTime(null);
-      } catch { setAlarmTime(null); }
-    } else {
-      setAlarmTime(null);
-    }
+    setAlarmTick(t => t + 1);
 
     const coords = JSON.parse(localStorage.getItem("weatherCoords") || "null");
     const tempUnit = localStorage.getItem("weatherTempUnit") || "fahrenheit";
@@ -126,6 +126,16 @@ export default function Home() {
   };
 
   useEffect(() => { refreshData(); }, []);
+
+  useEffect(() => {
+    const recheck = () => setAlarmTick(t => t + 1);
+    window.addEventListener('focus', recheck);
+    window.addEventListener('storage', recheck);
+    return () => {
+      window.removeEventListener('focus', recheck);
+      window.removeEventListener('storage', recheck);
+    };
+  }, []);
 
   const fetchWeather = async (coords, tempUnit) => {
     try {
@@ -209,11 +219,11 @@ export default function Home() {
               <p className="text-xs font-semibold text-muted-foreground mb-1">Major</p>
               <p className="text-xs text-foreground flex items-center gap-1">
                 5:48–7:48 AM
-                {alarmTime === "5:48 AM" && <Bell className="w-3 h-3 text-primary" />}
+                {getAlarmTime() === "5:48 AM" && <Bell className="w-3 h-3 text-primary" />}
               </p>
               <p className="text-xs text-foreground flex items-center gap-1">
                 8:54–10:54 PM
-                {alarmTime === "8:54 PM" && <Bell className="w-3 h-3 text-primary" />}
+                {getAlarmTime() === "8:54 PM" && <Bell className="w-3 h-3 text-primary" />}
               </p>
             </div>
             <div>
