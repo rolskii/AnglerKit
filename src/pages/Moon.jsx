@@ -2,6 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Moon as MoonIcon, Sun, Waves, MapPin, Bell, BellOff, Save } from 'lucide-react';
 import FishIcon from '@/components/FishIcon';
+import MoonPhaseSymbol from '@/components/MoonPhaseSymbol';
+import RealisticMoon from '@/components/RealisticMoon';
+import GradientOrbMoon from '@/components/GradientOrbMoon';
 
 export default function Moon() {
   const [moonData, setMoonData] = useState(null);
@@ -372,19 +375,19 @@ export default function Moon() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* Moon Visualization */}
-                <div className="flex justify-center">
-                  <div className="relative w-32 h-32 rounded-full bg-gradient-to-b from-slate-200 to-slate-300 flex items-center justify-center shadow-lg">
-                    <div className="absolute inset-0 rounded-full" style={{
-                      background: `conic-gradient(
-                        #1a1a1a 0deg,
-                        #1a1a1a ${moonData.illumination * 3.6}deg,
-                        #e5e5e5 ${moonData.illumination * 3.6}deg,
-                        #e5e5e5 360deg
-                      )`,
-                      opacity: 0.85
-                    }}></div>
-                    <MoonIcon className="w-12 h-12 text-white z-10" />
+                {/* Moon Visualization — preview all three styles */}
+                <div className="flex justify-around items-end gap-2">
+                  <div className="flex flex-col items-center gap-2">
+                    <RealisticMoon illumination={moonData.illumination} className="w-28 h-28" />
+                    <p className="text-xs font-medium text-muted-foreground">Realistic</p>
+                  </div>
+                  <div className="flex flex-col items-center gap-2">
+                    <GradientOrbMoon illumination={moonData.illumination} className="w-28 h-28" />
+                    <p className="text-xs font-medium text-muted-foreground">Gradient Orb</p>
+                  </div>
+                  <div className="flex flex-col items-center gap-2">
+                    <MoonPhaseSymbol phase={{ illumination: moonData.illumination, name: moonData.phase }} className="w-28 h-28" />
+                    <p className="text-xs font-medium text-muted-foreground">Phase Symbol</p>
                   </div>
                 </div>
 
