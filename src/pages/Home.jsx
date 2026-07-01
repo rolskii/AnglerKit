@@ -132,9 +132,9 @@ export default function Home() {
     setDescriptions(prev => ({ ...prev, moon: `${phase.illumination}% illuminated` }));
     setAlarmTick(t => t + 1);
 
-    const coords = JSON.parse(localStorage.getItem("weatherCoords") || "null");
+    const coords = JSON.parse(localStorage.getItem("weatherCoords") || "null") || { lat: 43.6532, lon: -79.3832, name: "Toronto, ON" };
     const tempUnit = localStorage.getItem("weatherTempUnit") || "celsius";
-    if (coords) await fetchWeather(coords, tempUnit);
+    await fetchWeather(coords, tempUnit);
 
     await Promise.all([fetchGearCount(), fetchLastCatch()]);
   };
