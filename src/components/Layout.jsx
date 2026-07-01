@@ -11,7 +11,6 @@ import TroutIcon from "@/components/TroutIcon";
 import { ReelIcon as ReelDiscIcon } from "@/components/GearIcons";
 import { Moon as MoonIcon } from "lucide-react";
 import BottomTabBar from "@/components/BottomTabBar";
-import PullToRefresh from "@/components/PullToRefresh";
 import { motion } from "framer-motion";
 
 const navItems = [
@@ -26,17 +25,12 @@ const navItems = [
 
 export default function Layout() {
   const [open, setOpen] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
   const appName = "Angler's Log";
   const navigate = useNavigate();
   const location = useLocation();
 
   const handleLogout = async () => {
     await base44.auth.logout();
-  };
-
-  const handleRefresh = async () => {
-    setRefreshKey(k => k + 1);
   };
 
   const NavLinks = () => {
@@ -138,16 +132,14 @@ export default function Layout() {
 
       <main className="md:pl-64">
         <div className="mx-auto max-w-6xl px-4 py-6 pb-20 md:px-8 md:py-10 md:pb-10">
-          <PullToRefresh onRefresh={handleRefresh}>
-            <motion.div
-              key={`${location.pathname}-${refreshKey}`}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.2, ease: "easeInOut" }}
-            >
-              <Outlet />
-            </motion.div>
-          </PullToRefresh>
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
+          >
+            <Outlet />
+          </motion.div>
         </div>
       </main>
 
