@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { ChevronRight, Camera, Moon as MoonIcon, Cloud, Bell, MapPin } from "lucide-react";
+import { ChevronRight, Camera, Moon as MoonIcon, Cloud, CloudRain, Sun, Bell, MapPin } from "lucide-react";
 import { ReelIcon as ReelDiscIcon } from "@/components/GearIcons";
 import FishIcon from "@/components/FishIcon";
 import { base44 } from "@/api/base44Client";
@@ -36,6 +36,13 @@ const calculateMoonPhase = (date) => {
   else if (distFromMajor < 6) fishingRating = 4;
 
   return { name, illumination: Math.round(illumination * 100), fishingRating };
+};
+
+const getWeatherIcon = (code) => {
+  if (code === 0 || code === 1) return Sun;
+  if (code === 2 || code === 3) return Cloud;
+  if (code >= 45 && code <= 99) return CloudRain;
+  return Cloud;
 };
 
 const getWeatherDescription = (code) => {
