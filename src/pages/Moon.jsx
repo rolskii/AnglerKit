@@ -483,7 +483,17 @@ export default function Moon() {
                         )}
                       </div>
                     )}
-                    <p className="text-xs text-muted-foreground mt-4">
+                    <div className="flex items-center gap-3 mt-4">
+                      <button
+                        onClick={() => playAlarm('12:30 PM', 15)}
+                        className="px-3 py-1.5 rounded-lg text-xs font-medium bg-accent text-accent-foreground hover:bg-accent/90 flex items-center gap-1.5 transition-colors"
+                      >
+                        <Bell className="w-3.5 h-3.5" />
+                        Test Alarm
+                      </button>
+                      <span className="text-xs text-muted-foreground">Play a sample alarm now</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
                       Duration: ~1.5-2 hours per period. Fish are most active during these times.
                     </p>
                   </CardContent>
