@@ -297,7 +297,7 @@ export default function Moon() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-display font-bold mb-2">Moon Phase</h1>
-          <p className="text-muted-foreground">Check lunar phases and solunar feeding times to plan your fishing trips.</p>
+          <p className="text-muted-foreground">Check lunar phases and solunar feeding times.</p>
           
           {/* Location & Date Selector */}
           <div className="mt-6 grid grid-cols-2 gap-2 max-w-md mx-auto items-start">
