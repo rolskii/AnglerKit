@@ -164,32 +164,28 @@ export default function Moon() {
       });
     }
 
-    // Repetitive double beep using Web Audio API
+    // Friendly rising chime using Web Audio API
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (AudioCtx) {
         const ctx = new AudioCtx();
-        const beepDur = 0.12;
-        const gap = 0.08;
-        const cycle = 0.5;
-        for (let i = 0; i < 6; i++) {
-          const base = ctx.currentTime + i * cycle;
-          [0, beepDur + gap].forEach(offset => {
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.type = 'square';
-            osc.frequency.value = 880;
-            const s = base + offset;
-            gain.gain.setValueAtTime(0, s);
-            gain.gain.linearRampToValueAtTime(0.9, s + 0.01);
-            gain.gain.setValueAtTime(0.9, s + beepDur - 0.02);
-            gain.gain.linearRampToValueAtTime(0, s + beepDur);
-            osc.start(s);
-            osc.stop(s + beepDur + 0.02);
-          });
-        }
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        const noteDur = 0.22;
+        notes.forEach((freq, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.type = 'sine';
+          osc.frequency.value = freq;
+          const s = ctx.currentTime + i * (noteDur + 0.04);
+          gain.gain.setValueAtTime(0, s);
+          gain.gain.linearRampToValueAtTime(0.5, s + 0.03);
+          gain.gain.setValueAtTime(0.5, s + noteDur - 0.04);
+          gain.gain.linearRampToValueAtTime(0, s + noteDur);
+          osc.start(s);
+          osc.stop(s + noteDur + 0.02);
+        });
       }
     } catch (e) {}
 
