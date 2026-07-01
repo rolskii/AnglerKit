@@ -168,13 +168,16 @@ export default function Home() {
       {moonPhase && (
         <div className="px-4 py-3 rounded-2xl bg-card shadow-sm space-y-3">
           <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1">
-              {[1, 2, 3, 4, 5, 6, 7].map((n) => (
-                <FishIcon
-                  key={n}
-                  className={`w-5 h-5 text-primary transition-opacity ${n <= moonPhase.fishingRating ? "opacity-100" : "opacity-25"}`}
-                />
-              ))}
+            <div className="flex flex-col gap-1">
+              <p className="text-xs font-semibold text-muted-foreground">Fishing Conditions</p>
+              <div className="flex items-center gap-1">
+                {[1, 2, 3, 4, 5, 6, 7].map((n) => (
+                  <FishIcon
+                    key={n}
+                    className={`w-5 h-5 text-primary transition-opacity ${n <= moonPhase.fishingRating ? "opacity-100" : "opacity-25"}`}
+                  />
+                ))}
+              </div>
             </div>
             <div className="text-right shrink-0">
               <p className="text-sm font-bold text-primary">
