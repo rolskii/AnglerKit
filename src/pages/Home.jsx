@@ -228,7 +228,7 @@ export default function Home() {
               </p>
               {weatherInfo?.icon && (() => {
                 const Icon = weatherInfo.icon;
-                return <Icon className="w-5 h-5 text-primary mt-1" />;
+                return <Icon className="w-16 h-16 text-primary mt-2" />;
               })()}
             </div>
           </div>
