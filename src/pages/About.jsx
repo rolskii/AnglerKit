@@ -32,7 +32,7 @@ export default function About() {
           Conveniently, each logged in item including all of your catches are individually shareable like an aesthetically pleasing trading card.
         </p>
         <p>
-          Your data stays yours — export and download your full collection any time.
+          Your data stays yours — Although your data is always backed up with your login credentials, you can export and download your full collection at any time.
         </p>
       </div>
 
