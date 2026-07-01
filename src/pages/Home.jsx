@@ -177,7 +177,9 @@ export default function Home() {
               ))}
             </div>
             <div className="text-right shrink-0">
-              <p className="text-lg font-bold text-primary">{Math.round((moonPhase.fishingRating / 7) * 100)}%</p>
+              <p className="text-sm font-bold text-primary">
+                {moonPhase.fishingRating <= 2 ? "Bad" : moonPhase.fishingRating === 3 ? "Fair" : moonPhase.fishingRating === 4 ? "OK" : moonPhase.fishingRating === 5 ? "Good" : moonPhase.fishingRating === 6 ? "Very Good" : "Excellent"}
+              </p>
               <Link to="/moon" className="text-xs font-semibold text-primary hover:underline">Details</Link>
             </div>
           </div>
