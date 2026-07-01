@@ -236,8 +236,8 @@ export default function Home() {
       )}
 
       {/* Category grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-        {items.filter(i => i.key !== "catch").map((item) => {
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        {items.map((item) => {
           const Icon = item.icon;
           const isGear = item.to === "/gear/lines";
           const desc = descriptions[item.key];
@@ -269,34 +269,6 @@ export default function Home() {
           );
         })}
       </div>
-
-      {/* Fish Log - full width */}
-      {(() => {
-        const item = items.find(i => i.key === "catch");
-        if (!item) return null;
-        const Icon = item.icon;
-        const desc = descriptions[item.key];
-        return (
-          <Link to={item.to} className="group">
-            <Card className="relative p-4 md:p-5 rounded-2xl border-0 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer bg-card">
-              <div className="flex items-center gap-4">
-                <div className={`flex h-12 md:h-11 w-12 md:w-11 items-center justify-center rounded-xl flex-shrink-0 ${tintClasses[item.tint]}`}>
-                  <Icon className="w-6 md:w-8 h-6 md:h-8" strokeWidth={2} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h2 className="text-base md:text-lg font-heading font-semibold tracking-tight">{item.title}</h2>
-                  {desc ? (
-                    <p className="text-xs md:text-sm text-muted-foreground">{desc}</p>
-                  ) : (
-                    <p className="text-xs md:text-sm text-muted-foreground/40">—</p>
-                  )}
-                </div>
-                <ChevronRight className="w-5 h-5 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors flex-shrink-0" />
-              </div>
-            </Card>
-          </Link>
-        );
-      })()}
 
 </div>
     </PullToRefresh>
