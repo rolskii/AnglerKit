@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { ChevronRight, Camera, Moon as MoonIcon, Cloud, CloudRain, Sun, Bell, MapPin } from "lucide-react";
 import { ReelIcon as ReelDiscIcon } from "@/components/GearIcons";
 import FishIcon from "@/components/FishIcon";
+import MoonPhaseSymbol from "@/components/MoonPhaseSymbol";
 import { base44 } from "@/api/base44Client";
 import PullToRefresh from "@/components/PullToRefresh";
 import FeaturedImage from "@/components/FeaturedImage";
@@ -249,7 +250,10 @@ export default function Home() {
               <p className="text-xs text-foreground">5:48–6:18 AM</p>
               <p className="text-xs text-foreground">8:54–9:24 PM</p>
             </div>
-            <div className="col-span-2 flex items-center justify-end pr-4">
+            <div className="flex items-center justify-center">
+              {moonPhase && <MoonPhaseSymbol phase={moonPhase} className="w-12 h-12" />}
+            </div>
+            <div className="flex items-center justify-end pr-4">
               {weatherInfo?.icon && (() => {
                 const Icon = weatherInfo.icon;
                 return <Icon className={`w-16 h-16 ${weatherInfo.iconColor}`} />;
