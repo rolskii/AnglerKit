@@ -53,6 +53,7 @@ export default function ImageGallery({ images = [], featuredLabel, featuredSubti
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
+                    e.preventDefault();
                     setFeaturedImage({
                       image_url: url,
                       label: featuredLabel || "Gear",
@@ -60,10 +61,10 @@ export default function ImageGallery({ images = [], featuredLabel, featuredSubti
                       link: featuredLink || "/gear/lines",
                     });
                   }}
-                  className="absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 bg-primary text-primary-foreground rounded-full shadow-sm hover:bg-primary/90 transition-colors"
+                  className="absolute -top-1.5 -right-1.5 z-20 flex items-center justify-center w-6 h-6 bg-primary text-primary-foreground rounded-full shadow-md hover:bg-primary/90 transition-colors"
                   title="Set this image as featured"
                 >
-                  <Star className="w-3 h-3" />
+                  <Star className="w-3.5 h-3.5" />
                 </button>
               )}
             </div>
