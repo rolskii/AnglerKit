@@ -2,9 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Moon as MoonIcon, Sun, Waves, MapPin, Bell, BellOff, Save } from 'lucide-react';
 import FishIcon from '@/components/FishIcon';
-import MoonPhaseSymbol from '@/components/MoonPhaseSymbol';
 import RealisticMoon from '@/components/RealisticMoon';
-import GradientOrbMoon from '@/components/GradientOrbMoon';
 
 export default function Moon() {
   const [moonData, setMoonData] = useState(null);
@@ -375,20 +373,9 @@ export default function Moon() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* Moon Visualization — preview all three styles */}
-                <div className="flex justify-around items-end gap-2">
-                  <div className="flex flex-col items-center gap-2">
-                    <RealisticMoon illumination={moonData.illumination} className="w-28 h-28" />
-                    <p className="text-xs font-medium text-muted-foreground">Realistic</p>
-                  </div>
-                  <div className="flex flex-col items-center gap-2">
-                    <GradientOrbMoon illumination={moonData.illumination} className="w-28 h-28" />
-                    <p className="text-xs font-medium text-muted-foreground">Gradient Orb</p>
-                  </div>
-                  <div className="flex flex-col items-center gap-2">
-                    <MoonPhaseSymbol phase={{ illumination: moonData.illumination, name: moonData.phase }} className="w-28 h-28" />
-                    <p className="text-xs font-medium text-muted-foreground">Phase Symbol</p>
-                  </div>
+                {/* Moon Visualization */}
+                <div className="flex justify-center">
+                  <RealisticMoon illumination={moonData.illumination} className="w-40 h-40" />
                 </div>
 
                 {/* Illumination */}
