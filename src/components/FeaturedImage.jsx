@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { base44 } from "@/api/base44Client";
@@ -27,6 +27,27 @@ const todayStr = () => {
 export default function FeaturedImage() {
   const [featured, setFeatured] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [labelColor, setLabelColor] = useState("white");
+  const imgRef = useRef(null);
+
+  const computeBrightness = (img) => {
+    try {
+      const canvas = document.createElement("canvas");
+      const w = 60, h = 60;
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, w, h);
+      const data = ctx.getImageData(0, 0, w, h).data;
+      let sum = 0;
+      for (let i = 0; i < data.length; i += 4) {
+        sum += 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+      }
+      const avg = sum / (data.length / 4);
+      return avg >= 128 ? "black" : "white";
+    } catch {
+      return "white";
+    }
+  };
 
   const fetchAllGearImages = async () => {
     const entityTypes = ["FlyLine", "Reel", "Rod", "Lure", "MiscItem"];
@@ -109,8 +130,18 @@ export default function FeaturedImage() {
       <Link to={featured.link || "/gear/lines"}>
         <Card className="rounded-2xl border-0 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200 cursor-pointer bg-card">
           <div className="relative aspect-square bg-muted">
-            <img src={featured.image_url} alt={featured.label} className="w-full h-full object-cover" />
+            <img
+              ref={imgRef}
+              src={featured.image_url}
+              alt={featured.label}
+              className="w-full h-full object-cover"
+              crossOrigin="anonymous"
+              onLoad={(e) => setLabelColor(computeBrightness(e.target))}
+            />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+            <span className={`absolute top-3 left-3 text-xs font-bold tracking-wide px-2 py-1 rounded-full bg-black/20 backdrop-blur-sm ${labelColor === "black" ? "text-black" : "text-white"}`}>
+              Featured Photo
+            </span>
             <div className="absolute bottom-0 left-0 right-0 p-4 md:p-5">
               <h3 className="text-white text-xl md:text-2xl font-heading font-bold tracking-tight">
                 {featured.label}
