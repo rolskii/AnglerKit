@@ -164,42 +164,31 @@ export default function Moon() {
       });
     }
 
-    // Audible alarm using Web Audio API — loud, urgent two-tone siren
+    // Repetitive double beep using Web Audio API
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (AudioCtx) {
         const ctx = new AudioCtx();
-        // 5 cycles of a two-tone siren (high-low) for a serious alarm feel
-        for (let i = 0; i < 5; i++) {
-          // High tone
-          const osc1 = ctx.createOscillator();
-          const gain1 = ctx.createGain();
-          osc1.connect(gain1);
-          gain1.connect(ctx.destination);
-          osc1.type = 'square';
-          osc1.frequency.value = 1000;
-          const s1 = ctx.currentTime + i * 0.6;
-          gain1.gain.setValueAtTime(0, s1);
-          gain1.gain.linearRampToValueAtTime(0.9, s1 + 0.02);
-          gain1.gain.setValueAtTime(0.9, s1 + 0.22);
-          gain1.gain.linearRampToValueAtTime(0, s1 + 0.28);
-          osc1.start(s1);
-          osc1.stop(s1 + 0.3);
-
-          // Low tone
-          const osc2 = ctx.createOscillator();
-          const gain2 = ctx.createGain();
-          osc2.connect(gain2);
-          gain2.connect(ctx.destination);
-          osc2.type = 'square';
-          osc2.frequency.value = 600;
-          const s2 = s1 + 0.3;
-          gain2.gain.setValueAtTime(0, s2);
-          gain2.gain.linearRampToValueAtTime(0.9, s2 + 0.02);
-          gain2.gain.setValueAtTime(0.9, s2 + 0.22);
-          gain2.gain.linearRampToValueAtTime(0, s2 + 0.28);
-          osc2.start(s2);
-          osc2.stop(s2 + 0.3);
+        const beepDur = 0.12;
+        const gap = 0.08;
+        const cycle = 0.5;
+        for (let i = 0; i < 6; i++) {
+          const base = ctx.currentTime + i * cycle;
+          [0, beepDur + gap].forEach(offset => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'square';
+            osc.frequency.value = 880;
+            const s = base + offset;
+            gain.gain.setValueAtTime(0, s);
+            gain.gain.linearRampToValueAtTime(0.9, s + 0.01);
+            gain.gain.setValueAtTime(0.9, s + beepDur - 0.02);
+            gain.gain.linearRampToValueAtTime(0, s + beepDur);
+            osc.start(s);
+            osc.stop(s + beepDur + 0.02);
+          });
         }
       }
     } catch (e) {}
