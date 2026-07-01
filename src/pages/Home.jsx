@@ -161,8 +161,8 @@ export default function Home() {
               <MoonIcon className="w-4 h-4 text-muted-foreground shrink-0" />
               <div>
                 <p className="text-xs text-muted-foreground">Moon phase</p>
-                <p className="text-sm font-medium">{moonPhase.name}</p>
-                <p className="text-xs font-semibold text-primary">Bite: 5:48–7:48 AM · 8:54–10:54 PM</p>
+                <p className="text-xs font-medium text-muted-foreground">{moonPhase.name}</p>
+                <p className="text-base font-bold text-primary">Bite: 5:48–7:48 AM · 8:54–10:54 PM</p>
               </div>
             </Link>
           )}
