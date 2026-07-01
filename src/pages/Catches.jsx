@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Search, Loader2, Fish, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import CatchCard from "@/components/catches/CatchCard";
-import CatchDetailDialog from "@/components/catches/CatchDetailDialog";
 import CatchForm from "@/components/catches/CatchForm";
+import PullToRefresh from "@/components/PullToRefresh";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -13,6 +14,7 @@ import {
 import { toast } from "sonner";
 
 export default function Catches() {
+  const navigate = useNavigate();
   const [catches, setCatches] = useState([]);
   const [rods, setRods] = useState([]);
   const [reels, setReels] = useState([]);
@@ -25,7 +27,6 @@ export default function Catches() {
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const [viewTarget, setViewTarget] = useState(null);
 
   const load = async () => {
     setLoading(true);
@@ -139,59 +140,53 @@ export default function Catches() {
         </div>
       </div>
 
-      {loading ? (
-        <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-muted-foreground" /></div>
-      ) : filtered.length === 0 ? (
-        <div className="text-center py-20 text-muted-foreground">
-          <Fish className="w-12 h-12 mx-auto mb-3 opacity-40" />
-          <p>No catches logged yet. Log your first one!</p>
-        </div>
-      ) : (
-        <div className="overflow-x-auto rounded-lg border border-border">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/50 text-muted-foreground">
-              <tr>
-                <SortHeader label="Species" field="species" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Date" field="date" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Body of Water</th>
-                <SortHeader label="Length" field="length" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Girth" field="girth" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Weight" field="weight" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Fly</th>
-                <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Released</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((c) => (
-                <tr
-                  key={c.id}
-                  onClick={() => setViewTarget(c)}
-                  className="border-t border-border cursor-pointer hover:bg-accent/50 transition-colors"
-                >
-                  <td className="px-3 py-2.5 whitespace-nowrap font-medium">{c.species || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">
-                    {c.date ? new Date(c.date + "T00:00:00").toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : "—"}
-                  </td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{c.location || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{c.length != null ? `${c.length} in` : "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{c.girth != null ? `${c.girth} in` : "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{c.weight != null ? `${c.weight} lb` : "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{c.fly_used || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{c.released ? "Yes" : "No"}</td>
+      <PullToRefresh onRefresh={load}>
+        {loading ? (
+          <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-muted-foreground" /></div>
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-20 text-muted-foreground">
+            <Fish className="w-12 h-12 mx-auto mb-3 opacity-40" />
+            <p>No catches logged yet. Log your first one!</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto rounded-lg border border-border">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/50 text-muted-foreground">
+                <tr>
+                  <SortHeader label="Species" field="species" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                  <SortHeader label="Date" field="date" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                  <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Body of Water</th>
+                  <SortHeader label="Length" field="length" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                  <SortHeader label="Girth" field="girth" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                  <SortHeader label="Weight" field="weight" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                  <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Fly</th>
+                  <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Released</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      <CatchDetailDialog
-        open={!!viewTarget}
-        onOpenChange={(o) => !o && setViewTarget(null)}
-        catchItem={viewTarget}
-        onEdit={(c) => { setViewTarget(null); setEditing(c); setFormOpen(true); }}
-        onDelete={(c) => { setViewTarget(null); setDeleteTarget(c); }}
-      />
+              </thead>
+              <tbody>
+                {filtered.map((c) => (
+                  <tr
+                    key={c.id}
+                    onClick={() => navigate(`/catches/${c.id}`)}
+                    className="border-t border-border cursor-pointer hover:bg-accent/50 transition-colors"
+                  >
+                    <td className="px-3 py-2.5 whitespace-nowrap font-medium">{c.species || "—"}</td>
+                    <td className="px-3 py-2.5 whitespace-nowrap">
+                      {c.date ? new Date(c.date + "T00:00:00").toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : "—"}
+                    </td>
+                    <td className="px-3 py-2.5 whitespace-nowrap">{c.location || "—"}</td>
+                    <td className="px-3 py-2.5 whitespace-nowrap">{c.length != null ? `${c.length} in` : "—"}</td>
+                    <td className="px-3 py-2.5 whitespace-nowrap">{c.girth != null ? `${c.girth} in` : "—"}</td>
+                    <td className="px-3 py-2.5 whitespace-nowrap">{c.weight != null ? `${c.weight} lb` : "—"}</td>
+                    <td className="px-3 py-2.5 whitespace-nowrap">{c.fly_used || "—"}</td>
+                    <td className="px-3 py-2.5 whitespace-nowrap">{c.released ? "Yes" : "No"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </PullToRefresh>
 
       <CatchForm
         open={formOpen}

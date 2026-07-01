@@ -13,6 +13,7 @@ import Gear from '@/pages/Gear';
 import About from '@/pages/About';
 import Settings from '@/pages/Settings';
 import Catches from '@/pages/Catches';
+import CatchDetail from '@/pages/CatchDetail';
 import Moon from '@/pages/Moon';
 import Weather from '@/pages/Weather';
 // Add page imports here
@@ -63,6 +64,7 @@ const AuthenticatedApp = () => {
         <Route path="/lures" element={<Navigate to="/gear/lures" replace />} />
         <Route path="/misc" element={<Navigate to="/gear/misc" replace />} />
         <Route path="/catches" element={<Catches />} />
+        <Route path="/catches/:id" element={<CatchDetail />} />
         <Route path="/moon" element={<Moon />} />
         <Route path="/weather" element={<Weather />} />
         <Route path="/about" element={<About />} />

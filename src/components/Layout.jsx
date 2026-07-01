@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Outlet, NavLink, useNavigate, useLocation, Link } from "react-router-dom";
 import {
   LogOut, Menu, X,
-  Home as HomeIcon, Camera, Package, Cloud,
+  Home as HomeIcon, Camera, Cloud,
   Settings as SettingsIcon, Info,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,11 +10,12 @@ import { base44 } from "@/api/base44Client";
 import TroutIcon from "@/components/TroutIcon";
 import ReelDiscIcon from "@/components/ReelDiscIcon";
 import { Moon as MoonIcon } from "lucide-react";
+import BottomTabBar from "@/components/BottomTabBar";
 
 const navItems = [
   { to: "/", label: "Home", icon: HomeIcon },
   { to: "/gear/lines", label: "Gear", icon: ReelDiscIcon, matchPrefix: "/gear" },
-  { to: "/catches", label: "Fish Log", icon: Camera },
+  { to: "/catches", label: "Fish Log", icon: Camera, matchPrefix: "/catches" },
   { to: "/moon", label: "Moon Phase", icon: MoonIcon },
   { to: "/weather", label: "Weather", icon: Cloud },
   { to: "/settings", label: "Settings", icon: SettingsIcon },
@@ -25,6 +26,23 @@ export default function Layout() {
   const [open, setOpen] = useState(false);
   const appName = "Angler's Log";
   const navigate = useNavigate();
+
+  // Initialize theme — defaults to system light/dark preference
+  useEffect(() => {
+    const stored = localStorage.getItem("theme") || "system";
+    const isDark = stored === "dark" || (stored === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    document.documentElement.classList.toggle("dark", isDark);
+
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const handler = () => {
+      const t = localStorage.getItem("theme") || "system";
+      if (t === "system") {
+        document.documentElement.classList.toggle("dark", mq.matches);
+      }
+    };
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
 
   const handleLogout = async () => {
     await base44.auth.logout();
@@ -63,7 +81,10 @@ export default function Layout() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div
+      className="min-h-screen bg-background"
+      style={{ paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)" }}
+    >
       {/* Desktop sidebar */}
       <aside className="hidden md:flex fixed inset-y-0 left-0 w-64 flex-col border-r border-border/60 bg-sidebar/80 backdrop-blur-xl p-4">
         <Link to="/" className="flex items-center gap-3 px-2 py-3 mb-5">
@@ -125,10 +146,13 @@ export default function Layout() {
       )}
 
       <main className="md:pl-64">
-        <div className="mx-auto max-w-6xl px-4 py-6 md:px-8 md:py-10">
+        <div className="mx-auto max-w-6xl px-4 py-6 pb-20 md:px-8 md:py-10 md:pb-10">
           <Outlet />
         </div>
       </main>
+
+      {/* Mobile bottom tab bar */}
+      <BottomTabBar />
     </div>
   );
 }
