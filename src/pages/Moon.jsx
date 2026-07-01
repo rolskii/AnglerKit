@@ -300,8 +300,9 @@ export default function Moon() {
           <p className="text-muted-foreground">Check lunar phases and solunar feeding times to plan your fishing trips.</p>
           
           {/* Location & Date Selector */}
-          <div className="mt-6 flex gap-2 max-w-md mx-auto flex-col sm:flex-row">
+          <div className="mt-6 flex gap-2 max-w-md mx-auto flex-row items-center">
             <div className="flex-1 relative">
+              <label className="block text-xs text-muted-foreground mb-1 text-left">Location</label>
               <input
                 type="text"
                 value={editingLocation}
@@ -329,12 +330,15 @@ export default function Moon() {
                 </div>
               )}
             </div>
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="flex-1 px-3 py-2 text-sm border border-border rounded-lg bg-card text-foreground"
-            />
+            <div className="flex-1">
+              <label className="block text-xs text-muted-foreground mb-1 text-left">Date</label>
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-card text-foreground"
+              />
+            </div>
           </div>
         </div>
 
