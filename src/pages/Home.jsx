@@ -176,7 +176,10 @@ export default function Home() {
                 />
               ))}
             </div>
-            <Link to="/moon" className="text-xs font-semibold text-primary hover:underline">Details</Link>
+            <div className="text-right shrink-0">
+              <p className="text-lg font-bold text-primary">{Math.round((moonPhase.fishingRating / 7) * 100)}%</p>
+              <Link to="/moon" className="text-xs font-semibold text-primary hover:underline">Details</Link>
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
