@@ -135,7 +135,7 @@ export default function FeaturedImage() {
       </div>
       <Link to={featured.link || "/gear/lines"}>
         <Card className="rounded-2xl border-0 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200 cursor-pointer bg-card">
-          <div className="relative h-48 md:h-64 bg-muted">
+          <div className="relative aspect-square bg-muted">
             <img src={featured.image_url} alt={featured.label} className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-4 md:p-5">
