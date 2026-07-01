@@ -93,22 +93,11 @@ module.exports = {
   				to: {
   					height: '0'
   				}
-  			},
-  			'neon-flash': {
-  				'0%, 100%': {
-  					color: '#39FF14',
-  					'text-shadow': '0 0 5px #39FF14, 0 0 10px #39FF14, 0 0 20px #39FF14'
-  				},
-  				'50%': {
-  					color: '#2BB02A',
-  					'text-shadow': '0 0 2px #39FF14, 0 0 5px #39FF14'
-  				}
   			}
   		},
   		animation: {
   			'accordion-down': 'accordion-down 0.2s ease-out',
-  			'accordion-up': 'accordion-up 0.2s ease-out',
-  			'neon-flash': 'neon-flash 1.5s ease-in-out infinite'
+  			'accordion-up': 'accordion-up 0.2s ease-out'
   		}
   	}
   },
