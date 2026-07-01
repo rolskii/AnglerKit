@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { ChevronRight, Camera, Moon as MoonIcon, Cloud } from "lucide-react";
+import { ChevronRight, Camera, Moon as MoonIcon, Cloud, Bell } from "lucide-react";
 import { ReelIcon as ReelDiscIcon } from "@/components/GearIcons";
 import FishIcon from "@/components/FishIcon";
 import { base44 } from "@/api/base44Client";
@@ -93,12 +93,30 @@ export default function Home() {
   const [weatherInfo, setWeatherInfo] = useState(null);
   const [descriptions, setDescriptions] = useState({});
   const [biteWindow, setBiteWindow] = useState(null);
+  const [alarmTime, setAlarmTime] = useState(null);
+
+  const todayStr = () => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  };
 
   const refreshData = async () => {
     const phase = calculateMoonPhase(new Date());
     setMoonPhase(phase);
     setBiteWindow(getNextBiteWindow());
     setDescriptions(prev => ({ ...prev, moon: `${phase.illumination}% illuminated` }));
+
+    const stored = localStorage.getItem('alarmsByDate');
+    if (stored) {
+      try {
+        const alarms = JSON.parse(stored);
+        const todayAlarm = alarms[todayStr()];
+        if (todayAlarm && todayAlarm.enabled) setAlarmTime(todayAlarm.time);
+        else setAlarmTime(null);
+      } catch { setAlarmTime(null); }
+    } else {
+      setAlarmTime(null);
+    }
 
     const coords = JSON.parse(localStorage.getItem("weatherCoords") || "null");
     const tempUnit = localStorage.getItem("weatherTempUnit") || "fahrenheit";
@@ -189,8 +207,14 @@ export default function Home() {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <p className="text-xs font-semibold text-muted-foreground mb-1">Major</p>
-              <p className="text-xs text-foreground">5:48–7:48 AM</p>
-              <p className="text-xs text-foreground">8:54–10:54 PM</p>
+              <p className="text-xs text-foreground flex items-center gap-1">
+                5:48–7:48 AM
+                {alarmTime === "5:48 AM" && <Bell className="w-3 h-3 text-primary" />}
+              </p>
+              <p className="text-xs text-foreground flex items-center gap-1">
+                8:54–10:54 PM
+                {alarmTime === "8:54 PM" && <Bell className="w-3 h-3 text-primary" />}
+              </p>
             </div>
             <div>
               <p className="text-xs font-semibold text-muted-foreground mb-1">Minor</p>
