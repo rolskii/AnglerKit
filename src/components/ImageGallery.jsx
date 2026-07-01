@@ -36,7 +36,12 @@ export default function ImageGallery({ images = [], featuredLabel, featuredSubti
   return (
     <div className="space-y-2">
       <div className="relative">
-        <img src={images[active]} alt={`Photo ${active + 1}`} className="w-full max-h-[60vh] object-contain rounded-md bg-muted/30" />
+        <img
+          src={images[active]}
+          alt={`Photo ${active + 1}`}
+          onClick={featuredLabel ? handleSetFeatured : undefined}
+          className={`w-full max-h-[60vh] object-contain rounded-md bg-muted/30 ${featuredLabel ? "cursor-pointer" : ""}`}
+        />
         {featuredLabel && (
           <button
             type="button"
