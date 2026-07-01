@@ -228,7 +228,7 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
 
           <div className="space-y-1.5">
             <Label>Photos</Label>
-            <ImageUpload value={form.images} onChange={(imgs) => set("images", imgs)} />
+            <ImageUpload value={form.images} onChange={(imgs) => set("images", imgs)} compress={false} />
           </div>
 
           <div className="space-y-1.5">

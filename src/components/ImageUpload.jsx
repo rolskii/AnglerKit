@@ -4,7 +4,7 @@ import { Upload, Camera, Trash2, Loader2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 
-export default function ImageUpload({ value = [], onChange }) {
+export default function ImageUpload({ value = [], onChange, compress = true }) {
   const fileRef = useRef(null);
   const cameraRef = useRef(null);
   const [uploading, setUploading] = useState(false);
@@ -37,9 +37,9 @@ export default function ImageUpload({ value = [], onChange }) {
     if (files.length === 0) return;
     setUploading(true);
     try {
-      const compressed = await Promise.all(files.map(compressImage));
+      const processed = compress ? await Promise.all(files.map(compressImage)) : files;
       const uploaded = await Promise.all(
-        compressed.map((file) => base44.integrations.Core.UploadFile({ file }).then((r) => r.file_url))
+        processed.map((file) => base44.integrations.Core.UploadFile({ file }).then((r) => r.file_url))
       );
       onChange([...images, ...uploaded.filter(Boolean)]);
     } catch (e) {
