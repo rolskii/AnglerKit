@@ -169,7 +169,7 @@ export default function Home() {
         <div className="px-4 py-3 rounded-2xl bg-card shadow-sm space-y-3">
           <div className="flex items-center justify-between gap-2">
             <div className="flex flex-col gap-1">
-              <p className="text-xs font-semibold text-muted-foreground">Today's Fishing Conditions</p>
+              <p className="text-sm font-bold text-foreground">Today's Fishing Conditions</p>
               <div className="flex items-center gap-1">
                 {[1, 2, 3, 4, 5, 6, 7].map((n) => (
                   <FishIcon
