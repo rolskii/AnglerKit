@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LinesIcon, ReelIcon, RodIcon, LureIcon } from "@/components/GearIcons";
@@ -8,6 +8,7 @@ import Reels from "@/pages/Reels";
 import Rods from "@/pages/Rods";
 import Lures from "@/pages/Lures";
 import Misc from "@/pages/Misc";
+import PullToRefresh from "@/components/PullToRefresh";
 
 const TABS = [
   { value: "lines", label: "Lines", icon: LinesIcon, Component: Lines },
@@ -21,8 +22,14 @@ export default function Gear() {
   const navigate = useNavigate();
   const { tab } = useParams();
   const active = TABS.some((t) => t.value === tab) ? tab : "lines";
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const handleRefresh = async () => {
+    setRefreshKey((k) => k + 1);
+  };
 
   return (
+    <PullToRefresh onRefresh={handleRefresh}>
     <div className="space-y-6">
       <div className="space-y-2 px-1">
         <h1 className="text-2xl md:text-[34px] font-heading font-bold tracking-tight leading-tight">Gear</h1>
@@ -45,11 +52,12 @@ export default function Gear() {
         </TabsList>
 
         {TABS.map((t) => (
-          <TabsContent key={t.value} value={t.value} className="mt-5 focus-visible:outline-none">
+          <TabsContent key={`${t.value}-${refreshKey}`} value={t.value} className="mt-5 focus-visible:outline-none">
             <t.Component />
           </TabsContent>
         ))}
       </Tabs>
     </div>
+    </PullToRefresh>
   );
 }

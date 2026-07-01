@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { ChevronRight, Camera, Moon as MoonIcon, Cloud } from "lucide-react";
 import { ReelIcon as ReelDiscIcon } from "@/components/GearIcons";
 import { base44 } from "@/api/base44Client";
+import PullToRefresh from "@/components/PullToRefresh";
 
 const calculateMoonPhase = (date) => {
   const knownNewMoon = new Date(2000, 0, 6);
@@ -82,7 +83,7 @@ export default function Home() {
   const [descriptions, setDescriptions] = useState({});
   const [biteWindow, setBiteWindow] = useState(null);
 
-  useEffect(() => {
+  const refreshData = async () => {
     const phase = calculateMoonPhase(new Date());
     setMoonPhase(phase);
     setBiteWindow(getNextBiteWindow());
@@ -90,11 +91,12 @@ export default function Home() {
 
     const coords = JSON.parse(localStorage.getItem("weatherCoords") || "null");
     const tempUnit = localStorage.getItem("weatherTempUnit") || "fahrenheit";
-    if (coords) fetchWeather(coords, tempUnit);
+    if (coords) await fetchWeather(coords, tempUnit);
 
-    fetchGearCount();
-    fetchLastCatch();
-  }, []);
+    await Promise.all([fetchGearCount(), fetchLastCatch()]);
+  };
+
+  useEffect(() => { refreshData(); }, []);
 
   const fetchWeather = async (coords, tempUnit) => {
     try {
@@ -140,6 +142,7 @@ export default function Home() {
   };
 
   return (
+    <PullToRefresh onRefresh={refreshData}>
     <div className="space-y-6 md:space-y-8">
       {/* Hero */}
       <div className="space-y-2 px-1">
@@ -215,5 +218,6 @@ export default function Home() {
         </div>
       )}
     </div>
+    </PullToRefresh>
   );
 }

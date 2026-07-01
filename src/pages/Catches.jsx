@@ -82,32 +82,39 @@ export default function Catches() {
 
   const handleSave = async (payload) => {
     setSaving(true);
+    setFormOpen(false);
+    const wasEditing = editing;
+    setEditing(null);
     try {
-      if (editing) {
-        await base44.entities.Catch.update(editing.id, payload);
+      if (wasEditing) {
+        setCatches(prev => prev.map(c => c.id === wasEditing.id ? { ...c, ...payload } : c));
+        await base44.entities.Catch.update(wasEditing.id, payload);
         toast.success("Catch updated");
       } else {
-        await base44.entities.Catch.create(payload);
+        const tempId = `temp_${Date.now()}`;
+        setCatches(prev => [{ ...payload, id: tempId }, ...prev]);
+        const created = await base44.entities.Catch.create(payload);
+        setCatches(prev => prev.map(c => c.id === tempId ? created : c));
         toast.success("Catch logged");
       }
-      setFormOpen(false);
-      setEditing(null);
-      await load();
     } catch (e) {
       toast.error(e.message || "Failed to save");
+      await load();
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async () => {
+    const target = deleteTarget;
+    setDeleteTarget(null);
+    setCatches(prev => prev.filter(c => c.id !== target.id));
     try {
-      await base44.entities.Catch.delete(deleteTarget.id);
+      await base44.entities.Catch.delete(target.id);
       toast.success("Catch deleted");
-      setDeleteTarget(null);
-      await load();
     } catch (e) {
       toast.error("Failed to delete");
+      setCatches(prev => [...prev, target]);
     }
   };
 

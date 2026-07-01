@@ -66,19 +66,24 @@ export default function Lures() {
 
   const handleSave = async (payload) => {
     setSaving(true);
+    setFormOpen(false);
+    const wasEditing = editing;
+    setEditing(null);
     try {
-      if (editing) {
-        await base44.entities.Lure.update(editing.id, payload);
+      if (wasEditing) {
+        setLures(prev => prev.map(l => l.id === wasEditing.id ? { ...l, ...payload } : l));
+        await base44.entities.Lure.update(wasEditing.id, payload);
         toast.success("Lure / fly updated");
       } else {
-        await base44.entities.Lure.create(payload);
+        const tempId = `temp_${Date.now()}`;
+        setLures(prev => [{ ...payload, id: tempId }, ...prev]);
+        const created = await base44.entities.Lure.create(payload);
+        setLures(prev => prev.map(l => l.id === tempId ? created : l));
         toast.success("Lure / fly added");
       }
-      setFormOpen(false);
-      setEditing(null);
-      await load();
     } catch (e) {
       toast.error(e.message || "Failed to save");
+      await load();
     } finally {
       setSaving(false);
     }
@@ -94,13 +99,15 @@ export default function Lures() {
   };
 
   const handleDelete = async () => {
+    const target = deleteTarget;
+    setDeleteTarget(null);
+    setLures(prev => prev.filter(l => l.id !== target.id));
     try {
-      await base44.entities.Lure.delete(deleteTarget.id);
+      await base44.entities.Lure.delete(target.id);
       toast.success("Lure / fly deleted");
-      setDeleteTarget(null);
-      await load();
     } catch (e) {
       toast.error("Failed to delete");
+      setLures(prev => [...prev, target]);
     }
   };
 
@@ -135,7 +142,8 @@ export default function Lures() {
           <p>No lures or flies found. Add your first one!</p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-border">
+        <>
+        <div className="hidden md:block overflow-x-auto rounded-lg border border-border">
           <table className="w-full text-sm">
             <thead className="bg-muted/50 text-muted-foreground">
               <tr>
@@ -171,6 +179,26 @@ export default function Lures() {
             </tbody>
           </table>
         </div>
+        <div className="md:hidden grid grid-cols-1 gap-3">
+          {filtered.map((lure) => (
+            <div key={lure.id} onClick={() => setViewTarget(lure)} className="p-3 rounded-xl border border-border/60 bg-card cursor-pointer active:bg-accent/50 transition-colors">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium text-sm truncate">{lure.name || "—"}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{lure.type || "—"} · {lure.category || "—"}</p>
+                </div>
+                {lure.value != null && <p className="text-sm font-medium whitespace-nowrap">${lure.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>}
+              </div>
+              <div className="flex flex-wrap gap-1.5 mt-2 text-xs">
+                {lure.brand && <span className="px-2 py-0.5 rounded-full bg-muted">{lure.brand}</span>}
+                {lure.size && <span className="px-2 py-0.5 rounded-full bg-muted">{lure.size}</span>}
+                {lure.quantity != null && <span className="px-2 py-0.5 rounded-full bg-muted">Qty: {lure.quantity}</span>}
+                {lure.condition && <span className={`px-2 py-0.5 rounded-full font-medium ${conditionColor[lure.condition] || "bg-muted text-muted-foreground"}`}>{lure.condition}</span>}
+              </div>
+            </div>
+          ))}
+        </div>
+        </>
       )}
 
       <LureDetailDialog

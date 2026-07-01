@@ -11,6 +11,7 @@ import TroutIcon from "@/components/TroutIcon";
 import { ReelIcon as ReelDiscIcon } from "@/components/GearIcons";
 import { Moon as MoonIcon } from "lucide-react";
 import BottomTabBar from "@/components/BottomTabBar";
+import { AnimatePresence, motion } from "framer-motion";
 
 const navItems = [
   { to: "/", label: "Home", icon: HomeIcon },
@@ -26,6 +27,7 @@ export default function Layout() {
   const [open, setOpen] = useState(false);
   const appName = "Angler's Log";
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = async () => {
     await base44.auth.logout();
@@ -130,7 +132,17 @@ export default function Layout() {
 
       <main className="md:pl-64">
         <div className="mx-auto max-w-6xl px-4 py-6 pb-20 md:px-8 md:py-10 md:pb-10">
-          <Outlet />
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.2, ease: "easeInOut" }}
+            >
+              <Outlet />
+            </motion.div>
+          </AnimatePresence>
         </div>
       </main>
 

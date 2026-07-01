@@ -92,19 +92,24 @@ export default function Reels() {
 
   const handleSave = async (payload) => {
     setSaving(true);
+    setFormOpen(false);
+    const wasEditing = editing;
+    setEditing(null);
     try {
-      if (editing) {
-        await base44.entities.Reel.update(editing.id, payload);
+      if (wasEditing) {
+        setReels(prev => prev.map(r => r.id === wasEditing.id ? { ...r, ...payload } : r));
+        await base44.entities.Reel.update(wasEditing.id, payload);
         toast.success("Reel updated");
       } else {
-        await base44.entities.Reel.create(payload);
+        const tempId = `temp_${Date.now()}`;
+        setReels(prev => [{ ...payload, id: tempId }, ...prev]);
+        const created = await base44.entities.Reel.create(payload);
+        setReels(prev => prev.map(r => r.id === tempId ? created : r));
         toast.success("Reel added");
       }
-      setFormOpen(false);
-      setEditing(null);
-      await load();
     } catch (e) {
       toast.error(e.message || "Failed to save");
+      await load();
     } finally {
       setSaving(false);
     }
@@ -120,13 +125,15 @@ export default function Reels() {
   };
 
   const handleDelete = async () => {
+    const target = deleteTarget;
+    setDeleteTarget(null);
+    setReels(prev => prev.filter(r => r.id !== target.id));
     try {
-      await base44.entities.Reel.delete(deleteTarget.id);
+      await base44.entities.Reel.delete(target.id);
       toast.success("Reel deleted");
-      setDeleteTarget(null);
-      await load();
     } catch (e) {
       toast.error("Failed to delete");
+      setReels(prev => [...prev, target]);
     }
   };
 
@@ -161,7 +168,8 @@ export default function Reels() {
           <p>No reels found. Add your first one!</p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-border">
+        <>
+        <div className="hidden md:block overflow-x-auto rounded-lg border border-border">
           <table className="w-full text-sm">
             <thead className="bg-muted/50 text-muted-foreground">
               <tr>
@@ -193,6 +201,25 @@ export default function Reels() {
             </tbody>
           </table>
         </div>
+        <div className="md:hidden grid grid-cols-1 gap-3">
+          {filtered.map((reel) => (
+            <div key={reel.id} onClick={() => setViewTarget(reel)} className="p-3 rounded-xl border border-border/60 bg-card cursor-pointer active:bg-accent/50 transition-colors">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium text-sm truncate">{reel.name || "—"}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{reel.type || "—"} · {reel.brand || "—"}</p>
+                </div>
+                {reel.value != null && <p className="text-sm font-medium whitespace-nowrap">${reel.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>}
+              </div>
+              <div className="flex flex-wrap gap-1.5 mt-2 text-xs">
+                {reel.model && <span className="px-2 py-0.5 rounded-full bg-muted">{reel.model}</span>}
+                {reel.size && <span className="px-2 py-0.5 rounded-full bg-muted">{reel.size}</span>}
+                {reel.condition && <span className={`px-2 py-0.5 rounded-full font-medium ${conditionColor[reel.condition] || "bg-muted text-muted-foreground"}`}>{reel.condition}</span>}
+              </div>
+            </div>
+          ))}
+        </div>
+        </>
       )}
 
       <ReelDetailDialog
