@@ -164,27 +164,42 @@ export default function Moon() {
       });
     }
 
-    // Friendly rising chime using Web Audio API
+    // Friendly rising chime — maxed volume via compressor + layered oscillators
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (AudioCtx) {
         const ctx = new AudioCtx();
+        // Compressor boosts perceived loudness to the browser max
+        const comp = ctx.createDynamicsCompressor();
+        comp.threshold.value = -50;
+        comp.knee.value = 0;
+        comp.ratio.value = 20;
+        comp.attack.value = 0.003;
+        comp.release.value = 0.25;
+        const master = ctx.createGain();
+        master.gain.value = 1.0;
+        comp.connect(master);
+        master.connect(ctx.destination);
+
         const notes = [523.25, 659.25, 783.99, 1046.50];
         const noteDur = 0.22;
         notes.forEach((freq, i) => {
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.type = 'sine';
-          osc.frequency.value = freq;
           const s = ctx.currentTime + i * (noteDur + 0.04);
-          gain.gain.setValueAtTime(0, s);
-          gain.gain.linearRampToValueAtTime(0.5, s + 0.03);
-          gain.gain.setValueAtTime(0.5, s + noteDur - 0.04);
-          gain.gain.linearRampToValueAtTime(0, s + noteDur);
-          osc.start(s);
-          osc.stop(s + noteDur + 0.02);
+          // Layer sine + triangle for a fuller, louder sound
+          ['sine', 'triangle'].forEach(type => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(comp);
+            osc.type = type;
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0, s);
+            gain.gain.linearRampToValueAtTime(0.7, s + 0.03);
+            gain.gain.setValueAtTime(0.7, s + noteDur - 0.04);
+            gain.gain.linearRampToValueAtTime(0, s + noteDur);
+            osc.start(s);
+            osc.stop(s + noteDur + 0.02);
+          });
         });
       }
     } catch (e) {}
