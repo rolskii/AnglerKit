@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { ChevronRight, Camera, Moon as MoonIcon, Cloud, Bell } from "lucide-react";
+import { ChevronRight, Camera, Moon as MoonIcon, Cloud, Bell, MapPin } from "lucide-react";
 import { ReelIcon as ReelDiscIcon } from "@/components/GearIcons";
 import FishIcon from "@/components/FishIcon";
 import { base44 } from "@/api/base44Client";
@@ -95,6 +95,7 @@ export default function Home() {
   const [descriptions, setDescriptions] = useState({});
   const [biteWindow, setBiteWindow] = useState(null);
   const [alarmTick, setAlarmTick] = useState(0);
+  const [location, setLocation] = useState(() => localStorage.getItem('moonLocation') || 'Toronto, ON');
 
   const todayStr = () => {
     const now = new Date();
@@ -117,6 +118,7 @@ export default function Home() {
     const phase = calculateMoonPhase(new Date());
     setMoonPhase(phase);
     setBiteWindow(getNextBiteWindow());
+    setLocation(localStorage.getItem('moonLocation') || 'Toronto, ON');
     setDescriptions(prev => ({ ...prev, moon: `${phase.illumination}% illuminated` }));
     setAlarmTick(t => t + 1);
 
@@ -213,9 +215,12 @@ export default function Home() {
                 {moonPhase.fishingRating <= 2 ? "Bad" : moonPhase.fishingRating === 3 ? "Fair" : moonPhase.fishingRating === 4 ? "OK" : moonPhase.fishingRating === 5 ? "Good" : moonPhase.fishingRating === 6 ? "Very Good" : "Excellent"}
               </p>
               <Link to="/moon" className="text-xs font-semibold text-primary hover:underline">Details</Link>
+              <p className="text-xs text-muted-foreground flex items-center justify-end gap-1 mt-1">
+                <MapPin className="w-3 h-3" />{location}
+              </p>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-1">
             <div>
               <p className="text-xs font-semibold text-muted-foreground mb-1">Major</p>
               <p className="text-xs text-foreground flex items-center gap-1">
