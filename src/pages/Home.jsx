@@ -123,7 +123,7 @@ export default function Home() {
     setAlarmTick(t => t + 1);
 
     const coords = JSON.parse(localStorage.getItem("weatherCoords") || "null");
-    const tempUnit = localStorage.getItem("weatherTempUnit") || "fahrenheit";
+    const tempUnit = localStorage.getItem("weatherTempUnit") || "celsius";
     if (coords) await fetchWeather(coords, tempUnit);
 
     await Promise.all([fetchGearCount(), fetchLastCatch()]);
