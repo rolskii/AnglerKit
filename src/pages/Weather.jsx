@@ -316,21 +316,13 @@ export default function Weather() {
                     </div>
                   )}
                 </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleLocationChange()}
-                    className="px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity whitespace-nowrap"
-                  >
-                    Update
-                  </button>
-                  <button
-                    onClick={fetchUserLocation}
-                    className="px-3 py-2 text-sm font-medium bg-secondary text-secondary-foreground rounded-lg hover:opacity-90 transition-opacity"
-                    title="Refresh current location"
-                  >
-                    <MapPin className="w-4 h-4" />
-                  </button>
-                </div>
+                <button
+                  onClick={fetchUserLocation}
+                  className="px-3 py-2 text-sm font-medium bg-secondary text-secondary-foreground rounded-lg hover:opacity-90 transition-opacity"
+                  title="Refresh current location"
+                >
+                  <MapPin className="w-4 h-4" />
+                </button>
               </div>
               {location && (
                 <p className="text-xs text-muted-foreground">Currently showing: {location}</p>
