@@ -113,41 +113,82 @@ export default function Moon() {
     if (!timeInMinutes) return;
 
     const offset = pendingOffset;
-    const alarmTime = new Date();
     const alarmHours = Math.floor(timeInMinutes / 60);
     const alarmMinutes = timeInMinutes % 60;
-    alarmTime.setHours(alarmHours, alarmMinutes, 0);
+
+    // Compute the alarm target — if already passed today, schedule for tomorrow
+    const alarmTime = new Date();
+    alarmTime.setHours(alarmHours, alarmMinutes, 0, 0);
     alarmTime.setMinutes(alarmTime.getMinutes() - offset);
+    if (alarmTime <= new Date()) {
+      alarmTime.setDate(alarmTime.getDate() + 1);
+    }
 
     setAlarmsByDate({
       ...alarmsByDate,
       [selectedDate]: { time: pendingTime, enabled: true, offset }
     });
 
-    alarmIntervalRef.current = setInterval(() => {
-      const now = new Date();
-      if (now >= alarmTime) {
+    // Request notification permission so we can show a system alert
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+
+    const trigger = () => {
+      if (new Date() >= alarmTime) {
         playAlarm(pendingTime, offset);
         if (alarmIntervalRef.current) {
           clearInterval(alarmIntervalRef.current);
           alarmIntervalRef.current = null;
         }
       }
-    }, 60000);
+    };
+
+    // Check every 5 seconds for timely triggering
+    alarmIntervalRef.current = setInterval(trigger, 5000);
+    // Also check immediately in case the time is right now
+    trigger();
 
     setPendingTime(null);
   };
 
   const playAlarm = (time, offset) => {
     const timeText = offset === 0 ? 'now' : `in ${offset} minutes`;
+    const message = `🎣 Time to fish! Your feeding window (${time}) is starting ${timeText}!`;
+
+    // System notification
     if ('Notification' in window && Notification.permission === 'granted') {
       new Notification('Fishing Time!', {
-        body: `Your selected feeding time (${time}) starts ${timeText}. Time to head out!`,
-        icon: '🎣',
+        body: message,
+        tag: 'fishing-alarm',
       });
     }
-    // Fallback: alert
-    alert(`🎣 Time to fish! Your feeding window (${time}) is starting ${timeText}!`);
+
+    // Audible beep using Web Audio API (works on mobile browsers)
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtx) {
+        const ctx = new AudioCtx();
+        // Play 3 beeps
+        for (let i = 0; i < 3; i++) {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.frequency.value = 880;
+          osc.type = 'sine';
+          const start = ctx.currentTime + i * 0.5;
+          gain.gain.setValueAtTime(0, start);
+          gain.gain.linearRampToValueAtTime(0.5, start + 0.05);
+          gain.gain.linearRampToValueAtTime(0, start + 0.3);
+          osc.start(start);
+          osc.stop(start + 0.35);
+        }
+      }
+    } catch (e) {}
+
+    // Screen alert fallback
+    alert(message);
   };
 
   useEffect(() => {
