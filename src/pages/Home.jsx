@@ -123,7 +123,9 @@ export default function Home() {
   };
 
   const refreshData = async () => {
-    const phase = calculateMoonPhase(new Date());
+    const now = new Date();
+    const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const phase = calculateMoonPhase(midnight);
     setMoonPhase(phase);
     setBiteWindow(getNextBiteWindow());
     setLocation(localStorage.getItem('moonLocation') || 'Toronto, ON');
