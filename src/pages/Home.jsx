@@ -159,8 +159,13 @@ export default function Home() {
       const wind = data.current.wind_speed_10m;
       const windLabel = wind < 8 ? "Light wind" : wind < 15 ? "Breezy" : "Windy";
       const tempSymbol = tempUnit === "fahrenheit" ? "°F" : "°C";
-      const WeatherIconComp = getWeatherIcon(data.current.weather_code);
-      setWeatherInfo({ temp: `${temp}${tempSymbol}`, windLabel, desc, icon: WeatherIconComp });
+      const code = data.current.weather_code;
+      const WeatherIconComp = getWeatherIcon(code);
+      let iconColor = "text-primary";
+      if (code === 0 || code === 1) iconColor = "text-yellow-500";
+      else if (code === 2 || code === 3) iconColor = "text-sky-400";
+      else iconColor = "text-blue-500";
+      setWeatherInfo({ temp: `${temp}${tempSymbol}`, windLabel, desc, icon: WeatherIconComp, iconColor });
       setDescriptions(prev => ({ ...prev, weather: desc }));
     } catch (e) {}
   };
@@ -248,7 +253,7 @@ export default function Home() {
             <div className="flex items-center justify-center">
               {weatherInfo?.icon && (() => {
                 const Icon = weatherInfo.icon;
-                return <Icon className="w-16 h-16 text-primary" />;
+                return <Icon className={`w-16 h-16 ${weatherInfo.iconColor}`} />;
               })()}
             </div>
           </div>
