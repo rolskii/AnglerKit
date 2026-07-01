@@ -162,7 +162,7 @@ export default function Home() {
               <div>
                 <p className="text-xs text-muted-foreground">Moon phase</p>
                 <p className="text-sm font-medium">{moonPhase.name}</p>
-                <p className="text-xs text-muted-foreground">Bite: 5:48–7:48 AM · 8:54–10:54 PM</p>
+                <p className="text-xs font-semibold text-primary">Bite: 5:48–7:48 AM · 8:54–10:54 PM</p>
               </div>
             </Link>
           )}
