@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { ChevronRight, Camera, Moon as MoonIcon, Cloud } from "lucide-react";
-import ReelDiscIcon from "@/components/ReelDiscIcon";
+import { ReelIcon as ReelDiscIcon } from "@/components/GearIcons";
 import { base44 } from "@/api/base44Client";
 
 const calculateMoonPhase = (date) => {

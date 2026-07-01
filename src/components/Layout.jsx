@@ -8,7 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import TroutIcon from "@/components/TroutIcon";
-import ReelDiscIcon from "@/components/ReelDiscIcon";
+import { ReelIcon as ReelDiscIcon } from "@/components/GearIcons";
 import { Moon as MoonIcon } from "lucide-react";
 import BottomTabBar from "@/components/BottomTabBar";
 

@@ -1,10 +1,7 @@
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import HorizontalLinesIcon from "@/components/HorizontalLinesIcon";
-import VerticalLinesIcon from "@/components/VerticalLinesIcon";
-import ReelDiscIcon from "@/components/ReelDiscIcon";
-import FishingHookIcon from "@/components/FishingHookIcon";
+import { LinesIcon, ReelIcon, RodIcon, LureIcon } from "@/components/GearIcons";
 import { Package } from "lucide-react";
 import Lines from "@/pages/Lines";
 import Reels from "@/pages/Reels";
@@ -13,10 +10,10 @@ import Lures from "@/pages/Lures";
 import Misc from "@/pages/Misc";
 
 const TABS = [
-  { value: "lines", label: "Lines", icon: HorizontalLinesIcon, Component: Lines },
-  { value: "reels", label: "Reels", icon: ReelDiscIcon, Component: Reels },
-  { value: "rods", label: "Rods", icon: VerticalLinesIcon, Component: Rods },
-  { value: "lures", label: "Lures & Flies", icon: FishingHookIcon, Component: Lures },
+  { value: "lines", label: "Lines", icon: LinesIcon, Component: Lines },
+  { value: "reels", label: "Reels", icon: ReelIcon, Component: Reels },
+  { value: "rods", label: "Rods", icon: RodIcon, Component: Rods },
+  { value: "lures", label: "Lures & Flies", icon: LureIcon, Component: Lures },
   { value: "misc", label: "Misc. Gear", icon: Package, Component: Misc },
 ];
 

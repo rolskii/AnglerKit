@@ -1,7 +1,7 @@
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { Home as HomeIcon, Camera, Cloud, Moon as MoonIcon } from "lucide-react";
-import ReelDiscIcon from "@/components/ReelDiscIcon";
+import { ReelIcon as ReelDiscIcon } from "@/components/GearIcons";
 
 const tabs = [
   { to: "/", label: "Home", icon: HomeIcon, matchExact: true },

@@ -1,10 +1,8 @@
 import React from "react";
 import { Camera, Download, Upload, HardDrive } from "lucide-react";
 import TroutIcon from "@/components/TroutIcon";
-import HorizontalLinesIcon from "@/components/HorizontalLinesIcon";
-import ReelDiscIcon from "@/components/ReelDiscIcon";
+import { LinesIcon as HorizontalLinesIcon, ReelIcon as ReelDiscIcon, RodIcon as VerticalLinesIcon } from "@/components/GearIcons";
 import BugWingsIcon from "@/components/BugWingsIcon";
-import VerticalLinesIcon from "@/components/VerticalLinesIcon";
 import { Package } from "lucide-react";
 
 export default function About() {
