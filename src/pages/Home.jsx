@@ -201,8 +201,103 @@ export default function Home() {
 
   return (
     <div className="space-y-6 md:space-y-8 -mt-4 md:-mt-8">
-...
+      {/* Hero */}
+      <div className="space-y-2 px-1">
+        <h1 className="text-2xl md:text-[34px] font-heading font-extrabold tracking-tight leading-tight">Angler's Log</h1>
+        <p className="text-sm md:text-[17px] text-muted-foreground">
+          Track your gear, predict the bite with moon phases, check the water, and log every catch — all in one place.
+        </p>
+      </div>
+
+      {/* Status Bar */}
+      <Card className="p-4">
+        <div className="grid grid-cols-4 gap-2 text-center">
+          <div className="space-y-0.5">
+            <p className="text-[11px] text-muted-foreground">Major</p>
+            <p className="text-sm font-semibold leading-tight">5:48a–7:48a</p>
+          </div>
+          <div className="space-y-0.5">
+            <p className="text-[11px] text-muted-foreground">Minor</p>
+            <p className="text-sm font-semibold leading-tight">8:54p–10:54p</p>
+          </div>
+          <div className="space-y-0.5 flex flex-col items-center">
+            <p className="text-[11px] text-muted-foreground">Weather</p>
+            {weatherInfo ? (
+              <div className="flex items-center gap-1">
+                <weatherInfo.icon className={`w-4 h-4 ${weatherInfo.iconColor}`} />
+                <span className="text-sm font-semibold">{weatherInfo.temp}</span>
+              </div>
+            ) : (
+              <span className="text-sm text-muted-foreground">—</span>
+            )}
+          </div>
+          <div className="space-y-0.5 flex flex-col items-center">
+            <p className="text-[11px] text-muted-foreground">Moon</p>
+            {moonPhase && (
+              <div className="flex items-center gap-1">
+                <MoonPhaseSymbol phase={moonPhase} className="w-4 h-4" />
+                <span className="text-sm font-semibold">{moonPhase.illumination}%</span>
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center justify-center gap-1 mt-3 pt-3 border-t">
+          <MapPin className="w-3.5 h-3.5 text-muted-foreground" />
+          <p className="text-xs text-muted-foreground">{location}</p>
+        </div>
+      </Card>
+
+      {/* Category Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+        {items.map((item) => (
+          <Link key={item.key} to={item.to}>
+            <Card className="p-4 space-y-3 hover:shadow-md transition-shadow h-full">
+              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${tintClasses[item.tint]}`}>
+                <item.icon className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="font-heading font-semibold text-sm">{item.title}</p>
+                <p className="text-xs text-muted-foreground">{descriptions[item.key] || "—"}</p>
+              </div>
+            </Card>
+          </Link>
+        ))}
+      </div>
+
+      {/* Next Bite Window & Fishing Rating */}
+      {biteWindow && moonPhase && (
+        <Card className="p-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground">Next Bite Window</p>
+              <p className="font-heading font-semibold">{biteWindow.start} – {biteWindow.end}</p>
+              <p className={`text-xs font-medium ${
+                moonPhase.fishingRating >= 5 ? "text-green-600" : "text-yellow-600"
+              }`}>
+                {moonPhase.fishingRating >= 7 ? "Excellent" :
+                 moonPhase.fishingRating >= 6 ? "Very Good" :
+                 moonPhase.fishingRating >= 5 ? "Good" : "Fair"} fishing
+              </p>
+            </div>
+            <FishIcon className="w-8 h-8 text-primary" />
+          </div>
+        </Card>
+      )}
+
+      {/* Alarms */}
+      {getAlarmTimes().length > 0 && (
+        <Card className="p-4">
+          <div className="flex items-center gap-2">
+            <Bell className="w-4 h-4 text-primary" />
+            <div>
+              <p className="text-xs text-muted-foreground">Active Alarms</p>
+              <p className="text-sm font-semibold">{getAlarmTimes().join(", ")}</p>
+            </div>
+          </div>
+        </Card>
+      )}
+
       <FeaturedImage />
-</div>
+    </div>
   );
 }
