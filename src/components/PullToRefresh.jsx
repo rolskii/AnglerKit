@@ -1,37 +1,55 @@
-import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import React, { useState, useRef } from "react";
 import { Loader2 } from "lucide-react";
 
 export default function PullToRefresh({ onRefresh, children }) {
   const [refreshing, setRefreshing] = useState(false);
-  const [atTop, setAtTop] = useState(true);
+  const [pullDistance, setPullDistance] = useState(0);
+  const startY = useRef(null);
 
-  useEffect(() => {
-    const onScroll = () => setAtTop(window.scrollY === 0);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  const onTouchStart = (e) => {
+    if (window.scrollY === 0 && !refreshing) {
+      startY.current = e.touches[0].clientY;
+    }
+  };
+
+  const onTouchMove = (e) => {
+    if (startY.current === null || refreshing) return;
+    const delta = e.touches[0].clientY - startY.current;
+    if (delta > 0 && window.scrollY === 0) {
+      setPullDistance(Math.min(delta * 0.4, 60));
+    } else {
+      startY.current = null;
+      setPullDistance(0);
+    }
+  };
+
+  const onTouchEnd = async () => {
+    if (pullDistance > 50 && !refreshing) {
+      setRefreshing(true);
+      setPullDistance(40);
+      try { await onRefresh(); } finally {
+        setRefreshing(false);
+        setPullDistance(0);
+      }
+    } else {
+      setPullDistance(0);
+    }
+    startY.current = null;
+  };
 
   return (
-    <motion.div
-      drag={atTop && !refreshing ? "y" : false}
-      dragConstraints={{ top: 0, bottom: 0 }}
-      dragElastic={{ top: 0, bottom: 0.5 }}
-      onDragEnd={async (e, info) => {
-        if (info.offset.y > 80 && !refreshing) {
-          setRefreshing(true);
-          try { await onRefresh(); } finally { setRefreshing(false); }
-        }
-      }}
+    <div
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
     >
-      <motion.div
-        className="flex justify-center overflow-hidden"
-        animate={{ height: refreshing ? 40 : 0 }}
-        transition={{ duration: 0.2 }}
+      <div
+        className="flex justify-center overflow-hidden transition-all duration-200"
+        style={{ height: pullDistance }}
       >
-        <Loader2 className="w-5 h-5 text-muted-foreground mt-2 animate-spin" />
-      </motion.div>
+        <Loader2 className={`w-5 h-5 text-muted-foreground mt-2 animate-spin ${refreshing ? "" : "opacity-50"}`} />
+      </div>
       {children}
-    </motion.div>
+    </div>
   );
 }
