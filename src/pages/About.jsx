@@ -23,10 +23,16 @@ export default function About() {
           Every serious angler knows the feeling — the perfect rod for the conditions, the right fly tied on, everything working together. Angler's Log is built around that attention to detail.
         </p>
         <p>
-          Catalog your entire collection — lines, rods, reels, lures, flies and all your gear — with full specs, condition, photos and value. Pair lines with rods and reels, track what's spooled on what, and know exactly what you own and what it's worth. When you're on the water, log every catch with measurements, gear used and conditions. When you're off it, plan your next trip with moon phase and solunar data alongside local weather.
+          Catalog your entire collection — lines, rods, reels, lures, flies and all your gear — with specs, condition, photos and value. Pair lines with rods and reels, track what's spooled on what, and know exactly what you own and what it's worth. When you're on the water, log every catch with measurements, gear used and conditions.
+        </p>
+        <p>
+          When you're off it, plan your next trip with moon phase and solunar data alongside local weather.
         </p>
         <p>
           Your data stays yours — export and download your full collection any time.
+        </p>
+        <p>
+          Conveniently, each logged in item including all of your catches are individually shareable like an aesthetically pleasing trading card.
         </p>
       </div>
 
