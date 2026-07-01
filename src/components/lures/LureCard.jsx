@@ -17,12 +17,13 @@ export default function LureCard({ lure, onEdit, onDelete }) {
   const cardRef = useRef(null);
   const card = {
     title: lure.name,
-    subtitle: [lure.type, lure.category, lure.brand].filter(Boolean).join(" · ") || "—",
+    subtitle: [lure.type, lure.category, lure.brand, lure.model].filter(Boolean).join(" · ") || "—",
     badge: lure.condition,
     details: [
       { label: "Type", value: lure.type },
       { label: "Category", value: lure.category },
       { label: "Brand", value: lure.brand },
+      { label: "Model", value: lure.model },
       { label: "Size", value: lure.size },
       { label: "Colour", value: lure.colour },
       { label: "Quantity", value: lure.quantity != null ? lure.quantity : null },
@@ -40,7 +41,7 @@ export default function LureCard({ lure, onEdit, onDelete }) {
         <div>
           <h3 className="font-heading font-semibold">{lure.name}</h3>
           <p className="text-sm text-muted-foreground mt-0.5">
-            {[lure.type, lure.category, lure.brand].filter(Boolean).join(" · ") || "—"}
+            {[lure.type, lure.category, lure.brand, lure.model].filter(Boolean).join(" · ") || "—"}
           </p>
         </div>
         {lure.condition && (
@@ -54,6 +55,7 @@ export default function LureCard({ lure, onEdit, onDelete }) {
         <Detail label="Type" value={lure.type} />
         <Detail label="Category" value={lure.category} />
         <Detail label="Brand" value={lure.brand} />
+        <Detail label="Model" value={lure.model} />
         <Detail label="Size" value={lure.size} />
         <Detail label="Colour" value={lure.colour} />
         <Detail label="Quantity" value={lure.quantity != null ? lure.quantity : null} />

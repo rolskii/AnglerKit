@@ -18,10 +18,11 @@ export default function RodCard({ rod, lineCount, pairedLines, onEdit, onDelete 
   const cardRef = useRef(null);
   const card = {
     title: rod.name,
-    subtitle: [rod.brand, rod.length, rod.line_weight ? `${rod.line_weight}wt` : null].filter(Boolean).join(" · ") || "—",
+    subtitle: [rod.brand, rod.model, rod.length, rod.line_weight ? `${rod.line_weight}wt` : null].filter(Boolean).join(" · ") || "—",
     badge: rod.condition,
     details: [
       { label: "Brand", value: rod.brand },
+      { label: "Model", value: rod.model },
       { label: "Length", value: rod.length },
       { label: "Line Weight", value: rod.line_weight },
       { label: "Type", value: rod.type },
@@ -55,7 +56,7 @@ export default function RodCard({ rod, lineCount, pairedLines, onEdit, onDelete 
         <div>
           <h3 className="font-heading font-semibold">{rod.name}</h3>
           <p className="text-sm text-muted-foreground mt-0.5">
-            {[rod.brand, rod.length, rod.line_weight ? `${rod.line_weight}wt` : null].filter(Boolean).join(" · ") || "—"}
+            {[rod.brand, rod.model, rod.length, rod.line_weight ? `${rod.line_weight}wt` : null].filter(Boolean).join(" · ") || "—"}
           </p>
         </div>
 
@@ -63,6 +64,7 @@ export default function RodCard({ rod, lineCount, pairedLines, onEdit, onDelete 
 
       <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
         <Detail label="Brand" value={rod.brand} />
+        <Detail label="Model" value={rod.model} />
         <Detail label="Length" value={rod.length} />
         <Detail label="Line Weight" value={rod.line_weight} />
         <Detail label="Type" value={rod.type} />

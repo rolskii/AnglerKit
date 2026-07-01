@@ -19,7 +19,7 @@ const CATEGORIES = [
 ];
 const CONDITIONS = ["New", "Like New", "Good", "Fair", "Poor"];
 const empty = {
-  name: "", type: "Fly", category: "", brand: "", size: "", colour: "",
+  name: "", type: "Fly", category: "", brand: "", model: "", size: "", colour: "",
   quantity: 1, condition: "Good", value: "", date_acquired: "", notes: "", images: []
 };
 
@@ -74,6 +74,10 @@ export default function LureForm({ open, onOpenChange, onSubmit, initial, loadin
             <div className="space-y-1.5">
               <Label>Brand</Label>
               <Input className="bg-muted" value={form.brand} onChange={(e) => set("brand", e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Model</Label>
+              <Input className="bg-muted" value={form.model} onChange={(e) => set("model", e.target.value)} />
             </div>
             <div className="space-y-1.5">
               <Label>Size</Label>

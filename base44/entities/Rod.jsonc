@@ -9,6 +9,10 @@
     "brand": {
       "type": "string"
     },
+    "model": {
+      "type": "string",
+      "description": "Rod model"
+    },
     "length": {
       "type": "string"
     },

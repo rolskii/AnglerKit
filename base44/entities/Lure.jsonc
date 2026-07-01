@@ -21,6 +21,10 @@
     "brand": {
       "type": "string"
     },
+    "model": {
+      "type": "string",
+      "description": "Lure or fly model"
+    },
     "size": {
       "type": "string",
       "description": "Hook size (e.g. #14) or lure size"
