@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Outlet, NavLink, useNavigate, useLocation, Link } from "react-router-dom";
 import {
   LogOut, Menu, X,
@@ -26,23 +26,6 @@ export default function Layout() {
   const [open, setOpen] = useState(false);
   const appName = "Angler's Log";
   const navigate = useNavigate();
-
-  // Initialize theme — defaults to system light/dark preference
-  useEffect(() => {
-    const stored = localStorage.getItem("theme") || "system";
-    const isDark = stored === "dark" || (stored === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
-    document.documentElement.classList.toggle("dark", isDark);
-
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const handler = () => {
-      const t = localStorage.getItem("theme") || "system";
-      if (t === "system") {
-        document.documentElement.classList.toggle("dark", mq.matches);
-      }
-    };
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
 
   const handleLogout = async () => {
     await base44.auth.logout();

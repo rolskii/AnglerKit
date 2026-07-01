@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Loader2, Sun, Moon, Monitor, ArrowLeftRight, Trash2 } from "lucide-react";
+import { Loader2, ArrowLeftRight, Trash2 } from "lucide-react";
 import ImportExportSection from "@/components/settings/ImportExportSection";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -12,16 +12,8 @@ import { toast } from "sonner";
 export default function Settings() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "system");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
-
-  const applyTheme = (t) => {
-    setTheme(t);
-    localStorage.setItem("theme", t);
-    const isDark = t === "dark" || (t === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
-    document.documentElement.classList.toggle("dark", isDark);
-  };
 
   useEffect(() => {
     base44.auth.isAuthenticated().then(async (authed) => {
@@ -77,48 +69,6 @@ export default function Settings() {
           <h2 className="font-heading text-lg font-semibold">Import / Export</h2>
         </div>
         <ImportExportSection />
-      </div>
-
-      <div className="rounded-lg border-0 bg-primary/10 p-6 space-y-4">
-        <div>
-          <h2 className="font-heading font-semibold">Appearance</h2>
-          <p className="text-sm text-muted-foreground">Choose between light, dark, or system mode.</p>
-        </div>
-        <div className="grid grid-cols-3 gap-3">
-          <button
-            onClick={() => applyTheme("light")}
-            className={`flex items-center gap-3 rounded-lg border p-3 text-left transition-colors ${
-              theme === "light" ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:bg-accent/50"
-            }`}
-          >
-            <div className={`flex h-9 w-9 items-center justify-center rounded-md ${theme === "light" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-              <Sun className="w-5 h-5" />
-            </div>
-            <span className={`text-sm font-medium ${theme === "light" ? "text-primary" : ""}`}>Light</span>
-          </button>
-          <button
-            onClick={() => applyTheme("dark")}
-            className={`flex items-center gap-3 rounded-lg border p-3 text-left transition-colors ${
-              theme === "dark" ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:bg-accent/50"
-            }`}
-          >
-            <div className={`flex h-9 w-9 items-center justify-center rounded-md ${theme === "dark" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-              <Moon className="w-5 h-5" />
-            </div>
-            <span className={`text-sm font-medium ${theme === "dark" ? "text-primary" : ""}`}>Dark</span>
-          </button>
-          <button
-            onClick={() => applyTheme("system")}
-            className={`flex items-center gap-3 rounded-lg border p-3 text-left transition-colors ${
-              theme === "system" ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:bg-accent/50"
-            }`}
-          >
-            <div className={`flex h-9 w-9 items-center justify-center rounded-md ${theme === "system" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-              <Monitor className="w-5 h-5" />
-            </div>
-            <span className={`text-sm font-medium ${theme === "system" ? "text-primary" : ""}`}>System</span>
-          </button>
-        </div>
       </div>
 
       <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-6 space-y-4">
