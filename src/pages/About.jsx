@@ -29,10 +29,10 @@ export default function About() {
           When you're off it, plan your next trip with moon phase and solunar data alongside local weather.
         </p>
         <p>
-          Your data stays yours — export and download your full collection any time.
+          Conveniently, each logged in item including all of your catches are individually shareable like an aesthetically pleasing trading card.
         </p>
         <p>
-          Conveniently, each logged in item including all of your catches are individually shareable like an aesthetically pleasing trading card.
+          Your data stays yours — export and download your full collection any time.
         </p>
       </div>
 
