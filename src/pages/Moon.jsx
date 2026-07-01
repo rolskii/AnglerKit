@@ -173,12 +173,11 @@ export default function Moon() {
       });
     }
 
-    // Friendly rising chime — maxed volume via compressor + layered oscillators
+    // Classic morning alarm — repeating beep-beep-beep pattern
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (AudioCtx) {
         const ctx = new AudioCtx();
-        // Compressor boosts perceived loudness to the browser max
         const comp = ctx.createDynamicsCompressor();
         comp.threshold.value = -50;
         comp.knee.value = 0;
@@ -190,26 +189,27 @@ export default function Moon() {
         comp.connect(master);
         master.connect(ctx.destination);
 
-        const notes = [523.25, 659.25, 783.99, 1046.50];
-        const noteDur = 0.22;
-        notes.forEach((freq, i) => {
-          const s = ctx.currentTime + i * (noteDur + 0.04);
-          // Layer sine + triangle for a fuller, louder sound
-          ['sine', 'triangle'].forEach(type => {
+        const beepFreq = 880;
+        const beepDur = 0.15;
+        const gap = 0.1;
+        // 3 groups of beep-beep-beep with a longer pause between groups
+        for (let group = 0; group < 3; group++) {
+          for (let i = 0; i < 3; i++) {
+            const s = ctx.currentTime + group * (3 * (beepDur + gap) + 0.4) + i * (beepDur + gap);
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
             osc.connect(gain);
             gain.connect(comp);
-            osc.type = type;
-            osc.frequency.value = freq;
+            osc.type = 'square';
+            osc.frequency.value = beepFreq;
             gain.gain.setValueAtTime(0, s);
-            gain.gain.linearRampToValueAtTime(0.7, s + 0.03);
-            gain.gain.setValueAtTime(0.7, s + noteDur - 0.04);
-            gain.gain.linearRampToValueAtTime(0, s + noteDur);
+            gain.gain.linearRampToValueAtTime(0.6, s + 0.01);
+            gain.gain.setValueAtTime(0.6, s + beepDur - 0.02);
+            gain.gain.linearRampToValueAtTime(0, s + beepDur);
             osc.start(s);
-            osc.stop(s + noteDur + 0.02);
-          });
-        });
+            osc.stop(s + beepDur + 0.01);
+          }
+        }
       }
     } catch (e) {}
 
