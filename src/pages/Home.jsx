@@ -6,7 +6,6 @@ import { ReelIcon as ReelDiscIcon } from "@/components/GearIcons";
 import FishIcon from "@/components/FishIcon";
 import MoonPhaseSymbol from "@/components/MoonPhaseSymbol";
 import { base44 } from "@/api/base44Client";
-import PullToRefresh from "@/components/PullToRefresh";
 import FeaturedImage from "@/components/FeaturedImage";
 
 const calculateMoonPhase = (date) => {
@@ -201,104 +200,9 @@ export default function Home() {
   };
 
   return (
-    <PullToRefresh onRefresh={refreshData}>
     <div className="space-y-6 md:space-y-8 -mt-4 md:-mt-8">
-      {/* Hero */}
-      <div className="space-y-2 px-1">
-        <h1 className="text-2xl md:text-[34px] font-heading font-extrabold tracking-tight leading-tight">Angler's Log</h1>
-        <p className="text-sm md:text-[17px] text-muted-foreground">
-          Track your gear, predict the bite with moon phases, check the water, and log every catch — all in one place.
-        </p>
-      </div>
-
-      {/* Status bar */}
-      {moonPhase && (
-        <div className="px-4 py-3 rounded-2xl bg-card shadow-sm space-y-3">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex flex-col gap-1">
-              <p className="text-sm font-bold text-foreground">Today's Fishing Conditions:</p>
-              <div className="flex items-center gap-1">
-                {[1, 2, 3, 4, 5, 6, 7].map((n) => (
-                  <FishIcon
-                    key={n}
-                    className={`w-5 h-5 text-primary transition-opacity ${n <= moonPhase.fishingRating ? "opacity-100" : "opacity-25"}`}
-                  />
-                ))}
-              </div>
-            </div>
-            <div className="text-right shrink-0">
-              <p className={`text-sm font-bold ${moonPhase.fishingRating >= 5 ? "text-green-600" : moonPhase.fishingRating <= 3 ? "text-yellow-600" : "text-primary"}`}>
-                {moonPhase.fishingRating <= 2 ? "Bad" : moonPhase.fishingRating === 3 ? "Fair" : moonPhase.fishingRating === 4 ? "OK" : moonPhase.fishingRating === 5 ? "Good" : moonPhase.fishingRating === 6 ? "Very Good" : "Excellent"}
-              </p>
-              <p className="text-xs text-muted-foreground flex items-center justify-end gap-1 mt-1">
-                <MapPin className="w-3 h-3" />{location}
-              </p>
-            </div>
-          </div>
-          <div className="grid grid-cols-4 gap-2">
-            <div>
-              <p className="text-xs font-semibold text-muted-foreground mb-1">Major</p>
-              <p className="text-xs text-foreground flex items-center gap-1">
-                5:48–7:48 AM
-                {getAlarmTimes().includes("5:48 AM") && <Bell className="w-3 h-3 text-primary" />}
-              </p>
-              <p className="text-xs text-foreground flex items-center gap-1">
-                8:54–10:54 PM
-                {getAlarmTimes().includes("8:54 PM") && <Bell className="w-3 h-3 text-primary" />}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-muted-foreground mb-1">Minor</p>
-              <p className="text-xs text-foreground">5:48–6:18 AM</p>
-              <p className="text-xs text-foreground">8:54–9:24 PM</p>
-            </div>
-            <div className="flex items-center justify-center">
-              {moonPhase && <MoonPhaseSymbol phase={moonPhase} className="w-12 h-12" />}
-            </div>
-            <div className="flex items-center justify-end pr-4">
-              {weatherInfo?.icon && (() => {
-                const Icon = weatherInfo.icon;
-                return <Icon className={`w-16 h-16 ${weatherInfo.iconColor}`} />;
-              })()}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Category grid */}
-      <div className="grid grid-cols-4 gap-2 md:gap-4">
-        {items.map((item) => {
-          const Icon = item.icon;
-          const isGear = item.to === "/gear/lines";
-          const desc = descriptions[item.key];
-          return (
-            <Link key={item.to} to={item.to} className="group">
-              <Card className="relative p-2.5 md:p-5 h-full rounded-2xl border-0 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer bg-card">
-                <div className="flex flex-col gap-2 md:gap-3">
-                  <div className={`flex h-9 w-9 md:h-11 md:w-11 items-center justify-center rounded-xl flex-shrink-0 ${tintClasses[item.tint]}`}>
-                    <Icon className={isGear ? "w-6 md:w-10 h-6 md:h-10" : "w-5 md:w-8 h-5 md:h-8"} strokeWidth={2} />
-                  </div>
-                  <div className="space-y-0.5 md:space-y-1">
-                    <h2 className="text-xs md:text-lg font-heading font-semibold tracking-tight leading-tight">{item.title}</h2>
-                    {item.key === "weather" && weatherInfo ? (
-                      <p className="text-[10px] md:text-sm text-muted-foreground leading-tight">{weatherInfo.temp} · {weatherInfo.windLabel} · {weatherInfo.desc}</p>
-                    ) : item.key === "moon" && moonPhase ? (
-                      <p className="text-[10px] md:text-sm text-muted-foreground leading-tight">{moonPhase.name} · {moonPhase.illumination}% lit</p>
-                    ) : desc ? (
-                      <p className="text-[10px] md:text-sm text-muted-foreground leading-tight">{desc}</p>
-                    ) : (
-                      <p className="text-[10px] md:text-sm text-muted-foreground/40">—</p>
-                    )}
-                  </div>
-                </div>
-              </Card>
-            </Link>
-          );
-        })}
-      </div>
-
+...
       <FeaturedImage />
 </div>
-    </PullToRefresh>
   );
 }
