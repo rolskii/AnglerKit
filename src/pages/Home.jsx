@@ -180,7 +180,7 @@ export default function Home() {
               </div>
             </div>
             <div className="text-right shrink-0">
-              <p className="text-sm font-bold text-primary">
+              <p className={`text-sm font-bold ${moonPhase.fishingRating >= 5 ? "text-green-600" : "text-primary"}`}>
                 {moonPhase.fishingRating <= 2 ? "Bad" : moonPhase.fishingRating === 3 ? "Fair" : moonPhase.fishingRating === 4 ? "OK" : moonPhase.fishingRating === 5 ? "Good" : moonPhase.fishingRating === 6 ? "Very Good" : "Excellent"}
               </p>
               <Link to="/moon" className="text-xs font-semibold text-primary hover:underline">Details</Link>
