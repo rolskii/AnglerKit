@@ -11,13 +11,35 @@ export default function ImageUpload({ value = [], onChange }) {
 
   const images = Array.isArray(value) ? value : value ? [value] : [];
 
+  const compressImage = (file) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const scale = 0.75;
+        const w = Math.round(img.naturalWidth * scale);
+        const h = Math.round(img.naturalHeight * scale);
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, w, h);
+        canvas.toBlob((blob) => {
+          resolve(new File([blob], file.name.replace(/\.\w+$/, ".jpg"), { type: "image/jpeg" }));
+        }, "image/jpeg", 0.85);
+      };
+      img.onerror = () => resolve(file);
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
   const handleFiles = async (fileList) => {
     const files = Array.from(fileList || []);
     if (files.length === 0) return;
     setUploading(true);
     try {
+      const compressed = await Promise.all(files.map(compressImage));
       const uploaded = await Promise.all(
-        files.map((file) => base44.integrations.Core.UploadFile({ file }).then((r) => r.file_url))
+        compressed.map((file) => base44.integrations.Core.UploadFile({ file }).then((r) => r.file_url))
       );
       onChange([...images, ...uploaded.filter(Boolean)]);
     } catch (e) {
