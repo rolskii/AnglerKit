@@ -154,27 +154,16 @@ export default function Home() {
       </div>
 
       {/* Status bar */}
-      {(moonPhase || weatherInfo) && (
+      {moonPhase && (
         <div className="flex items-center justify-between gap-4 px-4 py-3 rounded-2xl bg-card shadow-sm">
-          {moonPhase && (
-            <Link to="/moon" className="flex items-center gap-2 group">
-              <MoonIcon className="w-4 h-4 text-muted-foreground shrink-0" />
-              <div>
-                <p className="text-xs text-muted-foreground">Moon phase</p>
-                <p className="text-xs font-medium text-muted-foreground">{moonPhase.name}</p>
-                <p className="text-base font-bold text-primary">Bite: 5:48–7:48 AM · 8:54–10:54 PM</p>
-              </div>
-            </Link>
-          )}
-          {weatherInfo && (
-            <Link to="/weather" className="flex items-center gap-2 text-right group">
-              <div>
-                <p className="text-xs text-muted-foreground">Right now</p>
-                <p className="text-sm font-medium">{weatherInfo.temp} · {weatherInfo.windLabel}</p>
-              </div>
-              <Cloud className="w-4 h-4 text-muted-foreground shrink-0" />
-            </Link>
-          )}
+          <Link to="/moon" className="flex items-center gap-2 group">
+            <MoonIcon className="w-4 h-4 text-muted-foreground shrink-0" />
+            <div>
+              <p className="text-xs text-muted-foreground">Moon phase</p>
+              <p className="text-xs font-medium text-muted-foreground">{moonPhase.name}</p>
+              <p className="text-base font-bold text-primary">Bite: 5:48–7:48 AM · 8:54–10:54 PM</p>
+            </div>
+          </Link>
         </div>
       )}
 
@@ -196,7 +185,9 @@ export default function Home() {
                   </div>
                   <div className="space-y-1">
                     <h2 className="text-base md:text-lg font-heading font-semibold tracking-tight">{item.title}</h2>
-                    {desc ? (
+                    {item.key === "weather" && weatherInfo ? (
+                      <p className="text-xs md:text-sm text-muted-foreground">{weatherInfo.temp} · {weatherInfo.windLabel} · {weatherInfo.desc}</p>
+                    ) : desc ? (
                       <p className="text-xs md:text-sm text-muted-foreground">{desc}</p>
                     ) : (
                       <p className="text-xs md:text-sm text-muted-foreground/40">—</p>
