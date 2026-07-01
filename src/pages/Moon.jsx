@@ -300,15 +300,15 @@ export default function Moon() {
           <p className="text-muted-foreground">Check lunar phases and solunar feeding times to plan your fishing trips.</p>
           
           {/* Location & Date Selector */}
-          <div className="mt-6 flex gap-2 max-w-md mx-auto flex-row items-center">
-            <div className="flex-1 relative">
-              <label className="block text-xs text-muted-foreground mb-1 text-left">Location</label>
+          <div className="mt-6 flex gap-2 max-w-md mx-auto flex-row items-start">
+            <div className="flex-1 relative box-border">
+              <label className="block text-xs text-muted-foreground mb-1 text-center">Location</label>
               <input
                 type="text"
                 value={editingLocation}
                 onChange={(e) => handleLocationInput(e.target.value)}
                 placeholder="Enter location"
-                className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-card text-foreground placeholder:text-muted-foreground text-left"
+                className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-card text-foreground placeholder:text-muted-foreground text-center box-border"
                 onKeyPress={(e) => e.key === 'Enter' && handleLocationChange()}
                 onFocus={(e) => {
                   e.target.select();
@@ -330,13 +330,13 @@ export default function Moon() {
                 </div>
               )}
             </div>
-            <div className="flex-1">
-              <label className="block text-xs text-muted-foreground mb-1 text-left">Date</label>
+            <div className="flex-1 box-border">
+              <label className="block text-xs text-muted-foreground mb-1 text-center">Date</label>
               <input
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-card text-foreground text-left"
+                className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-card text-foreground text-left box-border"
               />
             </div>
           </div>
