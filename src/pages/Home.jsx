@@ -232,7 +232,7 @@ export default function Home() {
               </p>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-4 gap-2">
             <div>
               <p className="text-xs font-semibold text-muted-foreground mb-1">Major</p>
               <p className="text-xs text-foreground flex items-center gap-1">
@@ -249,7 +249,7 @@ export default function Home() {
               <p className="text-xs text-foreground">5:48–6:18 AM</p>
               <p className="text-xs text-foreground">8:54–9:24 PM</p>
             </div>
-            <div className="flex items-center justify-end pr-4">
+            <div className="col-span-2 flex items-center justify-end pr-4">
               {weatherInfo?.icon && (() => {
                 const Icon = weatherInfo.icon;
                 return <Icon className={`w-16 h-16 ${weatherInfo.iconColor}`} />;
