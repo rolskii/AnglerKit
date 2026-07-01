@@ -207,7 +207,7 @@ export default function Home() {
       <div className="space-y-2 px-1">
         <h1 className="text-2xl md:text-[34px] font-heading font-extrabold tracking-tight leading-tight">Angler's Log</h1>
         <p className="text-sm md:text-[17px] text-muted-foreground">
-          Track your gear, predict the bite with moon phases, check the water, and log every catch — all in one place.
+          Track your fishing gear, predict the bite, check the weather and log every catch — all in one place.
         </p>
       </div>
 
