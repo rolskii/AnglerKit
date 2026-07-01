@@ -210,8 +210,8 @@ export default function Home() {
 
       {/* Status bar */}
       {moonPhase && (
-        <div className="px-4 py-3 rounded-2xl bg-card shadow-sm space-y-3">
-          <div className="flex items-center justify-between gap-2">
+        <div className="px-4 py-2 rounded-2xl bg-card shadow-sm space-y-2">
+          <div className="flex items-start justify-between gap-2">
             <div className="flex flex-col gap-1">
               <p className="text-sm font-bold text-foreground">Today's Fishing Conditions:</p>
               <div className="flex items-center gap-1">
@@ -236,7 +236,7 @@ export default function Home() {
               })()}
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 gap-2">
             <div>
               <p className="text-xs font-semibold text-muted-foreground mb-1">Major</p>
               <p className="text-xs text-foreground flex items-center gap-1">
@@ -252,8 +252,6 @@ export default function Home() {
               <p className="text-xs font-semibold text-muted-foreground mb-1">Minor</p>
               <p className="text-xs text-foreground">5:48–6:18 AM</p>
               <p className="text-xs text-foreground">8:54–9:24 PM</p>
-            </div>
-            <div className="flex items-center justify-center">
             </div>
           </div>
         </div>
