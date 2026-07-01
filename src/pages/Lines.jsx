@@ -12,15 +12,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 
-const conditionColor = {
-  "New": "bg-emerald-100 text-emerald-700",
-  "Brand New": "bg-emerald-100 text-emerald-700",
-  "Like New": "bg-emerald-100 text-emerald-700",
-  "Good": "bg-blue-100 text-blue-700",
-  "Fair": "bg-amber-100 text-amber-700",
-  "Poor": "bg-rose-100 text-rose-700",
-};
-
 export default function Lines() {
   const [lines, setLines] = useState([]);
   const [reels, setReels] = useState([]);
@@ -174,8 +165,7 @@ export default function Lines() {
           <p>No lines found. Add your first one!</p>
         </div>
       ) : (
-        <>
-        <div className="hidden md:block overflow-x-auto rounded-lg border border-border">
+        <div className="overflow-x-auto rounded-lg border border-border">
           <table className="w-full text-sm">
             <thead className="bg-muted/50 text-muted-foreground">
               <tr>
@@ -209,26 +199,6 @@ export default function Lines() {
             </tbody>
           </table>
         </div>
-        <div className="md:hidden grid grid-cols-1 gap-3">
-          {filtered.map((line) => (
-            <div key={line.id} onClick={() => setViewTarget(line)} className={`p-3 rounded-xl border border-border/60 bg-card cursor-pointer active:bg-accent/50 transition-colors ${line.reel && line.reel.toLowerCase() !== "spooled" && !line.spooled ? "ring-2 ring-primary/30" : ""}`}>
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0 flex-1">
-                  <p className="font-medium text-sm truncate">{line.brand} {line.model}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{line.species || "—"} · {line.type || "—"}</p>
-                </div>
-                {line.value != null && <p className="text-sm font-medium whitespace-nowrap">${line.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>}
-              </div>
-              <div className="flex flex-wrap gap-1.5 mt-2 text-xs">
-                {line.rod_type && <span className="px-2 py-0.5 rounded-full bg-muted">{line.rod_type}</span>}
-                {line.line_weight && <span className="px-2 py-0.5 rounded-full bg-muted">{line.line_weight}</span>}
-                {line.grain_weight && <span className="px-2 py-0.5 rounded-full bg-muted">{line.grain_weight}gr</span>}
-                {line.condition && <span className={`px-2 py-0.5 rounded-full font-medium ${conditionColor[line.condition] || "bg-muted text-muted-foreground"}`}>{line.condition}</span>}
-              </div>
-            </div>
-          ))}
-        </div>
-        </>
       )}
 
       <LineDetailDialog

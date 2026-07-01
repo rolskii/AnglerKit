@@ -194,8 +194,7 @@ export default function Rods() {
           <p>No rods found. Add your first one!</p>
         </div>
       ) : (
-        <>
-        <div className="hidden md:block overflow-x-auto rounded-lg border border-border">
+        <div className="overflow-x-auto rounded-lg border border-border">
           <table className="w-full text-sm">
             <thead className="bg-muted/50 text-muted-foreground">
               <tr>
@@ -229,26 +228,6 @@ export default function Rods() {
             </tbody>
           </table>
         </div>
-        <div className="md:hidden grid grid-cols-1 gap-3">
-          {filtered.map((rod) => (
-            <div key={rod.id} onClick={() => setViewTarget(rod)} className="p-3 rounded-xl border border-border/60 bg-card cursor-pointer active:bg-accent/50 transition-colors">
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0 flex-1">
-                  <p className="font-medium text-sm truncate">{rod.name || "—"}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{rod.type || "—"} · {rod.brand || "—"}</p>
-                </div>
-                {rod.value != null && <p className="text-sm font-medium whitespace-nowrap">${rod.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>}
-              </div>
-              <div className="flex flex-wrap gap-1.5 mt-2 text-xs">
-                {rod.length && <span className="px-2 py-0.5 rounded-full bg-muted">{rod.length}</span>}
-                {rod.line_weight && <span className="px-2 py-0.5 rounded-full bg-muted">{rod.line_weight}</span>}
-                {rod.material && <span className="px-2 py-0.5 rounded-full bg-muted">{rod.material}</span>}
-                {rod.condition && <span className={`px-2 py-0.5 rounded-full font-medium ${conditionColor[rod.condition] || "bg-muted text-muted-foreground"}`}>{rod.condition}</span>}
-              </div>
-            </div>
-          ))}
-        </div>
-        </>
       )}
 
       <RodDetailDialog

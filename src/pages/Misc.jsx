@@ -142,8 +142,7 @@ export default function Misc() {
           <p>No misc. items found. Add your first one!</p>
         </div>
       ) : (
-        <>
-        <div className="hidden md:block overflow-x-auto rounded-lg border border-border">
+        <div className="overflow-x-auto rounded-lg border border-border">
           <table className="w-full text-sm">
             <thead className="bg-muted/50 text-muted-foreground">
               <tr>
@@ -179,26 +178,6 @@ export default function Misc() {
             </tbody>
           </table>
         </div>
-        <div className="md:hidden grid grid-cols-1 gap-3">
-          {filtered.map((item) => (
-            <div key={item.id} onClick={() => setViewTarget(item)} className="p-3 rounded-xl border border-border/60 bg-card cursor-pointer active:bg-accent/50 transition-colors">
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0 flex-1">
-                  <p className="font-medium text-sm truncate">{item.name || "—"}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{item.category || "—"} · {item.brand || "—"}</p>
-                </div>
-                {item.value != null && <p className="text-sm font-medium whitespace-nowrap">${item.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>}
-              </div>
-              <div className="flex flex-wrap gap-1.5 mt-2 text-xs">
-                {item.model && <span className="px-2 py-0.5 rounded-full bg-muted">{item.model}</span>}
-                {item.colour && <span className="px-2 py-0.5 rounded-full bg-muted">{item.colour}</span>}
-                {item.quantity != null && <span className="px-2 py-0.5 rounded-full bg-muted">Qty: {item.quantity}</span>}
-                {item.condition && <span className={`px-2 py-0.5 rounded-full font-medium ${conditionColor[item.condition] || "bg-muted text-muted-foreground"}`}>{item.condition}</span>}
-              </div>
-            </div>
-          ))}
-        </div>
-        </>
       )}
 
       <MiscDetailDialog
