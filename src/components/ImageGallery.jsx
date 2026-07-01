@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Star } from "lucide-react";
-import { setFeaturedImage } from "@/lib/featuredImage";
+import { setFeaturedImage, clearFeaturedImage } from "@/lib/featuredImage";
 
 export function getItemImages(item) {
   if (item.images && Array.isArray(item.images) && item.images.length > 0) return item.images;
@@ -25,6 +25,10 @@ export default function ImageGallery({ images = [], featuredLabel, featuredSubti
   if (!images || images.length === 0) return null;
 
   const handleSetFeatured = () => {
+    if (featuredUrl === images[active]) {
+      clearFeaturedImage();
+      return;
+    }
     setFeaturedImage({
       image_url: images[active],
       label: featuredLabel || "Gear",
@@ -71,6 +75,10 @@ export default function ImageGallery({ images = [], featuredLabel, featuredSubti
                   onClick={(e) => {
                     e.stopPropagation();
                     e.preventDefault();
+                    if (featuredUrl === url) {
+                      clearFeaturedImage();
+                      return;
+                    }
                     setFeaturedImage({
                       image_url: url,
                       label: featuredLabel || "Gear",
