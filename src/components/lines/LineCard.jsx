@@ -36,7 +36,7 @@ export default function LineCard({ line, onEdit, onDelete }) {
   };
   return (
     <Card ref={cardRef} className="p-4 flex flex-col gap-3 hover:shadow-md transition-shadow">
-      <ImageGallery images={getItemImages(line)} />
+      <ImageGallery images={getItemImages(line)} featuredLabel={`${line.brand} ${line.model}`.trim()} featuredSubtitle="Line" featuredLink="/gear/lines" />
       <div className="flex items-start justify-between gap-2">
         <div>
           <div className="flex items-center gap-2 flex-wrap">

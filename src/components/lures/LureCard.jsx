@@ -35,7 +35,7 @@ export default function LureCard({ lure, onEdit, onDelete }) {
   };
   return (
     <Card ref={cardRef} className="p-4 flex flex-col gap-3">
-      <ImageGallery images={getItemImages(lure)} />
+      <ImageGallery images={getItemImages(lure)} featuredLabel={lure.name} featuredSubtitle="Lure" featuredLink="/gear/lures" />
       <div className="flex items-start justify-between gap-2">
         <div>
           <h3 className="font-heading font-semibold">{lure.name}</h3>

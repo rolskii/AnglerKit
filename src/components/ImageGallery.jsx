@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { Star } from "lucide-react";
+import { setFeaturedImage } from "@/lib/featuredImage";
 
 export function getItemImages(item) {
   if (item.images && Array.isArray(item.images) && item.images.length > 0) return item.images;
@@ -6,12 +8,35 @@ export function getItemImages(item) {
   return [];
 }
 
-export default function ImageGallery({ images = [] }) {
+export default function ImageGallery({ images = [], featuredLabel, featuredSubtitle, featuredLink }) {
   const [active, setActive] = useState(0);
   if (!images || images.length === 0) return null;
+
+  const handleSetFeatured = () => {
+    setFeaturedImage({
+      image_url: images[active],
+      label: featuredLabel || "Gear",
+      subtitle: featuredSubtitle || "",
+      link: featuredLink || "/gear/lines",
+    });
+  };
+
   return (
     <div className="space-y-2">
-      <img src={images[active]} alt={`Photo ${active + 1}`} className="w-full max-h-[60vh] object-contain rounded-md bg-muted/30" />
+      <div className="relative">
+        <img src={images[active]} alt={`Photo ${active + 1}`} className="w-full max-h-[60vh] object-contain rounded-md bg-muted/30" />
+        {featuredLabel && (
+          <button
+            type="button"
+            onClick={handleSetFeatured}
+            className="absolute top-2 right-2 flex items-center gap-1 bg-black/50 backdrop-blur-sm text-white text-xs font-medium rounded-full px-2.5 py-1 hover:bg-black/70 transition-colors"
+            title="Set as featured image"
+          >
+            <Star className="w-3.5 h-3.5" />
+            Feature
+          </button>
+        )}
+      </div>
       {images.length > 1 && (
         <div className="flex flex-wrap gap-1.5 pb-1">
           {images.map((url, idx) => (

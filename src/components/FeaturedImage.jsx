@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Star, X, Shuffle } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import FeaturedImagePicker from "@/components/FeaturedImagePicker";
+import { clearFeaturedImage } from "@/lib/featuredImage";
 
 const entityRoutes = {
   FlyLine: "/gear/lines",
@@ -89,7 +90,16 @@ export default function FeaturedImage() {
     }
   };
 
-  useEffect(() => { loadFeatured(); }, []);
+  useEffect(() => {
+    loadFeatured();
+    const onChanged = () => loadFeatured();
+    window.addEventListener("featured-image-changed", onChanged);
+    window.addEventListener("storage", onChanged);
+    return () => {
+      window.removeEventListener("featured-image-changed", onChanged);
+      window.removeEventListener("storage", onChanged);
+    };
+  }, []);
 
   const handleSelect = (img) => {
     localStorage.setItem("featuredImageUser", JSON.stringify(img));
@@ -99,9 +109,7 @@ export default function FeaturedImage() {
   };
 
   const handleClear = () => {
-    localStorage.removeItem("featuredImageUser");
-    setIsUserSelected(false);
-    loadFeatured();
+    clearFeaturedImage();
   };
 
   if (loading) {
