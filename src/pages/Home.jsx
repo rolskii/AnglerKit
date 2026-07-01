@@ -100,15 +100,16 @@ export default function Home() {
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   };
 
-  const getAlarmTime = () => {
+  const getAlarmTimes = () => {
     try {
       const stored = localStorage.getItem('alarmsByDate');
-      if (!stored) return null;
+      if (!stored) return [];
       const alarms = JSON.parse(stored);
-      const todayAlarm = alarms[todayStr()];
-      if (todayAlarm && todayAlarm.enabled) return todayAlarm.time;
-    } catch {}
-    return null;
+      const dayAlarms = alarms[todayStr()];
+      if (!dayAlarms) return [];
+      const list = Array.isArray(dayAlarms) ? dayAlarms : [dayAlarms];
+      return list.filter(a => a.enabled).map(a => a.time);
+    } catch { return []; }
   };
 
   const refreshData = async () => {
@@ -219,11 +220,11 @@ export default function Home() {
               <p className="text-xs font-semibold text-muted-foreground mb-1">Major</p>
               <p className="text-xs text-foreground flex items-center gap-1">
                 5:48–7:48 AM
-                {getAlarmTime() === "5:48 AM" && <Bell className="w-3 h-3 text-primary" />}
+                {getAlarmTimes().includes("5:48 AM") && <Bell className="w-3 h-3 text-primary" />}
               </p>
               <p className="text-xs text-foreground flex items-center gap-1">
                 8:54–10:54 PM
-                {getAlarmTime() === "8:54 PM" && <Bell className="w-3 h-3 text-primary" />}
+                {getAlarmTimes().includes("8:54 PM") && <Bell className="w-3 h-3 text-primary" />}
               </p>
             </div>
             <div>

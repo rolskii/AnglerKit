@@ -19,10 +19,11 @@ export default function Moon() {
     const stored = localStorage.getItem('alarmsByDate');
     return stored ? JSON.parse(stored) : {};
   });
-  const currentDayAlarms = alarmsByDate[selectedDate] || { time: null, enabled: false, offset: 15 };
+  const rawDayAlarms = alarmsByDate[selectedDate];
+  const currentDayAlarmList = Array.isArray(rawDayAlarms) ? rawDayAlarms : (rawDayAlarms && rawDayAlarms.time ? [rawDayAlarms] : []);
   const [pendingTime, setPendingTime] = useState(null);
   const [pendingOffset, setPendingOffset] = useState(15);
-  const alarmIntervalRef = useRef(null);
+  const alarmIntervalsRef = useRef({});
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
@@ -90,30 +91,26 @@ export default function Moon() {
   };
 
   const toggleAlarm = (timeStr) => {
-    // If there's already a saved alarm for this time → cancel it
-    if (currentDayAlarms.time === timeStr) {
+    const existing = currentDayAlarmList.find(a => a.time === timeStr);
+    if (existing) {
+      const newList = currentDayAlarmList.filter(a => a.time !== timeStr);
       const updated = { ...alarmsByDate };
-      delete updated[selectedDate];
+      if (newList.length === 0) delete updated[selectedDate];
+      else updated[selectedDate] = newList;
       setAlarmsByDate(updated);
       setPendingTime(null);
-      if (alarmIntervalRef.current) {
-        clearInterval(alarmIntervalRef.current);
-        alarmIntervalRef.current = null;
+      if (alarmIntervalsRef.current[timeStr]) {
+        clearInterval(alarmIntervalsRef.current[timeStr]);
+        delete alarmIntervalsRef.current[timeStr];
       }
       return;
     }
-    // Otherwise open the pending alarm config
     setPendingTime(timeStr);
-    setPendingOffset(currentDayAlarms.offset || 15);
+    setPendingOffset(15);
   };
 
   const saveAlarm = () => {
     if (!pendingTime) return;
-
-    if (alarmIntervalRef.current) {
-      clearInterval(alarmIntervalRef.current);
-      alarmIntervalRef.current = null;
-    }
 
     const timeInMinutes = parseTimeToMinutes(pendingTime);
     if (!timeInMinutes) return;
@@ -122,7 +119,6 @@ export default function Moon() {
     const alarmHours = Math.floor(timeInMinutes / 60);
     const alarmMinutes = timeInMinutes % 60;
 
-    // Compute the alarm target — if already passed today, schedule for tomorrow
     const alarmTime = new Date();
     alarmTime.setHours(alarmHours, alarmMinutes, 0, 0);
     alarmTime.setMinutes(alarmTime.getMinutes() - offset);
@@ -130,29 +126,36 @@ export default function Moon() {
       alarmTime.setDate(alarmTime.getDate() + 1);
     }
 
+    const existing = currentDayAlarmList.find(a => a.time === pendingTime);
+    const newList = existing
+      ? currentDayAlarmList.map(a => a.time === pendingTime ? { time: pendingTime, enabled: true, offset } : a)
+      : [...currentDayAlarmList, { time: pendingTime, enabled: true, offset }];
+
     setAlarmsByDate({
       ...alarmsByDate,
-      [selectedDate]: { time: pendingTime, enabled: true, offset }
+      [selectedDate]: newList
     });
 
-    // Request notification permission so we can show a system alert
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
     }
 
+    if (alarmIntervalsRef.current[pendingTime]) {
+      clearInterval(alarmIntervalsRef.current[pendingTime]);
+    }
+
+    const alarmKey = pendingTime;
     const trigger = () => {
       if (new Date() >= alarmTime) {
-        playAlarm(pendingTime, offset);
-        if (alarmIntervalRef.current) {
-          clearInterval(alarmIntervalRef.current);
-          alarmIntervalRef.current = null;
+        playAlarm(alarmKey, offset);
+        if (alarmIntervalsRef.current[alarmKey]) {
+          clearInterval(alarmIntervalsRef.current[alarmKey]);
+          delete alarmIntervalsRef.current[alarmKey];
         }
       }
     };
 
-    // Check every 5 seconds for timely triggering
-    alarmIntervalRef.current = setInterval(trigger, 5000);
-    // Also check immediately in case the time is right now
+    alarmIntervalsRef.current[alarmKey] = setInterval(trigger, 5000);
     trigger();
 
     setPendingTime(null);
@@ -218,20 +221,18 @@ export default function Moon() {
     localStorage.setItem('alarmsByDate', JSON.stringify(alarmsByDate));
   }, [alarmsByDate]);
 
-  // Cleanup interval on unmount
+  // Cleanup all intervals on unmount
   useEffect(() => {
     return () => {
-      if (alarmIntervalRef.current) {
-        clearInterval(alarmIntervalRef.current);
-      }
+      Object.values(alarmIntervalsRef.current).forEach(clearInterval);
     };
   }, []);
 
   useEffect(() => {
-    if (currentDayAlarms.enabled && 'Notification' in window && Notification.permission === 'default') {
+    if (currentDayAlarmList.length > 0 && 'Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
     }
-  }, [currentDayAlarms.enabled]);
+  }, [currentDayAlarmList.length]);
 
   const calculateMoonPhase = (date) => {
     const knownNewMoon = new Date(2000, 0, 6);
@@ -437,14 +438,14 @@ export default function Moon() {
                           <button
                             onClick={() => toggleAlarm(item.time.split(' - ')[0])}
                             className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 flex-shrink-0 transition-colors ${
-                              currentDayAlarms.time === item.time.split(' - ')[0]
+                              currentDayAlarmList.some(a => a.time === item.time.split(' - ')[0])
                                 ? 'bg-primary text-primary-foreground'
                                 : pendingTime === item.time.split(' - ')[0]
                                   ? 'bg-accent text-accent-foreground'
                                   : 'bg-primary/20 text-primary hover:bg-primary/30'
                             }`}
                           >
-                            {currentDayAlarms.time === item.time.split(' - ')[0] ? (
+                            {currentDayAlarmList.some(a => a.time === item.time.split(' - ')[0]) ? (
                               <>
                                 <BellOff className="w-3.5 h-3.5" />
                                 Cancel
@@ -459,7 +460,7 @@ export default function Moon() {
                         </li>
                       ))}
                     </ul>
-                    {(pendingTime || currentDayAlarms.time) && (
+                    {(pendingTime || currentDayAlarmList.length > 0) && (
                       <div className="mt-4 space-y-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
                         {pendingTime ? (
                           <>
@@ -499,14 +500,19 @@ export default function Moon() {
                             </div>
                           </>
                         ) : (
-                          <>
-                            <p className="text-xs font-medium text-primary">
-                              ⏰ Alarm saved — {currentDayAlarms.offset === 0 ? 'at' : currentDayAlarms.offset + ' minutes before'} {currentDayAlarms.time}
+                          <div className="space-y-2">
+                            {currentDayAlarmList.map(alarm => (
+                              <div key={alarm.time} className="flex items-center justify-between">
+                                <p className="text-xs font-medium text-primary">
+                                  ⏰ {alarm.offset === 0 ? 'at' : alarm.offset + ' min before'} {alarm.time}
+                                </p>
+                                <p className="text-xs text-green-600">✓ Active</p>
+                              </div>
+                            ))}
+                            <p className="text-xs text-green-600">
+                              {currentDayAlarmList.length} alarm{currentDayAlarmList.length !== 1 ? 's' : ''} active for {selectedDate}
                             </p>
-                            <p className="text-xs text-green-600 flex items-center gap-1">
-                              ✓ Active for {selectedDate}
-                            </p>
-                          </>
+                          </div>
                         )}
                       </div>
                     )}
