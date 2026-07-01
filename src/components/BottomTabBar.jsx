@@ -20,6 +20,7 @@ export default function BottomTabBar() {
     >
       {tabs.map((tab) => {
         const Icon = tab.icon;
+        const isGear = tab.to === "/gear/lines";
         const isActive = tab.matchPrefix
           ? location.pathname.startsWith(tab.matchPrefix)
           : location.pathname === tab.to;
@@ -31,7 +32,7 @@ export default function BottomTabBar() {
               isActive ? "text-primary" : "text-muted-foreground"
             }`}
           >
-            <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} />
+            <Icon className={isGear ? "w-6 h-6" : "w-5 h-5"} strokeWidth={isActive ? 2.5 : 2} />
             <span className="text-[10px] font-medium">{tab.label}</span>
           </NavLink>
         );
