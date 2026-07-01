@@ -351,7 +351,7 @@ export default function Moon() {
         {moonData && (
           <>
             {/* Current Moon Phase Card */}
-            <Card className="bg-primary/10">
+            <Card className="bg-card">
               <CardHeader className="text-center">
                 <CardTitle className="text-2xl">{moonData.phase}</CardTitle>
                 <CardDescription>{moonData.date}</CardDescription>
@@ -415,7 +415,7 @@ export default function Moon() {
             {/* Solunar Fishing Times */}
             {solunar && (
               <>
-                <Card className="bg-card border-primary/20">
+                <Card className="bg-primary/10 border-primary/20">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Waves className="w-5 h-5 text-primary" />
