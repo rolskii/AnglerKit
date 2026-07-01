@@ -226,13 +226,9 @@ export default function Home() {
               <p className="text-xs text-muted-foreground flex items-center justify-end gap-1 mt-1">
                 <MapPin className="w-3 h-3" />{location}
               </p>
-              {weatherInfo?.icon && (() => {
-                const Icon = weatherInfo.icon;
-                return <Icon className="w-16 h-16 text-primary mt-2" />;
-              })()}
             </div>
           </div>
-          <div className="flex items-start gap-6">
+          <div className="grid grid-cols-3 gap-2">
             <div>
               <p className="text-xs font-semibold text-muted-foreground mb-1">Major</p>
               <p className="text-xs text-foreground flex items-center gap-1">
@@ -248,6 +244,12 @@ export default function Home() {
               <p className="text-xs font-semibold text-muted-foreground mb-1">Minor</p>
               <p className="text-xs text-foreground">5:48–6:18 AM</p>
               <p className="text-xs text-foreground">8:54–9:24 PM</p>
+            </div>
+            <div className="flex items-center justify-center">
+              {weatherInfo?.icon && (() => {
+                const Icon = weatherInfo.icon;
+                return <Icon className="w-16 h-16 text-primary" />;
+              })()}
             </div>
           </div>
         </div>
