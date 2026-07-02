@@ -10,12 +10,19 @@ import Lures from "@/pages/Lures";
 import Misc from "@/pages/Misc";
 import PullToRefresh from "@/components/PullToRefresh";
 
+const tintClasses = {
+  orange: "bg-tint-orange-bg text-tint-orange",
+  blue: "bg-tint-blue-bg text-tint-blue",
+  purple: "bg-tint-purple-bg text-tint-purple",
+  teal: "bg-tint-teal-bg text-tint-teal",
+};
+
 const TABS = [
-  { value: "lines", label: "Lines", icon: LinesIcon, Component: Lines },
-  { value: "reels", label: "Reels", icon: ReelIcon, Component: Reels },
-  { value: "rods", label: "Rods", icon: RodIcon, Component: Rods },
-  { value: "lures", label: "Tackle", icon: LureIcon, Component: Lures },
-  { value: "misc", label: "Misc. Gear", icon: Package, Component: Misc },
+  { value: "lines", label: "Lines", icon: LinesIcon, Component: Lines, tint: "blue" },
+  { value: "reels", label: "Reels", icon: ReelIcon, Component: Reels, tint: "orange" },
+  { value: "rods", label: "Rods", icon: RodIcon, Component: Rods, tint: "teal" },
+  { value: "lures", label: "Tackle", icon: LureIcon, Component: Lures, tint: "purple" },
+  { value: "misc", label: "Misc. Gear", icon: Package, Component: Misc, tint: "orange" },
 ];
 
 export default function Gear() {
@@ -44,7 +51,9 @@ export default function Gear() {
             const Icon = t.icon;
             return (
               <TabsTrigger key={t.value} value={t.value} className="flex flex-col items-center gap-1.5 rounded-xl bg-card border border-border/60 px-1 py-3 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary shadow-sm">
-                <Icon className="w-6 h-6" strokeWidth={1.75} />
+                <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${tintClasses[t.tint]}`}>
+                  <Icon className="w-5 h-5" strokeWidth={2} />
+                </div>
                 <span className="text-[11px] font-medium leading-tight text-center">{t.label}</span>
               </TabsTrigger>
             );
