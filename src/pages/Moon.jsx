@@ -597,7 +597,7 @@ export default function Moon() {
 
         {/* Fishing Tips */}
         <Card className="bg-secondary/30">
-          <CardHeader>
+          <CardHeader className="pb-2">
             <CardTitle className="text-base">Fishing Tips for {moonData.phase}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm px-5 py-3">
