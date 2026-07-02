@@ -385,7 +385,7 @@ export default function Moon() {
     : activityLevels.indexOf(Math.max(...activityLevels));
 
   return (
-    <div className="min-h-screen bg-background px-4 pb-20 pt-0">
+    <div className="space-y-6 md:space-y-8 -mt-4 md:-mt-8">
       <div className="max-w-2xl mx-auto space-y-4">
         {/* Header */}
         <div className="text-center">
