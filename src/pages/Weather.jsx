@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Cloud, CloudRain, Sun, Moon, Wind, Droplets, Gauge, TrendingUp, TrendingDown, MapPin, ChevronDown } from 'lucide-react';
+import { Cloud, CloudRain, Sun, Moon, Wind, Droplets, Gauge, TrendingUp, TrendingDown, MapPin, ChevronDown, Calendar as CalendarIcon } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { searchLocations, geocodeLocation } from '@/lib/geocode';
 import LocationMapPicker from '@/components/moon/LocationMapPicker';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 
 export default function Weather() {
   const savedLocation = localStorage.getItem('weatherLocation');
@@ -20,6 +22,16 @@ export default function Weather() {
   const [userCoords, setUserCoords] = useState(null);
   const [selectedDay, setSelectedDay] = useState(null);
   const [mapPickerOpen, setMapPickerOpen] = useState(false);
+  const todayStr = () => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  };
+  const [selectedDate, setSelectedDate] = useState(todayStr());
+
+  const formatDate = (dateStr) => {
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  };
 
   const handleMapSelect = (name, lat, lon) => {
     fetchWeatherByCoords(lat, lon, name, tempUnit);
@@ -261,13 +273,6 @@ export default function Weather() {
         {/* Current Weather Card */}
         <Card className="bg-primary/10">
           <CardContent className="pt-4">
-            <button
-              onClick={() => setMapPickerOpen(true)}
-              className="flex items-center gap-1.5 text-sm text-primary hover:underline transition-colors mb-2"
-            >
-              <MapPin className="w-4 h-4" />
-              {location}
-            </button>
             <div className="space-y-3">
               {/* Temperature and Condition */}
               <div className="relative flex items-center justify-between">
@@ -281,6 +286,39 @@ export default function Weather() {
                 </div>
                 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
                   <WeatherIcon className={`w-20 h-20 ${weatherIconColor}`} />
+                </div>
+                {/* Date and Location */}
+                <div className="flex flex-col items-end gap-1 z-10">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button className="text-sm font-semibold text-primary flex items-center gap-1 hover:underline transition-colors">
+                        {formatDate(selectedDate)}
+                        <ChevronDown className="w-3.5 h-3.5 opacity-60" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="end">
+                      <Calendar
+                        mode="single"
+                        selected={new Date(selectedDate + 'T00:00:00')}
+                        onSelect={(date) => {
+                          if (date) {
+                            const y = date.getFullYear();
+                            const m = String(date.getMonth() + 1).padStart(2, '0');
+                            const d = String(date.getDate()).padStart(2, '0');
+                            setSelectedDate(`${y}-${m}-${d}`);
+                          }
+                        }}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <button
+                    onClick={() => setMapPickerOpen(true)}
+                    className="text-xs text-muted-foreground flex items-center gap-1 hover:text-primary transition-colors"
+                  >
+                    <MapPin className="w-3 h-3" />
+                    <span className="max-w-[120px] truncate">{location}</span>
+                    <ChevronDown className="w-3 h-3 opacity-60" />
+                  </button>
                 </div>
               </div>
 
