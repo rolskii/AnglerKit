@@ -399,10 +399,12 @@ export default function Moon() {
 
   const solunar = getSolunarTimes();
   const ratingPercent = Math.round((moonData.fishingRating / 7) * 100);
-  const activityLevels = computeActivityLevels(solunar.major, solunar.minor);
+  const fullActivityLevels = computeActivityLevels(solunar.major, solunar.minor);
+  const activityLevels = fullActivityLevels.slice(10); // start from 5am (slot 10)
   const isToday = selectedDate === todayStr();
+  const currentSlot = Math.floor((new Date().getHours() * 60 + new Date().getMinutes()) / 30);
   const currentInterval = isToday
-    ? Math.floor((new Date().getHours() * 60 + new Date().getMinutes()) / 30)
+    ? (currentSlot >= 10 ? currentSlot - 10 : null)
     : activityLevels.indexOf(Math.max(...activityLevels));
 
   return (

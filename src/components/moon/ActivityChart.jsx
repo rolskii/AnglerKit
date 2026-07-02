@@ -1,15 +1,16 @@
 import React from "react";
 
+const TOTAL_HOURS = 19; // 5am to 12am
+
 const LABELS = [
-  { num: "12", period: "am" },
-  { num: "3", period: "am" },
-  { num: "6", period: "am" },
-  { num: "9", period: "am" },
-  { num: "12", period: "pm" },
-  { num: "3", period: "pm" },
-  { num: "6", period: "pm" },
-  { num: "9", period: "pm" },
-  { num: "12", period: "am" },
+  { num: "5", period: "am", hour: 0 },
+  { num: "8", period: "am", hour: 3 },
+  { num: "11", period: "am", hour: 6 },
+  { num: "2", period: "pm", hour: 9 },
+  { num: "5", period: "pm", hour: 12 },
+  { num: "8", period: "pm", hour: 15 },
+  { num: "11", period: "pm", hour: 18 },
+  { num: "12", period: "am", hour: 19 },
 ];
 
 const buildSmoothPath = (points) => {
@@ -40,7 +41,7 @@ export default function ActivityChart({ levels, highlightIndex }) {
 
   const highlightX = highlightIndex != null ? highlightIndex * stepX : null;
 
-  const hourCount = 24;
+  const hourCount = TOTAL_HOURS;
 
   return (
     <div>
@@ -75,7 +76,7 @@ export default function ActivityChart({ levels, highlightIndex }) {
       </svg>
       <div className="relative mt-1">
         <div className="relative h-2">
-          {Array.from({ length: hourCount }).map((_, i) => (
+          {Array.from({ length: hourCount + 1 }).map((_, i) => (
             <div
               key={i}
               className={`w-px ${i % 3 === 0 ? "h-2 bg-muted-foreground/50" : "h-1 bg-muted-foreground/30"}`}
@@ -91,7 +92,7 @@ export default function ActivityChart({ levels, highlightIndex }) {
             <div
               key={i}
               className="text-center text-xs text-muted-foreground leading-tight"
-              style={{ position: "absolute", left: `${(i * 3 / hourCount) * 100}%`, transform: isFirst ? "translateX(0%)" : isLast ? "translateX(-100%)" : "translateX(-50%)" }}
+              style={{ position: "absolute", left: `${(label.hour / hourCount) * 100}%`, transform: isFirst ? "translateX(0%)" : isLast ? "translateX(-100%)" : "translateX(-50%)" }}
             >
               <div>{label.num}</div>
               <div className="text-[9px]">{label.num === "12" ? label.period : ""}</div>
