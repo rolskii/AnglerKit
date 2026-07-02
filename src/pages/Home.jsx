@@ -255,11 +255,11 @@ export default function Home() {
               <p className="text-xs font-semibold text-foreground">
                 {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
               </p>
-              <div className="mt-1 relative z-20">
+              <div className="mt-1 relative z-20 flex justify-end">
                 <button
                   type="button"
                   onClick={() => setLocationDialogOpen(true)}
-                  className="text-xs text-muted-foreground flex items-center justify-end gap-0.5 hover:text-foreground transition-colors py-1 px-1 -mr-1"
+                  className="text-xs text-muted-foreground flex items-center gap-0.5 hover:text-foreground transition-colors py-1 px-1 -mr-1"
                 >
                   <MapPin className="w-3 h-3" />
                   <span className="max-w-[120px] truncate">{location}</span>
