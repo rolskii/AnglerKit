@@ -62,8 +62,8 @@ export default function RealisticMoon({ illumination = 100, className = "" }) {
           y="0"
           width={shadowWidth}
           height="100"
-          fill="#1a1a2e"
-          opacity="0.92"
+          fill="#4a4a5e"
+          opacity="0.75"
           clipPath="url(#moonClip)"
         />
       )}
@@ -75,9 +75,9 @@ export default function RealisticMoon({ illumination = 100, className = "" }) {
           y1="0"
           x2={pct}
           y2="100"
-          stroke="#3a3a4e"
+          stroke="#5a5a6e"
           strokeWidth="0.5"
-          opacity="0.5"
+          opacity="0.4"
           clipPath="url(#moonClip)"
         />
       )}
