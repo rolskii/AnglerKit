@@ -386,7 +386,7 @@ export default function Weather() {
                       setSelectedDay({ date, idx, daily });
                       setDayDialogOpen(true);
                     }}
-                    className="flex flex-col items-center gap-1 p-2.5 rounded-xl bg-secondary/40 hover:bg-primary/10 transition-colors aspect-square justify-center"
+                    className="flex flex-col items-center gap-1 p-2.5 rounded-xl bg-secondary hover:bg-primary/10 transition-colors aspect-square justify-center"
                   >
                     <p className="text-xs font-medium text-foreground truncate w-full text-center">
                       {new Date(date).toLocaleDateString('en-US', { weekday: 'short' })}
