@@ -84,7 +84,7 @@ export default function ActivityChart({ levels, highlightIndex }) {
           {LABELS.map((label, i) => (
             <div key={i} className="flex-1 text-center text-xs text-muted-foreground leading-tight">
               <div>{label.num}</div>
-              <div className="text-[9px]">{label.period}</div>
+              <div className="text-[9px]">{label.num === "12" ? label.period : ""}</div>
             </div>
           ))}
         </div>
