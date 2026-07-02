@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { getMoonTimes } from '@/lib/moonTimes';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Sun, Waves, MapPin, Bell, BellOff, Save } from 'lucide-react';
 import FishIcon from '@/components/FishIcon';
@@ -73,6 +74,59 @@ const computeActivityLevels = (major, minor) => {
   return levels;
 };
 
+const buildSolunarTimes = (moonTimes, sunData) => {
+  const major = [];
+  const minor = [];
+  if (moonTimes) {
+    if (moonTimes.moonrise != null) {
+      const start = Math.round(moonTimes.moonrise);
+      major.push({
+        text: 'Moonrise to 2 hrs after',
+        time: `${minutesToTime(start)} - ${minutesToTime(start + 120)}`,
+        startMin: start,
+        endMin: start + 120,
+      });
+    }
+    if (moonTimes.transit != null) {
+      const t = Math.round(moonTimes.transit);
+      major.push({
+        text: 'Moon highest point',
+        time: minutesToTime(t),
+        startMin: t - 15,
+        endMin: t + 15,
+      });
+    }
+    if (moonTimes.moonset != null) {
+      const start = Math.round(moonTimes.moonset);
+      major.push({
+        text: 'Moonset to 2 hrs after',
+        time: `${minutesToTime(start)} - ${minutesToTime(start + 120)}`,
+        startMin: start,
+        endMin: start + 120,
+      });
+    }
+  }
+  if (sunData) {
+    if (sunData.sunriseMin != null) {
+      minor.push({
+        text: 'Sun rise to 30 min after',
+        time: `${minutesToTime(sunData.sunriseMin)} - ${minutesToTime(sunData.sunriseMin + 30)}`,
+        startMin: sunData.sunriseMin,
+        endMin: sunData.sunriseMin + 30,
+      });
+    }
+    if (sunData.sunsetMin != null) {
+      minor.push({
+        text: 'Sun set to 30 min after',
+        time: `${minutesToTime(sunData.sunsetMin)} - ${minutesToTime(sunData.sunsetMin + 30)}`,
+        startMin: sunData.sunsetMin,
+        endMin: sunData.sunsetMin + 30,
+      });
+    }
+  }
+  return { major, minor };
+};
+
 export default function Moon() {
   const [moonData, setMoonData] = useState(null);
   const savedLocation = localStorage.getItem('moonLocation');
@@ -82,7 +136,7 @@ export default function Moon() {
     const stored = localStorage.getItem('moonCoords');
     return stored ? JSON.parse(stored) : { lat: 43.6532, lon: -79.3832, name: 'Toronto, ON' };
   });
-  const [sunData, setSunData] = useState(null);
+  const [sunDataByDate, setSunDataByDate] = useState({});
   const [selectedDate, setSelectedDate] = useState(todayStr());
   const [alarmsByDate, setAlarmsByDate] = useState(() => {
     const stored = localStorage.getItem('alarmsByDate');
@@ -146,19 +200,6 @@ export default function Moon() {
     return 'Moderate';
   };
 
-  const getSolunarTimes = () => {
-    const major = [
-      { text: 'Moonrise to 2 hrs after', time: '5:48 AM - 7:48 AM', startMin: 348, endMin: 468 },
-      { text: 'Moon highest point', time: '12:30 PM', startMin: 750, endMin: 780 },
-      { text: 'Moonset to 2 hrs after', time: '8:54 PM - 10:54 PM', startMin: 1254, endMin: 1374 }
-    ];
-    const minor = [
-      { text: 'Sun rise to 30 min after', time: '5:48 AM - 6:18 AM', startMin: 348, endMin: 378 },
-      { text: 'Sun set to 30 min after', time: '8:54 PM - 9:24 PM', startMin: 1254, endMin: 1284 }
-    ];
-    return { major, minor };
-  };
-
   // Calculate moon data when date or location changes
   useEffect(() => {
     const [year, month, day] = selectedDate.split('-');
@@ -173,23 +214,27 @@ export default function Moon() {
     });
   }, [location, selectedDate]);
 
-  // Fetch sun data when date or coords change
+  // Fetch sun data for date range when date or coords change
   useEffect(() => {
     const fetchSunData = async () => {
       try {
+        const [yr, mo, dy] = selectedDate.split('-');
+        const baseDate = new Date(yr, mo - 1, dy);
+        const startDate = new Date(baseDate);
+        startDate.setDate(startDate.getDate() - 3);
+        const endDate = new Date(baseDate);
+        endDate.setDate(endDate.getDate() + 7);
+        const fmt = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
         const res = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&daily=sunrise,sunset&timezone=auto&start_date=${selectedDate}&end_date=${selectedDate}`
+          `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&daily=sunrise,sunset&timezone=auto&start_date=${fmt(startDate)}&end_date=${fmt(endDate)}`
         );
         const data = await res.json();
-        if (data.daily && data.daily.sunrise && data.daily.sunrise[0]) {
-          const sunriseMin = parseToMinutes(data.daily.sunrise[0]);
-          const sunsetMin = parseToMinutes(data.daily.sunset[0]);
-          const zenithMin = (sunriseMin + sunsetMin) / 2;
-          setSunData({
-            sunrise: parseTimeFromIso(data.daily.sunrise[0]),
-            sunset: parseTimeFromIso(data.daily.sunset[0]),
-            zenith: minutesToTime(zenithMin),
+        if (data.daily && data.daily.time) {
+          const byDate = {};
+          data.daily.time.forEach((d, i) => {
+            byDate[d] = { sunriseIso: data.daily.sunrise[i], sunsetIso: data.daily.sunset[i] };
           });
+          setSunDataByDate(byDate);
         }
       } catch (e) {}
     };
@@ -390,18 +435,29 @@ export default function Moon() {
     }
   }, [currentDayAlarmList.length]);
 
-  if (!moonData) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
-      </div>
-    );
-  }
+  const moonTimes = useMemo(() => {
+    const [year, month, day] = selectedDate.split('-');
+    const date = new Date(year, month - 1, day);
+    return getMoonTimes(date, coords.lat, coords.lon);
+  }, [selectedDate, coords]);
 
-  const solunar = getSolunarTimes();
-  const ratingPercent = Math.round((moonData.fishingRating / 7) * 100);
+  const sunData = useMemo(() => {
+    const raw = sunDataByDate[selectedDate];
+    if (!raw) return null;
+    const sunriseMin = parseToMinutes(raw.sunriseIso);
+    const sunsetMin = parseToMinutes(raw.sunsetIso);
+    if (sunriseMin == null || sunsetMin == null) return null;
+    return {
+      sunrise: parseTimeFromIso(raw.sunriseIso),
+      sunset: parseTimeFromIso(raw.sunsetIso),
+      zenith: minutesToTime((sunriseMin + sunsetMin) / 2),
+      sunriseMin,
+      sunsetMin,
+    };
+  }, [sunDataByDate, selectedDate]);
+
   const currentSlot = Math.floor((new Date().getHours() * 60 + new Date().getMinutes()) / 30);
-  const multiDayActivity = Array.from({ length: 10 }, (_, i) => {
+  const multiDayActivity = useMemo(() => Array.from({ length: 10 }, (_, i) => {
     const offset = i - 3;
     const [yr, mo, dy] = selectedDate.split('-');
     const date = new Date(yr, mo - 1, dy);
@@ -409,7 +465,22 @@ export default function Moon() {
     const dateStr = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
     const phase = calculateMoonPhase(date);
     const rating = calculateFishingRating(phase.daysInCycle);
-    const fullLevels = computeActivityLevels(solunar.major, solunar.minor);
+
+    const dayMoon = getMoonTimes(date, coords.lat, coords.lon);
+    const daySun = sunDataByDate[dateStr];
+    const dayMajor = [];
+    if (dayMoon.moonrise != null) dayMajor.push({ startMin: Math.round(dayMoon.moonrise), endMin: Math.round(dayMoon.moonrise) + 120 });
+    if (dayMoon.transit != null) dayMajor.push({ startMin: Math.round(dayMoon.transit) - 15, endMin: Math.round(dayMoon.transit) + 15 });
+    if (dayMoon.moonset != null) dayMajor.push({ startMin: Math.round(dayMoon.moonset), endMin: Math.round(dayMoon.moonset) + 120 });
+    const dayMinor = [];
+    if (daySun) {
+      const sr = parseToMinutes(daySun.sunriseIso);
+      const ss = parseToMinutes(daySun.sunsetIso);
+      if (sr != null) dayMinor.push({ startMin: sr, endMin: sr + 30 });
+      if (ss != null) dayMinor.push({ startMin: ss, endMin: ss + 30 });
+    }
+
+    const fullLevels = computeActivityLevels(dayMajor, dayMinor);
     const scaleFactor = 0.55 + (rating / 7) * 0.45;
     const dayLevels = fullLevels.map(l => Math.round(l * scaleFactor)).slice(10);
     const isTodayDay = dateStr === todayStr();
@@ -422,7 +493,18 @@ export default function Moon() {
       levels: dayLevels,
       highlightIndex,
     };
-  });
+  }), [selectedDate, coords, sunDataByDate, currentSlot]);
+
+  if (!moonData) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  const solunar = buildSolunarTimes(moonTimes, sunData);
+  const ratingPercent = Math.round((moonData.fishingRating / 7) * 100);
 
   return (
     <div className="space-y-6 md:space-y-8 -mt-4 md:-mt-8">
