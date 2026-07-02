@@ -400,13 +400,28 @@ export default function Moon() {
 
   const solunar = getSolunarTimes();
   const ratingPercent = Math.round((moonData.fishingRating / 7) * 100);
-  const fullActivityLevels = computeActivityLevels(solunar.major, solunar.minor);
-  const activityLevels = fullActivityLevels.slice(10); // start from 5am (slot 10)
-  const isToday = selectedDate === todayStr();
   const currentSlot = Math.floor((new Date().getHours() * 60 + new Date().getMinutes()) / 30);
-  const currentInterval = isToday
-    ? (currentSlot >= 10 ? currentSlot - 10 : null)
-    : activityLevels.indexOf(Math.max(...activityLevels));
+  const multiDayActivity = Array.from({ length: 7 }, (_, offset) => {
+    const [yr, mo, dy] = selectedDate.split('-');
+    const date = new Date(yr, mo - 1, dy);
+    date.setDate(date.getDate() + offset);
+    const dateStr = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+    const phase = calculateMoonPhase(date);
+    const rating = calculateFishingRating(phase.daysInCycle);
+    const fullLevels = computeActivityLevels(solunar.major, solunar.minor);
+    const scaleFactor = 0.55 + (rating / 7) * 0.45;
+    const dayLevels = fullLevels.map(l => Math.round(l * scaleFactor)).slice(10);
+    const isTodayDay = dateStr === todayStr();
+    const highlightIndex = isTodayDay
+      ? (currentSlot >= 10 ? currentSlot - 10 : null)
+      : dayLevels.indexOf(Math.max(...dayLevels));
+    return {
+      dateStr,
+      label: isTodayDay ? 'Today' : offset === 1 ? 'Tomorrow' : date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
+      levels: dayLevels,
+      highlightIndex,
+    };
+  });
 
   return (
     <div className="space-y-6 md:space-y-8 -mt-4 md:-mt-8">
@@ -474,7 +489,7 @@ export default function Moon() {
 
           </CardHeader>
           <CardContent className="pt-3 pb-3">
-            <ActivityChart levels={activityLevels} highlightIndex={currentInterval} />
+            <ActivityChart days={multiDayActivity} />
           </CardContent>
         </Card>
 
