@@ -263,10 +263,12 @@ export default function Weather() {
             <div className="space-y-3">
               {/* Temperature and Condition */}
               <div className="flex items-center justify-between">
-                <div>
+                <div className="flex items-end gap-3">
                   <p className="text-4xl font-bold text-primary leading-tight">{Math.round(current.temperature_2m)}°</p>
-                  <p className="text-muted-foreground text-sm">{getWeatherDescription(current.weather_code)}</p>
-                  <p className="text-xs text-muted-foreground">Feels like {Math.round(current.apparent_temperature)}°</p>
+                  <div className="pb-1">
+                    <p className="text-muted-foreground text-sm leading-tight">{getWeatherDescription(current.weather_code)}</p>
+                    <p className="text-xs text-muted-foreground leading-tight">Feels like {Math.round(current.apparent_temperature)}°</p>
+                  </div>
                 </div>
                 <div className="flex items-center justify-center">
                   <WeatherIcon className="w-16 h-16 text-primary" />
