@@ -82,7 +82,6 @@ export default function WeeklyBiteForecast({ open, onOpenChange, startDate }) {
               <MoonPhaseSymbol phase={day.phase} className="w-10 h-10 shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold leading-tight">{day.label}</p>
-                <p className="text-xs text-muted-foreground leading-tight">{day.phase.name}</p>
                 <div className="flex gap-1 mt-1">
                   {[1, 2, 3, 4, 5, 6, 7].map((n) => (
                     <FishIcon
