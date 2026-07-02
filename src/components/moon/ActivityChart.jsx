@@ -145,16 +145,20 @@ const DayGraph = ({ day }) => {
   );
 };
 
-export default function ActivityChart({ days }) {
+export default function ActivityChart({ days, scrollToDate }) {
   const scrollRef = useRef(null);
 
   useEffect(() => {
-    const todayIndex = days.findIndex(d => d.label === "Today");
-    if (todayIndex >= 0 && scrollRef.current) {
-      const child = scrollRef.current.children[todayIndex];
+    if (!scrollRef.current) return;
+    let targetIndex = scrollToDate
+      ? days.findIndex(d => d.dateStr === scrollToDate)
+      : -1;
+    if (targetIndex < 0) targetIndex = days.findIndex(d => d.label === "Today");
+    if (targetIndex >= 0) {
+      const child = scrollRef.current.children[targetIndex];
       if (child) scrollRef.current.scrollLeft = child.offsetLeft - scrollRef.current.offsetLeft;
     }
-  }, [days]);
+  }, [days, scrollToDate]);
 
   return (
     <div ref={scrollRef} className="overflow-x-auto snap-x snap-mandatory flex scrollbar-hide">

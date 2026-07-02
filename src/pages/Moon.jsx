@@ -576,7 +576,7 @@ export default function Moon() {
             <CardTitle className="text-base">Hourly Fish Activity</CardTitle>
           </CardHeader>
           <CardContent className="pt-0 pb-3">
-            <ActivityChart days={multiDayActivity} />
+            <ActivityChart days={multiDayActivity} scrollToDate={selectedDate} />
           </CardContent>
         </Card>
 
