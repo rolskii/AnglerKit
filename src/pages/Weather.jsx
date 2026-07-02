@@ -405,6 +405,8 @@ export default function Weather() {
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
                 if (new Date(date) <= today) return null;
+                return { date, idx };
+              }).filter(Boolean).map(({ date, idx }) => {
                 const ForecastIcon = getWeatherIcon(daily.weather_code[idx]);
                 return (
                   <button
