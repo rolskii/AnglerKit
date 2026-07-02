@@ -507,6 +507,18 @@ export default function Moon() {
                             setSelectedDate(`${y}-${m}-${d}`);
                           }
                         }}
+                        modifiers={{
+                          goodFishing: (date) => {
+                            const phase = calculateMoonPhase(date);
+                            return calculateFishingRating(phase.daysInCycle) >= 5;
+                          },
+                        }}
+                        modifiersStyles={{
+                          goodFishing: {
+                            border: '2px solid #16a34a',
+                            borderRadius: '50%',
+                          },
+                        }}
                       />
                     </PopoverContent>
                   </Popover>
