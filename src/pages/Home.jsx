@@ -241,7 +241,7 @@ export default function Home() {
         <div className="px-4 py-3 rounded-2xl bg-card shadow-sm space-y-3">
           <div className="flex items-start justify-between gap-2">
             <div className="flex flex-col gap-1">
-              <p className="text-sm font-bold text-foreground">Fish Bite Rating:<span className={`ml-4 ${moonPhase.fishingRating >= 5 ? "text-green-600" : moonPhase.fishingRating <= 3 ? "text-yellow-600" : "text-primary"}`}>{Math.round((moonPhase.fishingRating / 7) * 100)}%</span></p>
+              <p className="text-sm font-bold text-foreground">Fish Bite Rating:<span className={`ml-4 ${moonPhase.fishingRating >= 5 ? "text-green-600" : moonPhase.fishingRating <= 3 ? "text-yellow-600" : "text-primary"}`}>{Math.round((moonPhase.fishingRating / 7) * 100)}%</span><span className={`ml-2 text-sm font-bold ${moonPhase.fishingRating >= 5 ? "text-green-600" : moonPhase.fishingRating <= 3 ? "text-yellow-600" : "text-primary"}`}>{moonPhase.fishingRating <= 2 ? "Bad" : moonPhase.fishingRating === 3 ? "Fair" : moonPhase.fishingRating === 4 ? "OK" : moonPhase.fishingRating === 5 ? "Good" : moonPhase.fishingRating === 6 ? "Very Good" : "Excellent"}</span></p>
               <div className="flex items-center gap-1">
                 {[1, 2, 3, 4, 5, 6, 7].map((n) => (
                   <FishIcon
@@ -252,9 +252,6 @@ export default function Home() {
               </div>
             </div>
             <div className="text-right shrink-0">
-              <p className={`text-sm font-bold ${moonPhase.fishingRating >= 5 ? "text-green-600" : moonPhase.fishingRating <= 3 ? "text-yellow-600" : "text-primary"}`}>
-                {moonPhase.fishingRating <= 2 ? "Bad" : moonPhase.fishingRating === 3 ? "Fair" : moonPhase.fishingRating === 4 ? "OK" : moonPhase.fishingRating === 5 ? "Good" : moonPhase.fishingRating === 6 ? "Very Good" : "Excellent"}
-              </p>
               <div className="mt-1 relative z-20">
                 <button
                   type="button"
