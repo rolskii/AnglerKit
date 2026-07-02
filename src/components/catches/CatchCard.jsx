@@ -1,13 +1,14 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import ShareButton from "@/components/ShareButton";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, MapPin, Calendar, Fish } from "lucide-react";
+import { Pencil, Trash2, MapPin, Calendar, Fish, Star, Info } from "lucide-react";
 import ImageGallery, { getItemImages } from "@/components/ImageGallery";
 
 export default function CatchCard({ catchItem, onEdit, onDelete }) {
   const cardRef = useRef(null);
+  const [showFormula, setShowFormula] = useState(false);
   const fmtDate = (d) => {
     if (!d) return null;
     try { return new Date(d + "T00:00:00").toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }); }
@@ -62,10 +63,35 @@ export default function CatchCard({ catchItem, onEdit, onDelete }) {
         )}
       </div>
 
+      {showFormula && estWeight != null && (
+        <div className="flex items-start gap-2 rounded-md bg-amber-50 border border-amber-200 p-2.5 text-xs text-amber-900">
+          <Info className="w-3.5 h-3.5 shrink-0 mt-0.5 text-amber-500" />
+          <div>
+            <span className="font-medium">Weight formula:</span>{' '}
+            Weight = (Length × Girth²) ÷ 800
+            <div className="text-muted-foreground mt-0.5">
+              = ({catchItem.length} × {catchItem.girth}²) ÷ 800 = {estWeight.toFixed(2)} lb
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
         <Detail label="Length" value={catchItem.length ? `${catchItem.length} in` : null} />
         <Detail label="Girth" value={catchItem.girth ? `${catchItem.girth} in` : null} />
-        <Detail label={estWeight != null ? "Estimated Weight" : "Weight"} value={estWeight != null ? `${estWeight.toFixed(2)} lb` : (catchItem.weight ? `${catchItem.weight} lb` : null)} />
+        {estWeight != null ? (
+          <div className="flex justify-between gap-2 items-center">
+            <span className="text-muted-foreground shrink-0 flex items-center gap-1">
+              Estimated Weight
+              <button onClick={() => setShowFormula(v => !v)} className="text-amber-500 hover:text-amber-600 transition-colors" aria-label="Show formula">
+                <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+              </button>
+            </span>
+            <span className="font-medium text-right break-words whitespace-normal">{estWeight.toFixed(2)} lb</span>
+          </div>
+        ) : (
+          <Detail label="Weight" value={catchItem.weight ? `${catchItem.weight} lb` : null} />
+        )}
         <Detail label="Fly" value={catchItem.fly_used} />
         <Detail label="Water Temp" value={catchItem.water_temp != null ? `${catchItem.water_temp}°` : null} />
         <Detail label="Rod" value={catchItem.rod} />
