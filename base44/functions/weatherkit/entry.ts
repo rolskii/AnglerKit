@@ -132,6 +132,8 @@ Deno.serve(async (req) => {
       temperature_2m_max: [],
       temperature_2m_min: [],
       precipitation_sum: [],
+      sunrise: [],
+      sunset: [],
     };
 
     for (const day of fd.days || []) {
@@ -140,6 +142,8 @@ Deno.serve(async (req) => {
       daily.temperature_2m_max.push(day.temperatureMax ?? 0);
       daily.temperature_2m_min.push(day.temperatureMin ?? 0);
       daily.precipitation_sum.push(day.precipitationAmount ?? 0);
+      daily.sunrise.push(day.sunrise || null);
+      daily.sunset.push(day.sunset || null);
     }
 
     const hourly = {

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { base44 } from '@/api/base44Client';
 import { getMoonTimes } from '@/lib/moonTimes';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Sun, Waves, MapPin, Bell, BellOff, Save } from 'lucide-react';
@@ -214,32 +215,23 @@ export default function Moon() {
     });
   }, [location, selectedDate]);
 
-  // Fetch sun data for date range when date or coords change
+  // Fetch sun data from WeatherKit when coords change
   useEffect(() => {
     const fetchSunData = async () => {
       try {
-        const [yr, mo, dy] = selectedDate.split('-');
-        const baseDate = new Date(yr, mo - 1, dy);
-        const startDate = new Date(baseDate);
-        startDate.setDate(startDate.getDate() - 3);
-        const endDate = new Date(baseDate);
-        endDate.setDate(endDate.getDate() + 7);
-        const fmt = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-        const res = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&daily=sunrise,sunset&timezone=auto&start_date=${fmt(startDate)}&end_date=${fmt(endDate)}`
-        );
-        const data = await res.json();
+        const res = await base44.functions.invoke('weatherkit', { lat: coords.lat, lon: coords.lon });
+        const data = res.data;
         if (data.daily && data.daily.time) {
           const byDate = {};
           data.daily.time.forEach((d, i) => {
-            byDate[d] = { sunriseIso: data.daily.sunrise[i], sunsetIso: data.daily.sunset[i] };
+            byDate[d] = { sunriseIso: data.daily.sunrise?.[i], sunsetIso: data.daily.sunset?.[i] };
           });
           setSunDataByDate(byDate);
         }
       } catch (e) {}
     };
     fetchSunData();
-  }, [selectedDate, coords]);
+  }, [coords]);
 
   // Location handling
   const handleLocationChange = async (selectedLocation, lat, lon) => {
