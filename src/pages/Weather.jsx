@@ -201,6 +201,13 @@ export default function Weather() {
     return Cloud;
   };
 
+  const getWeatherIconColor = (code) => {
+    const night = isNight();
+    if (code === 0 || code === 1) return night ? 'text-indigo-300' : 'text-yellow-500';
+    if (code === 2 || code === 3) return night ? 'text-indigo-300' : 'text-sky-400';
+    return 'text-blue-500';
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -232,6 +239,7 @@ export default function Weather() {
   const current = weather.current;
   const daily = weather.daily;
   const WeatherIcon = getWeatherIcon(current.weather_code);
+  const weatherIconColor = getWeatherIconColor(current.weather_code);
 
   return (
     <div className="space-y-6 md:space-y-8 -mt-4 md:-mt-8">
@@ -271,8 +279,8 @@ export default function Weather() {
                     <p className="text-xs text-muted-foreground leading-tight">H: {Math.round(daily.temperature_2m_max[0])}°  L: {Math.round(daily.temperature_2m_min[0])}°</p>
                   </div>
                 </div>
-                <div className="flex items-center justify-center">
-                  <WeatherIcon className="w-16 h-16 text-primary" />
+                <div className="flex items-center justify-center flex-1">
+                  <WeatherIcon className={`w-20 h-20 ${weatherIconColor}`} />
                 </div>
               </div>
 
