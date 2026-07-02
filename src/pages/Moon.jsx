@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Sun, Waves, MapPin, Bell, BellOff, Save } from 'lucide-react';
+import { Waves, MapPin, Bell, BellOff, Save } from 'lucide-react';
 import FishIcon from '@/components/FishIcon';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
@@ -469,11 +469,7 @@ export default function Moon() {
 
         {/* Activity Chart */}
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Hourly Fish Activity</CardTitle>
-
-          </CardHeader>
-          <CardContent>
+          <CardContent className="p-0">
             <ActivityChart levels={activityLevels} highlightIndex={currentInterval} />
           </CardContent>
         </Card>
