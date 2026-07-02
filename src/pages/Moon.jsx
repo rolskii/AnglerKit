@@ -600,33 +600,33 @@ export default function Moon() {
           <CardHeader className="pb-2">
             <CardTitle className="text-base">Fishing Tips for {moonData.phase}</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2 text-sm px-5 py-3">
+          <CardContent className="space-y-1.5 text-sm px-5 py-3">
             {moonData.phase === 'Full Moon' && (
               <>
-                <p>✓ Excellent fishing conditions—bright light aids fish spotting of prey</p>
-                <p>✓ Night fishing is particularly productive</p>
-                <p>✓ Fish may be more active in deeper water during the day</p>
+                <p className="whitespace-nowrap">✓ Excellent fishing — bright light aids fish spotting prey</p>
+                <p className="whitespace-nowrap">✓ Night fishing is particularly productive</p>
+                <p className="whitespace-nowrap">✓ Fish more active in deeper water during the day</p>
               </>
             )}
             {moonData.phase === 'New Moon' && (
               <>
-                <p>✓ Daytime fishing can be excellent—less light means more feeding</p>
-                <p>✓ Night fishing is challenging due to darkness</p>
-                <p>✓ Darker nights push fish to feed more during day</p>
+                <p className="whitespace-nowrap">✓ Daytime fishing can be excellent — less light, more feeding</p>
+                <p className="whitespace-nowrap">✓ Night fishing is challenging due to darkness</p>
+                <p className="whitespace-nowrap">✓ Darker nights push fish to feed more during day</p>
               </>
             )}
             {(moonData.phase.includes('Crescent') || moonData.phase.includes('Gibbous')) && (
               <>
-                <p>✓ Transitional phase—good all-around fishing conditions</p>
-                <p>✓ Balance between day and night feeding activity</p>
-                <p>✓ Consistent activity throughout the day</p>
+                <p className="whitespace-nowrap">✓ Transitional phase — good all-around fishing conditions</p>
+                <p className="whitespace-nowrap">✓ Balance between day and night feeding activity</p>
+                <p className="whitespace-nowrap">✓ Consistent activity throughout the day</p>
               </>
             )}
             {moonData.phase.includes('Quarter') && (
               <>
-                <p>✓ Moderate fishing conditions</p>
-                <p>✓ Morning and evening peaks are more pronounced</p>
-                <p>✓ Follow solunar feeding times closely</p>
+                <p className="whitespace-nowrap">✓ Moderate fishing conditions</p>
+                <p className="whitespace-nowrap">✓ Morning and evening peaks are more pronounced</p>
+                <p className="whitespace-nowrap">✓ Follow solunar feeding times closely</p>
               </>
             )}
           </CardContent>
