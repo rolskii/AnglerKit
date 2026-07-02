@@ -79,49 +79,63 @@ const buildSolunarTimes = (moonTimes, sunData) => {
   const major = [];
   const minor = [];
   if (moonTimes) {
-    if (moonTimes.moonrise != null) {
-      const start = Math.round(moonTimes.moonrise);
-      major.push({
-        text: 'Moonrise to 2 hrs after',
-        time: `${minutesToTime(start)} - ${minutesToTime(start + 120)}`,
-        startMin: start,
-        endMin: start + 120,
-      });
-    }
+    // Major: 2-hour windows centered on moon overhead (transit) and underfoot
     if (moonTimes.transit != null) {
       const t = Math.round(moonTimes.transit);
       major.push({
-        text: 'Moon highest point',
-        time: minutesToTime(t),
-        startMin: t - 15,
-        endMin: t + 15,
+        text: 'Moon overhead',
+        time: `${minutesToTime(t - 60)} - ${minutesToTime(t + 60)}`,
+        startMin: t - 60,
+        endMin: t + 60,
+      });
+    }
+    if (moonTimes.underfoot != null) {
+      const t = Math.round(moonTimes.underfoot);
+      major.push({
+        text: 'Moon underfoot',
+        time: `${minutesToTime(t - 60)} - ${minutesToTime(t + 60)}`,
+        startMin: t - 60,
+        endMin: t + 60,
+      });
+    }
+    // Minor: 1-hour windows centered on moonrise and moonset
+    if (moonTimes.moonrise != null) {
+      const t = Math.round(moonTimes.moonrise);
+      minor.push({
+        text: 'Moonrise',
+        time: `${minutesToTime(t - 30)} - ${minutesToTime(t + 30)}`,
+        startMin: t - 30,
+        endMin: t + 30,
       });
     }
     if (moonTimes.moonset != null) {
-      const start = Math.round(moonTimes.moonset);
-      major.push({
-        text: 'Moonset to 2 hrs after',
-        time: `${minutesToTime(start)} - ${minutesToTime(start + 120)}`,
-        startMin: start,
-        endMin: start + 120,
+      const t = Math.round(moonTimes.moonset);
+      minor.push({
+        text: 'Moonset',
+        time: `${minutesToTime(t - 30)} - ${minutesToTime(t + 30)}`,
+        startMin: t - 30,
+        endMin: t + 30,
       });
     }
   }
   if (sunData) {
+    // Minor: 1-hour windows centered on sunrise and sunset
     if (sunData.sunriseMin != null) {
+      const t = sunData.sunriseMin;
       minor.push({
-        text: 'Sun rise to 30 min after',
-        time: `${minutesToTime(sunData.sunriseMin)} - ${minutesToTime(sunData.sunriseMin + 30)}`,
-        startMin: sunData.sunriseMin,
-        endMin: sunData.sunriseMin + 30,
+        text: 'Sunrise',
+        time: `${minutesToTime(t - 30)} - ${minutesToTime(t + 30)}`,
+        startMin: t - 30,
+        endMin: t + 30,
       });
     }
     if (sunData.sunsetMin != null) {
+      const t = sunData.sunsetMin;
       minor.push({
-        text: 'Sun set to 30 min after',
-        time: `${minutesToTime(sunData.sunsetMin)} - ${minutesToTime(sunData.sunsetMin + 30)}`,
-        startMin: sunData.sunsetMin,
-        endMin: sunData.sunsetMin + 30,
+        text: 'Sunset',
+        time: `${minutesToTime(t - 30)} - ${minutesToTime(t + 30)}`,
+        startMin: t - 30,
+        endMin: t + 30,
       });
     }
   }
@@ -461,15 +475,16 @@ export default function Moon() {
     const dayMoon = getMoonTimes(date, coords.lat, coords.lon);
     const daySun = sunDataByDate[dateStr];
     const dayMajor = [];
-    if (dayMoon.moonrise != null) dayMajor.push({ startMin: Math.round(dayMoon.moonrise), endMin: Math.round(dayMoon.moonrise) + 120 });
-    if (dayMoon.transit != null) dayMajor.push({ startMin: Math.round(dayMoon.transit) - 15, endMin: Math.round(dayMoon.transit) + 15 });
-    if (dayMoon.moonset != null) dayMajor.push({ startMin: Math.round(dayMoon.moonset), endMin: Math.round(dayMoon.moonset) + 120 });
+    if (dayMoon.transit != null) dayMajor.push({ startMin: Math.round(dayMoon.transit) - 60, endMin: Math.round(dayMoon.transit) + 60 });
+    if (dayMoon.underfoot != null) dayMajor.push({ startMin: Math.round(dayMoon.underfoot) - 60, endMin: Math.round(dayMoon.underfoot) + 60 });
     const dayMinor = [];
+    if (dayMoon.moonrise != null) dayMinor.push({ startMin: Math.round(dayMoon.moonrise) - 30, endMin: Math.round(dayMoon.moonrise) + 30 });
+    if (dayMoon.moonset != null) dayMinor.push({ startMin: Math.round(dayMoon.moonset) - 30, endMin: Math.round(dayMoon.moonset) + 30 });
     if (daySun) {
       const sr = parseToMinutes(daySun.sunriseIso);
       const ss = parseToMinutes(daySun.sunsetIso);
-      if (sr != null) dayMinor.push({ startMin: sr, endMin: sr + 30 });
-      if (ss != null) dayMinor.push({ startMin: ss, endMin: ss + 30 });
+      if (sr != null) dayMinor.push({ startMin: sr - 30, endMin: sr + 30 });
+      if (ss != null) dayMinor.push({ startMin: ss - 30, endMin: ss + 30 });
     }
 
     const fullLevels = computeActivityLevels(dayMajor, dayMinor);

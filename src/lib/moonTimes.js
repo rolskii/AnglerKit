@@ -98,11 +98,16 @@ export const getMoonTimes = (date, lat, lon) => {
 
   let moonrise = null, moonset = null;
   let transit = null, maxAlt = -Infinity;
+  let underfoot = null, minAlt = Infinity;
 
   for (let i = 0; i < samples.length; i++) {
     if (samples[i].alt > maxAlt) {
       maxAlt = samples[i].alt;
       transit = samples[i].min;
+    }
+    if (samples[i].alt < minAlt) {
+      minAlt = samples[i].alt;
+      underfoot = samples[i].min;
     }
   }
 
@@ -117,5 +122,5 @@ export const getMoonTimes = (date, lat, lon) => {
     }
   }
 
-  return { moonrise, moonset, transit };
+  return { moonrise, moonset, transit, underfoot };
 };
