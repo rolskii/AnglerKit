@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { ChevronRight, Camera, Moon as MoonIcon, Cloud, CloudRain, Sun, Bell, MapPin } from "lucide-react";
+import { ChevronRight, Camera, Moon as MoonIcon, Cloud, CloudRain, Sun, Star, Bell, MapPin } from "lucide-react";
 import { ReelIcon as ReelDiscIcon } from "@/components/GearIcons";
 import FishIcon from "@/components/FishIcon";
 import MoonPhaseSymbol from "@/components/MoonPhaseSymbol";
@@ -39,9 +39,9 @@ const calculateMoonPhase = (date) => {
   return { name, illumination: Math.round(illumination * 100), fishingRating };
 };
 
-const getWeatherIcon = (code) => {
-  if (code === 0 || code === 1) return Sun;
-  if (code === 2 || code === 3) return Cloud;
+const getWeatherIcon = (code, isNight) => {
+  if (code === 0 || code === 1) return isNight ? Star : Sun;
+  if (code === 2 || code === 3) return isNight ? MoonIcon : Cloud;
   if (code >= 45 && code <= 99) return CloudRain;
   return Cloud;
 };
@@ -154,7 +154,7 @@ export default function Home() {
   const fetchWeather = async (coords, tempUnit) => {
     try {
       const res = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current=temperature_2m,weather_code,wind_speed_10m&temperature_unit=${tempUnit}&wind_speed_unit=mph`
+        `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current=temperature_2m,weather_code,wind_speed_10m&daily=sunrise,sunset&timezone=auto&temperature_unit=${tempUnit}&wind_speed_unit=mph`
       );
       const data = await res.json();
       const temp = Math.round(data.current.temperature_2m);
@@ -163,10 +163,19 @@ export default function Home() {
       const windLabel = wind < 8 ? "Light wind" : wind < 15 ? "Breezy" : "Windy";
       const tempSymbol = tempUnit === "fahrenheit" ? "°F" : "°C";
       const code = data.current.weather_code;
-      const WeatherIconComp = getWeatherIcon(code);
+
+      const now = new Date();
+      let isNight = false;
+      if (data.daily?.sunrise?.[0] && data.daily?.sunset?.[0]) {
+        const sunrise = new Date(data.daily.sunrise[0]);
+        const sunset = new Date(data.daily.sunset[0]);
+        isNight = now < sunrise || now >= sunset;
+      }
+
+      const WeatherIconComp = getWeatherIcon(code, isNight);
       let iconColor = "text-primary";
-      if (code === 0 || code === 1) iconColor = "text-yellow-500";
-      else if (code === 2 || code === 3) iconColor = "text-sky-400";
+      if (code === 0 || code === 1) iconColor = isNight ? "text-indigo-300" : "text-yellow-500";
+      else if (code === 2 || code === 3) iconColor = isNight ? "text-indigo-300" : "text-sky-400";
       else iconColor = "text-blue-500";
       setWeatherInfo({ temp: `${temp}${tempSymbol}`, windLabel, desc, icon: WeatherIconComp, iconColor });
       setDescriptions(prev => ({ ...prev, weather: desc }));
