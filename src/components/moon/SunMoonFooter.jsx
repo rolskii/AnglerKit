@@ -35,10 +35,7 @@ export default function SunMoonFooter({ sunrise, sunset, zenith, moonPhase, illu
           <p className="text-sm font-semibold">{illumination}%</p>
           <p className="text-xs text-muted-foreground">Illumination</p>
         </div>
-        <div>
-          <p className="text-xs text-muted-foreground">Phase</p>
-          <p className="text-sm font-medium leading-tight whitespace-nowrap">{moonPhase}</p>
-        </div>
+        <p className="text-sm font-medium leading-tight whitespace-nowrap">{moonPhase}</p>
       </div>
     </div>
   );
