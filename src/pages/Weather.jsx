@@ -329,37 +329,37 @@ export default function Weather() {
 
               {/* Conditions Grid */}
               <div className="grid grid-cols-4 gap-2">
-                <div className="bg-card p-3 rounded-lg">
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                <div className="bg-card p-3 rounded-lg flex flex-col justify-between">
+                  <p className="text-base font-semibold">{current.relative_humidity_2m}%</p>
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <WeatherGlyph code={51} className="w-5 h-5 shrink-0" />
                     Humidity
                   </div>
-                  <p className="text-base font-semibold">{current.relative_humidity_2m}%</p>
                 </div>
-                <div className="bg-card p-3 rounded-lg">
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
-                    <WeatherGlyph code={45} className="w-5 h-5 shrink-0" />
-                    Wind
-                  </div>
+                <div className="bg-card p-3 rounded-lg flex flex-col justify-between">
                   <p className="text-base font-semibold">
                     {tempUnit === 'fahrenheit' ? Math.round(current.wind_speed_10m) + ' mph' : Math.round(current.wind_speed_10m * 1.60934) + ' km/h'}
                   </p>
-                </div>
-                <div className="bg-card p-3 rounded-lg">
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
-                    <WeatherGlyph code={63} className="w-5 h-5 shrink-0" />
-                    Precip
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <WeatherGlyph code={45} className="w-5 h-5 shrink-0" />
+                    Wind
                   </div>
+                </div>
+                <div className="bg-card p-3 rounded-lg flex flex-col justify-between">
                   <p className="text-base font-semibold">
                     {tempUnit === 'fahrenheit' ? current.precipitation.toFixed(2) + '"' : (current.precipitation * 25.4).toFixed(1) + ' mm'}
                   </p>
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <WeatherGlyph code={63} className="w-5 h-5 shrink-0" />
+                    Precip
+                  </div>
                 </div>
-                <div className="bg-card p-3 rounded-lg">
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                <div className="bg-card p-3 rounded-lg flex flex-col justify-between">
+                  <p className="text-base font-semibold">{(current.pressure / 10).toFixed(1)} kPa</p>
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <WeatherGlyph code={3} className="w-5 h-5 shrink-0" />
                     Pressure
                   </div>
-                  <p className="text-base font-semibold">{(current.pressure / 10).toFixed(1)} kPa</p>
                 </div>
               </div>
 
