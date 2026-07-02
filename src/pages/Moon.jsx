@@ -436,6 +436,7 @@ export default function Moon() {
                   >
                     <MapPin className="w-3 h-3" />{moonData.location}
                   </button>
+                  <span className="text-xs text-muted-foreground">{moonData.date}</span>
                 </div>
               </div>
               <div className={`shrink-0 ${moonData.fishingRating >= 5 ? 'text-green-600' : moonData.fishingRating <= 3 ? 'text-yellow-600' : 'text-primary'}`}>
