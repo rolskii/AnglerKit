@@ -9,6 +9,7 @@ import { Calendar } from '@/components/ui/calendar';
 import HourlyConditionsCard from '@/components/weather/HourlyConditionsCard';
 import DayForecastDialog from '@/components/weather/DayForecastDialog';
 import WeatherGlyph from '@/components/weather/WeatherGlyph';
+import ShareStatusButton from '@/components/ShareStatusButton';
 
 export default function Weather() {
   const savedLocation = localStorage.getItem('weatherLocation');
@@ -407,6 +408,21 @@ export default function Weather() {
           </CardContent>
         </Card>
 
+        {/* Share */}
+        <div className="px-1">
+          <ShareStatusButton
+            title={`Weather — ${formatDate(selectedDate)}`}
+            text={[
+              `📍 ${location}`,
+              `🌡️ ${Math.round(current.temperature_2m)}° (feels like ${Math.round(current.apparent_temperature)}°)`,
+              `${getWeatherDescription(current.weather_code)}`,
+              `💧 Humidity: ${current.relative_humidity_2m}%`,
+              `💨 Wind: ${tempUnit === 'fahrenheit' ? Math.round(current.wind_speed_10m) + 'mph' : Math.round(current.wind_speed_10m * 1.60934) + 'km/h'}`,
+              `🌧️ Precip: ${tempUnit === 'fahrenheit' ? current.precipitation.toFixed(2) + '"' : (current.precipitation * 25.4).toFixed(1) + 'mm'}`,
+              `H: ${Math.round(daily.temperature_2m_max[0])}°  L: ${Math.round(daily.temperature_2m_min[0])}°`,
+            ].join('\n')}
+          />
+        </div>
 
       </div>
 
