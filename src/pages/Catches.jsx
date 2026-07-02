@@ -131,7 +131,7 @@ export default function Catches() {
           </p>
         </div>
         <Button onClick={() => { setEditing(null); setFormOpen(true); }}>
-          <Plus className="w-4 h-4 mr-2" /> Log a Catch
+          <Plus className="w-4 h-4 mr-2" /> Log in your Catch.
         </Button>
       </div>
 
