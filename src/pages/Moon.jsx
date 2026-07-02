@@ -435,7 +435,7 @@ export default function Moon() {
                   <Popover>
                     <PopoverTrigger asChild>
                       <button className="text-xs text-muted-foreground hover:text-primary transition-colors">
-                        {moonData.date}
+                        For: {moonData.date}
                       </button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
