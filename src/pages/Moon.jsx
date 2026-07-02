@@ -82,6 +82,16 @@ export default function Moon() {
   const alarmIntervalsRef = useRef({});
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const locationInputRef = useRef(null);
+
+  const focusLocationInput = () => {
+    const el = locationInputRef.current;
+    if (el) {
+      el.focus();
+      el.select();
+      editingLocation.trim().length >= 2 && setShowSuggestions(true);
+    }
+  };
 
   // Moon phase calculation
   const calculateMoonPhase = (date) => {
@@ -394,6 +404,7 @@ export default function Moon() {
           {/* Location */}
           <div className="max-w-[12rem] mx-auto relative">
             <input
+              ref={locationInputRef}
               type="text"
               value={editingLocation}
               onChange={(e) => handleLocationInput(e.target.value)}
@@ -439,9 +450,12 @@ export default function Moon() {
                 {moonData.fishingRating}/7 — {getRatingLabel(moonData.fishingRating)}
               </p>
               <span className="text-muted-foreground">·</span>
-              <p className="text-xs text-muted-foreground flex items-center gap-1">
+              <button
+                onClick={focusLocationInput}
+                className="text-xs text-muted-foreground flex items-center gap-1 hover:text-primary transition-colors"
+              >
                 <MapPin className="w-3 h-3" />{moonData.location}
-              </p>
+              </button>
             </div>
           </CardContent>
         </Card>
