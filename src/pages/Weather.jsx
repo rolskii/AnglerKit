@@ -30,6 +30,7 @@ export default function Weather() {
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   };
   const [selectedDate, setSelectedDate] = useState(todayStr());
+  const today = todayStr();
 
   const formatDate = (dateStr) => {
     const d = new Date(dateStr + 'T00:00:00');
@@ -402,7 +403,7 @@ export default function Weather() {
           <CardContent>
             <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
               {daily.time.map((date, idx) => {
-                if (date <= todayStr()) return null;
+                if (idx === 0 || date <= today) return null;
                 return { date, idx };
               }).filter(Boolean).map(({ date, idx }) => {
                 const ForecastIcon = getWeatherIcon(daily.weather_code[idx]);
