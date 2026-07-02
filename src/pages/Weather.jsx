@@ -252,24 +252,24 @@ export default function Weather() {
 
         {/* Current Weather Card */}
         <Card className="bg-primary/10">
-          <CardContent className="pt-6">
+          <CardContent className="pt-4">
             <button
               onClick={() => setMapPickerOpen(true)}
-              className="flex items-center gap-1.5 text-sm text-primary hover:underline transition-colors mb-4"
+              className="flex items-center gap-1.5 text-sm text-primary hover:underline transition-colors mb-2"
             >
               <MapPin className="w-4 h-4" />
               {location}
             </button>
-            <div className="space-y-6">
+            <div className="space-y-3">
               {/* Temperature and Condition */}
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-5xl font-bold text-primary">{Math.round(current.temperature_2m)}°</p>
-                  <p className="text-muted-foreground mt-1">{getWeatherDescription(current.weather_code)}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Feels like {Math.round(current.apparent_temperature)}°</p>
+                  <p className="text-4xl font-bold text-primary leading-tight">{Math.round(current.temperature_2m)}°</p>
+                  <p className="text-muted-foreground text-sm">{getWeatherDescription(current.weather_code)}</p>
+                  <p className="text-xs text-muted-foreground">Feels like {Math.round(current.apparent_temperature)}°</p>
                 </div>
                 <div className="flex items-center justify-center">
-                  <WeatherIcon className="w-24 h-24 text-primary" />
+                  <WeatherIcon className="w-16 h-16 text-primary" />
                 </div>
               </div>
 
