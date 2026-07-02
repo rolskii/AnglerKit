@@ -196,6 +196,8 @@ export default function WeatherGlyph({ code, isNight = false, className = 'w-7 h
   return (
     <svg
       viewBox="0 0 64 72"
+      width="64"
+      height="72"
       className={className}
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
