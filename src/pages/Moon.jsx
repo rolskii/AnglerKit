@@ -414,8 +414,8 @@ export default function Moon() {
         </div>
 
         {/* Day Rating Card */}
-        <Card className="bg-primary/5">
-          <CardContent className="pt-6">
+        <Card>
+          <CardContent className="pt-4 pb-4">
             <DayRatingRing percentage={ratingPercent} rating={moonData.fishingRating} ratingLabel={getRatingLabel(moonData.fishingRating).toUpperCase()} />
             <div className="flex gap-1.5 mt-4">
               {[1, 2, 3, 4, 5, 6, 7].map((n) => (
