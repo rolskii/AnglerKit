@@ -467,7 +467,7 @@ export default function Moon() {
         {/* Activity Chart */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">Hourly Activity</CardTitle>
+            <CardTitle className="text-base">Hourly Fish Activity</CardTitle>
             <CardDescription>Fishing activity throughout the day</CardDescription>
           </CardHeader>
           <CardContent>
