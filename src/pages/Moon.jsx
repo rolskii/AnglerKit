@@ -565,9 +565,9 @@ export default function Moon() {
             <CardDescription>Major & minor feeding windows for {moonData.date}</CardDescription>
           </CardHeader>
           <CardContent className="pt-3 pb-3">
-            <div className="grid grid-cols-[2fr_3fr] gap-4">
+            <div className="grid grid-cols-2 gap-2">
               {/* Major Times */}
-              <div className="border-r border-border pr-4">
+              <div className="border-r border-border pr-2">
                 <p className="text-xs font-bold text-primary tracking-wide mb-3">MAJOR TIME</p>
                 <ul className="space-y-2">
                   {solunar.major.map((item, idx) => {
@@ -575,10 +575,10 @@ export default function Moon() {
                     const hasAlarm = currentDayAlarmList.some(a => a.time === alarmTime);
                     return (
                       <li key={idx}>
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm font-medium">{item.time}</p>
-                          <button
-                            onClick={() => toggleAlarm(alarmTime)}
+                        <div className="flex items-center gap-1.5 whitespace-nowrap">
+                           <p className="text-sm font-medium whitespace-nowrap">{item.time}</p>
+                           <button
+                             onClick={() => toggleAlarm(alarmTime)}
                             className={`p-1 rounded-md flex items-center transition-colors ${
                               hasAlarm
                                 ? 'bg-primary text-primary-foreground'
