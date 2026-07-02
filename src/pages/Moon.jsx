@@ -478,7 +478,7 @@ export default function Moon() {
             <CardDescription>Major and minor feeding windows for {moonData.date}</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-[3fr_2fr] gap-4">
               {/* Major Times */}
               <div className="border-r border-border pr-4">
                 <p className="text-xs font-bold text-primary tracking-wide mb-3">MAJOR TIME</p>
