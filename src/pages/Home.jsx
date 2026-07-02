@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { ChevronRight, Camera, Moon as MoonIcon, Cloud, CloudRain, Sun, Star, Bell, MapPin } from "lucide-react";
+import { ChevronRight, Camera, Moon as MoonIcon, Cloud, CloudRain, Sun, Bell, MapPin } from "lucide-react";
 import { ReelIcon as ReelDiscIcon } from "@/components/GearIcons";
 import FishIcon from "@/components/FishIcon";
 import MoonPhaseSymbol from "@/components/MoonPhaseSymbol";
@@ -40,7 +40,7 @@ const calculateMoonPhase = (date) => {
 };
 
 const getWeatherIcon = (code, isNight) => {
-  if (code === 0 || code === 1) return isNight ? Star : Sun;
+  if (code === 0 || code === 1) return isNight ? MoonIcon : Sun;
   if (code === 2 || code === 3) return isNight ? MoonIcon : Cloud;
   if (code >= 45 && code <= 99) return CloudRain;
   return Cloud;
