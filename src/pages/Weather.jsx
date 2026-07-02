@@ -214,6 +214,23 @@ export default function Weather() {
     return Cloud;
   };
 
+  const getDailySummary = () => {
+    if (!daily) return null;
+    const dayIdx = daily.time.indexOf(selectedDate);
+    if (dayIdx === -1) return null;
+    const code = daily.weather_code[dayIdx];
+    const maxTemp = Math.round(daily.temperature_2m_max[dayIdx]);
+    const minTemp = Math.round(daily.temperature_2m_min[dayIdx]);
+    const precipProb = daily.precipitation_probability?.[dayIdx] ?? 0;
+    const desc = getWeatherDescription(code);
+
+    let summary = `${desc} with highs near ${maxTemp}° and lows around ${minTemp}°.`;
+    if (precipProb >= 60) summary += ` High chance of precipitation (${precipProb}%).`;
+    else if (precipProb >= 30) summary += ` Possible precipitation (${precipProb}%).`;
+    else summary += ` Low chance of rain (${precipProb}%).`;
+    return summary;
+  };
+
   const getWeatherIconColor = (code) => {
     const night = isNight();
     if (code === 0 || code === 1) return night ? 'text-indigo-300' : 'text-yellow-500';
@@ -358,6 +375,11 @@ export default function Weather() {
                   <p className="text-base font-semibold">{(current.pressure / 10).toFixed(1)} kPa</p>
                 </div>
               </div>
+
+              {/* Daily Summary */}
+              {getDailySummary() && (
+                <p className="text-xs text-muted-foreground leading-relaxed pt-1">{getDailySummary()}</p>
+              )}
             </div>
           </CardContent>
         </Card>
