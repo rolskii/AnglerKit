@@ -354,7 +354,7 @@ export default function Weather() {
                     <Gauge className="w-3.5 h-3.5" />
                     Pressure
                   </div>
-                  <p className="text-base font-semibold">{Math.round(current.pressure / 10)} kPa</p>
+                  <p className="text-base font-semibold">{(current.pressure / 10).toFixed(1)} kPa</p>
                 </div>
                 <div className="bg-card p-3 rounded-lg">
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
