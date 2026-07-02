@@ -31,16 +31,23 @@ const formatDate = (dateStr) => {
 export default function HourlyConditionsCard({ hourly, selectedDate, daily }) {
   if (!hourly) return null;
 
-  const sunrise = daily?.sunrise?.[0] ? new Date(daily.sunrise[0]) : null;
-  const sunset = daily?.sunset?.[0] ? new Date(daily.sunset[0]) : null;
+  const getSunriseSunset = (hTime) => {
+    const hDate = hTime.slice(0, 10);
+    const dayIdx = daily?.time?.indexOf(hDate);
+    if (dayIdx === -1 || dayIdx == null) return { sunrise: null, sunset: null };
+    return {
+      sunrise: daily?.sunrise?.[dayIdx] ? new Date(daily.sunrise[dayIdx]) : null,
+      sunset: daily?.sunset?.[dayIdx] ? new Date(daily.sunset[dayIdx]) : null,
+    };
+  };
 
   const now = new Date();
-  const todayHours = hourly.time
+  const todayStr = now.toISOString().slice(0, 10);
+  const allHours = hourly.time
     .map((hTime, hIdx) => ({ hTime, hIdx }))
-    .filter(({ hTime }) => hTime.startsWith(selectedDate))
-    .filter(({ hTime }) => selectedDate !== now.toISOString().slice(0, 10) || new Date(hTime) >= now);
+    .filter(({ hTime }) => hTime.startsWith(todayStr) ? new Date(hTime) >= now : true);
 
-  if (todayHours.length === 0) return null;
+  if (allHours.length === 0) return null;
 
   return (
     <Card>
@@ -54,8 +61,9 @@ export default function HourlyConditionsCard({ hourly, selectedDate, daily }) {
             className="overflow-x-auto scrollbar-hide flex gap-3 pb-1"
             style={{ scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' }}
           >
-            {todayHours.map(({ hTime, hIdx }) => {
+            {allHours.map(({ hTime, hIdx }) => {
               const hourDate = new Date(hTime);
+              const { sunrise, sunset } = getSunriseSunset(hTime);
               const isNight = sunrise && sunset ? (hourDate < sunrise || hourDate > sunset) : false;
               const hourLabel = hourDate.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true });
               return (
