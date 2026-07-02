@@ -565,7 +565,7 @@ export default function Moon() {
             <CardDescription>Major & minor feeding windows for {moonData.date}</CardDescription>
           </CardHeader>
           <CardContent className="pt-3 pb-3">
-            <div className="grid grid-cols-[3fr_2fr] gap-4">
+            <div className="grid grid-cols-[2fr_3fr] gap-4">
               {/* Major Times */}
               <div className="border-r border-border pr-4">
                 <p className="text-xs font-bold text-primary tracking-wide mb-3">MAJOR TIME</p>
@@ -602,7 +602,7 @@ export default function Moon() {
                 <ul className="space-y-2">
                   {solunar.minor.map((item, idx) => (
                     <li key={idx}>
-                      <p className="text-sm font-medium">{item.time}</p>
+                      <p className="text-sm font-medium whitespace-nowrap">{item.time}</p>
                       <p className="text-[10px] text-muted-foreground">{item.text}</p>
                     </li>
                   ))}
