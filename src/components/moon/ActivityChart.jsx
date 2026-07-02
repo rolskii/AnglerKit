@@ -1,6 +1,15 @@
 import React from "react";
 
-const LABELS = ["12am", "3", "6", "9", "12pm", "3", "6", "9pm"];
+const LABELS = [
+  { num: "12", period: "am" },
+  { num: "3", period: "am" },
+  { num: "6", period: "am" },
+  { num: "9", period: "am" },
+  { num: "12", period: "pm" },
+  { num: "3", period: "pm" },
+  { num: "6", period: "pm" },
+  { num: "9", period: "pm" },
+];
 
 const buildSmoothPath = (points) => {
   if (points.length < 2) return "";
@@ -73,9 +82,10 @@ export default function ActivityChart({ levels, highlightIndex }) {
         </div>
         <div className="flex mt-1">
           {LABELS.map((label, i) => (
-            <p key={i} className="flex-1 text-center text-xs text-muted-foreground">
-              {label}
-            </p>
+            <div key={i} className="flex-1 text-center text-xs text-muted-foreground leading-tight">
+              <div>{label.num}</div>
+              <div className="text-[9px]">{label.period}</div>
+            </div>
           ))}
         </div>
       </div>
