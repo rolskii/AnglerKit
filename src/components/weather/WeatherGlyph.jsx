@@ -21,8 +21,8 @@ export default function WeatherGlyph({ code, isNight = false, className = 'w-7 h
   // Color palette
   const sunFill = '#FBBF24'; // amber-400
   const sunStroke = '#F59E0B'; // amber-500
-  const moonFill = '#94A3B8'; // slate-400 (visible silver)
-  const moonStroke = '#475569'; // slate-600 (darker outline)
+  const moonFill = '#1E293B'; // slate-800 (high contrast dark)
+  const moonStroke = '#0F172A'; // slate-900
   const cloudLight = '#F1F5F9'; // slate-100
   const cloudMid = '#CBD5E1'; // slate-300
   const cloudDark = '#94A3B8'; // slate-400
@@ -55,7 +55,7 @@ export default function WeatherGlyph({ code, isNight = false, className = 'w-7 h
   const MoonShape = ({ cx = 32, cy = 26, r = 11 }) => (
     <g>
       {/* Faint full-circle outline so the moon shape is always visible */}
-      <circle cx={cx} cy={cy} r={r + 0.5} fill="none" stroke={moonStroke} strokeWidth="0.5" opacity="0.4" />
+      <circle cx={cx} cy={cy} r={r + 0.5} fill="none" stroke={moonStroke} strokeWidth="1" opacity="0.5" />
       <path
         d={`M ${cx + r * 0.3} ${cy - r} A ${r} ${r} 0 1 0 ${cx + r * 0.3} ${cy + r} A ${r * 0.75} ${r * 0.75} 0 1 1 ${cx + r * 0.3} ${cy - r} Z`}
         fill={moonFill}
