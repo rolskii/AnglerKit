@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Cloud, CloudRain, Sun, Moon, Droplets } from 'lucide-react';
 import WeatherGlyph from '@/components/weather/WeatherGlyph';
@@ -29,6 +29,9 @@ const formatDate = (dateStr) => {
 };
 
 export default function HourlyConditionsCard({ hourly, selectedDate, daily }) {
+  const scrollRef = React.useRef(null);
+  const [visibleDate, setVisibleDate] = React.useState(selectedDate);
+
   if (!hourly) return null;
 
   const getSunriseSunset = (hTime) => {
@@ -49,15 +52,28 @@ export default function HourlyConditionsCard({ hourly, selectedDate, daily }) {
 
   if (allHours.length === 0) return null;
 
+  const handleScroll = () => {
+    const container = scrollRef.current;
+    if (!container) return;
+    const scrollLeft = container.scrollLeft;
+    const itemWidth = 76; // w-16 (64px) + gap-3 (12px)
+    const firstVisibleIdx = Math.round(scrollLeft / itemWidth);
+    const clampedIdx = Math.max(0, Math.min(firstVisibleIdx, allHours.length - 1));
+    const dateStr = allHours[clampedIdx].hTime.slice(0, 10);
+    setVisibleDate(dateStr);
+  };
+
   return (
     <Card>
       <CardHeader className="pt-3 pb-2 flex-row items-center justify-between space-y-0">
         <CardTitle className="text-base">Hourly Conditions</CardTitle>
-        <CardDescription className="text-right">{formatDate(selectedDate)}</CardDescription>
+        <CardDescription className="text-right">{formatDate(visibleDate)}</CardDescription>
       </CardHeader>
       <CardContent className="pt-0 pb-3">
         <div className="relative">
           <div
+            ref={scrollRef}
+            onScroll={handleScroll}
             className="overflow-x-auto scrollbar-hide flex gap-3 pb-1"
             style={{ scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' }}
           >
