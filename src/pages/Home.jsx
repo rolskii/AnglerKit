@@ -274,7 +274,7 @@ export default function Home() {
               <p className="text-xs text-foreground">5:48–6:18 AM</p>
               <p className="text-xs text-foreground">8:54–9:24 PM</p>
             </div>
-            <div className="flex items-center justify-end">
+            <div className="flex items-center justify-start">
               {moonPhase && <MoonPhaseSymbol phase={moonPhase} className="w-12 h-12" />}
             </div>
             <div className="flex items-center justify-end">
