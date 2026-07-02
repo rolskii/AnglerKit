@@ -84,34 +84,34 @@ export default function DayForecastDialog({ open, onOpenChange, dayData, hourly,
             </div>
 
             {/* Conditions Grid */}
-            <div className="grid grid-cols-4 gap-2">
-              <div className="bg-secondary p-3 rounded-lg flex flex-col items-center justify-between h-full">
-                <WeatherGlyph code={51} className="w-10 h-10 shrink-0" />
-                <p className="text-xs font-semibold">{midHumidity != null ? midHumidity + '%' : '—'}</p>
-                <span className="text-xs text-muted-foreground">Humidity</span>
+            <div className="grid grid-cols-4 gap-1.5">
+              <div className="bg-secondary p-2 rounded-lg flex flex-col items-center gap-0.5">
+                <WeatherGlyph code={51} className="w-7 h-8 shrink-0" />
+                <p className="text-[11px] font-semibold leading-tight">{midHumidity != null ? midHumidity + '%' : '—'}</p>
+                <span className="text-[10px] text-muted-foreground leading-tight">Humidity</span>
               </div>
-              <div className="bg-secondary p-3 rounded-lg flex flex-col items-center justify-between h-full">
-                <WeatherGlyph code={45} className="w-10 h-10 shrink-0" />
-                <p className="text-xs font-semibold">
+              <div className="bg-secondary p-2 rounded-lg flex flex-col items-center gap-0.5">
+                <WeatherGlyph code={45} className="w-7 h-8 shrink-0" />
+                <p className="text-[11px] font-semibold leading-tight">
                   {tempUnit === 'fahrenheit'
                     ? Math.round(daily.wind_speed_10m_max?.[idx] ?? 0) + ' mph'
                     : Math.round((daily.wind_speed_10m_max?.[idx] ?? 0) * 1.60934) + ' km/h'}
                 </p>
-                <span className="text-xs text-muted-foreground">Wind</span>
+                <span className="text-[10px] text-muted-foreground leading-tight">Wind</span>
               </div>
-              <div className="bg-secondary p-3 rounded-lg flex flex-col items-center justify-between h-full">
-                <WeatherGlyph code={63} className="w-10 h-10 shrink-0" />
-                <p className="text-xs font-semibold">
+              <div className="bg-secondary p-2 rounded-lg flex flex-col items-center gap-0.5">
+                <WeatherGlyph code={63} className="w-7 h-8 shrink-0" />
+                <p className="text-[11px] font-semibold leading-tight">
                   {tempUnit === 'fahrenheit'
                     ? (daily.precipitation_sum?.[idx] ?? 0).toFixed(2) + '"'
                     : ((daily.precipitation_sum?.[idx] ?? 0) * 25.4).toFixed(1) + ' mm'}
                 </p>
-                <span className="text-xs text-muted-foreground">Precip</span>
+                <span className="text-[10px] text-muted-foreground leading-tight">Precip</span>
               </div>
-              <div className="bg-secondary p-3 rounded-lg flex flex-col items-center justify-between h-full">
-                <WeatherGlyph code={3} className="w-10 h-10 shrink-0" />
-                <p className="text-xs font-semibold">{midPressure != null ? (midPressure / 10).toFixed(1) + ' kPa' : '—'}</p>
-                <span className="text-xs text-muted-foreground">Pressure</span>
+              <div className="bg-secondary p-2 rounded-lg flex flex-col items-center gap-0.5">
+                <WeatherGlyph code={3} className="w-7 h-8 shrink-0" />
+                <p className="text-[11px] font-semibold leading-tight">{midPressure != null ? (midPressure / 10).toFixed(1) + ' kPa' : '—'}</p>
+                <span className="text-[10px] text-muted-foreground leading-tight">Pressure</span>
               </div>
             </div>
 
