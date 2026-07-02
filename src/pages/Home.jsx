@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { ChevronRight, Camera, Moon as MoonIcon, Cloud, CloudRain, Sun, Bell, MapPin, Search, ChevronDown } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ChevronRight, Camera, Moon as MoonIcon, Cloud, CloudRain, Sun, Bell, MapPin, ChevronDown } from "lucide-react";
 import { ReelIcon as ReelDiscIcon } from "@/components/GearIcons";
 import FishIcon from "@/components/FishIcon";
 import MoonPhaseSymbol from "@/components/MoonPhaseSymbol";
 import { base44 } from "@/api/base44Client";
-import { searchLocations, geocodeLocation } from "@/lib/geocode";
 import PullToRefresh from "@/components/PullToRefresh";
 import FeaturedImage from "@/components/FeaturedImage";
+import LocationMapPicker from "@/components/moon/LocationMapPicker";
 
 const calculateMoonPhase = (date) => {
   const knownNewMoon = new Date(2000, 0, 6);
@@ -107,8 +106,10 @@ export default function Home() {
   const [alarmTick, setAlarmTick] = useState(0);
   const [location, setLocation] = useState(() => localStorage.getItem('moonLocation') || 'Toronto, ON');
   const [locationDialogOpen, setLocationDialogOpen] = useState(false);
-  const [locationInput, setLocationInput] = useState('');
-  const [suggestions, setSuggestions] = useState([]);
+  const [coords, setCoords] = useState(() => {
+    const stored = localStorage.getItem('moonCoords') || localStorage.getItem('weatherCoords');
+    return stored ? JSON.parse(stored) : { lat: 43.6532, lon: -79.3832, name: 'Toronto, ON' };
+  });
 
   const todayStr = () => {
     const now = new Date();
@@ -185,42 +186,16 @@ export default function Home() {
     } catch (e) {}
   };
 
-  const handleLocationInput = async (value) => {
-    setLocationInput(value);
-    if (value.trim().length < 2) { setSuggestions([]); return; }
-    try {
-      const results = await searchLocations(value, 5);
-      setSuggestions(results);
-    } catch (e) { setSuggestions([]); }
-  };
-
-  const selectLocation = async (suggestion) => {
-    const { name, lat, lon } = suggestion;
-    localStorage.setItem('moonLocation', name);
+  const selectLocationFromMap = async (name, lat, lon) => {
     const newCoords = { lat, lon, name };
+    localStorage.setItem('moonLocation', name);
+    localStorage.setItem('moonCoords', JSON.stringify(newCoords));
     localStorage.setItem('weatherCoords', JSON.stringify(newCoords));
     setLocation(name);
+    setCoords(newCoords);
     setLocationDialogOpen(false);
-    setLocationInput('');
-    setSuggestions([]);
     const tempUnit = localStorage.getItem("weatherTempUnit") || "celsius";
     await fetchWeather(newCoords, tempUnit);
-  };
-
-  const submitLocation = async (e) => {
-    e?.preventDefault();
-    const value = locationInput.trim();
-    if (!value) { setLocationDialogOpen(false); return; }
-    try {
-      const result = await geocodeLocation(value);
-      if (result) {
-        await selectLocation(result);
-        return;
-      }
-    } catch (e) {}
-    setLocationDialogOpen(false);
-    setLocationInput('');
-    setSuggestions([]);
   };
 
   const fetchGearCount = async () => {
@@ -357,39 +332,12 @@ export default function Home() {
 
       <FeaturedImage />
 
-      <Dialog open={locationDialogOpen} onOpenChange={setLocationDialogOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Change Location</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={submitLocation} className="space-y-3">
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted">
-              <Search className="w-4 h-4 text-muted-foreground shrink-0" />
-              <input
-                autoFocus
-                value={locationInput}
-                onChange={(e) => handleLocationInput(e.target.value)}
-                placeholder="Search city..."
-                className="text-sm bg-transparent flex-1 outline-none placeholder:text-muted-foreground/50"
-              />
-            </div>
-            {suggestions.length > 0 && (
-              <div className="max-h-48 overflow-y-auto space-y-0.5">
-                {suggestions.map((s, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => selectLocation(s)}
-                    className="w-full text-left px-3 py-2 text-sm hover:bg-accent/10 rounded-lg truncate"
-                  >
-                    {s.name}
-                  </button>
-                ))}
-              </div>
-            )}
-          </form>
-        </DialogContent>
-      </Dialog>
+      <LocationMapPicker
+        open={locationDialogOpen}
+        onOpenChange={setLocationDialogOpen}
+        initialCoords={coords}
+        onSelect={selectLocationFromMap}
+      />
       </div>
       </PullToRefresh>
       );
