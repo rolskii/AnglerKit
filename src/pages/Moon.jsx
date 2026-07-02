@@ -469,7 +469,7 @@ export default function Moon() {
 
         {/* Activity Chart */}
         <Card>
-          <CardHeader className="pb-2">
+          <CardHeader className="pt-3 pb-2">
             <CardTitle className="text-base">Hourly Fish Activity</CardTitle>
 
           </CardHeader>
@@ -480,7 +480,7 @@ export default function Moon() {
 
         {/* Major & Minor Times — Two Columns */}
         <Card className="bg-card border-primary/20">
-          <CardHeader className="pb-2">
+          <CardHeader className="pt-3 pb-2">
             <CardTitle className="flex items-center gap-2 text-base">
               <Waves className="w-5 h-5 text-primary" />
               Solunar Feeding Times
@@ -612,7 +612,7 @@ export default function Moon() {
 
         {/* Fishing Tips */}
         <Card className="bg-secondary/30">
-          <CardHeader className="pb-2 px-4">
+          <CardHeader className="pt-3 pb-2">
             <CardTitle className="text-base">Fishing Tips for {moonData.phase}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-1.5 text-sm pt-3 pb-3">
