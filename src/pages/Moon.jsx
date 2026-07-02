@@ -578,7 +578,7 @@ export default function Moon() {
               >
                 <Bell className="w-3.5 h-3.5" /> Test Alarm
               </button>
-              <span className="text-xs text-muted-foreground">Play a sample alarm now</span>
+              <span className="text-xs text-muted-foreground">Play a sample</span>
             </div>
           </CardContent>
         </Card>
