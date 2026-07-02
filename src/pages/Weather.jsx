@@ -7,6 +7,7 @@ import LocationMapPicker from '@/components/moon/LocationMapPicker';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import HourlyConditionsCard from '@/components/weather/HourlyConditionsCard';
+import DayForecastDialog from '@/components/weather/DayForecastDialog';
 
 export default function Weather() {
   const savedLocation = localStorage.getItem('weatherLocation');
@@ -22,6 +23,7 @@ export default function Weather() {
   const [lastCoords, setLastCoords] = useState(savedCoords ? JSON.parse(savedCoords) : null);
   const [userCoords, setUserCoords] = useState(null);
   const [selectedDay, setSelectedDay] = useState(null);
+  const [dayDialogOpen, setDayDialogOpen] = useState(false);
   const [mapPickerOpen, setMapPickerOpen] = useState(false);
   const todayStr = () => {
     const now = new Date();
@@ -393,65 +395,44 @@ export default function Weather() {
 
         {/* 10-Day Forecast */}
         <Card>
-          <CardHeader className="pt-3 pb-2">
+          <CardHeader className="pt-3 pb-2 flex-row items-center justify-between space-y-0">
             <CardTitle className="text-base">10-Day Forecast</CardTitle>
-            <CardDescription>Daily high and low temperatures</CardDescription>
+            <CardDescription>Tap a day for details</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
               {daily.time.map((date, idx) => {
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
                 if (new Date(date) <= today) return null;
                 const ForecastIcon = getWeatherIcon(daily.weather_code[idx]);
                 return (
-                  <div key={idx}>
-                    <button
-                      onClick={() => setSelectedDay(selectedDay === date ? null : date)}
-                      className="w-full flex items-center justify-between p-3 bg-card rounded-lg hover:bg-primary/5 transition-colors text-left"
-                    >
-                      <div className="flex items-center gap-3 flex-1">
-                        <ForecastIcon className="w-6 h-6 text-primary flex-shrink-0" />
-                        <div>
-                          <p className="text-sm font-medium">
-                            {new Date(date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-                          </p>
-                          <p className="text-xs text-muted-foreground">{getWeatherDescription(daily.weather_code[idx])}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className="text-right">
-                          <p className="text-sm font-semibold">{Math.round(daily.temperature_2m_max[idx])}°</p>
-                          <p className="text-xs text-muted-foreground">{Math.round(daily.temperature_2m_min[idx])}°</p>
-                        </div>
-                        <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${selectedDay === date ? 'rotate-180' : ''}`} />
-                      </div>
-                    </button>
-                    {selectedDay === date && weather.hourly && (
-                      <div className="mt-2 pb-2 overflow-x-auto">
-                        <div className="flex gap-3 px-1 min-w-max">
-                          {weather.hourly.time
-                            .map((hTime, hIdx) => ({ hTime, hIdx }))
-                            .filter(({ hTime }) => hTime.startsWith(date))
-                            .map(({ hTime, hIdx }) => {
-                              const HourIcon = getWeatherIcon(weather.hourly.weather_code[hIdx]);
-                              const hourLabel = new Date(hTime).toLocaleTimeString('en-US', { hour: 'numeric', hour12: true });
-                              return (
-                                <div key={hIdx} className="flex flex-col items-center gap-1.5 w-16 p-2 rounded-lg bg-secondary/40">
-                                  <p className="text-xs text-muted-foreground">{hourLabel}</p>
-                                  <HourIcon className="w-6 h-6 text-primary" />
-                                  <p className="text-sm font-semibold">{Math.round(weather.hourly.temperature_2m[hIdx])}°</p>
-                                  <p className="text-xs text-primary flex items-center gap-0.5">
-                                    <Droplets className="w-3 h-3" />
-                                    {weather.hourly.precipitation_probability[hIdx]}%
-                                  </p>
-                                </div>
-                              );
-                            })}
-                        </div>
-                      </div>
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setSelectedDay({ date, idx, daily });
+                      setDayDialogOpen(true);
+                    }}
+                    className="flex flex-col items-center gap-1 p-2.5 rounded-xl bg-secondary/40 hover:bg-primary/10 transition-colors aspect-square justify-center"
+                  >
+                    <p className="text-xs font-medium text-foreground truncate w-full text-center">
+                      {new Date(date).toLocaleDateString('en-US', { weekday: 'short' })}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </p>
+                    <ForecastIcon className="w-7 h-7 text-primary" />
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-sm font-semibold">{Math.round(daily.temperature_2m_max[idx])}°</span>
+                      <span className="text-xs text-muted-foreground">{Math.round(daily.temperature_2m_min[idx])}°</span>
+                    </div>
+                    {daily.precipitation_probability?.[idx] > 0 && (
+                      <p className="text-[10px] text-primary flex items-center gap-0.5">
+                        <Droplets className="w-2.5 h-2.5" />
+                        {daily.precipitation_probability[idx]}%
+                      </p>
                     )}
-                  </div>
+                  </button>
                 );
               })}
             </div>
@@ -466,6 +447,14 @@ export default function Weather() {
         onOpenChange={setMapPickerOpen}
         initialCoords={lastCoords}
         onSelect={handleMapSelect}
+      />
+
+      <DayForecastDialog
+        open={dayDialogOpen}
+        onOpenChange={setDayDialogOpen}
+        dayData={selectedDay}
+        hourly={weather?.hourly}
+        tempUnit={tempUnit}
       />
     </div>
   );
