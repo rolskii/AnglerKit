@@ -58,8 +58,8 @@ export default function Gear() {
             const Icon = t.icon;
             return (
               <TabsTrigger key={t.value} value={t.value} className={`flex flex-col items-center gap-1.5 rounded-xl ${tintBg[t.tint]} border border-border/60 px-1 py-3 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary shadow-sm`}>
-                <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${tintText[t.tint]}`}>
-                  <Icon className="w-5 h-5" strokeWidth={2} />
+                <div className={`flex h-14 w-14 items-center justify-center rounded-xl ${tintText[t.tint]}`}>
+                  <Icon className="w-9 h-9" strokeWidth={2} />
                 </div>
                 <span className="text-[11px] font-medium leading-tight text-center">{t.label}</span>
               </TabsTrigger>
