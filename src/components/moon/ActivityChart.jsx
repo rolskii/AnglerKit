@@ -75,13 +75,16 @@ export default function ActivityChart({ levels, highlightIndex }) {
       </svg>
       <div className="relative mt-1">
         <div className="relative h-2">
-          {LABELS.map((label, i) => (
-            <div
-              key={i}
-              className="w-px h-2 bg-muted-foreground/50"
-              style={{ position: "absolute", left: `${(label.hour / hourCount) * 100}%`, transform: "translateX(-50%)" }}
-            />
-          ))}
+          {Array.from({ length: hourCount + 1 }).map((_, i) => {
+            const isLabeled = LABELS.some(l => l.hour === i);
+            return (
+              <div
+                key={i}
+                className={`w-px ${isLabeled ? "h-2 bg-muted-foreground" : "h-1.5 bg-muted-foreground/35"}`}
+                style={{ position: "absolute", left: `${(i / hourCount) * 100}%`, transform: "translateX(-50%)" }}
+              />
+            );
+          })}
         </div>
         <div className="relative mt-1 h-6">
           {LABELS.map((label, i) => {
