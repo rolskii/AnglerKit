@@ -632,7 +632,7 @@ export default function Moon() {
             )}
             {(moonData.phase.includes('Crescent') || moonData.phase.includes('Gibbous')) && (
               <>
-                <p className="whitespace-nowrap">✓ Transitional phase — good all-around fishing conditions</p>
+                <p className="whitespace-nowrap">✓ Transitional phase — good all-around fishing</p>
                 <p className="whitespace-nowrap">✓ Balance between day and night feeding activity</p>
                 <p className="whitespace-nowrap">✓ Consistent activity throughout the day</p>
               </>
