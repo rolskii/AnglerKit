@@ -4,6 +4,7 @@ import { getMoonTimes } from '@/lib/moonTimes';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Sun, Waves, MapPin, Bell, BellOff, Save } from 'lucide-react';
 import FishIcon from '@/components/FishIcon';
+import { searchLocations, geocodeLocation } from '@/lib/geocode';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import LocationMapPicker from '@/components/moon/LocationMapPicker';
@@ -243,12 +244,9 @@ export default function Moon() {
       setCoords(newCoords);
     } else {
       try {
-        const response = await fetch(
-          `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(locationToUse)}&language=en&count=1&format=json`
-        );
-        const data = await response.json();
-        if (data.results && data.results[0]) {
-          const newCoords = { lat: data.results[0].latitude, lon: data.results[0].longitude, name: locationToUse };
+        const result = await geocodeLocation(locationToUse);
+        if (result) {
+          const newCoords = { lat: result.lat, lon: result.lon, name: locationToUse };
           localStorage.setItem('moonCoords', JSON.stringify(newCoords));
           setCoords(newCoords);
         }
@@ -264,18 +262,9 @@ export default function Moon() {
       return;
     }
     try {
-      const response = await fetch(
-        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(value)}&language=en&count=5&format=json`
-      );
-      const data = await response.json();
-      if (data.results) {
-        setSuggestions(data.results.map(r => ({
-          name: `${r.name}${r.admin1 ? ', ' + r.admin1 : ''}${r.country ? ', ' + r.country : ''}`,
-          lat: r.latitude,
-          lon: r.longitude
-        })));
-        setShowSuggestions(true);
-      }
+      const results = await searchLocations(value, 5);
+      setSuggestions(results);
+      setShowSuggestions(true);
     } catch (err) {
       setSuggestions([]);
     }

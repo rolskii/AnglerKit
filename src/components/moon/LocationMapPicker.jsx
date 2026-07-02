@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-lea
 import L from 'leaflet';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Search, MapPin, Check } from 'lucide-react';
+import { searchLocations } from '@/lib/geocode';
 
 // Fix default marker icon for Leaflet under bundlers
 delete L.Icon.Default.prototype._getIconUrl;
@@ -79,18 +80,9 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, o
     }
     debounceRef.current = setTimeout(async () => {
       try {
-        const res = await fetch(
-          `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(value)}&language=en&count=5&format=json`
-        );
-        const data = await res.json();
-        if (data.results) {
-          setSuggestions(data.results.map(r => ({
-            name: `${r.name}${r.admin1 ? ', ' + r.admin1 : ''}${r.country ? ', ' + r.country : ''}`,
-            lat: r.latitude,
-            lon: r.longitude
-          })));
-          setShowSuggestions(true);
-        }
+        const results = await searchLocations(value, 5);
+        setSuggestions(results);
+        setShowSuggestions(true);
       } catch (e) {
         setSuggestions([]);
       }

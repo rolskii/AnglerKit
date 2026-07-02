@@ -7,6 +7,7 @@ import { ReelIcon as ReelDiscIcon } from "@/components/GearIcons";
 import FishIcon from "@/components/FishIcon";
 import MoonPhaseSymbol from "@/components/MoonPhaseSymbol";
 import { base44 } from "@/api/base44Client";
+import { searchLocations, geocodeLocation } from "@/lib/geocode";
 import PullToRefresh from "@/components/PullToRefresh";
 import FeaturedImage from "@/components/FeaturedImage";
 
@@ -157,10 +158,8 @@ export default function Home() {
 
   const fetchWeather = async (coords, tempUnit) => {
     try {
-      const res = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current=temperature_2m,weather_code,wind_speed_10m&daily=sunrise,sunset&timezone=auto&temperature_unit=${tempUnit}&wind_speed_unit=mph`
-      );
-      const data = await res.json();
+      const res = await base44.functions.invoke('weatherkit', { lat: coords.lat, lon: coords.lon, unit: tempUnit });
+      const data = res.data;
       const temp = Math.round(data.current.temperature_2m);
       const desc = getWeatherDescription(data.current.weather_code);
       const wind = data.current.wind_speed_10m;
@@ -190,16 +189,8 @@ export default function Home() {
     setLocationInput(value);
     if (value.trim().length < 2) { setSuggestions([]); return; }
     try {
-      const response = await fetch(
-        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(value)}&language=en&count=5&format=json`
-      );
-      const data = await response.json();
-      if (data.results) {
-        setSuggestions(data.results.map(r => ({
-          name: `${r.name}${r.admin1 ? ', ' + r.admin1 : ''}${r.country ? ', ' + r.country : ''}`,
-          lat: r.latitude, lon: r.longitude
-        })));
-      }
+      const results = await searchLocations(value, 5);
+      setSuggestions(results);
     } catch (e) { setSuggestions([]); }
   };
 
@@ -221,15 +212,9 @@ export default function Home() {
     const value = locationInput.trim();
     if (!value) { setLocationDialogOpen(false); return; }
     try {
-      const response = await fetch(
-        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(value)}&language=en&count=1&format=json`
-      );
-      const data = await response.json();
-      if (data.results && data.results[0]) {
-        await selectLocation({
-          name: `${data.results[0].name}${data.results[0].admin1 ? ', ' + data.results[0].admin1 : ''}${data.results[0].country ? ', ' + data.results[0].country : ''}`,
-          lat: data.results[0].latitude, lon: data.results[0].longitude
-        });
+      const result = await geocodeLocation(value);
+      if (result) {
+        await selectLocation(result);
         return;
       }
     } catch (e) {}

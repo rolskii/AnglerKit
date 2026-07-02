@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Cloud, CloudRain, Sun, Moon, Wind, Droplets, Eye, Gauge, MapPin, ChevronDown } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
+import { searchLocations, geocodeLocation } from '@/lib/geocode';
 
 export default function Weather() {
   const savedLocation = localStorage.getItem('weatherLocation');
@@ -37,10 +39,8 @@ export default function Weather() {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,sunrise,sunset&temperature_unit=${unit}&wind_speed_unit=mph&hourly=temperature_2m,weather_code,precipitation_probability,wind_speed_10m&forecast_days=10`
-      );
-      const data = await response.json();
+      const res = await base44.functions.invoke('weatherkit', { lat, lon, unit });
+      const data = res.data;
       const coords = { lat, lon, name: locationName };
       setLastCoords(coords);
       saveLocation(coords, locationName);
@@ -59,27 +59,9 @@ export default function Weather() {
     setLoading(true);
     setError(null);
     try {
-      const geoResponse = await fetch(
-        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent('Toronto')}&language=en&count=1&format=json`
-      );
-      const geoData = await geoResponse.json();
-      if (!geoData.results?.[0]) throw new Error('Location not found');
-      const result = geoData.results[0];
-      const lat = result.latitude;
-      const lon = result.longitude;
-      const locationName = `${result.name}${result.admin1 ? ', ' + result.admin1 : ''}`;
-      
-      const response = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,sunrise,sunset&temperature_unit=${tempUnit}&wind_speed_unit=mph&hourly=temperature_2m,weather_code,precipitation_probability,wind_speed_10m&forecast_days=10`
-      );
-      const data = await response.json();
-      const coords = { lat, lon, name: locationName };
-      setLastCoords(coords);
-      saveLocation(coords, locationName);
-      setLocation(locationName);
-      setEditingLocation(locationName);
-      setWeather({ current: data.current, daily: data.daily, hourly: data.hourly });
-      setLoading(false);
+      const result = await geocodeLocation('Toronto');
+      if (!result) throw new Error('Location not found');
+      await fetchWeatherByCoords(result.lat, result.lon, result.name, tempUnit);
     } catch (err) {
       setError('Unable to fetch weather. Please try updating location manually.');
       setLoading(false);
@@ -94,23 +76,18 @@ export default function Weather() {
       return;
     }
     try {
-      const response = await fetch(
-        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(value)}&language=en&count=10&format=json`
-      );
-      const data = await response.json();
-      if (data.results) {
-        const ref = userCoords || lastCoords;
-        const mapped = data.results.map(r => ({
-          label: `${r.name}${r.admin1 ? ', ' + r.admin1 : ''}${r.country ? ', ' + r.country : ''}`,
-          lat: r.latitude,
-          lon: r.longitude,
-          name: `${r.name}${r.admin1 ? ', ' + r.admin1 : ''}`,
-          distance: ref ? calculateDistance(ref.lat, ref.lon, r.latitude, r.longitude) : null,
-        }));
-        if (ref) mapped.sort((a, b) => a.distance - b.distance);
-        setSuggestions(mapped);
-        setShowSuggestions(true);
-      }
+      const results = await searchLocations(value, 10);
+      const ref = userCoords || lastCoords;
+      const mapped = results.map(r => ({
+        label: r.name,
+        lat: r.lat,
+        lon: r.lon,
+        name: r.name,
+        distance: ref ? calculateDistance(ref.lat, ref.lon, r.lat, r.lon) : null,
+      }));
+      if (ref) mapped.sort((a, b) => a.distance - b.distance);
+      setSuggestions(mapped);
+      setShowSuggestions(true);
     } catch (err) {
       setSuggestions([]);
     }
@@ -144,37 +121,14 @@ export default function Weather() {
 
     try {
       setLoading(true);
-      const geoResponse = await fetch(
-        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(loc)}&language=en&count=1&format=json`
-      );
-      const geoData = await geoResponse.json();
-      if (!geoData.results?.[0]) {
+      const result = await geocodeLocation(loc);
+      if (!result) {
         setError('Location not found. Please try another search.');
         setLoading(false);
         return;
       }
-      const result = geoData.results[0];
-      const lat = result.latitude;
-      const lon = result.longitude;
-      const locationName = `${result.name}${result.admin1 ? ', ' + result.admin1 : ''}`;
-
-      const response = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,sunrise,sunset&temperature_unit=${tempUnit}&wind_speed_unit=mph&hourly=temperature_2m,weather_code,precipitation_probability,wind_speed_10m&forecast_days=10`
-      );
-      const data = await response.json();
-      const coords = { lat, lon, name: locationName };
-      setLastCoords(coords);
-      saveLocation(coords, locationName);
-      setLocation(locationName);
-      setEditingLocation(locationName);
-      setShowSuggestions(false);
-      setWeather({
-        current: data.current,
-        daily: data.daily,
-        hourly: data.hourly,
-      });
+      await fetchWeatherByCoords(result.lat, result.lon, result.name, tempUnit);
       setError(null);
-      setLoading(false);
     } catch (err) {
       setError('Failed to fetch weather for that location.');
       setLoading(false);
