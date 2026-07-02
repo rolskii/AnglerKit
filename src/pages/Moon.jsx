@@ -611,9 +611,9 @@ export default function Moon() {
         {/* Fishing Tips */}
         <Card className="bg-secondary/30">
           <CardHeader>
-            <CardTitle className="text-xl">Fishing Tips for {moonData.phase}</CardTitle>
+            <CardTitle className="text-base">Fishing Tips for {moonData.phase}</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3 text-base">
+          <CardContent className="space-y-3 text-sm">
             {moonData.phase === 'Full Moon' && (
               <>
                 <p>✓ Excellent fishing conditions—bright light aids fish spotting of prey</p>
