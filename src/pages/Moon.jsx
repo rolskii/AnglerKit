@@ -436,10 +436,6 @@ export default function Moon() {
               ))}
             </div>
             <div className="flex items-center justify-center gap-2 mt-2">
-              <p className={`text-sm font-bold ${moonData.fishingRating >= 5 ? 'text-green-600' : moonData.fishingRating <= 3 ? 'text-yellow-600' : 'text-primary'}`}>
-                {moonData.fishingRating}/7 — {getRatingLabel(moonData.fishingRating)}
-              </p>
-              <span className="text-muted-foreground">·</span>
               <button
                 onClick={openLocationDialog}
                 className="text-xs text-muted-foreground flex items-center gap-1 hover:text-primary transition-colors"
