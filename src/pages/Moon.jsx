@@ -530,6 +530,12 @@ export default function Moon() {
                     </li>
                   ))}
                 </ul>
+                <button
+                  onClick={() => playAlarm('12:30 PM', 15)}
+                  className="mt-3 px-3 py-1.5 rounded-lg text-xs font-medium bg-accent text-accent-foreground hover:bg-accent/90 flex items-center gap-1.5 transition-colors"
+                >
+                  <Bell className="w-3.5 h-3.5" /> Test Alarm
+                </button>
               </div>
             </div>
 
@@ -586,14 +592,6 @@ export default function Moon() {
               </div>
             )}
 
-            <div className="flex items-center gap-3 mt-4">
-              <button
-                onClick={() => playAlarm('12:30 PM', 15)}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium bg-accent text-accent-foreground hover:bg-accent/90 flex items-center gap-1.5 transition-colors"
-              >
-                <Bell className="w-3.5 h-3.5" /> Test Alarm
-              </button>
-            </div>
           </CardContent>
         </Card>
 
