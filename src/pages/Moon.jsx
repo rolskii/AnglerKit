@@ -118,27 +118,6 @@ const buildSolunarTimes = (moonTimes, sunData) => {
       });
     }
   }
-  if (sunData) {
-    // Minor: 1-hour windows centered on sunrise and sunset
-    if (sunData.sunriseMin != null) {
-      const t = sunData.sunriseMin;
-      minor.push({
-        text: 'Sunrise',
-        time: `${minutesToTime(t - 30)} - ${minutesToTime(t + 30)}`,
-        startMin: t - 30,
-        endMin: t + 30,
-      });
-    }
-    if (sunData.sunsetMin != null) {
-      const t = sunData.sunsetMin;
-      minor.push({
-        text: 'Sunset',
-        time: `${minutesToTime(t - 30)} - ${minutesToTime(t + 30)}`,
-        startMin: t - 30,
-        endMin: t + 30,
-      });
-    }
-  }
   return { major, minor };
 };
 
