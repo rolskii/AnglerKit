@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Sun, Waves, MapPin, Bell, BellOff, Save, Search } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Sun, Waves, MapPin, Bell, BellOff, Save } from 'lucide-react';
 import FishIcon from '@/components/FishIcon';
+import LocationMapPicker from '@/components/moon/LocationMapPicker';
 import DayRatingRing from '@/components/moon/DayRatingRing';
 import DateSelector from '@/components/moon/DateSelector';
 import ActivityChart from '@/components/moon/ActivityChart';
@@ -97,32 +97,11 @@ export default function Moon() {
   const [locationDialogOpen, setLocationDialogOpen] = useState(false);
 
   const openLocationDialog = () => {
-    setEditingLocation('');
-    setSuggestions([]);
-    setShowSuggestions(false);
     setLocationDialogOpen(true);
   };
 
-  const selectLocationFromDialog = (name, lat, lon) => {
+  const selectLocationFromMap = (name, lat, lon) => {
     handleLocationChange(name, lat, lon);
-    setLocationDialogOpen(false);
-    setSuggestions([]);
-    setShowSuggestions(false);
-  };
-
-  const submitLocationDialog = (e) => {
-    e?.preventDefault();
-    const value = editingLocation.trim();
-    if (!value) { setLocationDialogOpen(false); return; }
-    if (suggestions.length > 0) {
-      const first = suggestions[0];
-      selectLocationFromDialog(first.name, first.lat, first.lon);
-      return;
-    }
-    handleLocationChange(value);
-    setLocationDialogOpen(false);
-    setSuggestions([]);
-    setShowSuggestions(false);
   };
 
   // Moon phase calculation
@@ -646,39 +625,12 @@ export default function Moon() {
         </Card>
       </div>
 
-      <Dialog open={locationDialogOpen} onOpenChange={setLocationDialogOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Change Location</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={submitLocationDialog} className="space-y-3">
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted">
-              <Search className="w-4 h-4 text-muted-foreground shrink-0" />
-              <input
-                autoFocus
-                value={editingLocation}
-                onChange={(e) => handleLocationInput(e.target.value)}
-                placeholder="Search city..."
-                className="text-sm bg-transparent flex-1 outline-none placeholder:text-muted-foreground/50"
-              />
-            </div>
-            {showSuggestions && suggestions.length > 0 && (
-              <div className="max-h-48 overflow-y-auto space-y-0.5">
-                {suggestions.map((s, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => selectLocationFromDialog(s.name, s.lat, s.lon)}
-                    className="w-full text-left px-3 py-2 text-sm hover:bg-accent/10 rounded-lg truncate"
-                  >
-                    {s.name}
-                  </button>
-                ))}
-              </div>
-            )}
-          </form>
-        </DialogContent>
-      </Dialog>
+      <LocationMapPicker
+        open={locationDialogOpen}
+        onOpenChange={setLocationDialogOpen}
+        initialCoords={coords}
+        onSelect={selectLocationFromMap}
+      />
     </div>
   );
 }
