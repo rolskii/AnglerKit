@@ -329,26 +329,26 @@ export default function Weather() {
 
               {/* Conditions Grid */}
               <div className="grid grid-cols-4 gap-2">
-                <div className="bg-card p-3 rounded-lg flex flex-col items-center justify-between h-full">
+                <div className="bg-secondary p-3 rounded-lg flex flex-col items-center justify-between h-full">
                   <WeatherGlyph code={51} className="w-10 h-10 shrink-0" />
                   <p className="text-xs font-semibold">{current.relative_humidity_2m}%</p>
                   <span className="text-xs text-muted-foreground">Humidity</span>
                 </div>
-                <div className="bg-card p-3 rounded-lg flex flex-col items-center justify-between h-full">
+                <div className="bg-secondary p-3 rounded-lg flex flex-col items-center justify-between h-full">
                   <WeatherGlyph code={45} className="w-10 h-10 shrink-0" />
                   <p className="text-xs font-semibold">
                     {tempUnit === 'fahrenheit' ? Math.round(current.wind_speed_10m) + ' mph' : Math.round(current.wind_speed_10m * 1.60934) + ' km/h'}
                   </p>
                   <span className="text-xs text-muted-foreground">Wind</span>
                 </div>
-                <div className="bg-card p-3 rounded-lg flex flex-col items-center justify-between h-full">
+                <div className="bg-secondary p-3 rounded-lg flex flex-col items-center justify-between h-full">
                   <WeatherGlyph code={63} className="w-10 h-10 shrink-0" />
                   <p className="text-xs font-semibold">
                     {tempUnit === 'fahrenheit' ? current.precipitation.toFixed(2) + '"' : (current.precipitation * 25.4).toFixed(1) + ' mm'}
                   </p>
                   <span className="text-xs text-muted-foreground">Precip</span>
                 </div>
-                <div className="bg-card p-3 rounded-lg flex flex-col items-center justify-between h-full">
+                <div className="bg-secondary p-3 rounded-lg flex flex-col items-center justify-between h-full">
                   <WeatherGlyph code={3} className="w-10 h-10 shrink-0" />
                   <p className="text-xs font-semibold">{(current.pressure / 10).toFixed(1)} kPa</p>
                   <span className="text-xs text-muted-foreground">Pressure</span>
