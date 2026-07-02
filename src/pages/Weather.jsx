@@ -270,7 +270,7 @@ export default function Weather() {
             </button>
             <div className="space-y-3">
               {/* Temperature and Condition */}
-              <div className="flex items-center justify-between">
+              <div className="relative flex items-center justify-between">
                 <div className="flex items-stretch gap-3">
                   <p className="text-6xl font-bold text-primary leading-none self-center">{Math.round(current.temperature_2m)}°</p>
                   <div className="flex flex-col justify-center">
@@ -279,7 +279,7 @@ export default function Weather() {
                     <p className="text-xs text-muted-foreground leading-tight">H: {Math.round(daily.temperature_2m_max[0])}°  L: {Math.round(daily.temperature_2m_min[0])}°</p>
                   </div>
                 </div>
-                <div className="flex items-center justify-center flex-1">
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
                   <WeatherIcon className={`w-20 h-20 ${weatherIconColor}`} />
                 </div>
               </div>
