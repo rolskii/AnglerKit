@@ -385,7 +385,7 @@ export default function Weather() {
             <CardDescription>Tap a day for details</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
+            <div className="grid grid-cols-4 gap-2">
               {forecastDays.map(({ date, idx }) => {
                 return (
                   <button
