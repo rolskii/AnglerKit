@@ -6,7 +6,7 @@ export default function SunMoonFooter({ sunrise, sunset, zenith, moonPhase, illu
   return (
     <div className="grid grid-cols-3 gap-2 items-center">
       {/* Left: Sun times */}
-      <div className="space-y-3 text-right pr-1">
+      <div className="space-y-1 text-right pr-1">
         <div className="flex items-center gap-1.5 justify-end">
           <Sunrise className="w-5 h-5 text-amber-400 shrink-0" />
           <span className="text-sm font-medium">{sunrise || "--"}</span>
@@ -22,14 +22,14 @@ export default function SunMoonFooter({ sunrise, sunset, zenith, moonPhase, illu
       </div>
       {/* Center: Moon */}
       <div className="flex flex-col items-center gap-1.5 border-x border-border px-2">
-        <RealisticMoon illumination={illumination} className="w-16 h-16" />
+        <RealisticMoon illumination={illumination} className="w-12 h-12" />
         <p className="text-xs font-semibold text-muted-foreground tracking-wide text-center uppercase leading-tight">
           {moonPhase}
         </p>
         <p className="text-xs text-muted-foreground">{illumination}% lit</p>
       </div>
       {/* Right: Moon data */}
-      <div className="space-y-3 text-left pl-1">
+      <div className="space-y-1 text-left pl-1">
         <div>
           <p className="text-xs text-muted-foreground">Illumination</p>
           <p className="text-sm font-semibold">{illumination}%</p>
