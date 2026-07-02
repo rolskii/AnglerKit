@@ -44,7 +44,7 @@ export default function ActivityChart({ levels, highlightIndex }) {
 
   return (
     <div>
-      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-24">
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-16">
         <defs>
           <linearGradient id="activityGradient" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.45" />
