@@ -371,8 +371,8 @@ export default function Weather() {
 
         {/* 10-Day Forecast */}
         <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">10-Day Forecast</CardTitle>
+          <CardHeader className="pt-3 pb-2">
+            <CardTitle className="text-base">10-Day Forecast</CardTitle>
             <CardDescription>Daily high and low temperatures</CardDescription>
           </CardHeader>
           <CardContent>
