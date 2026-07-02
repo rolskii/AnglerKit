@@ -43,7 +43,7 @@ const getRatingLabel = (rating) => {
   return 'Moderate';
 };
 
-export default function WeeklyBiteForecast({ open, onOpenChange, startDate }) {
+export default function WeeklyBiteForecast({ open, onOpenChange, startDate, onSelectDay }) {
   const days = useMemo(() => {
     const base = startDate ? new Date(startDate + 'T00:00:00') : new Date();
     return Array.from({ length: 7 }, (_, i) => {
@@ -59,6 +59,7 @@ export default function WeeklyBiteForecast({ open, onOpenChange, startDate }) {
         rating,
         percent,
         isToday,
+        dateStr: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`,
         label: isToday
           ? 'Today'
           : date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
@@ -75,9 +76,10 @@ export default function WeeklyBiteForecast({ open, onOpenChange, startDate }) {
         </DialogHeader>
         <div className="space-y-2 max-h-[60vh] overflow-y-auto">
           {days.map((day, idx) => (
-            <div
+            <button
               key={idx}
-              className={`flex items-center gap-3 p-3 rounded-xl ${day.isToday ? 'bg-primary/10 border border-primary/20' : 'bg-secondary'}`}
+              onClick={() => onSelectDay?.(day.dateStr)}
+              className={`w-full text-left flex items-center gap-3 p-3 rounded-xl transition-opacity hover:opacity-80 ${day.isToday ? 'bg-primary/10 border border-primary/20' : 'bg-secondary'}`}
             >
               <MoonPhaseSymbol phase={day.phase} className="w-10 h-10 shrink-0" />
               <div className="flex-1 min-w-0">
@@ -97,7 +99,7 @@ export default function WeeklyBiteForecast({ open, onOpenChange, startDate }) {
                 </p>
                 <p className="text-[10px] text-muted-foreground">{getRatingLabel(day.rating)}</p>
               </div>
-            </div>
+            </button>
           ))}
         </div>
       </DialogContent>

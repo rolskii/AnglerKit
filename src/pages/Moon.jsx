@@ -12,6 +12,7 @@ import DayRatingRing from '@/components/moon/DayRatingRing';
 import ActivityChart from '@/components/moon/ActivityChart';
 import SunMoonFooter from '@/components/moon/SunMoonFooter';
 import WeeklyBiteForecast from '@/components/moon/WeeklyBiteForecast';
+import DaySolunarDialog from '@/components/moon/DaySolunarDialog';
 
 const todayStr = () => {
   const now = new Date();
@@ -147,6 +148,13 @@ export default function Moon() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [locationDialogOpen, setLocationDialogOpen] = useState(false);
   const [weeklyForecastOpen, setWeeklyForecastOpen] = useState(false);
+  const [dayDetailOpen, setDayDetailOpen] = useState(false);
+
+  const handleSelectDay = (dateStr) => {
+    setSelectedDate(dateStr);
+    setWeeklyForecastOpen(false);
+    setDayDetailOpen(true);
+  };
 
   const openLocationDialog = () => {
     setLocationDialogOpen(true);
@@ -708,6 +716,22 @@ export default function Moon() {
         open={weeklyForecastOpen}
         onOpenChange={setWeeklyForecastOpen}
         startDate={selectedDate}
+        onSelectDay={handleSelectDay}
+      />
+
+      <DaySolunarDialog
+        open={dayDetailOpen}
+        onOpenChange={setDayDetailOpen}
+        moonData={moonData}
+        solunar={solunar}
+        sunData={sunData}
+        currentDayAlarmList={currentDayAlarmList}
+        onToggleAlarm={toggleAlarm}
+        pendingTime={pendingTime}
+        setPendingTime={setPendingTime}
+        pendingOffset={pendingOffset}
+        setPendingOffset={setPendingOffset}
+        onSaveAlarm={saveAlarm}
       />
 
       <LocationMapPicker
