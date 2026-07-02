@@ -6,7 +6,6 @@ import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import LocationMapPicker from '@/components/moon/LocationMapPicker';
 import DayRatingRing from '@/components/moon/DayRatingRing';
-import DateSelector from '@/components/moon/DateSelector';
 import ActivityChart from '@/components/moon/ActivityChart';
 import SunMoonFooter from '@/components/moon/SunMoonFooter';
 
@@ -465,13 +464,6 @@ export default function Moon() {
                 <span className="text-3xl font-bold text-foreground">{ratingPercent}%</span>
               </div>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Date Selector */}
-        <Card>
-          <CardContent className="pt-4 pb-4">
-            <DateSelector selectedDate={selectedDate} onSelectDate={setSelectedDate} />
           </CardContent>
         </Card>
 
