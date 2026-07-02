@@ -84,14 +84,14 @@ export default function DayForecastDialog({ open, onOpenChange, dayData, hourly,
             </div>
 
             {/* Conditions Grid */}
-            <div className="flex gap-1">
-              <div className="flex-1 min-w-0 bg-secondary p-1.5 rounded-lg flex flex-col items-center gap-0.5">
-                <WeatherGlyph code={51} className="w-6 h-7 shrink-0" />
+            <div className="grid grid-cols-4 gap-1">
+              <div className="bg-secondary p-1.5 rounded-lg flex flex-col items-center gap-0.5 overflow-hidden">
+                <WeatherGlyph code={51} className="w-6 h-7" />
                 <p className="text-[10px] font-semibold leading-tight">{midHumidity != null ? midHumidity + '%' : '—'}</p>
                 <span className="text-[9px] text-muted-foreground leading-tight">Humidity</span>
               </div>
-              <div className="flex-1 min-w-0 bg-secondary p-1.5 rounded-lg flex flex-col items-center gap-0.5">
-                <WeatherGlyph code={45} className="w-6 h-7 shrink-0" />
+              <div className="bg-secondary p-1.5 rounded-lg flex flex-col items-center gap-0.5 overflow-hidden">
+                <WeatherGlyph code={45} className="w-6 h-7" />
                 <p className="text-[10px] font-semibold leading-tight">
                   {tempUnit === 'fahrenheit'
                     ? Math.round(daily.wind_speed_10m_max?.[idx] ?? 0) + 'mph'
@@ -99,8 +99,8 @@ export default function DayForecastDialog({ open, onOpenChange, dayData, hourly,
                 </p>
                 <span className="text-[9px] text-muted-foreground leading-tight">Wind</span>
               </div>
-              <div className="flex-1 min-w-0 bg-secondary p-1.5 rounded-lg flex flex-col items-center gap-0.5">
-                <WeatherGlyph code={63} className="w-6 h-7 shrink-0" />
+              <div className="bg-secondary p-1.5 rounded-lg flex flex-col items-center gap-0.5 overflow-hidden">
+                <WeatherGlyph code={63} className="w-6 h-7" />
                 <p className="text-[10px] font-semibold leading-tight">
                   {tempUnit === 'fahrenheit'
                     ? (daily.precipitation_sum?.[idx] ?? 0).toFixed(2) + '"'
@@ -108,8 +108,8 @@ export default function DayForecastDialog({ open, onOpenChange, dayData, hourly,
                 </p>
                 <span className="text-[9px] text-muted-foreground leading-tight">Precip</span>
               </div>
-              <div className="flex-1 min-w-0 bg-secondary p-1.5 rounded-lg flex flex-col items-center gap-0.5">
-                <WeatherGlyph code={3} className="w-6 h-7 shrink-0" />
+              <div className="bg-secondary p-1.5 rounded-lg flex flex-col items-center gap-0.5 overflow-hidden">
+                <WeatherGlyph code={3} className="w-6 h-7" />
                 <p className="text-[10px] font-semibold leading-tight">{midPressure != null ? (midPressure / 10).toFixed(1) + 'kPa' : '—'}</p>
                 <span className="text-[9px] text-muted-foreground leading-tight">Pressure</span>
               </div>

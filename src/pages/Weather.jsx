@@ -328,28 +328,28 @@ export default function Weather() {
               </div>
 
               {/* Conditions Grid */}
-              <div className="flex gap-2">
-                <div className="flex-1 min-w-0 bg-secondary p-2.5 rounded-lg flex flex-col items-center gap-1 overflow-hidden">
-                  <WeatherGlyph code={51} className="w-8 h-9 max-w-full" />
+              <div className="grid grid-cols-4 gap-2">
+                <div className="bg-secondary p-2 rounded-lg flex flex-col items-center gap-1 overflow-hidden">
+                  <WeatherGlyph code={51} className="w-8 h-9" />
                   <p className="text-[11px] font-semibold leading-tight">{current.relative_humidity_2m}%</p>
                   <span className="text-[10px] text-muted-foreground leading-tight">Humidity</span>
                 </div>
-                <div className="flex-1 min-w-0 bg-secondary p-2.5 rounded-lg flex flex-col items-center gap-1 overflow-hidden">
-                  <WeatherGlyph code={45} className="w-8 h-9 max-w-full" />
+                <div className="bg-secondary p-2 rounded-lg flex flex-col items-center gap-1 overflow-hidden">
+                  <WeatherGlyph code={45} className="w-8 h-9" />
                   <p className="text-[11px] font-semibold leading-tight">
                     {tempUnit === 'fahrenheit' ? Math.round(current.wind_speed_10m) + 'mph' : Math.round(current.wind_speed_10m * 1.60934) + 'km/h'}
                   </p>
                   <span className="text-[10px] text-muted-foreground leading-tight">Wind</span>
                 </div>
-                <div className="flex-1 min-w-0 bg-secondary p-2.5 rounded-lg flex flex-col items-center gap-1 overflow-hidden">
-                  <WeatherGlyph code={63} className="w-8 h-9 max-w-full" />
+                <div className="bg-secondary p-2 rounded-lg flex flex-col items-center gap-1 overflow-hidden">
+                  <WeatherGlyph code={63} className="w-8 h-9" />
                   <p className="text-[11px] font-semibold leading-tight">
                     {tempUnit === 'fahrenheit' ? current.precipitation.toFixed(2) + '"' : (current.precipitation * 25.4).toFixed(1) + 'mm'}
                   </p>
                   <span className="text-[10px] text-muted-foreground leading-tight">Precip</span>
                 </div>
-                <div className="flex-1 min-w-0 bg-secondary p-2.5 rounded-lg flex flex-col items-center gap-1 overflow-hidden">
-                  <WeatherGlyph code={3} className="w-8 h-9 max-w-full" />
+                <div className="bg-secondary p-2 rounded-lg flex flex-col items-center gap-1 overflow-hidden">
+                  <WeatherGlyph code={3} className="w-8 h-9" />
                   <p className="text-[11px] font-semibold leading-tight">{(current.pressure / 10).toFixed(1)}kPa</p>
                   <span className="text-[10px] text-muted-foreground leading-tight">Pressure</span>
                 </div>
