@@ -271,6 +271,9 @@ export default function Weather() {
 
   const current = weather.current;
   const daily = weather.daily;
+  const forecastDays = daily.time
+    .map((date, idx) => ({ date, idx }))
+    .filter(({ date }) => date > today);
   const WeatherIcon = getWeatherIcon(current.weather_code);
   const weatherIconColor = getWeatherIconColor(current.weather_code);
 
@@ -402,10 +405,7 @@ export default function Weather() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
-              {daily.time
-                .map((date, idx) => ({ date, idx }))
-                .filter(({ date }) => date > today)
-                .map(({ date, idx }) => {
+              {forecastDays.map(({ date, idx }) => {
                 const ForecastIcon = getWeatherIcon(daily.weather_code[idx]);
                 return (
                   <button
