@@ -485,11 +485,10 @@ export default function Moon() {
 
         {/* Activity Chart */}
         <Card>
-          <CardHeader className="pt-3 pb-2">
+          <CardHeader className="pt-3 pb-0">
             <CardTitle className="text-base">Hourly Fish Activity</CardTitle>
-
           </CardHeader>
-          <CardContent className="pt-3 pb-3">
+          <CardContent className="pt-0 pb-3">
             <ActivityChart days={multiDayActivity} />
           </CardContent>
         </Card>
