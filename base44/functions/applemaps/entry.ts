@@ -3,7 +3,7 @@ import { SignJWT } from 'npm:jose@5.9.6';
 
 const MAPS_BASE = 'https://maps-api.apple.com/v1';
 
-async function generateMapsJWT() {
+async function generateMapsJWT(scope, origin) {
   const teamId = Deno.env.get('APPLE_MAPS_TEAM_ID');
   const keyId = Deno.env.get('APPLE_MAPS_KEY_ID');
   const privateKeyRaw = Deno.env.get('APPLE_MAPS_PRIVATE_KEY');
@@ -33,8 +33,10 @@ async function generateMapsJWT() {
   );
 
   const now = Math.floor(Date.now() / 1000);
+  const payload = { scope };
+  if (origin) payload.origin = origin;
 
-  return await new SignJWT({ scope: 'server_api' })
+  return await new SignJWT(payload)
     .setProtectedHeader({ alg: 'ES256', kid: keyId, typ: 'JWT' })
     .setIssuer(teamId)
     .setIssuedAt(now)
@@ -43,7 +45,7 @@ async function generateMapsJWT() {
 }
 
 async function getMapsAccessToken() {
-  const jwt = await generateMapsJWT();
+  const jwt = await generateMapsJWT('server_api');
   const tokenRes = await fetch(`${MAPS_BASE}/token`, {
     headers: { Authorization: `Bearer ${jwt}` },
   });
@@ -62,7 +64,13 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json();
-    const { query, mode } = body;
+    const { query, mode, origin } = body;
+
+    // MapKit JS token — return signed JWT directly (no token exchange)
+    if (mode === 'mapkit_token') {
+      const token = await generateMapsJWT('mapkit_js', origin || '*');
+      return Response.json({ token });
+    }
 
     if (!query) {
       return Response.json({ error: 'Missing query parameter' }, { status: 400 });

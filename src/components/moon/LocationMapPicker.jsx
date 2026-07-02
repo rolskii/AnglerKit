@@ -1,39 +1,9 @@
+/* global mapkit */
 import React, { useState, useEffect, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
-import L from 'leaflet';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Search, MapPin, Check } from 'lucide-react';
 import { searchLocations } from '@/lib/geocode';
-
-// Fix default marker icon for Leaflet under bundlers
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-});
-
-// Component that tracks map movement and reports center
-function MapEventHandler({ onMoveEnd }) {
-  const map = useMapEvents({
-    moveend: () => {
-      const center = map.getCenter();
-      onMoveEnd(center.lat, center.lng);
-    },
-  });
-  return null;
-}
-
-// Component to fly to a new position when it changes externally
-function FlyTo({ position }) {
-  const map = useMap();
-  useEffect(() => {
-    if (position) {
-      map.flyTo(position, Math.max(map.getZoom(), 10), { duration: 0.8 });
-    }
-  }, [position?.[0], position?.[1]]);
-  return null;
-}
+import { base44 } from '@/api/base44Client';
 
 // Reverse geocode using BigDataCloud free API
 const reverseGeocode = async (lat, lon) => {
@@ -49,6 +19,40 @@ const reverseGeocode = async (lat, lon) => {
   }
 };
 
+// Load MapKit JS script once
+let mapkitLoaded = false;
+let mapkitLoadPromise = null;
+
+function loadMapKit() {
+  if (mapkitLoaded) return Promise.resolve();
+  if (mapkitLoadPromise) return mapkitLoadPromise;
+
+  mapkitLoadPromise = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.js';
+    script.onload = () => { mapkitLoaded = true; resolve(); };
+    script.onerror = () => reject(new Error('Failed to load MapKit JS'));
+    document.head.appendChild(script);
+  });
+  return mapkitLoadPromise;
+}
+
+// Track mapkit.init — should only be called once
+let mapkitInitialized = false;
+
+function ensureMapKitInit() {
+  if (mapkitInitialized) return;
+  mapkit.init({
+    authorizationCallback: (done) => {
+      const origin = window.location.hostname || '*';
+      base44.functions.invoke('applemaps', { mode: 'mapkit_token', origin })
+        .then((res) => done(res.data.token))
+        .catch((err) => console.error('MapKit token fetch failed:', err));
+    },
+  });
+  mapkitInitialized = true;
+}
+
 export default function LocationMapPicker({ open, onOpenChange, initialCoords, onSelect }) {
   const [searchValue, setSearchValue] = useState('');
   const [suggestions, setSuggestions] = useState([]);
@@ -56,9 +60,12 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, o
   const [markerPos, setMarkerPos] = useState(
     initialCoords ? [initialCoords.lat, initialCoords.lon] : [43.6532, -79.3832]
   );
-  const [flyPos, setFlyPos] = useState(null);
   const [placeName, setPlaceName] = useState(initialCoords?.name || '');
+  const [mapLoading, setMapLoading] = useState(false);
+  const mapContainerRef = useRef(null);
+  const mapRef = useRef(null);
   const debounceRef = useRef(null);
+  const skipReverseGeocodeRef = useRef(false);
 
   useEffect(() => {
     if (open) {
@@ -69,6 +76,67 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, o
       setShowSuggestions(false);
     }
   }, [open, initialCoords]);
+
+  // Initialize MapKit JS map when dialog opens
+  useEffect(() => {
+    if (!open) return;
+
+    let cancelled = false;
+    setMapLoading(true);
+
+    const initMap = async () => {
+      try {
+        await loadMapKit();
+        if (cancelled) return;
+
+        ensureMapKitInit();
+
+        // Wait a frame for the dialog container to be laid out
+        await new Promise((r) => requestAnimationFrame(r));
+        if (cancelled || !mapContainerRef.current) return;
+
+        const center = new mapkit.Coordinate(markerPos[0], markerPos[1]);
+        const map = new mapkit.Map(mapContainerRef.current, {
+          center,
+          cameraDistance: 80000,
+        });
+
+        mapRef.current = map;
+
+        map.addEventListener('region-change-end', async () => {
+          if (cancelled) return;
+          const c = map.center;
+          setMarkerPos([c.latitude, c.longitude]);
+          if (skipReverseGeocodeRef.current) {
+            skipReverseGeocodeRef.current = false;
+            return;
+          }
+          const name = await reverseGeocode(c.latitude, c.longitude);
+          if (name && !cancelled) {
+            setPlaceName(name);
+            setSearchValue(name);
+          }
+        });
+
+        setMapLoading(false);
+      } catch (e) {
+        console.error('MapKit init failed:', e);
+        setMapLoading(false);
+      }
+    };
+
+    // Small delay to ensure dialog portal DOM is ready
+    const timer = setTimeout(initMap, 100);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+      if (mapRef.current) {
+        try { mapRef.current.destroy(); } catch (e) {}
+        mapRef.current = null;
+      }
+    };
+  }, [open]);
 
   const handleSearchInput = (value) => {
     setSearchValue(value);
@@ -90,19 +158,13 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, o
   };
 
   const selectSuggestion = (s) => {
+    skipReverseGeocodeRef.current = true;
     setMarkerPos([s.lat, s.lon]);
-    setFlyPos([s.lat, s.lon]);
     setPlaceName(s.name);
     setSearchValue(s.name);
     setShowSuggestions(false);
-  };
-
-  const handleMoveEnd = async (lat, lon) => {
-    setMarkerPos([lat, lon]);
-    const name = await reverseGeocode(lat, lon);
-    if (name) {
-      setPlaceName(name);
-      setSearchValue(name);
+    if (mapRef.current) {
+      mapRef.current.setCenterAnimated(new mapkit.Coordinate(s.lat, s.lon));
     }
   };
 
@@ -147,22 +209,13 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, o
         </div>
 
         {/* Map */}
-        <div className="relative h-[300px] w-full">
-          <MapContainer
-            center={markerPos}
-            zoom={10}
-            scrollWheelZoom={false}
-            className="h-full w-full"
-            style={{ background: 'hsl(var(--muted))' }}
-          >
-            <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='&copy; OpenStreetMap contributors'
-            />
-            <Marker position={markerPos} />
-            <MapEventHandler onMoveEnd={handleMoveEnd} />
-            <FlyTo position={flyPos} />
-          </MapContainer>
+        <div className="relative h-[300px] w-full bg-muted">
+          <div ref={mapContainerRef} className="h-full w-full" />
+          {mapLoading && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
+            </div>
+          )}
           {/* Center pin overlay */}
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
             <div className="w-8 h-8 -mt-8 text-primary drop-shadow-lg">
