@@ -60,11 +60,11 @@ const DayGraph = ({ day }) => {
 
   const highlightX = highlightIndex != null ? highlightIndex * stepX : null;
   const peaks = findPeaks(levels);
+  const peak12am = peaks.find(p => p === levels.length - 1);
   const hourCount = TOTAL_HOURS;
 
   return (
     <div className="snap-start shrink-0 w-full px-0.5">
-      <p className="text-xs text-muted-foreground text-center mb-2">{dayLabel}</p>
       <div className="relative">
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-10">
           <defs>
@@ -96,6 +96,16 @@ const DayGraph = ({ day }) => {
           )}
         </svg>
         <div className="absolute inset-0 pointer-events-none">
+          <div
+            className="absolute text-xs text-muted-foreground font-medium whitespace-nowrap"
+            style={
+              peak12am != null
+                ? { left: '100%', top: `${100 - (levels[peak12am] / maxLevel) * 100}%`, transform: 'translate(8px, calc(-100% + 2px))' }
+                : { left: '0', top: '0', transform: 'translate(0, calc(-100% + 2px))' }
+            }
+          >
+            {dayLabel}
+          </div>
           {peaks.map((peakIdx) => {
             const px = (peakIdx / (levels.length - 1)) * 100;
             const py = 100 - (levels[peakIdx] / maxLevel) * 100;
