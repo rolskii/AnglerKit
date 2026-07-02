@@ -9,10 +9,9 @@ async function generateMapsJWT() {
   const privateKeyRaw = Deno.env.get('APPLE_MAPS_PRIVATE_KEY');
 
   if (!teamId || !keyId || !privateKeyRaw) {
-    throw new Error('Missing Apple Maps credentials. Set APPLE_MAPS_KEY_ID and APPLE_MAPS_PRIVATE_KEY.');
+    throw new Error('Missing Apple Maps credentials. Set APPLE_MAPS_TEAM_ID, APPLE_MAPS_KEY_ID, and APPLE_MAPS_PRIVATE_KEY.');
   }
 
-  // Ensure the key has PEM headers (user may have pasted raw base64)
   let privateKeyPem = privateKeyRaw.trim();
   if (!privateKeyPem.includes('BEGIN PRIVATE KEY')) {
     privateKeyPem = `-----BEGIN PRIVATE KEY-----\n${privateKeyPem}\n-----END PRIVATE KEY-----`;
@@ -35,12 +34,25 @@ async function generateMapsJWT() {
 
   const now = Math.floor(Date.now() / 1000);
 
-  return await new SignJWT({})
+  return await new SignJWT({ scope: 'server_api' })
     .setProtectedHeader({ alg: 'ES256', kid: keyId, typ: 'JWT' })
     .setIssuer(teamId)
     .setIssuedAt(now)
     .setExpirationTime(now + 3600)
     .sign(key);
+}
+
+async function getMapsAccessToken() {
+  const jwt = await generateMapsJWT();
+  const tokenRes = await fetch(`${MAPS_BASE}/token`, {
+    headers: { Authorization: `Bearer ${jwt}` },
+  });
+  if (!tokenRes.ok) {
+    const text = await tokenRes.text();
+    throw new Error(`Token exchange failed: ${tokenRes.status} - ${text}`);
+  }
+  const tokenData = await tokenRes.json();
+  return tokenData.accessToken;
 }
 
 Deno.serve(async (req) => {
@@ -50,40 +62,26 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json();
-    const { query, mode } = body; // mode: 'search' | 'geocode'
+    const { query, mode } = body;
 
     if (!query) {
       return Response.json({ error: 'Missing query parameter' }, { status: 400 });
     }
 
-    const token = await generateMapsJWT();
-
-    // Decode JWT payload for debugging (without signature)
-    const tokenParts = token.split('.');
-    const payloadStr = atob(tokenParts[1]);
-    const tokenPayload = JSON.parse(payloadStr);
+    const accessToken = await getMapsAccessToken();
 
     const endpoint = mode === 'geocode'
-      ? `${MAPS_BASE}/geocode?address=${encodeURIComponent(query)}&limit=1`
+      ? `${MAPS_BASE}/geocode?q=${encodeURIComponent(query)}&limit=1`
       : `${MAPS_BASE}/search?q=${encodeURIComponent(query)}&limit=${body.limit || 5}`;
 
     const response = await fetch(endpoint, {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${accessToken}` },
     });
 
     if (!response.ok) {
       const text = await response.text();
       return Response.json(
-        { 
-          error: `Apple Maps API error: ${response.status} - ${text}`,
-          debug: {
-            teamId: Deno.env.get('APPLE_MAPS_TEAM_ID'),
-            keyId: Deno.env.get('APPLE_MAPS_KEY_ID'),
-            tokenPayload,
-            tokenHeader: JSON.parse(atob(tokenParts[0])),
-            endpoint,
-          }
-        },
+        { error: `Apple Maps API error: ${response.status} - ${text}` },
         { status: 502 }
       );
     }
