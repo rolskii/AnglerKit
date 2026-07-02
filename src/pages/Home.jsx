@@ -277,7 +277,7 @@ export default function Home() {
             <div className="flex items-center justify-start">
               {moonPhase && <MoonPhaseSymbol phase={moonPhase} className="w-12 h-12" />}
             </div>
-            <div className="flex items-center justify-end">
+            <div className="flex items-center justify-end pr-2">
               {weatherInfo && (
                 <WeatherGlyph code={weatherInfo.code} isNight={weatherInfo.isNight} className="w-16 h-20" />
               )}
