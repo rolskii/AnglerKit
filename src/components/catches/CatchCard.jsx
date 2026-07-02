@@ -81,12 +81,9 @@ export default function CatchCard({ catchItem, onEdit, onDelete }) {
         <Detail label="Girth" value={catchItem.girth ? `${catchItem.girth} in` : null} />
         {estWeight != null ? (
           <div className="flex justify-between gap-2 items-center">
-            <span className="text-muted-foreground flex items-start gap-1 whitespace-normal">
-              Estimated Weight
-              <button onClick={() => setShowFormula(v => !v)} className="text-amber-500 hover:text-amber-600 transition-colors leading-none mt-0.5" aria-label="Show formula">
-                <span className="text-xl font-bold text-amber-500">*</span>
-              </button>
-            </span>
+            <button onClick={() => setShowFormula(v => !v)} className="text-muted-foreground whitespace-normal text-left leading-snug" aria-label="Show formula">
+              Estimated Weight<span className="text-xl font-bold text-amber-500 align-middle">*</span>
+            </button>
             <span className="font-medium text-right whitespace-nowrap">{estWeight.toFixed(2)} lb</span>
           </div>
         ) : (
