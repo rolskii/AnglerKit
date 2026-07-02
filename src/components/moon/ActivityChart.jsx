@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import FishIcon from "@/components/FishIcon";
 
 const TOTAL_HOURS = 19; // 5am to 12am
@@ -146,8 +146,18 @@ const DayGraph = ({ day }) => {
 };
 
 export default function ActivityChart({ days }) {
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    const todayIndex = days.findIndex(d => d.label === "Today");
+    if (todayIndex >= 0 && scrollRef.current) {
+      const child = scrollRef.current.children[todayIndex];
+      if (child) child.scrollIntoView({ inline: "start", behavior: "auto" });
+    }
+  }, [days]);
+
   return (
-    <div className="overflow-x-auto snap-x snap-mandatory flex scrollbar-hide">
+    <div ref={scrollRef} className="overflow-x-auto snap-x snap-mandatory flex scrollbar-hide">
       {days.map(day => <DayGraph key={day.dateStr} day={day} />)}
     </div>
   );
