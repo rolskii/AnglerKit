@@ -488,20 +488,22 @@ export default function Moon() {
                     const hasAlarm = currentDayAlarmList.some(a => a.time === alarmTime);
                     return (
                       <li key={idx}>
-                        <p className="text-sm font-medium">{item.time}</p>
-                        <p className="text-[10px] text-muted-foreground mb-1">{item.text}</p>
-                        <button
-                          onClick={() => toggleAlarm(alarmTime)}
-                          className={`px-2 py-1 rounded-md text-[10px] font-medium flex items-center gap-1 transition-colors ${
-                            hasAlarm
-                              ? 'bg-primary text-primary-foreground'
-                              : pendingTime === alarmTime
-                                ? 'bg-accent text-accent-foreground'
-                                : 'bg-primary/20 text-primary hover:bg-primary/30'
-                          }`}
-                        >
-                          {hasAlarm ? <BellOff className="w-3.5 h-3.5" /> : <Bell className="w-3.5 h-3.5" />}
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-medium">{item.time}</p>
+                          <button
+                            onClick={() => toggleAlarm(alarmTime)}
+                            className={`p-1 rounded-md flex items-center transition-colors ${
+                              hasAlarm
+                                ? 'bg-primary text-primary-foreground'
+                                : pendingTime === alarmTime
+                                  ? 'bg-accent text-accent-foreground'
+                                  : 'bg-primary/20 text-primary hover:bg-primary/30'
+                            }`}
+                          >
+                            {hasAlarm ? <BellOff className="w-3.5 h-3.5" /> : <Bell className="w-3.5 h-3.5" />}
+                          </button>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground">{item.text}</p>
                       </li>
                     );
                   })}
