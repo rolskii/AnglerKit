@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Share2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import html2canvas from "html2canvas";
 
 function downloadBlob(blob, filename) {
   const url = URL.createObjectURL(blob);
@@ -30,13 +31,7 @@ function esc(s) {
     .replace(/"/g, "&quot;");
 }
 
-function buildStatusHTML(title, text) {
-  const lines = String(text ?? "")
-    .split("\n")
-    .filter((l) => l.trim())
-    .map((l) => `<div class="line">${esc(l)}</div>`)
-    .join("");
-
+function buildScreenshotHTML(title, imgDataUrl) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -46,35 +41,39 @@ function buildStatusHTML(title, text) {
 <style>
   * { box-sizing: border-box; }
   body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #eef2f6; color: #0f172a; padding: 20px; }
-  .card { max-width: 560px; margin: 0 auto; background: #fff; border-radius: 16px; box-shadow: 0 4px 20px rgba(15,23,42,.08); overflow: hidden; }
-  .body { padding: 22px; display: flex; flex-direction: column; gap: 14px; }
-  .head h1 { margin: 0; font-size: 20px; line-height: 1.3; }
-  .lines { display: flex; flex-direction: column; gap: 10px; }
-  .line { font-size: 15px; line-height: 1.5; padding: 6px 0; border-bottom: 1px solid #f1f5f9; }
-  .line:last-child { border-bottom: none; }
+  .card { max-width: 600px; margin: 0 auto; background: #fff; border-radius: 16px; box-shadow: 0 4px 20px rgba(15,23,42,.08); overflow: hidden; }
+  .card img { width: 100%; display: block; }
   footer { text-align: center; color: #94a3b8; font-size: 12px; padding: 14px 0 4px; }
 </style>
 </head>
 <body>
   <div class="card">
-    <div class="body">
-      <div class="head"><h1>${esc(title)}</h1></div>
-      <div class="lines">${lines}</div>
-    </div>
+    <img src="${imgDataUrl}" alt="${esc(title)}" />
   </div>
   <footer>Shared from Angler's Log</footer>
 </body>
 </html>`;
 }
 
-export default function ShareStatusButton({ title, text }) {
+export default function ShareStatusButton({ title, text, targetRef }) {
   const [busy, setBusy] = useState(false);
 
   const handleShare = async () => {
+    if (!targetRef?.current) {
+      toast.error("Nothing to share yet");
+      return;
+    }
     setBusy(true);
     const summary = `${title}\n\n${text}`;
     try {
-      const html = buildStatusHTML(title, text);
+      const canvas = await html2canvas(targetRef.current, {
+        backgroundColor: "#ffffff",
+        scale: 2,
+        useCORS: true,
+        logging: false,
+      });
+      const imgDataUrl = canvas.toDataURL("image/png");
+      const html = buildScreenshotHTML(title, imgDataUrl);
       const file = new File([html], `${safeFileName(title)}.html`, { type: "text/html" });
 
       if (navigator.canShare?.({ files: [file] })) {
@@ -89,12 +88,12 @@ export default function ShareStatusButton({ title, text }) {
       downloadBlob(file, file.name);
       try {
         await navigator.clipboard.writeText(summary);
-        toast.success("Status webpage saved & copied to clipboard");
+        toast.success("Snapshot saved & copied to clipboard");
       } catch {
-        toast.success("Status webpage saved to your device");
+        toast.success("Snapshot saved to your device");
       }
     } catch (e) {
-      if (e?.name !== "AbortError") toast.error("Could not share");
+      toast.error("Could not capture screen");
     } finally {
       setBusy(false);
     }

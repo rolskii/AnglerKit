@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Droplets, MapPin, ChevronDown } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -33,6 +33,7 @@ export default function Weather() {
   };
   const [selectedDate, setSelectedDate] = useState(todayStr());
   const today = todayStr();
+  const contentRef = useRef(null);
 
   const formatDate = (dateStr) => {
     const d = new Date(dateStr + 'T00:00:00');
@@ -264,6 +265,7 @@ export default function Weather() {
   return (
     <div className="space-y-3 md:space-y-4 -mt-4 md:-mt-8">
       <div className="max-w-2xl mx-auto space-y-3">
+      <div ref={contentRef} className="space-y-3">
         {/* Header */}
         <div className="space-y-2 px-1 mb-2">
           <div className="flex items-center gap-3">
@@ -408,9 +410,11 @@ export default function Weather() {
           </CardContent>
         </Card>
 
+      </div>
         {/* Share */}
         <div className="px-1">
           <ShareStatusButton
+            targetRef={contentRef}
             title={`Weather — ${formatDate(selectedDate)}`}
             text={[
               `📍 ${location}`,

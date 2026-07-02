@@ -150,6 +150,7 @@ export default function Moon() {
   const [locationDialogOpen, setLocationDialogOpen] = useState(false);
   const [weeklyForecastOpen, setWeeklyForecastOpen] = useState(false);
   const [dayDetailOpen, setDayDetailOpen] = useState(false);
+  const contentRef = useRef(null);
 
   const handleSelectDay = (dateStr) => {
     setSelectedDate(dateStr);
@@ -470,6 +471,7 @@ export default function Moon() {
   return (
     <div className="space-y-6 md:space-y-8 -mt-4 md:-mt-8">
       <div className="max-w-2xl mx-auto space-y-4">
+      <div ref={contentRef} className="space-y-4">
         {/* Header */}
         <div className="space-y-2 px-1">
           <h1 className="text-2xl md:text-[34px] font-heading font-extrabold tracking-tight leading-tight">Moon Phase</h1>
@@ -724,9 +726,11 @@ export default function Moon() {
           </CardContent>
         </Card>
 
+      </div>
         {/* Share */}
         <div className="px-1">
           <ShareStatusButton
+            targetRef={contentRef}
             title={`Moon & Fishing — ${moonData.date}`}
             text={[
               `🌙 ${moonData.phase} (${moonData.illumination}% illuminated)`,
