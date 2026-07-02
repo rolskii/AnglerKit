@@ -468,7 +468,7 @@ export default function Moon() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base">Hourly Fish Activity</CardTitle>
-            <CardDescription>Fishing activity throughout the day</CardDescription>
+
           </CardHeader>
           <CardContent>
             <ActivityChart levels={activityLevels} highlightIndex={currentInterval} />
