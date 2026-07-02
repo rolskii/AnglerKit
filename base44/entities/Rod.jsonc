@@ -6,6 +6,21 @@
       "type": "string",
       "description": "Rod name/description"
     },
+    "species": {
+      "type": "string",
+      "enum": [
+        "Trout",
+        "Salmon",
+        "Steelhead",
+        "Bass",
+        "Pike",
+        "Saltwater",
+        "Gar",
+        "Muskie",
+        "Anything",
+        "Other"
+      ]
+    },
     "brand": {
       "type": "string"
     },

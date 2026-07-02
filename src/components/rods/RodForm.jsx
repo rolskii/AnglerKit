@@ -12,10 +12,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import ImageUpload from "@/components/ImageUpload";
 
+const SPECIES = ["Trout", "Salmon", "Steelhead", "Bass", "Pike", "Saltwater", "Gar", "Muskie", "Anything", "Other"].sort((a, b) => a.localeCompare(b));
 const TYPES = ["Casting", "Fly", "Spinning", "Other"];
 const MATERIALS = ["Carbon", "Cane", "Fiberglass", "Other"];
 const CONDITIONS = ["New", "Like New", "Good", "Fair", "Poor"];
-const empty = { name: "", brand: "", model: "", length: "", line_weight: "", type: "Fly", material: "Carbon", condition: "Good", value: "", date_acquired: "", notes: "", images: [] };
+const empty = { name: "", species: "Trout", brand: "", model: "", length: "", line_weight: "", type: "Fly", material: "Carbon", condition: "Good", value: "", date_acquired: "", notes: "", images: [] };
 
 export default function RodForm({ open, onOpenChange, onSubmit, initial, loading }) {
   const [form, setForm] = useState(empty);
@@ -49,6 +50,15 @@ export default function RodForm({ open, onOpenChange, onSubmit, initial, loading
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label>Species</Label>
+              <Select value={form.species} onValueChange={(v) => set("species", v)}>
+                <SelectTrigger className="bg-muted"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {SPECIES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="space-y-1.5">
               <Label>Brand</Label>
               <Input className="bg-muted" value={form.brand} onChange={(e) => set("brand", e.target.value)} />

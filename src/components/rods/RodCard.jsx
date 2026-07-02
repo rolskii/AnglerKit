@@ -21,6 +21,7 @@ export default function RodCard({ rod, lineCount, pairedLines, onEdit, onDelete 
     subtitle: [rod.brand, rod.model, rod.length, rod.line_weight ? `${rod.line_weight}wt` : null].filter(Boolean).join(" · ") || "—",
     badge: rod.condition,
     details: [
+      { label: "Species", value: rod.species },
       { label: "Brand", value: rod.brand },
       { label: "Model", value: rod.model },
       { label: "Length", value: rod.length },
@@ -63,6 +64,7 @@ export default function RodCard({ rod, lineCount, pairedLines, onEdit, onDelete 
       </div>
 
       <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
+        <Detail label="Species" value={rod.species} />
         <Detail label="Brand" value={rod.brand} />
         <Detail label="Model" value={rod.model} />
         <Detail label="Length" value={rod.length} />

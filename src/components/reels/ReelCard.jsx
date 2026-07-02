@@ -21,6 +21,7 @@ export default function ReelCard({ reel, lineCount, spooledLines, onEdit, onDele
     subtitle: [reel.brand, reel.model, reel.size].filter(Boolean).join(" · ") || "—",
     badge: reel.condition,
     details: [
+      { label: "Species", value: reel.species },
       { label: "Brand", value: reel.brand },
       { label: "Model", value: reel.model },
       { label: "Size", value: reel.size },
@@ -64,6 +65,7 @@ export default function ReelCard({ reel, lineCount, spooledLines, onEdit, onDele
       </div>
 
       <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
+         <Detail label="Species" value={reel.species} />
          <Detail label="Brand" value={reel.brand} />
          <Detail label="Model" value={reel.model} />
          <Detail label="Size" value={reel.size} />

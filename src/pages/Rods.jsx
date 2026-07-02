@@ -24,7 +24,7 @@ export default function Rods() {
   const [lines, setLines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState("name");
+  const [sortBy, setSortBy] = useState("species");
   const [sortDir, setSortDir] = useState("asc");
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -77,7 +77,7 @@ export default function Rods() {
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
     const result = rods.filter((r) =>
-      !q || [r.name, r.brand, r.length, r.line_weight, r.type, r.material].some((v) => v && v.toLowerCase().includes(q))
+      !q || [r.name, r.species, r.brand, r.length, r.line_weight, r.type, r.material].some((v) => v && v.toLowerCase().includes(q))
     );
     const dir = sortDir === "asc" ? 1 : -1;
     const toNumber = (v) => {
@@ -198,6 +198,7 @@ export default function Rods() {
           <table className="w-full text-sm">
             <thead className="bg-muted/50 text-muted-foreground">
               <tr>
+                <SortHeader label="Species" field="species" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Type" field="type" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Name" field="name" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Length" field="length" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
@@ -210,6 +211,7 @@ export default function Rods() {
             <tbody>
               {filtered.map((rod) => (
                 <tr key={rod.id} onClick={() => setViewTarget(rod)} className="border-t border-border cursor-pointer hover:bg-accent/50 transition-colors">
+                  <td className="px-3 py-2.5 whitespace-nowrap">{rod.species || "—"}</td>
                   <td className="px-3 py-2.5 whitespace-nowrap">{rod.type || "—"}</td>
                   <td className="px-3 py-2.5 whitespace-nowrap font-medium">{rod.name || "—"}</td>
                   <td className="px-3 py-2.5 whitespace-nowrap">{rod.length || "—"}</td>

@@ -12,9 +12,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import ImageUpload from "@/components/ImageUpload";
 
+const SPECIES = ["Trout", "Salmon", "Steelhead", "Bass", "Pike", "Saltwater", "Gar", "Muskie", "Anything", "Other"].sort((a, b) => a.localeCompare(b));
 const CONDITIONS = ["New", "Like New", "Good", "Fair", "Poor"];
 const TYPES = ["Casting", "Fly", "Spinning", "Other"];
-const empty = { name: "", brand: "", model: "", size: "", type: "", condition: "Good", value: "", date_acquired: "", notes: "", images: [] };
+const empty = { name: "", species: "Trout", brand: "", model: "", size: "", type: "", condition: "Good", value: "", date_acquired: "", notes: "", images: [] };
 
 export default function ReelForm({ open, onOpenChange, onSubmit, initial, loading }) {
   const [form, setForm] = useState(empty);
@@ -42,6 +43,15 @@ export default function ReelForm({ open, onOpenChange, onSubmit, initial, loadin
             <Input className="bg-muted" value={form.name} onChange={(e) => set("name", e.target.value)} required placeholder="e.g. Henshaw 3 3/8 Perfect" />
           </div>
           <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label>Species</Label>
+              <Select value={form.species} onValueChange={(v) => set("species", v)}>
+                <SelectTrigger className="bg-muted"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {SPECIES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="space-y-1.5">
               <Label>Brand</Label>
               <Input className="bg-muted" value={form.brand} onChange={(e) => set("brand", e.target.value)} />

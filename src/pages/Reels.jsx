@@ -24,7 +24,7 @@ export default function Reels() {
   const [lines, setLines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState("name");
+  const [sortBy, setSortBy] = useState("species");
   const [sortDir, setSortDir] = useState("asc");
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -77,7 +77,7 @@ export default function Reels() {
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
     const result = reels.filter((r) =>
-      !q || [r.name, r.brand, r.model, r.size].some((v) => v && v.toLowerCase().includes(q))
+      !q || [r.name, r.species, r.brand, r.model, r.size].some((v) => v && v.toLowerCase().includes(q))
     );
     const dir = sortDir === "asc" ? 1 : -1;
     return result.sort((a, b) => {
@@ -172,6 +172,7 @@ export default function Reels() {
           <table className="w-full text-sm">
             <thead className="bg-muted/50 text-muted-foreground">
               <tr>
+                <SortHeader label="Species" field="species" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Type" field="type" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Name" field="name" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Model" field="model" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
@@ -183,6 +184,7 @@ export default function Reels() {
             <tbody>
               {filtered.map((reel) => (
                 <tr key={reel.id} onClick={() => setViewTarget(reel)} className="border-t border-border cursor-pointer hover:bg-accent/50 transition-colors">
+                   <td className="px-3 py-2.5 whitespace-nowrap">{reel.species || "—"}</td>
                    <td className="px-3 py-2.5 whitespace-nowrap">{reel.type || "—"}</td>
                    <td className="px-3 py-2.5 whitespace-nowrap font-medium">{reel.name || "—"}</td>
                    <td className="px-3 py-2.5 whitespace-nowrap">{reel.model || "—"}</td>
