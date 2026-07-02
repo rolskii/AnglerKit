@@ -1,6 +1,6 @@
 import React from "react";
 import { Sunrise, Sunset, Sun } from "lucide-react";
-import WeatherGlyph from "@/components/weather/WeatherGlyph";
+import RealisticMoon from "@/components/RealisticMoon";
 
 export default function SunMoonFooter({ sunrise, sunset, zenith, moonPhase, illumination }) {
   return (
@@ -26,7 +26,7 @@ export default function SunMoonFooter({ sunrise, sunset, zenith, moonPhase, illu
       </div>
       {/* Center: Moon */}
       <div className="flex flex-col items-center gap-1.5">
-        <WeatherGlyph code={0} isNight={true} className="w-20 h-20" />
+        <RealisticMoon illumination={illumination} className="w-12 h-12" />
         <p className="text-xs text-muted-foreground">{illumination}% lit</p>
       </div>
       {/* Right: Moon data */}
