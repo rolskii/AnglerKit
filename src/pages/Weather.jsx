@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Cloud, CloudRain, Sun, Moon, Wind, Droplets, Eye, Gauge, MapPin, ChevronDown } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { searchLocations, geocodeLocation } from '@/lib/geocode';
+import LocationMapPicker from '@/components/moon/LocationMapPicker';
 
 export default function Weather() {
   const savedLocation = localStorage.getItem('weatherLocation');
@@ -18,6 +19,11 @@ export default function Weather() {
   const [lastCoords, setLastCoords] = useState(savedCoords ? JSON.parse(savedCoords) : null);
   const [userCoords, setUserCoords] = useState(null);
   const [selectedDay, setSelectedDay] = useState(null);
+  const [mapPickerOpen, setMapPickerOpen] = useState(false);
+
+  const handleMapSelect = (name, lat, lon) => {
+    fetchWeatherByCoords(lat, lon, name, tempUnit);
+  };
 
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
     const R = 3959;
@@ -296,6 +302,13 @@ export default function Weather() {
         {/* Current Weather Card */}
         <Card className="bg-primary/10">
           <CardContent className="pt-6">
+            <button
+              onClick={() => setMapPickerOpen(true)}
+              className="flex items-center gap-1.5 text-sm text-primary hover:underline transition-colors mb-4"
+            >
+              <MapPin className="w-4 h-4" />
+              {location}
+            </button>
             <div className="space-y-6">
               {/* Temperature and Condition */}
               <div className="flex items-center justify-between">
@@ -419,6 +432,13 @@ export default function Weather() {
 
 
       </div>
+
+      <LocationMapPicker
+        open={mapPickerOpen}
+        onOpenChange={setMapPickerOpen}
+        initialCoords={lastCoords}
+        onSelect={handleMapSelect}
+      />
     </div>
   );
 }
