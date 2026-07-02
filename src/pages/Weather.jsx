@@ -8,6 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import HourlyConditionsCard from '@/components/weather/HourlyConditionsCard';
 import DayForecastDialog from '@/components/weather/DayForecastDialog';
+import WeatherGlyph from '@/components/weather/WeatherGlyph';
 
 export default function Weather() {
   const savedLocation = localStorage.getItem('weatherLocation');
@@ -309,7 +310,7 @@ export default function Weather() {
                   </div>
                 </div>
                 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-                  <WeatherIcon className={`w-20 h-20 ${weatherIconColor}`} />
+                  <WeatherGlyph code={current.weather_code} isNight={isNight()} className="w-20 h-24" />
                 </div>
                 {/* Date and Location */}
                 <div className="flex flex-col items-end gap-1 z-10">
@@ -406,7 +407,6 @@ export default function Weather() {
           <CardContent>
             <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
               {forecastDays.map(({ date, idx }) => {
-                const ForecastIcon = getWeatherIcon(daily.weather_code[idx]);
                 return (
                   <button
                     key={idx}
@@ -422,7 +422,7 @@ export default function Weather() {
                     <p className="text-[10px] text-muted-foreground">
                       {new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                     </p>
-                    <ForecastIcon className="w-7 h-7 text-primary" />
+                    <WeatherGlyph code={daily.weather_code[idx]} className="w-8 h-9" />
                     <div className="flex items-center gap-1.5">
                       <span className="text-sm font-semibold">{Math.round(daily.temperature_2m_max[idx])}°</span>
                       <span className="text-xs text-muted-foreground">{Math.round(daily.temperature_2m_min[idx])}°</span>

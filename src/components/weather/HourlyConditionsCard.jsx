@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Cloud, CloudRain, Sun, Moon, Droplets } from 'lucide-react';
+import WeatherGlyph from '@/components/weather/WeatherGlyph';
 
 const getWeatherDescription = (code) => {
   const codes = {
@@ -54,7 +55,6 @@ export default function HourlyConditionsCard({ hourly, selectedDate, daily }) {
             {todayHours.map(({ hTime, hIdx }) => {
               const hourDate = new Date(hTime);
               const isNight = sunrise && sunset ? (hourDate < sunrise || hourDate > sunset) : false;
-              const HourIcon = getWeatherIcon(hourly.weather_code[hIdx], isNight);
               const hourLabel = hourDate.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true });
               return (
                 <div
@@ -63,7 +63,7 @@ export default function HourlyConditionsCard({ hourly, selectedDate, daily }) {
                   style={{ scrollSnapAlign: 'start' }}
                 >
                   <p className="text-xs text-muted-foreground">{hourLabel}</p>
-                  <HourIcon className="w-6 h-6 text-primary" />
+                  <WeatherGlyph code={hourly.weather_code[hIdx]} isNight={isNight} className="w-6 h-7" />
                   <p className="text-sm font-semibold">{Math.round(hourly.temperature_2m[hIdx])}°</p>
                   <p className="text-xs text-primary flex items-center gap-0.5">
                     <Droplets className="w-3 h-3" />

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Droplets, Wind, CloudRain, Sun, Moon } from 'lucide-react';
+import WeatherGlyph from '@/components/weather/WeatherGlyph';
 
 const getWeatherDescription = (code) => {
   const codes = {
@@ -28,7 +29,6 @@ export default function DayForecastDialog({ open, onOpenChange, dayData, hourly,
   const dateObj = new Date(date + 'T00:00:00');
   const sunrise = daily?.sunrise?.[idx] ? new Date(daily.sunrise[idx]) : null;
   const sunset = daily?.sunset?.[idx] ? new Date(daily.sunset[idx]) : null;
-  const DescIcon = getWeatherIcon(daily.weather_code[idx], false);
 
   const dayHours = hourly
     ? hourly.time
@@ -41,7 +41,7 @@ export default function DayForecastDialog({ open, onOpenChange, dayData, hourly,
       <DialogContent className="max-w-md p-0 overflow-hidden gap-0">
         <DialogHeader className="px-4 pt-4 pb-2">
           <DialogTitle className="flex items-center gap-2">
-            {DescIcon && <DescIcon className="w-5 h-5 text-primary" />}
+            <WeatherGlyph code={daily.weather_code[idx]} className="w-5 h-6" />
             {dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
           </DialogTitle>
         </DialogHeader>
@@ -108,12 +108,11 @@ export default function DayForecastDialog({ open, onOpenChange, dayData, hourly,
                   {dayHours.map(({ hTime, hIdx }) => {
                     const hourDate = new Date(hTime);
                     const isNight = sunrise && sunset ? (hourDate < sunrise || hourDate > sunset) : false;
-                    const HourIcon = getWeatherIcon(hourly.weather_code[hIdx], isNight);
                     const hourLabel = hourDate.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true });
                     return (
                       <div key={hIdx} className="flex flex-col items-center gap-1 w-14 p-1.5 rounded-lg bg-secondary/40 shrink-0">
                         <p className="text-[10px] text-muted-foreground">{hourLabel}</p>
-                        {HourIcon && <HourIcon className="w-5 h-5 text-primary" />}
+                        <WeatherGlyph code={hourly.weather_code[hIdx]} isNight={isNight} className="w-5 h-6" />
                         <p className="text-xs font-semibold">{Math.round(hourly.temperature_2m[hIdx])}°</p>
                         <p className="text-[10px] text-primary flex items-center gap-0.5">
                           <Droplets className="w-2.5 h-2.5" />
