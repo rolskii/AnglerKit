@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeftRight, Trash2 } from "lucide-react";
+import { Loader2, ArrowLeftRight, Trash2, BellOff } from "lucide-react";
 import ImportExportSection from "@/components/settings/ImportExportSection";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -69,6 +69,24 @@ export default function Settings() {
           <h2 className="font-heading text-lg font-semibold">Import / Export</h2>
         </div>
         <ImportExportSection />
+      </div>
+
+      <div className="rounded-lg border border-border bg-card p-6 space-y-4">
+        <div className="flex items-center gap-2">
+          <BellOff className="w-5 h-5 text-primary" />
+          <h2 className="font-heading text-lg font-semibold">Alarms</h2>
+        </div>
+        <p className="text-sm text-muted-foreground">Remove all saved fishing alarms from this device.</p>
+        <Button
+          variant="outline"
+          onClick={() => {
+            localStorage.removeItem("alarmsByDate");
+            toast.success("All alarms cleared");
+          }}
+          className="flex items-center gap-2"
+        >
+          <BellOff className="w-4 h-4" /> Clear All Alarms
+        </Button>
       </div>
 
       <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-6 space-y-4">
