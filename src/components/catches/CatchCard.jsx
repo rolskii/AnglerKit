@@ -83,8 +83,8 @@ export default function CatchCard({ catchItem, onEdit, onDelete }) {
           <div className="flex justify-between gap-2 items-center">
             <span className="text-muted-foreground shrink-0 flex items-center gap-1">
               Estimated Weight
-              <button onClick={() => setShowFormula(v => !v)} className="text-amber-500 hover:text-amber-600 transition-colors" aria-label="Show formula">
-                <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+              <button onClick={() => setShowFormula(v => !v)} className="text-amber-500 hover:text-amber-600 transition-colors leading-none" aria-label="Show formula">
+                <span className="text-xl font-bold text-amber-500">*</span>
               </button>
             </span>
             <span className="font-medium text-right break-words whitespace-normal">{estWeight.toFixed(2)} lb</span>
