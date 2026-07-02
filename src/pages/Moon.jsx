@@ -473,7 +473,7 @@ export default function Moon() {
             <CardTitle className="text-base">Hourly Fish Activity</CardTitle>
 
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-3 pb-3">
             <ActivityChart levels={activityLevels} highlightIndex={currentInterval} />
           </CardContent>
         </Card>
@@ -487,7 +487,7 @@ export default function Moon() {
             </CardTitle>
             <CardDescription>Major & minor feeding windows for {moonData.date}</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-3 pb-3">
             <div className="grid grid-cols-[3fr_2fr] gap-4">
               {/* Major Times */}
               <div className="border-r border-border pr-4">
@@ -599,7 +599,7 @@ export default function Moon() {
 
         {/* Sun & Moon Footer */}
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="pt-3 pb-3">
             <SunMoonFooter
               sunrise={sunData?.sunrise}
               sunset={sunData?.sunset}
@@ -615,7 +615,7 @@ export default function Moon() {
           <CardHeader className="pb-2 px-4">
             <CardTitle className="text-base">Fishing Tips for {moonData.phase}</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-1.5 text-sm px-4 py-3">
+          <CardContent className="space-y-1.5 text-sm pt-3 pb-3">
             {moonData.phase === 'Full Moon' && (
               <>
                 <p className="whitespace-nowrap">✓ Excellent — bright light aids fish spotting prey</p>
