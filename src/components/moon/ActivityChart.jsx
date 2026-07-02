@@ -73,16 +73,22 @@ export default function ActivityChart({ levels, highlightIndex }) {
         )}
       </svg>
       <div className="relative mt-1">
-        <div className="flex">
+        <div className="relative h-2">
           {Array.from({ length: hourCount }).map((_, i) => (
-            <div key={i} className="flex-1 flex justify-center">
-              <div className={`w-px ${i % 3 === 0 ? "h-2 bg-muted-foreground/50" : "h-1 bg-muted-foreground/30"}`} />
-            </div>
+            <div
+              key={i}
+              className={`w-px ${i % 3 === 0 ? "h-2 bg-muted-foreground/50" : "h-1 bg-muted-foreground/30"}`}
+              style={{ position: "absolute", left: `${(i / hourCount) * 100}%`, transform: "translateX(-50%)" }}
+            />
           ))}
         </div>
-        <div className="flex mt-1">
+        <div className="relative mt-1 h-6">
           {LABELS.map((label, i) => (
-            <div key={i} className="flex-1 text-center text-xs text-muted-foreground leading-tight">
+            <div
+              key={i}
+              className="text-center text-xs text-muted-foreground leading-tight"
+              style={{ position: "absolute", left: `${(i * 3 / hourCount) * 100}%`, transform: "translateX(-50%)" }}
+            >
               <div>{label.num}</div>
               <div className="text-[9px]">{label.num === "12" ? label.period : ""}</div>
             </div>
