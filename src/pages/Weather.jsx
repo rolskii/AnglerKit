@@ -323,7 +323,7 @@ export default function Weather() {
               </div>
 
               {/* Conditions Grid */}
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-4 gap-2">
                 <div className="bg-card p-3 rounded-lg">
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
                     <Droplets className="w-3.5 h-3.5" />
@@ -355,20 +355,6 @@ export default function Weather() {
                     Pressure
                   </div>
                   <p className="text-base font-semibold">{(current.pressure / 10).toFixed(1)} kPa</p>
-                </div>
-                <div className="bg-card p-3 rounded-lg">
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
-                    <TrendingUp className="w-3.5 h-3.5" />
-                    High
-                  </div>
-                  <p className="text-base font-semibold">{Math.round(daily.temperature_2m_max[0])}°</p>
-                </div>
-                <div className="bg-card p-3 rounded-lg">
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
-                    <TrendingDown className="w-3.5 h-3.5" />
-                    Low
-                  </div>
-                  <p className="text-base font-semibold">{Math.round(daily.temperature_2m_min[0])}°</p>
                 </div>
               </div>
             </div>
