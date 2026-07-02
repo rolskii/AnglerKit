@@ -402,9 +402,7 @@ export default function Weather() {
           <CardContent>
             <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
               {daily.time.map((date, idx) => {
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                if (new Date(date) <= today) return null;
+                if (date <= todayStr()) return null;
                 return { date, idx };
               }).filter(Boolean).map(({ date, idx }) => {
                 const ForecastIcon = getWeatherIcon(daily.weather_code[idx]);
