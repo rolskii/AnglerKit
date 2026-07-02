@@ -508,9 +508,19 @@ export default function Moon() {
                   </button>
                 </div>
               </div>
-              <div className={`shrink-0 ${moonData.fishingRating >= 5 ? 'text-green-600' : moonData.fishingRating <= 3 ? 'text-yellow-600' : 'text-primary'}`}>
+              <div className="shrink-0 relative w-20 h-20 flex items-center justify-center">
+                <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 80 80">
+                  <circle cx="40" cy="40" r="34" fill="none" stroke="hsl(var(--muted))" strokeWidth="5" />
+                  <circle
+                    cx="40" cy="40" r="34" fill="none"
+                    stroke={moonData.fishingRating >= 5 ? '#16a34a' : '#ca8a04'}
+                    strokeWidth="5"
+                    strokeLinecap="round"
+                    strokeDasharray={`${(ratingPercent / 100) * 2 * Math.PI * 34} ${2 * Math.PI * 34}`}
+                  />
+                </svg>
                 <span
-                  className={`text-3xl font-bold text-foreground ${selectedDate !== todayStr() ? 'cursor-pointer hover:text-primary transition-colors' : ''}`}
+                  className={`text-xl font-bold text-foreground ${selectedDate !== todayStr() ? 'cursor-pointer hover:text-primary transition-colors' : ''}`}
                   onClick={() => selectedDate !== todayStr() && setSelectedDate(todayStr())}
                 >
                   {ratingPercent}%
