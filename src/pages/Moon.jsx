@@ -174,7 +174,7 @@ export default function Moon() {
     const date = new Date(year, month - 1, day);
     const phase = calculateMoonPhase(date);
     setMoonData({
-      date: date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }),
+      date: date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
       phase: phase.name,
       illumination: Math.round(phase.illumination * 100),
       location: location,
@@ -475,7 +475,7 @@ export default function Moon() {
               <Waves className="w-5 h-5 text-primary" />
               Solunar Feeding Times
             </CardTitle>
-            <CardDescription>Major and minor feeding windows for {moonData.date}</CardDescription>
+            <CardDescription>Major & minor feeding windows for {moonData.date}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-[3fr_2fr] gap-4">
