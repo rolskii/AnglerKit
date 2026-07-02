@@ -152,7 +152,7 @@ export default function ActivityChart({ days }) {
     const todayIndex = days.findIndex(d => d.label === "Today");
     if (todayIndex >= 0 && scrollRef.current) {
       const child = scrollRef.current.children[todayIndex];
-      if (child) child.scrollIntoView({ inline: "start", behavior: "auto" });
+      if (child) scrollRef.current.scrollLeft = child.offsetLeft - scrollRef.current.offsetLeft;
     }
   }, [days]);
 
