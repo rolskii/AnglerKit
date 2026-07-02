@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Sun, Waves, MapPin, Bell, BellOff, Save } from 'lucide-react';
+import { Sun, Waves, MapPin, Bell, BellOff, Save, Search } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import FishIcon from '@/components/FishIcon';
 import DayRatingRing from '@/components/moon/DayRatingRing';
 import DateSelector from '@/components/moon/DateSelector';
@@ -82,15 +83,35 @@ export default function Moon() {
   const alarmIntervalsRef = useRef({});
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const locationInputRef = useRef(null);
+  const [locationDialogOpen, setLocationDialogOpen] = useState(false);
 
-  const focusLocationInput = () => {
-    const el = locationInputRef.current;
-    if (el) {
-      el.focus();
-      el.select();
-      editingLocation.trim().length >= 2 && setShowSuggestions(true);
+  const openLocationDialog = () => {
+    setEditingLocation('');
+    setSuggestions([]);
+    setShowSuggestions(false);
+    setLocationDialogOpen(true);
+  };
+
+  const selectLocationFromDialog = (name, lat, lon) => {
+    handleLocationChange(name, lat, lon);
+    setLocationDialogOpen(false);
+    setSuggestions([]);
+    setShowSuggestions(false);
+  };
+
+  const submitLocationDialog = (e) => {
+    e?.preventDefault();
+    const value = editingLocation.trim();
+    if (!value) { setLocationDialogOpen(false); return; }
+    if (suggestions.length > 0) {
+      const first = suggestions[0];
+      selectLocationFromDialog(first.name, first.lat, first.lon);
+      return;
     }
+    handleLocationChange(value);
+    setLocationDialogOpen(false);
+    setSuggestions([]);
+    setShowSuggestions(false);
   };
 
   // Moon phase calculation
@@ -400,37 +421,6 @@ export default function Moon() {
         {/* Header */}
         <div className="text-center">
           <h1 className="text-3xl font-display font-bold mb-2">Moon Phase</h1>
-
-          {/* Location */}
-          <div className="max-w-[12rem] mx-auto relative">
-            <input
-              ref={locationInputRef}
-              type="text"
-              value={editingLocation}
-              onChange={(e) => handleLocationInput(e.target.value)}
-              placeholder="Enter location"
-              className="w-full h-7 px-2 py-0.5 text-xs border border-border rounded-md bg-card text-foreground placeholder:text-muted-foreground text-center box-border"
-              onKeyPress={(e) => e.key === 'Enter' && handleLocationChange()}
-              onFocus={(e) => {
-                e.target.select();
-                editingLocation.trim().length >= 2 && setShowSuggestions(true);
-              }}
-              onBlur={() => setTimeout(() => setShowSuggestions(false), 100)}
-            />
-            {showSuggestions && suggestions.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-50 max-h-40 overflow-y-auto" onMouseDown={(e) => e.preventDefault()}>
-                {suggestions.map((s, idx) => (
-                  <div
-                    key={idx}
-                    onClick={() => handleLocationChange(s.name, s.lat, s.lon)}
-                    className="w-full px-3 py-2.5 text-xs text-left hover:bg-primary/10 border-b border-border/50 last:border-b-0 transition-colors cursor-pointer"
-                  >
-                    {s.name}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
         </div>
 
         {/* Day Rating Card */}
@@ -451,7 +441,7 @@ export default function Moon() {
               </p>
               <span className="text-muted-foreground">·</span>
               <button
-                onClick={focusLocationInput}
+                onClick={openLocationDialog}
                 className="text-xs text-muted-foreground flex items-center gap-1 hover:text-primary transition-colors"
               >
                 <MapPin className="w-3 h-3" />{moonData.location}
@@ -646,6 +636,40 @@ export default function Moon() {
           </CardContent>
         </Card>
       </div>
+
+      <Dialog open={locationDialogOpen} onOpenChange={setLocationDialogOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Change Location</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={submitLocationDialog} className="space-y-3">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted">
+              <Search className="w-4 h-4 text-muted-foreground shrink-0" />
+              <input
+                autoFocus
+                value={editingLocation}
+                onChange={(e) => handleLocationInput(e.target.value)}
+                placeholder="Search city..."
+                className="text-sm bg-transparent flex-1 outline-none placeholder:text-muted-foreground/50"
+              />
+            </div>
+            {showSuggestions && suggestions.length > 0 && (
+              <div className="max-h-48 overflow-y-auto space-y-0.5">
+                {suggestions.map((s, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => selectLocationFromDialog(s.name, s.lat, s.lon)}
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-accent/10 rounded-lg truncate"
+                  >
+                    {s.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
