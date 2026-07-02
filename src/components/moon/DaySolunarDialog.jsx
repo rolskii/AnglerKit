@@ -22,7 +22,7 @@ export default function DaySolunarDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[calc(100%-1.5rem)] max-w-md max-h-[85vh] overflow-y-auto p-4">
+      <DialogContent className="w-full max-w-md max-h-[85vh] overflow-y-auto px-0 py-4">
         <DialogHeader>
           <DialogTitle>{moonData.date}</DialogTitle>
           <DialogDescription>Solunar feeding times & sun/moon data</DialogDescription>
