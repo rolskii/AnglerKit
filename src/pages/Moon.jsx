@@ -41,24 +41,33 @@ const minutesToTime = (mins) => {
 };
 
 const computeActivityLevels = (major, minor) => {
-  const intervals = [0, 3, 6, 9, 12, 15, 18, 21];
-  return intervals.map((startHour) => {
-    const intStart = startHour * 60;
-    const intEnd = (startHour + 3) * 60;
-    let level = 20;
+  const levels = [];
+  for (let i = 0; i < 96; i++) {
+    const slotStart = i * 15;
+    const slotMid = slotStart + 7.5;
+    let level = 12;
     for (const m of major) {
       if (m.startMin === undefined) continue;
-      const overlap = Math.min(m.endMin, intEnd) - Math.max(m.startMin, intStart);
-      if (overlap > 0) level = Math.max(level, 90);
-      else if (overlap > -90) level = Math.max(level, 50);
+      const overlap = Math.min(m.endMin, slotStart + 15) - Math.max(m.startMin, slotStart);
+      if (overlap > 0) level = Math.max(level, 95);
+      else {
+        const dist = Math.min(Math.abs(m.startMin - slotMid), Math.abs(m.endMin - slotMid));
+        if (dist < 30) level = Math.max(level, 65);
+        else if (dist < 60) level = Math.max(level, 38);
+      }
     }
     for (const m of minor) {
       if (m.startMin === undefined) continue;
-      const overlap = Math.min(m.endMin, intEnd) - Math.max(m.startMin, intStart);
-      if (overlap > 0) level = Math.max(level, 60);
+      const overlap = Math.min(m.endMin, slotStart + 15) - Math.max(m.startMin, slotStart);
+      if (overlap > 0) level = Math.max(level, 65);
+      else {
+        const dist = Math.min(Math.abs(m.startMin - slotMid), Math.abs(m.endMin - slotMid));
+        if (dist < 15) level = Math.max(level, 42);
+      }
     }
-    return level;
-  });
+    levels.push(level);
+  }
+  return levels;
 };
 
 export default function Moon() {
@@ -412,7 +421,7 @@ export default function Moon() {
   const activityLevels = computeActivityLevels(solunar.major, solunar.minor);
   const isToday = selectedDate === todayStr();
   const currentInterval = isToday
-    ? Math.floor(new Date().getHours() / 3)
+    ? Math.floor((new Date().getHours() * 60 + new Date().getMinutes()) / 15)
     : activityLevels.indexOf(Math.max(...activityLevels));
 
   return (
