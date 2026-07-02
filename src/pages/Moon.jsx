@@ -389,16 +389,16 @@ export default function Moon() {
       <div className="max-w-2xl mx-auto space-y-4">
         {/* Header */}
         <div className="text-center mb-4">
-          <h1 className="text-3xl font-display font-bold mb-4">Moon Phase</h1>
+          <h1 className="text-3xl font-display font-bold mb-2">Moon Phase</h1>
 
           {/* Location */}
-          <div className="max-w-xs mx-auto relative">
+          <div className="max-w-[12rem] mx-auto relative">
             <input
               type="text"
               value={editingLocation}
               onChange={(e) => handleLocationInput(e.target.value)}
               placeholder="Enter location"
-              className="w-full h-9 px-3 py-1 text-sm border border-border rounded-lg bg-card text-foreground placeholder:text-muted-foreground text-center box-border"
+              className="w-full h-7 px-2 py-0.5 text-xs border border-border rounded-md bg-card text-foreground placeholder:text-muted-foreground text-center box-border"
               onKeyPress={(e) => e.key === 'Enter' && handleLocationChange()}
               onFocus={(e) => {
                 e.target.select();
