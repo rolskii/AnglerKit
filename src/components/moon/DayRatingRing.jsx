@@ -8,8 +8,8 @@ export default function DayRatingRing({ percentage, rating, ratingLabel }) {
 
   return (
     <div className="flex items-center gap-3">
-      <p className="text-xs font-bold text-muted-foreground tracking-widest leading-tight text-right">
-        FISH BITE<br/>RATING
+      <p className="text-xs font-bold text-muted-foreground tracking-widest leading-tight text-right whitespace-nowrap">
+        FISH BITE RATING
       </p>
       <p className={`text-sm font-bold tracking-wide leading-tight ${colorClass}`}>
         {ratingLabel}
