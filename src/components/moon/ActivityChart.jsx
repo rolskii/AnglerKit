@@ -30,6 +30,8 @@ export default function ActivityChart({ levels, highlightIndex }) {
 
   const highlightX = highlightIndex != null ? highlightIndex * stepX : null;
 
+  const hourCount = 24;
+
   return (
     <div>
       <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-24">
@@ -61,12 +63,21 @@ export default function ActivityChart({ levels, highlightIndex }) {
           />
         )}
       </svg>
-      <div className="flex mt-1.5">
-        {LABELS.map((label, i) => (
-          <p key={i} className="flex-1 text-center text-[9px] text-muted-foreground">
-            {label}
-          </p>
-        ))}
+      <div className="relative mt-1">
+        <div className="flex">
+          {Array.from({ length: hourCount }).map((_, i) => (
+            <div key={i} className="flex-1 flex justify-center">
+              <div className={`w-px ${i % 3 === 0 ? "h-2 bg-muted-foreground/50" : "h-1 bg-muted-foreground/30"}`} />
+            </div>
+          ))}
+        </div>
+        <div className="flex mt-1">
+          {LABELS.map((label, i) => (
+            <p key={i} className="flex-1 text-center text-xs text-muted-foreground">
+              {label}
+            </p>
+          ))}
+        </div>
       </div>
     </div>
   );
