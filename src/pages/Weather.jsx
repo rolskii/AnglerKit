@@ -263,9 +263,9 @@ export default function Weather() {
             <div className="space-y-3">
               {/* Temperature and Condition */}
               <div className="flex items-center justify-between">
-                <div className="flex items-end gap-3">
-                  <p className="text-4xl font-bold text-primary leading-tight">{Math.round(current.temperature_2m)}°</p>
-                  <div className="pb-1">
+                <div className="flex items-stretch gap-3">
+                  <p className="text-6xl font-bold text-primary leading-none self-center">{Math.round(current.temperature_2m)}°</p>
+                  <div className="flex flex-col justify-center">
                     <p className="text-muted-foreground text-sm leading-tight">{getWeatherDescription(current.weather_code)}</p>
                     <p className="text-xs text-muted-foreground leading-tight">Feels like {Math.round(current.apparent_temperature)}°</p>
                     <p className="text-xs text-muted-foreground leading-tight">H: {Math.round(daily.temperature_2m_max[0])}°  L: {Math.round(daily.temperature_2m_min[0])}°</p>
