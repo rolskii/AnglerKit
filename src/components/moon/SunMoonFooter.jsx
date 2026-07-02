@@ -10,14 +10,17 @@ export default function SunMoonFooter({ sunrise, sunset, zenith, moonPhase, illu
         <div className="flex items-center gap-1.5 justify-end">
           <Sunrise className="w-5 h-5 text-amber-400 shrink-0" />
           <span className="text-sm font-medium">{sunrise || "--"}</span>
+          <span className="text-xs text-muted-foreground whitespace-nowrap">Sunrise</span>
         </div>
         <div className="flex items-center gap-1.5 justify-end">
           <Sun className="w-5 h-5 text-amber-500 shrink-0" />
           <span className="text-sm font-medium">{zenith || "--"}</span>
+          <span className="text-xs text-muted-foreground whitespace-nowrap">Solar Noon</span>
         </div>
         <div className="flex items-center gap-1.5 justify-end">
           <Sunset className="w-5 h-5 text-orange-500 shrink-0" />
           <span className="text-sm font-medium">{sunset || "--"}</span>
+          <span className="text-xs text-muted-foreground whitespace-nowrap">Sunset</span>
         </div>
       </div>
       {/* Center: Moon */}
