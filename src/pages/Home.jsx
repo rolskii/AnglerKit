@@ -257,15 +257,15 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-5 gap-2">
             <div>
               <p className="text-xs font-semibold text-muted-foreground mb-1">Major</p>
               <p className="text-xs text-foreground flex items-center gap-1">
-                5:48–7:48 AM
+                <span className="whitespace-nowrap">5:48–7:48 AM</span>
                 {getAlarmTimes().includes("5:48 AM") && <Bell className="w-3 h-3 text-primary" />}
               </p>
               <p className="text-xs text-foreground flex items-center gap-1">
-                8:54–10:54 PM
+                <span className="whitespace-nowrap">8:54–10:54 PM</span>
                 {getAlarmTimes().includes("8:54 PM") && <Bell className="w-3 h-3 text-primary" />}
               </p>
             </div>
