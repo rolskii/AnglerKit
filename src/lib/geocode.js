@@ -1,23 +1,12 @@
+import { base44 } from "@/api/base44Client";
+
 export async function searchLocations(query, limit = 5) {
   if (!query || query.trim().length < 2) return [];
-  const res = await fetch(
-    `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=${limit}&addressdetails=1`
-  );
-  const data = await res.json();
-  return data.map(r => {
-    const city = r.address?.city || r.address?.town || r.address?.village || r.address?.hamlet || r.name || r.display_name.split(',')[0];
-    const parts = [city];
-    if (r.address?.state) parts.push(r.address.state);
-    if (r.address?.country) parts.push(r.address.country);
-    return {
-      name: parts.join(', '),
-      lat: parseFloat(r.lat),
-      lon: parseFloat(r.lon),
-    };
-  });
+  const res = await base44.functions.invoke("applemaps", { query, mode: "search", limit });
+  return res.data.results || [];
 }
 
 export async function geocodeLocation(name) {
-  const results = await searchLocations(name, 1);
-  return results[0] || null;
+  const res = await base44.functions.invoke("applemaps", { query: name, mode: "geocode" });
+  return (res.data.results || [])[0] || null;
 }
