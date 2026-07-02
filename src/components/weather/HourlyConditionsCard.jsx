@@ -45,16 +45,23 @@ export default function HourlyConditionsCard({ hourly, selectedDate, daily }) {
         <CardTitle className="text-base">Hourly Conditions</CardTitle>
         <CardDescription>{formatDate(selectedDate)}</CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="overflow-x-auto scrollbar-hide">
-          <div className="flex gap-3 min-w-max">
+      <CardContent className="pt-0 pb-3">
+        <div className="relative">
+          <div
+            className="overflow-x-auto scrollbar-hide flex gap-3 pb-1"
+            style={{ scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' }}
+          >
             {todayHours.map(({ hTime, hIdx }) => {
               const hourDate = new Date(hTime);
               const isNight = sunrise && sunset ? (hourDate < sunrise || hourDate > sunset) : false;
               const HourIcon = getWeatherIcon(hourly.weather_code[hIdx], isNight);
               const hourLabel = hourDate.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true });
               return (
-                <div key={hIdx} className="flex flex-col items-center gap-1.5 w-16 p-2 rounded-lg bg-secondary/40">
+                <div
+                  key={hIdx}
+                  className="flex flex-col items-center gap-1.5 w-16 p-2 rounded-lg bg-secondary/40 shrink-0"
+                  style={{ scrollSnapAlign: 'start' }}
+                >
                   <p className="text-xs text-muted-foreground">{hourLabel}</p>
                   <HourIcon className="w-6 h-6 text-primary" />
                   <p className="text-sm font-semibold">{Math.round(hourly.temperature_2m[hIdx])}°</p>
@@ -66,6 +73,8 @@ export default function HourlyConditionsCard({ hourly, selectedDate, daily }) {
               );
             })}
           </div>
+          {/* Right edge fade indicator */}
+          <div className="pointer-events-none absolute right-0 top-0 bottom-1 w-8 bg-gradient-to-l from-card to-transparent" />
         </div>
       </CardContent>
     </Card>
