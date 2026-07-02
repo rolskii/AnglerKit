@@ -272,8 +272,8 @@ export default function Weather() {
   const current = weather.current;
   const daily = weather.daily;
   const forecastDays = daily.time
-    .map((date, idx) => ({ date, idx }))
-    .filter(({ date }) => date > today);
+    .slice(1, 9)
+    .map((date, idx) => ({ date, idx: idx + 1 }));
   const WeatherIcon = getWeatherIcon(current.weather_code);
   const weatherIconColor = getWeatherIconColor(current.weather_code);
 
@@ -400,7 +400,7 @@ export default function Weather() {
         {/* 10-Day Forecast */}
         <Card>
           <CardHeader className="pt-3 pb-2 flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-base">10-Day Forecast</CardTitle>
+            <CardTitle className="text-base">8-Day Forecast</CardTitle>
             <CardDescription>Tap a day for details</CardDescription>
           </CardHeader>
           <CardContent>
