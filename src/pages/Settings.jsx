@@ -57,7 +57,7 @@ export default function Settings() {
   }
 
   return (
-    <div className="space-y-8 max-w-2xl">
+    <div className="space-y-6 md:space-y-8 -mt-4 md:-mt-8 max-w-2xl">
       <div>
         <h1 className="font-heading text-2xl font-bold">Settings</h1>
         <p className="text-muted-foreground text-sm mt-1">Manage your import/export and appearance.</p>

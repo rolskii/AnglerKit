@@ -265,7 +265,7 @@ export default function Weather() {
   const WeatherIcon = getWeatherIcon(current.weather_code);
 
   return (
-    <div className="min-h-screen bg-background px-4 pb-20 pt-0">
+    <div className="space-y-6 md:space-y-8 -mt-4 md:-mt-8">
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Header */}
         <div className="text-center mb-8">

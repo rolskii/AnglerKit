@@ -91,7 +91,7 @@ export default function CatchDetail() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6 md:space-y-8 -mt-4 md:-mt-8">
       <Button variant="ghost" size="sm" onClick={() => navigate("/catches")} className="flex items-center gap-1.5">
         <ArrowLeft className="w-4 h-4" /> Back
       </Button>

@@ -30,7 +30,7 @@ export default function Gear() {
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
-    <div className="space-y-6">
+    <div className="space-y-6 md:space-y-8 -mt-4 md:-mt-8">
       <div className="space-y-2 px-1">
         <h1 className="text-2xl md:text-[34px] font-heading font-bold tracking-tight leading-tight">Gear</h1>
         <p className="text-sm md:text-[17px] text-muted-foreground">
