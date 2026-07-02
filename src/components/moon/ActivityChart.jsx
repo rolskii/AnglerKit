@@ -103,7 +103,7 @@ export default function ActivityChart({ levels, highlightIndex }) {
             <div
               key={peakIdx}
               className="absolute"
-              style={{ left: `${px}%`, top: `${py}%`, transform: "translate(-50%, -50%)" }}
+              style={{ left: `${px}%`, top: `${py}%`, transform: "translate(-50%, calc(-100% - 2px))" }}
             >
               <FishIcon className="w-6 h-6 text-primary" />
             </div>
