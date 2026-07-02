@@ -500,7 +500,7 @@ export default function Moon() {
                                 : 'bg-primary/20 text-primary hover:bg-primary/30'
                           }`}
                         >
-                          {hasAlarm ? <><BellOff className="w-3 h-3" /> Cancel</> : <><Bell className="w-3 h-3" /> Alarm</>}
+                          {hasAlarm ? <BellOff className="w-3.5 h-3.5" /> : <Bell className="w-3.5 h-3.5" />}
                         </button>
                       </li>
                     );
