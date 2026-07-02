@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { CloudRain, Wind, Droplets, Gauge, MapPin, ChevronDown } from 'lucide-react';
+import { Droplets, MapPin, ChevronDown } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { searchLocations, geocodeLocation } from '@/lib/geocode';
 import LocationMapPicker from '@/components/moon/LocationMapPicker';
@@ -331,14 +331,14 @@ export default function Weather() {
               <div className="grid grid-cols-4 gap-2">
                 <div className="bg-card p-3 rounded-lg">
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
-                    <Droplets className="w-3.5 h-3.5" />
+                    <WeatherGlyph code={51} className="w-5 h-5 shrink-0" />
                     Humidity
                   </div>
                   <p className="text-base font-semibold">{current.relative_humidity_2m}%</p>
                 </div>
                 <div className="bg-card p-3 rounded-lg">
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
-                    <Wind className="w-3.5 h-3.5" />
+                    <WeatherGlyph code={45} className="w-5 h-5 shrink-0" />
                     Wind
                   </div>
                   <p className="text-base font-semibold">
@@ -347,7 +347,7 @@ export default function Weather() {
                 </div>
                 <div className="bg-card p-3 rounded-lg">
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
-                    <CloudRain className="w-3.5 h-3.5" />
+                    <WeatherGlyph code={63} className="w-5 h-5 shrink-0" />
                     Precip
                   </div>
                   <p className="text-base font-semibold">
@@ -356,7 +356,7 @@ export default function Weather() {
                 </div>
                 <div className="bg-card p-3 rounded-lg">
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
-                    <Gauge className="w-3.5 h-3.5" />
+                    <WeatherGlyph code={3} className="w-5 h-5 shrink-0" />
                     Pressure
                   </div>
                   <p className="text-base font-semibold">{(current.pressure / 10).toFixed(1)} kPa</p>
