@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Sun, Waves, MapPin, Bell, BellOff, Save, Search, ChevronDown } from 'lucide-react';
+import { Sun, Waves, MapPin, Bell, BellOff, Save, Search } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import FishIcon from '@/components/FishIcon';
 import DayRatingRing from '@/components/moon/DayRatingRing';
@@ -430,16 +430,8 @@ export default function Moon() {
     <div className="space-y-6 md:space-y-8 -mt-4 md:-mt-8">
       <div className="max-w-2xl mx-auto space-y-4">
         {/* Header */}
-        <div className="flex items-start justify-between gap-2 px-1">
+        <div className="space-y-2 px-1">
           <h1 className="text-2xl md:text-[34px] font-heading font-extrabold tracking-tight leading-tight">Moon Phase</h1>
-          <button
-            onClick={openLocationDialog}
-            className="text-xs text-muted-foreground flex items-center gap-0.5 hover:text-foreground transition-colors py-1 px-1 -mr-1 mt-2"
-          >
-            <MapPin className="w-3 h-3" />
-            <span className="max-w-[120px] truncate">{moonData.location}</span>
-            <ChevronDown className="w-3 h-3 opacity-60" />
-          </button>
         </div>
 
         {/* Day Rating Card */}
@@ -453,6 +445,14 @@ export default function Moon() {
                   className={`w-6 h-6 text-primary transition-opacity ${n <= moonData.fishingRating ? 'opacity-100' : 'opacity-25'}`}
                 />
               ))}
+            </div>
+            <div className="flex items-center justify-center gap-2 mt-2">
+              <button
+                onClick={openLocationDialog}
+                className="text-xs text-muted-foreground flex items-center gap-1 hover:text-primary transition-colors"
+              >
+                <MapPin className="w-3 h-3" />{moonData.location}
+              </button>
             </div>
           </CardContent>
         </Card>
