@@ -21,8 +21,8 @@ export default function WeatherGlyph({ code, isNight = false, className = 'w-7 h
   // Color palette
   const sunFill = '#FBBF24'; // amber-400
   const sunStroke = '#F59E0B'; // amber-500
-  const moonFill = '#E2E8F0'; // slate-200 (light silver crescent)
-  const moonStroke = '#94A3B8'; // slate-400 (lighter dark side)
+  const moonFill = '#F1F5F9'; // slate-100 (bright silver lit side)
+  const moonStroke = '#64748B'; // slate-500 (medium grey dark side)
   const cloudLight = '#F1F5F9'; // slate-100
   const cloudMid = '#CBD5E1'; // slate-300
   const cloudDark = '#94A3B8'; // slate-400
@@ -54,15 +54,10 @@ export default function WeatherGlyph({ code, isNight = false, className = 'w-7 h
 
   const MoonShape = ({ cx = 32, cy = 26, r = 11 }) => (
     <g>
-      {/* Full circle filled with dark outline colour (the unlit side) */}
-      <circle cx={cx} cy={cy} r={r} fill={moonStroke} stroke={moonStroke} strokeWidth="1" />
-      {/* Crescent overlay (the lit side) */}
-      <path
-        d={`M ${cx + r * 0.3} ${cy - r} A ${r} ${r} 0 1 0 ${cx + r * 0.3} ${cy + r} A ${r * 0.75} ${r * 0.75} 0 1 1 ${cx + r * 0.3} ${cy - r} Z`}
-        fill={moonFill}
-        stroke={moonStroke}
-        strokeWidth="1.5"
-      />
+      {/* Full light circle (the lit moon) */}
+      <circle cx={cx} cy={cy} r={r} fill={moonFill} stroke={moonStroke} strokeWidth="1" />
+      {/* Offset dark circle on top creates the crescent cutout */}
+      <circle cx={cx + r * 0.45} cy={cy - r * 0.15} r={r} fill={moonStroke} />
     </g>
   );
 
