@@ -1,4 +1,5 @@
 import React from "react";
+import FishIcon from "@/components/FishIcon";
 
 const TOTAL_HOURS = 19; // 5am to 12am
 
@@ -24,6 +25,24 @@ const buildSmoothPath = (points) => {
   return d;
 };
 
+const findPeaks = (levels) => {
+  const peaks = [];
+  let i = 0;
+  while (i < levels.length) {
+    const prev = i > 0 ? levels[i - 1] : 0;
+    const next = i < levels.length - 1 ? levels[i + 1] : 0;
+    if (levels[i] >= prev && levels[i] >= next && levels[i] > 12) {
+      let end = i;
+      while (end < levels.length - 1 && levels[end + 1] === levels[i]) end++;
+      peaks.push(Math.floor((i + end) / 2));
+      i = end + 1;
+    } else {
+      i++;
+    }
+  }
+  return peaks;
+};
+
 export default function ActivityChart({ levels, highlightIndex }) {
   const maxLevel = Math.max(...levels, 1);
   const width = 100;
@@ -40,10 +59,13 @@ export default function ActivityChart({ levels, highlightIndex }) {
 
   const highlightX = highlightIndex != null ? highlightIndex * stepX : null;
 
+  const peaks = findPeaks(levels);
+
   const hourCount = TOTAL_HOURS;
 
   return (
     <div>
+      <div className="relative">
       <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-10">
         <defs>
           <linearGradient id="activityGradient" x1="0" y1="0" x2="0" y2="1">
@@ -73,6 +95,22 @@ export default function ActivityChart({ levels, highlightIndex }) {
           />
         )}
       </svg>
+      <div className="absolute inset-0 pointer-events-none">
+        {peaks.map((peakIdx) => {
+          const px = (peakIdx / (levels.length - 1)) * 100;
+          const py = 100 - (levels[peakIdx] / maxLevel) * 100;
+          return (
+            <div
+              key={peakIdx}
+              className="absolute"
+              style={{ left: `${px}%`, top: `${py}%`, transform: "translate(-50%, -50%)" }}
+            >
+              <FishIcon className="w-6 h-6 text-primary" />
+            </div>
+          );
+        })}
+      </div>
+      </div>
       <div className="relative mt-1">
         <div className="relative h-2">
           {Array.from({ length: hourCount + 1 }).map((_, i) => {
