@@ -216,7 +216,7 @@ export default function Home() {
 
   return (
     <PullToRefresh onRefresh={refreshData}>
-    <div className="space-y-6 md:space-y-8 -mt-4 md:-mt-8">
+    <div className="space-y-3 md:space-y-4 -mt-4 md:-mt-8">
       {/* Hero */}
       <div className="space-y-2 px-1">
         <h1 className="text-2xl md:text-[34px] font-heading font-extrabold tracking-tight leading-tight">Angler's Log</h1>
