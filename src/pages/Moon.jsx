@@ -419,8 +419,8 @@ export default function Moon() {
     <div className="space-y-6 md:space-y-8 -mt-4 md:-mt-8">
       <div className="max-w-2xl mx-auto space-y-4">
         {/* Header */}
-        <div className="text-center">
-          <h1 className="text-3xl font-display font-bold mb-2">Moon Phase</h1>
+        <div className="space-y-2 px-1">
+          <h1 className="text-2xl md:text-[34px] font-heading font-extrabold tracking-tight leading-tight">Moon Phase</h1>
         </div>
 
         {/* Day Rating Card */}
