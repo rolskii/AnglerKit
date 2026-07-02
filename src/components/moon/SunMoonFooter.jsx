@@ -23,9 +23,6 @@ export default function SunMoonFooter({ sunrise, sunset, zenith, moonPhase, illu
       {/* Center: Moon */}
       <div className="flex flex-col items-center gap-1.5 border-x border-border px-2">
         <RealisticMoon illumination={illumination} className="w-12 h-12" />
-        <p className="text-xs font-semibold text-muted-foreground tracking-wide text-center uppercase leading-tight">
-          {moonPhase}
-        </p>
         <p className="text-xs text-muted-foreground">{illumination}% lit</p>
       </div>
       {/* Right: Moon data */}
