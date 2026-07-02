@@ -417,7 +417,7 @@ export default function Moon() {
         <Card>
           <CardContent className="pt-3 pb-3">
             <DayRatingRing percentage={ratingPercent} rating={moonData.fishingRating} ratingLabel={getRatingLabel(moonData.fishingRating).toUpperCase()} />
-            <div className="flex gap-1.5 mt-4">
+            <div className="flex gap-1.5 mt-2">
               {[1, 2, 3, 4, 5, 6, 7].map((n) => (
                 <FishIcon
                   key={n}
