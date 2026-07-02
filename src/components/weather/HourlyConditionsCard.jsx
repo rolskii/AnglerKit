@@ -34,9 +34,11 @@ export default function HourlyConditionsCard({ hourly, selectedDate, daily }) {
   const sunrise = daily?.sunrise?.[0] ? new Date(daily.sunrise[0]) : null;
   const sunset = daily?.sunset?.[0] ? new Date(daily.sunset[0]) : null;
 
+  const now = new Date();
   const todayHours = hourly.time
     .map((hTime, hIdx) => ({ hTime, hIdx }))
-    .filter(({ hTime }) => hTime.startsWith(selectedDate));
+    .filter(({ hTime }) => hTime.startsWith(selectedDate))
+    .filter(({ hTime }) => selectedDate !== now.toISOString().slice(0, 10) || new Date(hTime) >= now);
 
   if (todayHours.length === 0) return null;
 
