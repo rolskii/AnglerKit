@@ -124,6 +124,7 @@ Deno.serve(async (req) => {
       weather_code: mapCondition(cw.conditionCode),
       wind_speed_10m: convertWind(cw.windSpeed),
       visibility: cw.visibility ?? 10000,
+      pressure: cw.pressure ?? 0,
     };
 
     const daily = {

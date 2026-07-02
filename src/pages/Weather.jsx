@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Cloud, CloudRain, Sun, Moon, Wind, Droplets, Eye, Gauge, MapPin, ChevronDown } from 'lucide-react';
+import { Cloud, CloudRain, Sun, Moon, Wind, Droplets, Gauge, TrendingUp, TrendingDown, MapPin, ChevronDown } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { searchLocations, geocodeLocation } from '@/lib/geocode';
 import LocationMapPicker from '@/components/moon/LocationMapPicker';
@@ -274,40 +274,52 @@ export default function Weather() {
               </div>
 
               {/* Conditions Grid */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-card p-4 rounded-lg">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                    <Droplets className="w-4 h-4" />
+              <div className="grid grid-cols-3 gap-3">
+                <div className="bg-card p-3 rounded-lg">
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                    <Droplets className="w-3.5 h-3.5" />
                     Humidity
                   </div>
-                  <p className="text-lg font-semibold">{current.relative_humidity_2m}%</p>
+                  <p className="text-base font-semibold">{current.relative_humidity_2m}%</p>
                 </div>
-                <div className="bg-card p-4 rounded-lg">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                    <Wind className="w-4 h-4" />
-                    Wind Speed
+                <div className="bg-card p-3 rounded-lg">
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                    <Wind className="w-3.5 h-3.5" />
+                    Wind
                   </div>
-                  <p className="text-lg font-semibold">
+                  <p className="text-base font-semibold">
                     {tempUnit === 'fahrenheit' ? Math.round(current.wind_speed_10m) + ' mph' : Math.round(current.wind_speed_10m * 1.60934) + ' km/h'}
                   </p>
                 </div>
-                <div className="bg-card p-4 rounded-lg">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                    <Eye className="w-4 h-4" />
-                    Visibility
+                <div className="bg-card p-3 rounded-lg">
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                    <CloudRain className="w-3.5 h-3.5" />
+                    Precip
                   </div>
-                  <p className="text-lg font-semibold">
-                    {tempUnit === 'fahrenheit' ? (current.visibility / 1000).toFixed(1) + ' mi' : (current.visibility / 1000).toFixed(1) + ' km'}
-                  </p>
-                </div>
-                <div className="bg-card p-4 rounded-lg">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                    <CloudRain className="w-4 h-4" />
-                    Precipitation
-                  </div>
-                  <p className="text-lg font-semibold">
+                  <p className="text-base font-semibold">
                     {tempUnit === 'fahrenheit' ? current.precipitation.toFixed(2) + '"' : (current.precipitation * 25.4).toFixed(1) + ' mm'}
                   </p>
+                </div>
+                <div className="bg-card p-3 rounded-lg">
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                    <Gauge className="w-3.5 h-3.5" />
+                    Pressure
+                  </div>
+                  <p className="text-base font-semibold">{Math.round(current.pressure)} hPa</p>
+                </div>
+                <div className="bg-card p-3 rounded-lg">
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                    <TrendingUp className="w-3.5 h-3.5" />
+                    High
+                  </div>
+                  <p className="text-base font-semibold">{Math.round(daily.temperature_2m_max[0])}°</p>
+                </div>
+                <div className="bg-card p-3 rounded-lg">
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                    <TrendingDown className="w-3.5 h-3.5" />
+                    Low
+                  </div>
+                  <p className="text-base font-semibold">{Math.round(daily.temperature_2m_min[0])}°</p>
                 </div>
               </div>
             </div>
