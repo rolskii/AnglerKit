@@ -59,7 +59,7 @@ export default function HourlyConditionsCard({ hourly, selectedDate, daily }) {
               return (
                 <div
                   key={hIdx}
-                  className="flex flex-col items-center gap-1.5 w-16 p-2 rounded-lg bg-secondary/40 shrink-0"
+                  className="flex flex-col items-center gap-1.5 w-16 p-2 rounded-lg bg-secondary shrink-0"
                   style={{ scrollSnapAlign: 'start' }}
                 >
                   <p className="text-[10px] text-muted-foreground">{hourLabel}</p>
