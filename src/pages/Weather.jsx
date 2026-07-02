@@ -428,6 +428,7 @@ export default function Weather() {
         dayData={selectedDay}
         hourly={weather?.hourly}
         tempUnit={tempUnit}
+        location={location}
       />
     </div>
   );
