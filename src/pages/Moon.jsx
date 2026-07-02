@@ -482,8 +482,8 @@ export default function Moon() {
         <Card className="bg-card border-primary/20">
           <CardHeader className="pt-3 pb-2">
             <CardTitle className="flex items-center gap-2 text-base">
-              <Waves className="w-5 h-5 text-primary" />
               Solunar Feeding Times
+              <Waves className="w-5 h-5 text-primary" />
             </CardTitle>
             <CardDescription>Major & minor feeding windows for {moonData.date}</CardDescription>
           </CardHeader>
