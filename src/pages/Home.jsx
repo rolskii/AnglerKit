@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { ChevronRight, Camera, Moon as MoonIcon, Cloud, CloudRain, Sun, Bell, MapPin, Search } from "lucide-react";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { ReelIcon as ReelDiscIcon } from "@/components/GearIcons";
 import FishIcon from "@/components/FishIcon";
 import MoonPhaseSymbol from "@/components/MoonPhaseSymbol";
@@ -104,7 +105,7 @@ export default function Home() {
   const [biteWindow, setBiteWindow] = useState(null);
   const [alarmTick, setAlarmTick] = useState(0);
   const [location, setLocation] = useState(() => localStorage.getItem('moonLocation') || 'Toronto, ON');
-  const [editingLocation, setEditingLocation] = useState(false);
+  const [locationOpen, setLocationOpen] = useState(false);
   const [locationInput, setLocationInput] = useState('');
   const [suggestions, setSuggestions] = useState([]);
 
@@ -208,7 +209,7 @@ export default function Home() {
     const newCoords = { lat, lon, name };
     localStorage.setItem('weatherCoords', JSON.stringify(newCoords));
     setLocation(name);
-    setEditingLocation(false);
+    setLocationOpen(false);
     setLocationInput('');
     setSuggestions([]);
     const tempUnit = localStorage.getItem("weatherTempUnit") || "celsius";
@@ -218,7 +219,7 @@ export default function Home() {
   const submitLocation = async (e) => {
     e?.preventDefault();
     const value = locationInput.trim();
-    if (!value) { setEditingLocation(false); return; }
+    if (!value) { setLocationOpen(false); return; }
     try {
       const response = await fetch(
         `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(value)}&language=en&count=1&format=json`
@@ -232,7 +233,7 @@ export default function Home() {
         return;
       }
     } catch (e) {}
-    setEditingLocation(false);
+    setLocationOpen(false);
     setLocationInput('');
     setSuggestions([]);
   };
@@ -294,41 +295,42 @@ export default function Home() {
               <p className={`text-sm font-bold ${moonPhase.fishingRating >= 5 ? "text-green-600" : moonPhase.fishingRating <= 3 ? "text-yellow-600" : "text-primary"}`}>
                 {moonPhase.fishingRating <= 2 ? "Bad" : moonPhase.fishingRating === 3 ? "Fair" : moonPhase.fishingRating === 4 ? "OK" : moonPhase.fishingRating === 5 ? "Good" : moonPhase.fishingRating === 6 ? "Very Good" : "Excellent"}
               </p>
-              <div className="relative mt-1">
-                {editingLocation ? (
-                  <form onSubmit={submitLocation} className="flex items-center justify-end gap-1">
-                    <Search className="w-3 h-3 text-muted-foreground shrink-0" />
-                    <input
-                      autoFocus
-                      value={locationInput}
-                      onChange={(e) => handleLocationInput(e.target.value)}
-                      onBlur={() => { if (!suggestions.length) setEditingLocation(false); }}
-                      placeholder="Search city..."
-                      className="text-xs bg-transparent border-b border-border outline-none text-right max-w-[140px] placeholder:text-muted-foreground/50"
-                    />
-                  </form>
-                ) : (
-                  <button
-                    onClick={() => { setLocationInput(''); setEditingLocation(true); }}
-                    className="text-xs text-muted-foreground flex items-center justify-end gap-1"
-                  >
-                    <MapPin className="w-3 h-3" />{location}
-                  </button>
-                )}
-                {editingLocation && suggestions.length > 0 && (
-                  <div className="absolute right-0 top-full mt-1 z-20 bg-popover shadow-lg rounded-lg border border-border max-h-40 overflow-y-auto min-w-[160px]">
-                    {suggestions.map((s, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        onMouseDown={(e) => { e.preventDefault(); selectLocation(s); }}
-                        className="w-full text-left px-3 py-1.5 text-xs hover:bg-accent/10 truncate"
-                      >
-                        {s.name}
-                      </button>
-                    ))}
-                  </div>
-                )}
+              <div className="mt-1">
+                <Popover open={locationOpen} onOpenChange={setLocationOpen}>
+                  <PopoverTrigger asChild>
+                    <button type="button" className="text-xs text-muted-foreground flex items-center justify-end gap-1 hover:text-foreground transition-colors">
+                      <MapPin className="w-3 h-3" />{location}
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent align="end" className="w-64 p-2">
+                    <form onSubmit={submitLocation} className="space-y-2">
+                      <div className="flex items-center gap-1.5">
+                        <Search className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                        <input
+                          autoFocus
+                          value={locationInput}
+                          onChange={(e) => handleLocationInput(e.target.value)}
+                          placeholder="Search city..."
+                          className="text-xs bg-transparent flex-1 border-b border-border outline-none pb-1 placeholder:text-muted-foreground/50"
+                        />
+                      </div>
+                      {suggestions.length > 0 && (
+                        <div className="max-h-40 overflow-y-auto">
+                          {suggestions.map((s, i) => (
+                            <button
+                              key={i}
+                              type="button"
+                              onClick={() => selectLocation(s)}
+                              className="w-full text-left px-2 py-1.5 text-xs hover:bg-accent/10 rounded truncate"
+                            >
+                              {s.name}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </form>
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
           </div>
