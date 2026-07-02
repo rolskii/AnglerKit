@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Sun, Waves, MapPin, Bell, BellOff, Save } from 'lucide-react';
 import FishIcon from '@/components/FishIcon';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 import LocationMapPicker from '@/components/moon/LocationMapPicker';
 import DayRatingRing from '@/components/moon/DayRatingRing';
 import DateSelector from '@/components/moon/DateSelector';
@@ -430,7 +432,27 @@ export default function Moon() {
                   ))}
                 </div>
                 <div className="flex items-center gap-2 mt-2">
-                  <span className="text-xs text-muted-foreground">{moonData.date}</span>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button className="text-xs text-muted-foreground hover:text-primary transition-colors">
+                        {moonData.date}
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={new Date(selectedDate + 'T00:00:00')}
+                        onSelect={(date) => {
+                          if (date) {
+                            const y = date.getFullYear();
+                            const m = String(date.getMonth() + 1).padStart(2, '0');
+                            const d = String(date.getDate()).padStart(2, '0');
+                            setSelectedDate(`${y}-${m}-${d}`);
+                          }
+                        }}
+                      />
+                    </PopoverContent>
+                  </Popover>
                   <button
                     onClick={openLocationDialog}
                     className="text-xs text-muted-foreground flex items-center gap-1 hover:text-primary transition-colors"
