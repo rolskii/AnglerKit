@@ -54,13 +54,9 @@ export default function WeatherGlyph({ code, isNight = false, className = 'w-7 h
 
   const MoonShape = ({ cx = 32, cy = 26, r = 11 }) => (
     <g>
-      {/* Faint full-circle outline so the moon shape is always visible */}
-      <circle cx={cx} cy={cy} r={r + 0.5} fill="none" stroke={moonStroke} strokeWidth="1" opacity="0.5" />
       <path
         d={`M ${cx + r * 0.3} ${cy - r} A ${r} ${r} 0 1 0 ${cx + r * 0.3} ${cy + r} A ${r * 0.75} ${r * 0.75} 0 1 1 ${cx + r * 0.3} ${cy - r} Z`}
         fill={moonFill}
-        stroke={moonStroke}
-        strokeWidth="1.5"
       />
     </g>
   );
