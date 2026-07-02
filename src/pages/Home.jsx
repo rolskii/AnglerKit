@@ -153,8 +153,10 @@ export default function Home() {
 
   const fetchWeather = async (coords, tempUnit) => {
     try {
-      const res = await base44.functions.invoke('weatherkit', { lat: coords.lat, lon: coords.lon, unit: tempUnit });
-      const data = res.data;
+      const res = await fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current=temperature_2m,weather_code,wind_speed_10m&temperature_unit=${tempUnit}&wind_speed_unit=mph`
+      );
+      const data = await res.json();
       const temp = Math.round(data.current.temperature_2m);
       const desc = getWeatherDescription(data.current.weather_code);
       const wind = data.current.wind_speed_10m;
