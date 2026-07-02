@@ -430,13 +430,13 @@ export default function Moon() {
                   ))}
                 </div>
                 <div className="flex items-center gap-2 mt-2">
+                  <span className="text-xs text-muted-foreground">{moonData.date}</span>
                   <button
                     onClick={openLocationDialog}
                     className="text-xs text-muted-foreground flex items-center gap-1 hover:text-primary transition-colors"
                   >
                     <MapPin className="w-3 h-3" />{moonData.location}
                   </button>
-                  <span className="text-xs text-muted-foreground">{moonData.date}</span>
                 </div>
               </div>
               <div className={`shrink-0 ${moonData.fishingRating >= 5 ? 'text-green-600' : moonData.fishingRating <= 3 ? 'text-yellow-600' : 'text-primary'}`}>
