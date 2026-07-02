@@ -279,7 +279,7 @@ export default function Home() {
       {/* Status bar */}
       {moonPhase && (
         <div className="px-4 py-3 rounded-2xl bg-card shadow-sm space-y-3">
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex items-start justify-between gap-2">
             <div className="flex flex-col gap-1">
               <p className="text-sm font-bold text-foreground">Fish Bite Rating:<span className={`ml-4 ${moonPhase.fishingRating >= 5 ? "text-green-600" : moonPhase.fishingRating <= 3 ? "text-yellow-600" : "text-primary"}`}>{Math.round((moonPhase.fishingRating / 7) * 100)}%</span></p>
               <div className="flex items-center gap-1">
