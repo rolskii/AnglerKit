@@ -388,7 +388,7 @@ export default function Moon() {
     <div className="min-h-screen bg-background px-4 pb-20 pt-0">
       <div className="max-w-2xl mx-auto space-y-4">
         {/* Header */}
-        <div className="text-center mb-4">
+        <div className="text-center">
           <h1 className="text-3xl font-display font-bold mb-2">Moon Phase</h1>
 
           {/* Location */}
