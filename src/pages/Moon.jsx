@@ -431,7 +431,7 @@ export default function Moon() {
                     />
                   ))}
                 </div>
-                <div className="flex items-center gap-2 mt-2">
+                <div className="flex items-center gap-4 mt-2">
                   <Popover>
                     <PopoverTrigger asChild>
                       <button className="text-xs text-muted-foreground hover:text-primary transition-colors">
