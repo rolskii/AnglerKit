@@ -21,8 +21,8 @@ export default function WeatherGlyph({ code, isNight = false, className = 'w-7 h
   // Color palette
   const sunFill = '#FBBF24'; // amber-400
   const sunStroke = '#F59E0B'; // amber-500
-  const moonFill = '#FEF3C7'; // amber-100
-  const moonStroke = '#FCD34D'; // amber-300
+  const moonFill = '#F8FAFC'; // slate-50 (off-white)
+  const moonStroke = '#CBD5E1'; // slate-300
   const cloudLight = '#F1F5F9'; // slate-100
   const cloudMid = '#CBD5E1'; // slate-300
   const cloudDark = '#94A3B8'; // slate-400
