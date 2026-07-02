@@ -463,30 +463,7 @@ export default function Weather() {
           </CardContent>
         </Card>
 
-        {/* Fishing Tip */}
-        <Card className="bg-secondary/30">
-          <CardHeader>
-            <CardTitle className="text-base">Fishing Conditions</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            {current.precipitation > 0.1 && (
-              <p>✓ Rain in the forecast — fish are often more active before and after rainfall</p>
-            )}
-            {current.wind_speed_10m < 5 && (
-              <p>✓ Light winds — ideal for sight fishing and surface presentations</p>
-            )}
-            {current.wind_speed_10m >= 10 && (
-              <p>✓ Strong winds — try heavier flies and lures, fish may be deeper</p>
-            )}
-            {current.relative_humidity_2m > 70 && (
-              <p>✓ High humidity — great for insect activity and hatches</p>
-            )}
-            {((tempUnit === 'fahrenheit' && current.temperature_2m > 70 && current.temperature_2m < 85) ||
-              (tempUnit === 'celsius' && current.temperature_2m > 21 && current.temperature_2m < 29)) && (
-              <p>✓ Optimal temperature range for most freshwater species</p>
-            )}
-          </CardContent>
-        </Card>
+
       </div>
     </div>
   );
