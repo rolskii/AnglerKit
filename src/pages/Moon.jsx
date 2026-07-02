@@ -417,7 +417,7 @@ export default function Moon() {
         <Card className="bg-primary/5">
           <CardContent className="pt-6">
             <DayRatingRing percentage={ratingPercent} rating={moonData.fishingRating} ratingLabel={getRatingLabel(moonData.fishingRating).toUpperCase()} />
-            <div className="flex justify-center gap-1.5 mt-4">
+            <div className="flex gap-1.5 mt-4">
               {[1, 2, 3, 4, 5, 6, 7].map((n) => (
                 <FishIcon
                   key={n}
@@ -425,7 +425,7 @@ export default function Moon() {
                 />
               ))}
             </div>
-            <div className="flex items-center justify-center gap-2 mt-2">
+            <div className="flex items-center gap-2 mt-2">
               <button
                 onClick={openLocationDialog}
                 className="text-xs text-muted-foreground flex items-center gap-1 hover:text-primary transition-colors"
