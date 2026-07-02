@@ -6,6 +6,7 @@ import { searchLocations, geocodeLocation } from '@/lib/geocode';
 import LocationMapPicker from '@/components/moon/LocationMapPicker';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
+import HourlyConditionsCard from '@/components/weather/HourlyConditionsCard';
 
 export default function Weather() {
   const savedLocation = localStorage.getItem('weatherLocation');
@@ -360,6 +361,13 @@ export default function Weather() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Hourly Conditions for Selected Date */}
+        <HourlyConditionsCard
+          hourly={weather.hourly}
+          selectedDate={selectedDate}
+          daily={daily}
+        />
 
         {/* 10-Day Forecast */}
         <Card>
