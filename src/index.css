@@ -98,6 +98,7 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     overscroll-behavior: none;
+    scrollbar-gutter: stable;
   }
 
   button, a, [role="button"] {
