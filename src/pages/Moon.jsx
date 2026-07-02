@@ -11,6 +11,7 @@ import LocationMapPicker from '@/components/moon/LocationMapPicker';
 import DayRatingRing from '@/components/moon/DayRatingRing';
 import ActivityChart from '@/components/moon/ActivityChart';
 import SunMoonFooter from '@/components/moon/SunMoonFooter';
+import WeeklyBiteForecast from '@/components/moon/WeeklyBiteForecast';
 
 const todayStr = () => {
   const now = new Date();
@@ -145,6 +146,7 @@ export default function Moon() {
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [locationDialogOpen, setLocationDialogOpen] = useState(false);
+  const [weeklyForecastOpen, setWeeklyForecastOpen] = useState(false);
 
   const openLocationDialog = () => {
     setLocationDialogOpen(true);
@@ -520,8 +522,8 @@ export default function Moon() {
                   />
                 </svg>
                 <span
-                  className={`text-xl font-bold text-foreground ${selectedDate !== todayStr() ? 'cursor-pointer hover:text-primary transition-colors' : ''}`}
-                  onClick={() => selectedDate !== todayStr() && setSelectedDate(todayStr())}
+                  className="text-xl font-bold text-foreground cursor-pointer hover:text-primary transition-colors"
+                  onClick={() => setWeeklyForecastOpen(true)}
                 >
                   {ratingPercent}%
                 </span>
@@ -701,6 +703,12 @@ export default function Moon() {
           </CardContent>
         </Card>
       </div>
+
+      <WeeklyBiteForecast
+        open={weeklyForecastOpen}
+        onOpenChange={setWeeklyForecastOpen}
+        startDate={selectedDate}
+      />
 
       <LocationMapPicker
         open={locationDialogOpen}
