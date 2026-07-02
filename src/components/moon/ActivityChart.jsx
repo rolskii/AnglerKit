@@ -64,7 +64,7 @@ const DayGraph = ({ day }) => {
 
   return (
     <div className="snap-start shrink-0 w-full px-0.5">
-      <p className="text-xs text-muted-foreground text-center mb-2">{dayLabel}</p>
+      <p className="text-xs text-muted-foreground text-center mb-7">{dayLabel}</p>
       <div className="relative">
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-10">
           <defs>
