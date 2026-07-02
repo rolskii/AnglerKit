@@ -250,55 +250,6 @@ export default function Weather() {
           </div>
         </div>
 
-        {/* Location Controls */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="space-y-3">
-              <label className="block text-sm font-medium text-foreground">Location</label>
-              <div className="flex gap-2 flex-col sm:flex-row">
-                <div className="flex-1 relative">
-                  <input
-                    type="text"
-                    value={editingLocation}
-                    onChange={(e) => handleLocationInput(e.target.value)}
-                    placeholder="Enter city, state or coordinates"
-                    className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground"
-                    onKeyPress={(e) => e.key === 'Enter' && handleLocationChange()}
-                    onFocus={(e) => {
-                      e.target.select();
-                      editingLocation.trim().length >= 2 && setShowSuggestions(true);
-                    }}
-                    onBlur={() => setTimeout(() => setShowSuggestions(false), 100)}
-                  />
-                  {showSuggestions && suggestions.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto" onMouseDown={(e) => e.preventDefault()}>
-                      {suggestions.map((suggestion, idx) => (
-                        <div
-                          key={idx}
-                          onClick={() => handleSuggestionSelect(suggestion)}
-                          className="w-full px-3 py-2.5 text-xs text-left hover:bg-primary/10 border-b border-border/50 last:border-b-0 transition-colors cursor-pointer"
-                        >
-                          {suggestion.label}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                <button
-                  onClick={fetchUserLocation}
-                  className="px-3 py-2 text-sm font-medium bg-secondary text-secondary-foreground rounded-lg hover:opacity-90 transition-opacity"
-                  title="Refresh current location"
-                >
-                  <MapPin className="w-4 h-4" />
-                </button>
-              </div>
-              {location && (
-                <p className="text-xs text-muted-foreground">Currently showing: {location}</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Current Weather Card */}
         <Card className="bg-primary/10">
           <CardContent className="pt-6">
