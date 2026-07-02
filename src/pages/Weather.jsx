@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Cloud, CloudRain, Sun, Moon, Wind, Droplets, Gauge, TrendingUp, TrendingDown, MapPin, ChevronDown, Calendar as CalendarIcon } from 'lucide-react';
+import { CloudRain, Wind, Droplets, Gauge, MapPin, ChevronDown } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { searchLocations, geocodeLocation } from '@/lib/geocode';
 import LocationMapPicker from '@/components/moon/LocationMapPicker';
@@ -210,14 +210,6 @@ export default function Weather() {
     return now < sunrise || now > sunset;
   };
 
-  const getWeatherIcon = (code) => {
-    const night = isNight();
-    if (code === 0 || code === 1) return night ? Moon : Sun;
-    if (code === 2 || code === 3) return Cloud;
-    if (code >= 51 && code <= 99) return CloudRain;
-    return Cloud;
-  };
-
   const getDailySummary = () => {
     if (!daily) return null;
     const dayIdx = daily.time.indexOf(selectedDate);
@@ -233,13 +225,6 @@ export default function Weather() {
     else if (precipProb >= 30) summary += ` Possible precipitation (${precipProb}%).`;
     else summary += ` Low chance of rain (${precipProb}%).`;
     return summary;
-  };
-
-  const getWeatherIconColor = (code) => {
-    const night = isNight();
-    if (code === 0 || code === 1) return night ? 'text-indigo-300' : 'text-yellow-500';
-    if (code === 2 || code === 3) return night ? 'text-indigo-300' : 'text-sky-400';
-    return 'text-blue-500';
   };
 
   if (loading) {
@@ -275,9 +260,6 @@ export default function Weather() {
   const forecastDays = daily.time
     .slice(1, 9)
     .map((date, idx) => ({ date, idx: idx + 1 }));
-  const WeatherIcon = getWeatherIcon(current.weather_code);
-  const weatherIconColor = getWeatherIconColor(current.weather_code);
-
   return (
     <div className="space-y-6 md:space-y-8 -mt-4 md:-mt-8">
       <div className="max-w-2xl mx-auto space-y-6">
@@ -300,7 +282,7 @@ export default function Weather() {
           <CardContent className="pt-4">
             <div className="space-y-3">
               {/* Temperature and Condition */}
-              <div className="relative flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <div className="flex items-stretch gap-3">
                   <p className="text-6xl font-bold text-primary leading-none self-center">{Math.round(current.temperature_2m)}°</p>
                   <div className="flex flex-col justify-center">
@@ -309,11 +291,9 @@ export default function Weather() {
                     <p className="text-xs text-muted-foreground leading-tight">H: {Math.round(daily.temperature_2m_max[0])}°  L: {Math.round(daily.temperature_2m_min[0])}°</p>
                   </div>
                 </div>
-                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-                  <WeatherGlyph code={current.weather_code} isNight={isNight()} className="w-20 h-24" />
-                </div>
+                <WeatherGlyph code={current.weather_code} isNight={isNight()} className="w-20 h-24 shrink-0" />
                 {/* Date and Location */}
-                <div className="flex flex-col items-end gap-1 z-10">
+                <div className="flex flex-col items-end gap-1 shrink-0">
                   <Popover>
                     <PopoverTrigger asChild>
                       <button className="text-sm font-semibold text-primary flex items-center gap-1 hover:underline transition-colors">
