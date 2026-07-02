@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { ChevronRight, Camera, Moon as MoonIcon, Cloud, CloudRain, Sun, Bell, MapPin, Search } from "lucide-react";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { ChevronRight, Camera, Moon as MoonIcon, Cloud, CloudRain, Sun, Bell, MapPin, Search, ChevronDown } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ReelIcon as ReelDiscIcon } from "@/components/GearIcons";
 import FishIcon from "@/components/FishIcon";
 import MoonPhaseSymbol from "@/components/MoonPhaseSymbol";
@@ -105,7 +105,7 @@ export default function Home() {
   const [biteWindow, setBiteWindow] = useState(null);
   const [alarmTick, setAlarmTick] = useState(0);
   const [location, setLocation] = useState(() => localStorage.getItem('moonLocation') || 'Toronto, ON');
-  const [locationOpen, setLocationOpen] = useState(false);
+  const [locationDialogOpen, setLocationDialogOpen] = useState(false);
   const [locationInput, setLocationInput] = useState('');
   const [suggestions, setSuggestions] = useState([]);
 
@@ -209,7 +209,7 @@ export default function Home() {
     const newCoords = { lat, lon, name };
     localStorage.setItem('weatherCoords', JSON.stringify(newCoords));
     setLocation(name);
-    setLocationOpen(false);
+    setLocationDialogOpen(false);
     setLocationInput('');
     setSuggestions([]);
     const tempUnit = localStorage.getItem("weatherTempUnit") || "celsius";
@@ -219,7 +219,7 @@ export default function Home() {
   const submitLocation = async (e) => {
     e?.preventDefault();
     const value = locationInput.trim();
-    if (!value) { setLocationOpen(false); return; }
+    if (!value) { setLocationDialogOpen(false); return; }
     try {
       const response = await fetch(
         `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(value)}&language=en&count=1&format=json`
@@ -233,7 +233,7 @@ export default function Home() {
         return;
       }
     } catch (e) {}
-    setLocationOpen(false);
+    setLocationDialogOpen(false);
     setLocationInput('');
     setSuggestions([]);
   };
@@ -295,42 +295,16 @@ export default function Home() {
               <p className={`text-sm font-bold ${moonPhase.fishingRating >= 5 ? "text-green-600" : moonPhase.fishingRating <= 3 ? "text-yellow-600" : "text-primary"}`}>
                 {moonPhase.fishingRating <= 2 ? "Bad" : moonPhase.fishingRating === 3 ? "Fair" : moonPhase.fishingRating === 4 ? "OK" : moonPhase.fishingRating === 5 ? "Good" : moonPhase.fishingRating === 6 ? "Very Good" : "Excellent"}
               </p>
-              <div className="mt-1">
-                <Popover open={locationOpen} onOpenChange={setLocationOpen}>
-                  <PopoverTrigger asChild>
-                    <button type="button" className="text-xs text-muted-foreground flex items-center justify-end gap-1 hover:text-foreground transition-colors">
-                      <MapPin className="w-3 h-3" />{location}
-                    </button>
-                  </PopoverTrigger>
-                  <PopoverContent align="end" className="w-64 p-2">
-                    <form onSubmit={submitLocation} className="space-y-2">
-                      <div className="flex items-center gap-1.5">
-                        <Search className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                        <input
-                          autoFocus
-                          value={locationInput}
-                          onChange={(e) => handleLocationInput(e.target.value)}
-                          placeholder="Search city..."
-                          className="text-xs bg-transparent flex-1 border-b border-border outline-none pb-1 placeholder:text-muted-foreground/50"
-                        />
-                      </div>
-                      {suggestions.length > 0 && (
-                        <div className="max-h-40 overflow-y-auto">
-                          {suggestions.map((s, i) => (
-                            <button
-                              key={i}
-                              type="button"
-                              onClick={() => selectLocation(s)}
-                              className="w-full text-left px-2 py-1.5 text-xs hover:bg-accent/10 rounded truncate"
-                            >
-                              {s.name}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </form>
-                  </PopoverContent>
-                </Popover>
+              <div className="mt-1 relative z-20">
+                <button
+                  type="button"
+                  onClick={() => setLocationDialogOpen(true)}
+                  className="text-xs text-muted-foreground flex items-center justify-end gap-0.5 hover:text-foreground transition-colors py-1 px-1 -mr-1"
+                >
+                  <MapPin className="w-3 h-3" />
+                  <span className="max-w-[120px] truncate">{location}</span>
+                  <ChevronDown className="w-3 h-3 opacity-60" />
+                </button>
               </div>
             </div>
           </div>
@@ -397,7 +371,41 @@ export default function Home() {
       </div>
 
       <FeaturedImage />
-</div>
-    </PullToRefresh>
-  );
-}
+
+      <Dialog open={locationDialogOpen} onOpenChange={setLocationDialogOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Change Location</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={submitLocation} className="space-y-3">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted">
+              <Search className="w-4 h-4 text-muted-foreground shrink-0" />
+              <input
+                autoFocus
+                value={locationInput}
+                onChange={(e) => handleLocationInput(e.target.value)}
+                placeholder="Search city..."
+                className="text-sm bg-transparent flex-1 outline-none placeholder:text-muted-foreground/50"
+              />
+            </div>
+            {suggestions.length > 0 && (
+              <div className="max-h-48 overflow-y-auto space-y-0.5">
+                {suggestions.map((s, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => selectLocation(s)}
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-accent/10 rounded-lg truncate"
+                  >
+                    {s.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </form>
+        </DialogContent>
+      </Dialog>
+      </div>
+      </PullToRefresh>
+      );
+      }
