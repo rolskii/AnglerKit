@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Cloud, CloudRain, Sun, Wind, Droplets, Eye, Gauge, MapPin, ChevronDown } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 
 export default function Weather() {
   const savedLocation = localStorage.getItem('weatherLocation');
@@ -37,10 +38,8 @@ export default function Weather() {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&temperature_unit=${unit}&wind_speed_unit=mph&hourly=temperature_2m,weather_code,precipitation_probability,wind_speed_10m&forecast_days=10`
-      );
-      const data = await response.json();
+      const response = await base44.functions.invoke('weatherkit', { lat, lon, unit });
+      const data = response.data;
       const coords = { lat, lon, name: locationName };
       setLastCoords(coords);
       saveLocation(coords, locationName);
@@ -69,10 +68,8 @@ export default function Weather() {
       const lon = result.longitude;
       const locationName = `${result.name}${result.admin1 ? ', ' + result.admin1 : ''}`;
       
-      const response = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&temperature_unit=${tempUnit}&wind_speed_unit=mph&hourly=temperature_2m,weather_code,precipitation_probability,wind_speed_10m&forecast_days=10`
-      );
-      const data = await response.json();
+      const response = await base44.functions.invoke('weatherkit', { lat, lon, unit: tempUnit });
+      const data = response.data;
       const coords = { lat, lon, name: locationName };
       setLastCoords(coords);
       saveLocation(coords, locationName);
@@ -158,10 +155,8 @@ export default function Weather() {
       const lon = result.longitude;
       const locationName = `${result.name}${result.admin1 ? ', ' + result.admin1 : ''}`;
 
-      const response = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&temperature_unit=${tempUnit}&wind_speed_unit=mph&hourly=temperature_2m,weather_code,precipitation_probability,wind_speed_10m&forecast_days=10`
-      );
-      const data = await response.json();
+      const response = await base44.functions.invoke('weatherkit', { lat, lon, unit: tempUnit });
+      const data = response.data;
       const coords = { lat, lon, name: locationName };
       setLastCoords(coords);
       saveLocation(coords, locationName);
