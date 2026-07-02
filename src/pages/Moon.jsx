@@ -18,9 +18,10 @@ const todayStr = () => {
 
 const parseTimeFromIso = (isoStr) => {
   if (!isoStr) return null;
-  const timePart = isoStr.split('T')[1];
-  if (!timePart) return null;
-  const [hours, minutes] = timePart.split(':').map(Number);
+  const d = new Date(isoStr);
+  if (isNaN(d.getTime())) return null;
+  let hours = d.getHours();
+  const minutes = d.getMinutes();
   const period = hours >= 12 ? 'PM' : 'AM';
   const h12 = hours % 12 || 12;
   return `${h12}:${String(minutes).padStart(2, '0')} ${period}`;
@@ -28,10 +29,9 @@ const parseTimeFromIso = (isoStr) => {
 
 const parseToMinutes = (isoStr) => {
   if (!isoStr) return null;
-  const timePart = isoStr.split('T')[1];
-  if (!timePart) return null;
-  const [hours, minutes] = timePart.split(':').map(Number);
-  return hours * 60 + minutes;
+  const d = new Date(isoStr);
+  if (isNaN(d.getTime())) return null;
+  return d.getHours() * 60 + d.getMinutes();
 };
 
 const minutesToTime = (mins) => {
