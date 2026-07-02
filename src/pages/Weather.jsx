@@ -261,10 +261,10 @@ export default function Weather() {
     .slice(1, 9)
     .map((date, idx) => ({ date, idx: idx + 1 }));
   return (
-    <div className="space-y-6 md:space-y-8 -mt-4 md:-mt-8">
-      <div className="max-w-2xl mx-auto space-y-6">
+    <div className="space-y-3 md:space-y-4 -mt-4 md:-mt-8">
+      <div className="max-w-2xl mx-auto space-y-3">
         {/* Header */}
-        <div className="space-y-2 px-1 mb-8">
+        <div className="space-y-2 px-1 mb-2">
           <div className="flex items-center gap-3">
             <h1 className="text-2xl md:text-[34px] font-heading font-extrabold tracking-tight leading-tight">Weather</h1>
             <button
