@@ -13,6 +13,9 @@ export default function CatchCard({ catchItem, onEdit, onDelete }) {
     try { return new Date(d + "T00:00:00").toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }); }
     catch { return d; }
   };
+  const estWeight = (catchItem.length && catchItem.girth)
+    ? (catchItem.length * catchItem.girth * catchItem.girth / 800)
+    : null;
   const card = {
     title: catchItem.species || "Catch",
     subtitle: [fmtDate(catchItem.date), catchItem.location].filter(Boolean).join(" · "),
@@ -20,7 +23,7 @@ export default function CatchCard({ catchItem, onEdit, onDelete }) {
     details: [
       { label: "Length", value: catchItem.length ? `${catchItem.length} in` : null },
       { label: "Girth", value: catchItem.girth ? `${catchItem.girth} in` : null },
-      { label: "Weight", value: catchItem.weight ? `${catchItem.weight} lb` : null },
+      { label: estWeight != null ? "Estimated Weight" : "Weight", value: estWeight != null ? `${estWeight.toFixed(2)} lb` : (catchItem.weight ? `${catchItem.weight} lb` : null) },
       { label: "Fly", value: catchItem.fly_used },
       { label: "Water Temp", value: catchItem.water_temp != null ? `${catchItem.water_temp}°` : null },
       { label: "Rod", value: catchItem.rod },
@@ -62,7 +65,7 @@ export default function CatchCard({ catchItem, onEdit, onDelete }) {
       <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
         <Detail label="Length" value={catchItem.length ? `${catchItem.length} in` : null} />
         <Detail label="Girth" value={catchItem.girth ? `${catchItem.girth} in` : null} />
-        <Detail label="Weight" value={catchItem.weight ? `${catchItem.weight} lb` : null} />
+        <Detail label={estWeight != null ? "Estimated Weight" : "Weight"} value={estWeight != null ? `${estWeight.toFixed(2)} lb` : (catchItem.weight ? `${catchItem.weight} lb` : null)} />
         <Detail label="Fly" value={catchItem.fly_used} />
         <Detail label="Water Temp" value={catchItem.water_temp != null ? `${catchItem.water_temp}°` : null} />
         <Detail label="Rod" value={catchItem.rod} />
