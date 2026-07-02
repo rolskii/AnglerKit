@@ -380,7 +380,7 @@ export default function Weather() {
               {daily.time.map((date, idx) => {
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
-                if (new Date(date) < today) return null;
+                if (new Date(date) <= today) return null;
                 const ForecastIcon = getWeatherIcon(daily.weather_code[idx]);
                 return (
                   <div key={idx}>
