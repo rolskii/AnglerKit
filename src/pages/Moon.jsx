@@ -401,7 +401,8 @@ export default function Moon() {
   const solunar = getSolunarTimes();
   const ratingPercent = Math.round((moonData.fishingRating / 7) * 100);
   const currentSlot = Math.floor((new Date().getHours() * 60 + new Date().getMinutes()) / 30);
-  const multiDayActivity = Array.from({ length: 7 }, (_, offset) => {
+  const multiDayActivity = Array.from({ length: 10 }, (_, i) => {
+    const offset = i - 3;
     const [yr, mo, dy] = selectedDate.split('-');
     const date = new Date(yr, mo - 1, dy);
     date.setDate(date.getDate() + offset);
@@ -417,7 +418,7 @@ export default function Moon() {
       : dayLevels.indexOf(Math.max(...dayLevels));
     return {
       dateStr,
-      label: isTodayDay ? 'Today' : offset === 1 ? 'Tomorrow' : date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
+      label: isTodayDay ? 'Today' : offset === 0 ? date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : offset === 1 ? 'Tomorrow' : date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
       levels: dayLevels,
       highlightIndex,
     };
