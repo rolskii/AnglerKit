@@ -10,11 +10,18 @@ import Lures from "@/pages/Lures";
 import Misc from "@/pages/Misc";
 import PullToRefresh from "@/components/PullToRefresh";
 
-const tintClasses = {
-  orange: "bg-tint-orange-bg text-tint-orange",
-  blue: "bg-tint-blue-bg text-tint-blue",
-  purple: "bg-tint-purple-bg text-tint-purple",
-  teal: "bg-tint-teal-bg text-tint-teal",
+const tintBg = {
+  orange: "bg-tint-orange-bg",
+  blue: "bg-tint-blue-bg",
+  purple: "bg-tint-purple-bg",
+  teal: "bg-tint-teal-bg",
+};
+
+const tintText = {
+  orange: "text-tint-orange",
+  blue: "text-tint-blue",
+  purple: "text-tint-purple",
+  teal: "text-tint-teal",
 };
 
 const TABS = [
@@ -50,8 +57,8 @@ export default function Gear() {
           {TABS.map((t) => {
             const Icon = t.icon;
             return (
-              <TabsTrigger key={t.value} value={t.value} className="flex flex-col items-center gap-1.5 rounded-xl bg-card border border-border/60 px-1 py-3 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary shadow-sm">
-                <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${tintClasses[t.tint]}`}>
+              <TabsTrigger key={t.value} value={t.value} className={`flex flex-col items-center gap-1.5 rounded-xl ${tintBg[t.tint]} border border-border/60 px-1 py-3 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary shadow-sm`}>
+                <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${tintText[t.tint]}`}>
                   <Icon className="w-5 h-5" strokeWidth={2} />
                 </div>
                 <span className="text-[11px] font-medium leading-tight text-center">{t.label}</span>
