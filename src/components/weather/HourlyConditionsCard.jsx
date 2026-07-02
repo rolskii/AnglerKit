@@ -41,9 +41,9 @@ export default function HourlyConditionsCard({ hourly, selectedDate, daily }) {
 
   return (
     <Card>
-      <CardHeader className="pt-3 pb-2">
+      <CardHeader className="pt-3 pb-2 flex-row items-center justify-between space-y-0">
         <CardTitle className="text-base">Hourly Conditions</CardTitle>
-        <CardDescription>{formatDate(selectedDate)}</CardDescription>
+        <CardDescription className="text-right">{formatDate(selectedDate)}</CardDescription>
       </CardHeader>
       <CardContent className="pt-0 pb-3">
         <div className="relative">
