@@ -7,7 +7,7 @@ import React from 'react';
  * @param {boolean} isNight - whether to show night variants (moon instead of sun)
  * @param {string} className - size/positioning classes (e.g. "w-7 h-7")
  */
-export default function WeatherGlyph({ code, isNight = false, className = 'w-7 h-7' }) {
+export default function WeatherGlyph({ code, isNight = false, className = 'w-7 h-7', darkOutline = false }) {
   // Determine icon type from code
   const isClear = code === 0 || code === 1;
   const isPartlyCloudy = code === 2;
@@ -20,13 +20,13 @@ export default function WeatherGlyph({ code, isNight = false, className = 'w-7 h
 
   // Color palette
   const sunFill = '#FBBF24'; // amber-400
-  const sunStroke = '#F59E0B'; // amber-500
+  const sunStroke = darkOutline ? '#B45309' : '#F59E0B'; // amber-800 or amber-500
   const moonFill = '#F1F5F9'; // slate-100 (bright silver lit side)
-  const moonStroke = '#64748B'; // slate-500 (medium grey dark side)
+  const moonStroke = darkOutline ? '#334155' : '#64748B'; // slate-700 or slate-500
   const cloudLight = '#F1F5F9'; // slate-100
-  const cloudMid = '#CBD5E1'; // slate-300
-  const cloudDark = '#94A3B8'; // slate-400
-  const cloudStorm = '#64748B'; // slate-500
+  const cloudMid = darkOutline ? '#64748B' : '#CBD5E1'; // slate-500 or slate-300
+  const cloudDark = darkOutline ? '#475569' : '#94A3B8'; // slate-600 or slate-400
+  const cloudStorm = darkOutline ? '#475569' : '#64748B'; // slate-600 or slate-500
   const rainColor = '#3B82F6'; // blue-500
   const rainLight = '#60A5FA'; // blue-400
   const snowColor = '#E0F2FE'; // sky-100
@@ -48,14 +48,14 @@ export default function WeatherGlyph({ code, isNight = false, className = 'w-7 h
             stroke={sunStroke} strokeWidth="2.5" strokeLinecap="round" />
         );
       })}
-      <circle cx={cx} cy={cy} r={r} fill={sunFill} stroke={sunStroke} strokeWidth="1.5" />
+      <circle cx={cx} cy={cy} r={r} fill={sunFill} stroke={sunStroke} strokeWidth={darkOutline ? 2.5 : 1.5} />
     </g>
   );
 
   const MoonShape = ({ cx = 32, cy = 26, r = 11 }) => (
     <g>
       {/* Full light circle (the lit moon) */}
-      <circle cx={cx} cy={cy} r={r} fill={moonFill} stroke={moonStroke} strokeWidth="1" />
+      <circle cx={cx} cy={cy} r={r} fill={moonFill} stroke={moonStroke} strokeWidth={darkOutline ? 2 : 1} />
       {/* Offset dark circle on top creates the crescent cutout */}
       <circle cx={cx + r * 0.45} cy={cy - r * 0.15} r={r} fill={moonStroke} />
     </g>
@@ -69,7 +69,7 @@ export default function WeatherGlyph({ code, isNight = false, className = 'w-7 h
           d="M 22 44 Q 14 44 14 36 Q 14 28 22 28 Q 24 21 32 21 Q 40 21 43 28 Q 54 27 54 36 Q 54 44 46 44 Z"
           fill={fill}
           stroke={stroke}
-          strokeWidth="1.5"
+          strokeWidth={darkOutline ? 2.5 : 1.5}
           strokeLinejoin="round"
         />
       </g>
