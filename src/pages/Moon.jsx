@@ -477,7 +477,12 @@ export default function Moon() {
                 </div>
               </div>
               <div className={`shrink-0 ${moonData.fishingRating >= 5 ? 'text-green-600' : moonData.fishingRating <= 3 ? 'text-yellow-600' : 'text-primary'}`}>
-                <span className="text-3xl font-bold text-foreground">{ratingPercent}%</span>
+                <span
+                  className={`text-3xl font-bold text-foreground ${selectedDate !== todayStr() ? 'cursor-pointer hover:text-primary transition-colors' : ''}`}
+                  onClick={() => selectedDate !== todayStr() && setSelectedDate(todayStr())}
+                >
+                  {ratingPercent}%
+                </span>
               </div>
             </div>
           </CardContent>
