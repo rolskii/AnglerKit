@@ -268,6 +268,7 @@ export default function Weather() {
                   <div className="pb-1">
                     <p className="text-muted-foreground text-sm leading-tight">{getWeatherDescription(current.weather_code)}</p>
                     <p className="text-xs text-muted-foreground leading-tight">Feels like {Math.round(current.apparent_temperature)}°</p>
+                    <p className="text-xs text-muted-foreground leading-tight">H: {Math.round(daily.temperature_2m_max[0])}°  L: {Math.round(daily.temperature_2m_min[0])}°</p>
                   </div>
                 </div>
                 <div className="flex items-center justify-center">
