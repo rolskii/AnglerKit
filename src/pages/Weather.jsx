@@ -374,19 +374,14 @@ export default function Weather() {
         <Card>
           <CardHeader className="pt-3 pb-2 flex-row items-center justify-between space-y-0">
             <CardTitle className="text-base">8-Day Forecast</CardTitle>
-            <CardDescription>Tap a day for details</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-4 gap-2">
               {forecastDays.map(({ date, idx }) => {
                 return (
-                  <button
+                  <div
                     key={idx}
-                    onClick={() => {
-                      setSelectedDay({ date, idx, daily });
-                      setDayDialogOpen(true);
-                    }}
-                    className="flex flex-col items-center gap-1 p-2.5 rounded-xl bg-secondary hover:bg-primary/10 transition-colors aspect-square justify-center"
+                    className="flex flex-col items-center gap-1 p-2.5 rounded-xl bg-secondary aspect-square justify-center"
                   >
                     <p className="text-xs font-medium text-foreground truncate w-full text-center">
                       {new Date(date).toLocaleDateString('en-US', { weekday: 'short' })}
@@ -405,7 +400,7 @@ export default function Weather() {
                         {daily.precipitation_probability[idx]}%
                       </p>
                     )}
-                  </button>
+                  </div>
                 );
               })}
             </div>
