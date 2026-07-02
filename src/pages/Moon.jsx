@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Sun, Waves, MapPin, Bell, BellOff, Save } from 'lucide-react';
 import FishIcon from '@/components/FishIcon';
-import RealisticMoon from '@/components/RealisticMoon';
 import DayRatingRing from '@/components/moon/DayRatingRing';
 import DateSelector from '@/components/moon/DateSelector';
 import ActivityChart from '@/components/moon/ActivityChart';
@@ -428,14 +427,7 @@ export default function Moon() {
         {/* Day Rating Card */}
         <Card className="bg-primary/5">
           <CardContent className="pt-6">
-            <div className="flex items-center justify-center gap-6">
-              <DayRatingRing percentage={ratingPercent} rating={moonData.fishingRating} />
-              <div className="flex flex-col items-center gap-2">
-                <RealisticMoon illumination={moonData.illumination} className="w-24 h-24" />
-                <p className="text-sm font-semibold text-foreground">{moonData.phase}</p>
-                <p className="text-xs text-muted-foreground">{moonData.illumination}% illuminated</p>
-              </div>
-            </div>
+            <DayRatingRing percentage={ratingPercent} rating={moonData.fishingRating} ratingLabel={getRatingLabel(moonData.fishingRating).toUpperCase()} />
             <div className="flex justify-center gap-1.5 mt-4">
               {[1, 2, 3, 4, 5, 6, 7].map((n) => (
                 <FishIcon
