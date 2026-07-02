@@ -416,22 +416,29 @@ export default function Moon() {
         {/* Day Rating Card */}
         <Card>
           <CardContent className="pt-3 pb-3">
-            <DayRatingRing percentage={ratingPercent} rating={moonData.fishingRating} ratingLabel={getRatingLabel(moonData.fishingRating).toUpperCase()} />
-            <div className="flex gap-1.5 mt-2">
-              {[1, 2, 3, 4, 5, 6, 7].map((n) => (
-                <FishIcon
-                  key={n}
-                  className={`w-6 h-6 text-primary transition-opacity ${n <= moonData.fishingRating ? 'opacity-100' : 'opacity-25'}`}
-                />
-              ))}
-            </div>
-            <div className="flex items-center gap-2 mt-2">
-              <button
-                onClick={openLocationDialog}
-                className="text-xs text-muted-foreground flex items-center gap-1 hover:text-primary transition-colors"
-              >
-                <MapPin className="w-3 h-3" />{moonData.location}
-              </button>
+            <div className="flex items-center gap-3">
+              <div className="flex-1">
+                <DayRatingRing percentage={ratingPercent} rating={moonData.fishingRating} ratingLabel={getRatingLabel(moonData.fishingRating).toUpperCase()} />
+                <div className="flex gap-1.5 mt-2">
+                  {[1, 2, 3, 4, 5, 6, 7].map((n) => (
+                    <FishIcon
+                      key={n}
+                      className={`w-6 h-6 text-primary transition-opacity ${n <= moonData.fishingRating ? 'opacity-100' : 'opacity-25'}`}
+                    />
+                  ))}
+                </div>
+                <div className="flex items-center gap-2 mt-2">
+                  <button
+                    onClick={openLocationDialog}
+                    className="text-xs text-muted-foreground flex items-center gap-1 hover:text-primary transition-colors"
+                  >
+                    <MapPin className="w-3 h-3" />{moonData.location}
+                  </button>
+                </div>
+              </div>
+              <div className={`shrink-0 ${moonData.fishingRating >= 5 ? 'text-green-600' : moonData.fishingRating <= 3 ? 'text-yellow-600' : 'text-primary'}`}>
+                <span className="text-3xl font-bold text-foreground">{ratingPercent}%</span>
+              </div>
             </div>
           </CardContent>
         </Card>
