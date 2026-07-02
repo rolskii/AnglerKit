@@ -28,7 +28,7 @@ export default function DaySolunarDialog({
           <DialogDescription>Solunar feeding times & sun/moon data</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-4 w-full">
           {/* Solunar Feeding Times Card */}
           <Card className="bg-card border-primary/20">
             <CardHeader className="pt-3 pb-2">
