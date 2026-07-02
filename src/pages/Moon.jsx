@@ -41,7 +41,7 @@ const minutesToTime = (mins) => {
 };
 
 const computeActivityLevels = (major, minor) => {
-  const slotSize = 20;
+  const slotSize = 30;
   const count = (24 * 60) / slotSize;
   const levels = [];
   for (let i = 0; i < count; i++) {
@@ -423,7 +423,7 @@ export default function Moon() {
   const activityLevels = computeActivityLevels(solunar.major, solunar.minor);
   const isToday = selectedDate === todayStr();
   const currentInterval = isToday
-    ? Math.floor((new Date().getHours() * 60 + new Date().getMinutes()) / 20)
+    ? Math.floor((new Date().getHours() * 60 + new Date().getMinutes()) / 30)
     : activityLevels.indexOf(Math.max(...activityLevels));
 
   return (
