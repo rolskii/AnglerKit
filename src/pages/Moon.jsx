@@ -532,11 +532,11 @@ export default function Moon() {
               </div>
               <div className="shrink-0 relative w-20 h-20 flex items-center justify-center animate-pulse-slow">
                 <svg className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none" viewBox="0 0 80 80">
-                  <circle cx="40" cy="40" r="34" fill="none" stroke="hsl(var(--muted))" strokeWidth="5" />
+                  <circle cx="40" cy="40" r="34" fill="none" stroke="hsl(var(--muted))" strokeWidth="8" />
                   <circle
                     cx="40" cy="40" r="34" fill="none"
                     stroke={moonData.fishingRating >= 5 ? '#16a34a' : '#ca8a04'}
-                    strokeWidth="5"
+                    strokeWidth="8"
                     strokeLinecap="round"
                     strokeDasharray={`${(ratingPercent / 100) * 2 * Math.PI * 34} ${2 * Math.PI * 34}`}
                   />
