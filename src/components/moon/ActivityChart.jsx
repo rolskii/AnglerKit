@@ -9,6 +9,7 @@ const LABELS = [
   { num: "3", period: "pm" },
   { num: "6", period: "pm" },
   { num: "9", period: "pm" },
+  { num: "12", period: "am" },
 ];
 
 const buildSmoothPath = (points) => {
@@ -83,16 +84,20 @@ export default function ActivityChart({ levels, highlightIndex }) {
           ))}
         </div>
         <div className="relative mt-1 h-6">
-          {LABELS.map((label, i) => (
+          {LABELS.map((label, i) => {
+            const isFirst = i === 0;
+            const isLast = i === LABELS.length - 1;
+            return (
             <div
               key={i}
               className="text-center text-xs text-muted-foreground leading-tight"
-              style={{ position: "absolute", left: `${(i * 3 / hourCount) * 100}%`, transform: "translateX(-50%)" }}
+              style={{ position: "absolute", left: `${(i * 3 / hourCount) * 100}%`, transform: isFirst ? "translateX(0%)" : isLast ? "translateX(-100%)" : "translateX(-50%)" }}
             >
               <div>{label.num}</div>
               <div className="text-[9px]">{label.num === "12" ? label.period : ""}</div>
             </div>
-          ))}
+          );
+          })}
         </div>
       </div>
     </div>
