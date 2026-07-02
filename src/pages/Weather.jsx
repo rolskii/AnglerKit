@@ -356,10 +356,7 @@ export default function Weather() {
                 </div>
                 <div className="bg-card p-3 rounded-lg flex flex-col justify-between">
                   <p className="text-base font-semibold">{(current.pressure / 10).toFixed(1)} kPa</p>
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <WeatherGlyph code={3} className="w-5 h-5 shrink-0" />
-                    Pressure
-                  </div>
+                  <span className="text-xs text-muted-foreground">Pressure</span>
                 </div>
               </div>
 
