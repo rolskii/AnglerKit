@@ -389,12 +389,10 @@ export default function Moon() {
       <div className="max-w-2xl mx-auto space-y-4">
         {/* Header */}
         <div className="text-center mb-4">
-          <h1 className="text-3xl font-display font-bold mb-1">Moon Phase</h1>
-          <p className="text-sm text-muted-foreground">Lunar phases, solunar feeding times & sun data.</p>
+          <h1 className="text-3xl font-display font-bold mb-4">Moon Phase</h1>
 
           {/* Location */}
-          <div className="mt-4 max-w-xs mx-auto relative">
-            <label className="block text-xs text-muted-foreground mb-1 text-center">Location</label>
+          <div className="max-w-xs mx-auto relative">
             <input
               type="text"
               value={editingLocation}
