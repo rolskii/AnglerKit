@@ -361,31 +361,68 @@ export default function Moon() {
       if (AudioCtx) {
         const ctx = new AudioCtx();
         const master = ctx.createGain();
-        master.gain.value = 0.7;
+        master.gain.value = 0.5;
         master.connect(ctx.destination);
 
-        const pulseDur = 0.12;
-        const pulseGap = 0.05;
-        const cycleGap = 0.25;
-        const tones = [988, 740];
-        const burstLen = tones.length * (pulseDur + pulseGap);
-        for (let burst = 0; burst < 4; burst++) {
-          tones.forEach((freq, i) => {
-            const s = ctx.currentTime + burst * (burstLen + cycleGap) + i * (pulseDur + pulseGap);
+        // "Call to Post" bugle melody — G4 C5 E5 G5 E5 C5 G4
+        const G4 = 392, C5 = 523.25, E5 = 659.25, G5 = 783.99;
+        const notes = [
+          { freq: G4, dur: 0.22 },
+          { freq: C5, dur: 0.22 },
+          { freq: E5, dur: 0.22 },
+          { freq: G5, dur: 0.50 },
+          { freq: E5, dur: 0.22 },
+          { freq: C5, dur: 0.22 },
+          { freq: G4, dur: 0.60 },
+        ];
+
+        let t = ctx.currentTime;
+        notes.forEach(({ freq, dur }) => {
+          // Two detuned sawtooth oscillators for a richer brass/horn tone
+          [0, 4].forEach((detuneCents) => {
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
             osc.connect(gain);
             gain.connect(master);
             osc.type = 'sawtooth';
             osc.frequency.value = freq;
-            gain.gain.setValueAtTime(0, s);
-            gain.gain.linearRampToValueAtTime(0.6, s + 0.005);
-            gain.gain.setValueAtTime(0.6, s + pulseDur - 0.01);
-            gain.gain.linearRampToValueAtTime(0, s + pulseDur);
-            osc.start(s);
-            osc.stop(s + pulseDur + 0.005);
+            osc.detune.value = detuneCents;
+
+            gain.gain.setValueAtTime(0, t);
+            gain.gain.linearRampToValueAtTime(0.35, t + 0.02);
+            gain.gain.setValueAtTime(0.35, t + dur * 0.5);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+
+            osc.start(t);
+            osc.stop(t + dur + 0.02);
           });
-        }
+          t += dur;
+        });
+
+        // Repeat the call twice
+        const totalMelodyDur = notes.reduce((sum, n) => sum + n.dur, 0);
+        const repeatStart = ctx.currentTime + totalMelodyDur + 0.3;
+        let t2 = repeatStart;
+        notes.forEach(({ freq, dur }) => {
+          [0, 4].forEach((detuneCents) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(master);
+            osc.type = 'sawtooth';
+            osc.frequency.value = freq;
+            osc.detune.value = detuneCents;
+
+            gain.gain.setValueAtTime(0, t2);
+            gain.gain.linearRampToValueAtTime(0.35, t2 + 0.02);
+            gain.gain.setValueAtTime(0.35, t2 + dur * 0.5);
+            gain.gain.exponentialRampToValueAtTime(0.001, t2 + dur);
+
+            osc.start(t2);
+            osc.stop(t2 + dur + 0.02);
+          });
+          t2 += dur;
+        });
       }
     } catch (e) {}
 
