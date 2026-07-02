@@ -1,5 +1,6 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import FishIcon from '@/components/FishIcon';
 import MoonPhaseSymbol from '@/components/MoonPhaseSymbol';
 
@@ -44,15 +45,20 @@ const getRatingLabel = (rating) => {
 };
 
 export default function WeeklyBiteForecast({ open, onOpenChange, startDate, onSelectDay }) {
+  const [weekOffset, setWeekOffset] = useState(0);
+
   const days = useMemo(() => {
     const base = startDate ? new Date(startDate + 'T00:00:00') : new Date();
+    base.setDate(base.getDate() + weekOffset * 7);
     return Array.from({ length: 7 }, (_, i) => {
       const date = new Date(base);
       date.setDate(date.getDate() + i);
       const phase = calculateMoonPhase(date);
       const rating = calculateFishingRating(phase.daysInCycle);
       const percent = Math.round((rating / 7) * 100);
-      const isToday = i === 0;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const isToday = date.getTime() === today.getTime();
       return {
         date,
         phase,
@@ -65,7 +71,14 @@ export default function WeeklyBiteForecast({ open, onOpenChange, startDate, onSe
           : date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
       };
     });
-  }, [startDate]);
+  }, [startDate, weekOffset]);
+
+  const weekLabel = useMemo(() => {
+    if (!days.length) return '';
+    const first = days[0].date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const last = days[6].date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return `${first} – ${last}`;
+  }, [days]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -74,6 +87,24 @@ export default function WeeklyBiteForecast({ open, onOpenChange, startDate, onSe
           <DialogTitle>Weekly Bite Forecast</DialogTitle>
           <DialogDescription>7-day fish bite ratings based on moon phases</DialogDescription>
         </DialogHeader>
+        <div className="flex items-center justify-between gap-2">
+          <button
+            onClick={() => setWeekOffset((w) => Math.max(0, w - 1))}
+            disabled={weekOffset === 0}
+            className="p-2 rounded-lg hover:bg-secondary disabled:opacity-30 disabled:pointer-events-none transition-colors"
+            aria-label="Previous week"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <p className="text-sm font-medium text-muted-foreground">{weekLabel}</p>
+          <button
+            onClick={() => setWeekOffset((w) => w + 1)}
+            className="p-2 rounded-lg hover:bg-secondary transition-colors"
+            aria-label="Next week"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
+        </div>
         <div className="space-y-2 max-h-[60vh] overflow-y-auto">
           {days.map((day, idx) => (
             <button
