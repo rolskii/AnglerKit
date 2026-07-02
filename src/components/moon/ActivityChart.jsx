@@ -3,13 +3,12 @@ import React from "react";
 const TOTAL_HOURS = 19; // 5am to 12am
 
 const LABELS = [
-  { num: "5", period: "am", hour: 0 },
-  { num: "8", period: "am", hour: 3 },
-  { num: "11", period: "am", hour: 6 },
-  { num: "2", period: "pm", hour: 9 },
-  { num: "5", period: "pm", hour: 12 },
-  { num: "8", period: "pm", hour: 15 },
-  { num: "11", period: "pm", hour: 18 },
+  { num: "6", period: "am", hour: 1 },
+  { num: "9", period: "am", hour: 4 },
+  { num: "12", period: "pm", hour: 7 },
+  { num: "3", period: "pm", hour: 10 },
+  { num: "6", period: "pm", hour: 13 },
+  { num: "9", period: "pm", hour: 16 },
   { num: "12", period: "am", hour: 19 },
 ];
 
@@ -95,7 +94,7 @@ export default function ActivityChart({ levels, highlightIndex }) {
               style={{ position: "absolute", left: `${(label.hour / hourCount) * 100}%`, transform: isFirst ? "translateX(0%)" : isLast ? "translateX(-100%)" : "translateX(-50%)" }}
             >
               <div>{label.num}</div>
-              <div className="text-[9px]">{label.num === "12" ? label.period : ""}</div>
+              <div className="text-[9px]">{label.num === "12" && label.period === "pm" ? label.period : ""}</div>
             </div>
           );
           })}
