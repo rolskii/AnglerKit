@@ -4,7 +4,7 @@ import { SignJWT } from 'npm:jose@5.9.6';
 const MAPS_BASE = 'https://maps-api.apple.com/v1';
 
 async function generateMapsJWT() {
-  const teamId = Deno.env.get('WEATHERKIT_TEAM_ID');
+  const teamId = Deno.env.get('APPLE_MAPS_TEAM_ID');
   const keyId = Deno.env.get('APPLE_MAPS_KEY_ID');
   const privateKeyRaw = Deno.env.get('APPLE_MAPS_PRIVATE_KEY');
 
@@ -58,6 +58,11 @@ Deno.serve(async (req) => {
 
     const token = await generateMapsJWT();
 
+    // Decode JWT payload for debugging (without signature)
+    const tokenParts = token.split('.');
+    const payloadStr = atob(tokenParts[1]);
+    const tokenPayload = JSON.parse(payloadStr);
+
     const endpoint = mode === 'geocode'
       ? `${MAPS_BASE}/geocode?address=${encodeURIComponent(query)}&limit=1`
       : `${MAPS_BASE}/search?q=${encodeURIComponent(query)}&limit=${body.limit || 5}`;
@@ -69,7 +74,16 @@ Deno.serve(async (req) => {
     if (!response.ok) {
       const text = await response.text();
       return Response.json(
-        { error: `Apple Maps API error: ${response.status} - ${text}` },
+        { 
+          error: `Apple Maps API error: ${response.status} - ${text}`,
+          debug: {
+            teamId: Deno.env.get('APPLE_MAPS_TEAM_ID'),
+            keyId: Deno.env.get('APPLE_MAPS_KEY_ID'),
+            tokenPayload,
+            tokenHeader: JSON.parse(atob(tokenParts[0])),
+            endpoint,
+          }
+        },
         { status: 502 }
       );
     }
