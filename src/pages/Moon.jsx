@@ -673,7 +673,7 @@ export default function Moon() {
         </Card>
 
         {/* Sun & Moon Footer */}
-        <Card>
+        <Card className="bg-secondary/40">
           <CardContent className="pt-3 pb-3">
             <SunMoonFooter
               sunrise={sunData?.sunrise}
