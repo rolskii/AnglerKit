@@ -7,7 +7,7 @@ export default function DayRatingRing({ percentage, rating, ratingLabel }) {
   const colorClass = rating >= 5 ? "text-green-600" : rating <= 3 ? "text-yellow-600" : "text-primary";
 
   return (
-    <div className="flex items-center justify-end gap-3">
+    <div className="flex items-center gap-3">
       <p className="text-base font-semibold text-muted-foreground leading-none tracking-tight whitespace-nowrap">
         Fish Bite Rating: <span className={`${colorClass}`}>{ratingLabel}</span>
       </p>
