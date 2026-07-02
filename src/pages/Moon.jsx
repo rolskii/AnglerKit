@@ -41,14 +41,16 @@ const minutesToTime = (mins) => {
 };
 
 const computeActivityLevels = (major, minor) => {
+  const slotSize = 20;
+  const count = (24 * 60) / slotSize;
   const levels = [];
-  for (let i = 0; i < 96; i++) {
-    const slotStart = i * 15;
-    const slotMid = slotStart + 7.5;
+  for (let i = 0; i < count; i++) {
+    const slotStart = i * slotSize;
+    const slotMid = slotStart + slotSize / 2;
     let level = 12;
     for (const m of major) {
       if (m.startMin === undefined) continue;
-      const overlap = Math.min(m.endMin, slotStart + 15) - Math.max(m.startMin, slotStart);
+      const overlap = Math.min(m.endMin, slotStart + slotSize) - Math.max(m.startMin, slotStart);
       if (overlap > 0) level = Math.max(level, 95);
       else {
         const dist = Math.min(Math.abs(m.startMin - slotMid), Math.abs(m.endMin - slotMid));
@@ -58,7 +60,7 @@ const computeActivityLevels = (major, minor) => {
     }
     for (const m of minor) {
       if (m.startMin === undefined) continue;
-      const overlap = Math.min(m.endMin, slotStart + 15) - Math.max(m.startMin, slotStart);
+      const overlap = Math.min(m.endMin, slotStart + slotSize) - Math.max(m.startMin, slotStart);
       if (overlap > 0) level = Math.max(level, 65);
       else {
         const dist = Math.min(Math.abs(m.startMin - slotMid), Math.abs(m.endMin - slotMid));
@@ -421,7 +423,7 @@ export default function Moon() {
   const activityLevels = computeActivityLevels(solunar.major, solunar.minor);
   const isToday = selectedDate === todayStr();
   const currentInterval = isToday
-    ? Math.floor((new Date().getHours() * 60 + new Date().getMinutes()) / 15)
+    ? Math.floor((new Date().getHours() * 60 + new Date().getMinutes()) / 20)
     : activityLevels.indexOf(Math.max(...activityLevels));
 
   return (
