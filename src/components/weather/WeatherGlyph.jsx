@@ -22,7 +22,7 @@ export default function WeatherGlyph({ code, isNight = false, className = 'w-7 h
   const sunFill = '#FBBF24'; // amber-400
   const sunStroke = '#F59E0B'; // amber-500
   const moonFill = '#E2E8F0'; // slate-200 (light silver crescent)
-  const moonStroke = '#0F172A'; // slate-900
+  const moonStroke = '#94A3B8'; // slate-400 (lighter dark side)
   const cloudLight = '#F1F5F9'; // slate-100
   const cloudMid = '#CBD5E1'; // slate-300
   const cloudDark = '#94A3B8'; // slate-400
