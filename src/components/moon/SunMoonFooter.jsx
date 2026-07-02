@@ -4,7 +4,7 @@ import RealisticMoon from "@/components/RealisticMoon";
 
 export default function SunMoonFooter({ sunrise, sunset, zenith, moonPhase, illumination }) {
   return (
-    <div className="grid grid-cols-[1fr_1fr_1fr_1fr] gap-3 items-center">
+    <div className="grid grid-cols-[1fr_auto_auto_auto_1fr] gap-3 items-center">
       <div />
       {/* Left: Sun times */}
       <div className="space-y-1 flex flex-col items-end">
