@@ -277,9 +277,9 @@ export default function Weather() {
     <div className="space-y-6 md:space-y-8 -mt-4 md:-mt-8">
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-2">
-            <h1 className="text-3xl font-display font-bold">Weather</h1>
+        <div className="space-y-2 px-1 mb-8">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl md:text-[34px] font-heading font-extrabold tracking-tight leading-tight">Weather</h1>
             <button
               onClick={toggleTempUnit}
               className="px-3 py-1 text-sm font-medium rounded-full bg-primary/15 text-primary hover:bg-primary/25 transition-colors"
@@ -288,7 +288,6 @@ export default function Weather() {
               °{tempUnit === 'fahrenheit' ? 'F' : 'C'}
             </button>
           </div>
-          <p className="text-muted-foreground">Check current weather conditions and 7-day forecast for your fishing location.</p>
         </div>
 
         {/* Location Controls */}
