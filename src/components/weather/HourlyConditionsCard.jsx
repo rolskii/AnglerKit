@@ -33,11 +33,18 @@ export default function HourlyConditionsCard({ hourly, selectedDate, daily }) {
   const [visibleDate, setVisibleDate] = React.useState(selectedDate);
 
   const now = new Date();
-  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const getLocalDateStr = (isoStr) => {
+    const d = new Date(isoStr);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
+  const todayLocalStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const allHours = hourly?.time
     ? hourly.time
-        .map((hTime, hIdx) => ({ hTime, hIdx }))
-        .filter(({ hTime }) => hTime.startsWith(todayStr) ? new Date(hTime) >= now : true)
+        .map((hTime, hIdx) => ({ hTime, hIdx, localDate: getLocalDateStr(hTime) }))
+        .filter(({ hTime, localDate }) => {
+          if (localDate === todayLocalStr) return new Date(hTime) >= now;
+          return true;
+        })
     : [];
 
   useEffect(() => {
@@ -65,8 +72,7 @@ export default function HourlyConditionsCard({ hourly, selectedDate, daily }) {
     const itemWidth = 64; // w-16 (64px) + gap-0
     const firstVisibleIdx = Math.round(scrollLeft / itemWidth);
     const clampedIdx = Math.max(0, Math.min(firstVisibleIdx, allHours.length - 1));
-    const dateStr = allHours[clampedIdx].hTime.slice(0, 10);
-    setVisibleDate(dateStr);
+    setVisibleDate(allHours[clampedIdx].localDate);
   };
 
   return (
