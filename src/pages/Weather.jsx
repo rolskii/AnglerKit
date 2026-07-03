@@ -282,7 +282,7 @@ export default function Weather() {
 
         {/* Current Weather Card */}
         <Card className="bg-primary/10">
-          <CardContent className="p-4">
+          <CardContent className="p-3">
             <div className="space-y-3">
               {/* Temperature and Condition */}
               <div className="flex items-center justify-between gap-2">
