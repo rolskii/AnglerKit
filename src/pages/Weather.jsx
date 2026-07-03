@@ -386,13 +386,13 @@ export default function Weather() {
                     key={idx}
                     className="flex flex-col items-center gap-1 p-2.5 rounded-xl bg-secondary aspect-square justify-center"
                   >
-                    <p className="text-xs font-medium text-foreground truncate w-full text-center">
+                    <p className="text-sm font-medium text-foreground truncate w-full text-center">
                       {new Date(date).toLocaleDateString('en-US', { weekday: 'short' })}
                     </p>
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       {new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                     </p>
-                    <WeatherGlyph code={daily.weather_code[idx]} className="w-8 h-9" />
+                    <WeatherGlyph code={daily.weather_code[idx]} className="w-12 h-14" />
                     <div className="flex items-center gap-1.5">
                       <span className="text-sm font-semibold">{Math.round(daily.temperature_2m_max[idx])}°</span>
                       <span className="text-xs text-muted-foreground">{Math.round(daily.temperature_2m_min[idx])}°</span>
