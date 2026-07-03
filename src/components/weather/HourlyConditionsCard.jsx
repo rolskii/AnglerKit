@@ -32,7 +32,21 @@ export default function HourlyConditionsCard({ hourly, selectedDate, daily }) {
   const scrollRef = React.useRef(null);
   const [visibleDate, setVisibleDate] = React.useState(selectedDate);
 
-  if (!hourly) return null;
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const allHours = hourly?.time
+    ? hourly.time
+        .map((hTime, hIdx) => ({ hTime, hIdx }))
+        .filter(({ hTime }) => hTime.startsWith(todayStr) ? new Date(hTime) >= now : true)
+    : [];
+
+  useEffect(() => {
+    if (scrollRef.current && allHours.length > 0) {
+      scrollRef.current.scrollTo({ left: 0, behavior: 'instant' });
+    }
+  }, [selectedDate, allHours.length]);
+
+  if (!hourly || allHours.length === 0) return null;
 
   const getSunriseSunset = (hTime) => {
     const hDate = hTime.slice(0, 10);
@@ -43,20 +57,6 @@ export default function HourlyConditionsCard({ hourly, selectedDate, daily }) {
       sunset: daily?.sunset?.[dayIdx] ? new Date(daily.sunset[dayIdx]) : null,
     };
   };
-
-  const now = new Date();
-  const todayStr = now.toISOString().slice(0, 10);
-  const allHours = hourly.time
-    .map((hTime, hIdx) => ({ hTime, hIdx }))
-    .filter(({ hTime }) => hTime.startsWith(todayStr) ? new Date(hTime) >= now : true);
-
-  useEffect(() => {
-    if (scrollRef.current && allHours.length > 0) {
-      scrollRef.current.scrollTo({ left: 0, behavior: 'instant' });
-    }
-  }, [selectedDate, allHours.length]);
-
-  if (allHours.length === 0) return null;
 
   const handleScroll = () => {
     const container = scrollRef.current;
