@@ -62,7 +62,7 @@ export default function HourlyConditionsCard({ hourly, selectedDate, daily }) {
     const container = scrollRef.current;
     if (!container) return;
     const scrollLeft = container.scrollLeft;
-    const itemWidth = 76; // w-16 (64px) + gap-3 (12px)
+    const itemWidth = 64; // w-16 (64px) + gap-0
     const firstVisibleIdx = Math.round(scrollLeft / itemWidth);
     const clampedIdx = Math.max(0, Math.min(firstVisibleIdx, allHours.length - 1));
     const dateStr = allHours[clampedIdx].hTime.slice(0, 10);
@@ -80,7 +80,7 @@ export default function HourlyConditionsCard({ hourly, selectedDate, daily }) {
           <div
             ref={scrollRef}
             onScroll={handleScroll}
-            className="overflow-x-auto scrollbar-hide flex gap-3 pb-1"
+            className="overflow-x-auto scrollbar-hide flex gap-0 pb-1"
             style={{ scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' }}
           >
             {allHours.map(({ hTime, hIdx }) => {
