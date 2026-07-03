@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Cloud, CloudRain, Sun, Moon, Droplets } from 'lucide-react';
 import WeatherGlyph from '@/components/weather/WeatherGlyph';
+import { formatTemp } from '@/lib/weatherUnits';
 
 const getWeatherDescription = (code) => {
   const codes = {
@@ -28,7 +29,7 @@ const formatDate = (dateStr) => {
   return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 };
 
-export default function HourlyConditionsCard({ hourly, selectedDate, daily }) {
+export default function HourlyConditionsCard({ hourly, selectedDate, daily, tempUnit }) {
   const scrollRef = React.useRef(null);
   const [visibleDate, setVisibleDate] = React.useState(selectedDate);
 
@@ -98,7 +99,7 @@ export default function HourlyConditionsCard({ hourly, selectedDate, daily }) {
                 >
                   <p className="text-xs text-muted-foreground">{hourLabel}</p>
                   <WeatherGlyph code={hourly.weather_code[hIdx]} isNight={isNight} className="w-12 h-12 -mb-2" />
-                  <p className="text-base font-semibold">{Math.round(hourly.temperature_2m[hIdx])}°</p>
+                  <p className="text-base font-semibold">{formatTemp(hourly.temperature_2m[hIdx], tempUnit)}°</p>
                   <p className="text-xs text-primary flex items-center gap-0.5">
                     <Droplets className="w-3 h-3" />
                     {hourly.precipitation_probability?.[hIdx] ?? 0}%

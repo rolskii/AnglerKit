@@ -33,10 +33,6 @@ function mapCondition(condition) {
   return conditionToWMO[condition] ?? 3;
 }
 
-function kmhToMph(kmh) {
-  return kmh / 1.60934;
-}
-
 async function generateWeatherKitJWT() {
   const teamId = Deno.env.get('WEATHERKIT_TEAM_ID');
   const serviceId = Deno.env.get('WEATHERKIT_SERVICE_ID');
@@ -90,9 +86,8 @@ Deno.serve(async (req) => {
 
     const token = await generateWeatherKitJWT();
 
-    // WeatherKit unit system: 'm' = metric (C, km/h, mm), 'u' = US (F, mph, in)
-    const weatherUnit = unit === 'fahrenheit' ? 'u' : 'm';
-    const apiUrl = `${WEATHERKIT_BASE}/en/${lat}/${lon}?dataSets=currentWeather,forecastDaily,forecastHourly&unit=${weatherUnit}`;
+    // Always request metric from WeatherKit; frontend handles imperial conversion
+    const apiUrl = `${WEATHERKIT_BASE}/en/${lat}/${lon}?dataSets=currentWeather,forecastDaily,forecastHourly&unit=m`;
 
     const response = await fetch(apiUrl, {
       headers: { Authorization: `Bearer ${token}` },
@@ -112,17 +107,13 @@ Deno.serve(async (req) => {
     const fd = wk.forecastDaily || { days: [] };
     const fh = wk.forecastHourly || { hours: [] };
 
-    // Frontend expects wind speed in mph regardless of temp unit
-    const convertWind = (speed) =>
-      unit === 'fahrenheit' ? (speed || 0) : kmhToMph(speed || 0);
-
     const current = {
       temperature_2m: cw.temperature ?? 0,
       relative_humidity_2m: Math.round((cw.humidity ?? 0) * 100),
       apparent_temperature: cw.temperatureApparent ?? cw.temperature ?? 0,
       precipitation: cw.precipitationAmount ?? 0,
       weather_code: mapCondition(cw.conditionCode),
-      wind_speed_10m: convertWind(cw.windSpeed),
+      wind_speed_10m: cw.windSpeed ?? 0,
       visibility: cw.visibility ?? 10000,
       pressure: cw.pressure ?? 0,
     };
@@ -162,7 +153,7 @@ Deno.serve(async (req) => {
       hourly.precipitation_probability.push(
         Math.round((hour.precipitationChance ?? 0) * 100)
       );
-      hourly.wind_speed_10m.push(convertWind(hour.windSpeed));
+      hourly.wind_speed_10m.push(hour.windSpeed ?? 0);
     }
 
     return Response.json({ current, daily, hourly });

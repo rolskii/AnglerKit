@@ -10,6 +10,7 @@ import HourlyConditionsCard from '@/components/weather/HourlyConditionsCard';
 import DayForecastDialog from '@/components/weather/DayForecastDialog';
 import WeatherGlyph from '@/components/weather/WeatherGlyph';
 import ShareStatusButton from '@/components/ShareStatusButton';
+import { formatTemp, formatWind, formatPrecip, formatPressure } from '@/lib/weatherUnits';
 
 export default function Weather() {
   const savedLocation = localStorage.getItem('weatherLocation');
@@ -217,8 +218,8 @@ export default function Weather() {
     const dayIdx = daily.time.indexOf(selectedDate);
     if (dayIdx === -1) return null;
     const code = daily.weather_code[dayIdx];
-    const maxTemp = Math.round(daily.temperature_2m_max[dayIdx]);
-    const minTemp = Math.round(daily.temperature_2m_min[dayIdx]);
+    const maxTemp = formatTemp(daily.temperature_2m_max[dayIdx], tempUnit);
+    const minTemp = formatTemp(daily.temperature_2m_min[dayIdx], tempUnit);
     const precipProb = daily.precipitation_probability?.[dayIdx] ?? 0;
     const desc = getWeatherDescription(code);
 
@@ -287,11 +288,11 @@ export default function Weather() {
               {/* Temperature and Condition */}
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-stretch gap-3">
-                  <p className="text-6xl font-bold text-primary leading-none self-center">{Math.round(current.temperature_2m)}°</p>
+                  <p className="text-6xl font-bold text-primary leading-none self-center">{formatTemp(current.temperature_2m, tempUnit)}°</p>
                   <div className="flex flex-col justify-center">
                     <p className="text-muted-foreground text-sm leading-tight">{getWeatherDescription(current.weather_code)}</p>
-                    <p className="text-xs text-muted-foreground leading-tight">Feels like {Math.round(current.apparent_temperature)}°</p>
-                    <p className="text-xs text-muted-foreground leading-tight">H: {Math.round(daily.temperature_2m_max[0])}°  L: {Math.round(daily.temperature_2m_min[0])}°</p>
+                    <p className="text-xs text-muted-foreground leading-tight">Feels like {formatTemp(current.apparent_temperature, tempUnit)}°</p>
+                    <p className="text-xs text-muted-foreground leading-tight">H: {formatTemp(daily.temperature_2m_max[0], tempUnit)}°  L: {formatTemp(daily.temperature_2m_min[0], tempUnit)}°</p>
                   </div>
                 </div>
                 <WeatherGlyph code={current.weather_code} isNight={isNight()} darkOutline className="w-24 h-28 shrink-0" />
@@ -340,20 +341,20 @@ export default function Weather() {
                 <div className="bg-secondary p-2 rounded-lg flex flex-col items-center gap-1 overflow-hidden">
                   <WeatherGlyph code={45} darkOutline className="w-10 h-12" />
                   <p className="text-[11px] font-semibold leading-tight">
-                    {tempUnit === 'fahrenheit' ? Math.round(current.wind_speed_10m) + 'mph' : Math.round(current.wind_speed_10m * 1.60934) + 'km/h'}
+                    {formatWind(current.wind_speed_10m, tempUnit)}
                   </p>
                   <span className="text-[10px] text-muted-foreground leading-tight">Wind</span>
                 </div>
                 <div className="bg-secondary p-2 rounded-lg flex flex-col items-center gap-1 overflow-hidden">
                   <WeatherGlyph code={63} darkOutline className="w-10 h-12" />
                   <p className="text-[11px] font-semibold leading-tight">
-                    {tempUnit === 'fahrenheit' ? current.precipitation.toFixed(2) + '"' : (current.precipitation * 25.4).toFixed(1) + 'mm'}
+                    {formatPrecip(current.precipitation, tempUnit)}
                   </p>
                   <span className="text-[10px] text-muted-foreground leading-tight">Precip</span>
                 </div>
                 <div className="bg-secondary p-2 rounded-lg flex flex-col items-center gap-1 overflow-hidden">
                   <WeatherGlyph code={3} darkOutline className="w-10 h-12" />
-                  <p className="text-[11px] font-semibold leading-tight">{(current.pressure / 10).toFixed(1)}kPa</p>
+                  <p className="text-[11px] font-semibold leading-tight">{formatPressure(current.pressure, tempUnit)}</p>
                   <span className="text-[10px] text-muted-foreground leading-tight">Pressure</span>
                 </div>
               </div>
@@ -371,6 +372,7 @@ export default function Weather() {
           hourly={weather.hourly}
           selectedDate={selectedDate}
           daily={daily}
+          tempUnit={tempUnit}
         />
 
         {/* 10-Day Forecast */}
@@ -394,8 +396,8 @@ export default function Weather() {
                     </p>
                     <WeatherGlyph code={daily.weather_code[idx]} className="w-12 h-14" />
                     <div className="flex items-center gap-1.5">
-                      <span className="text-sm font-semibold">{Math.round(daily.temperature_2m_max[idx])}°</span>
-                      <span className="text-xs text-muted-foreground">{Math.round(daily.temperature_2m_min[idx])}°</span>
+                      <span className="text-sm font-semibold">{formatTemp(daily.temperature_2m_max[idx], tempUnit)}°</span>
+                      <span className="text-xs text-muted-foreground">{formatTemp(daily.temperature_2m_min[idx], tempUnit)}°</span>
                     </div>
                     {daily.precipitation_probability?.[idx] > 0 && (
                       <p className="text-[10px] text-primary flex items-center gap-0.5">
@@ -418,12 +420,12 @@ export default function Weather() {
             title={`Weather — ${formatDate(selectedDate)}`}
             text={[
               `📍 ${location}`,
-              `🌡️ ${Math.round(current.temperature_2m)}° (feels like ${Math.round(current.apparent_temperature)}°)`,
+              `🌡️ ${formatTemp(current.temperature_2m, tempUnit)}° (feels like ${formatTemp(current.apparent_temperature, tempUnit)}°)`,
               `${getWeatherDescription(current.weather_code)}`,
               `💧 Humidity: ${current.relative_humidity_2m}%`,
-              `💨 Wind: ${tempUnit === 'fahrenheit' ? Math.round(current.wind_speed_10m) + 'mph' : Math.round(current.wind_speed_10m * 1.60934) + 'km/h'}`,
-              `🌧️ Precip: ${tempUnit === 'fahrenheit' ? current.precipitation.toFixed(2) + '"' : (current.precipitation * 25.4).toFixed(1) + 'mm'}`,
-              `H: ${Math.round(daily.temperature_2m_max[0])}°  L: ${Math.round(daily.temperature_2m_min[0])}°`,
+              `💨 Wind: ${formatWind(current.wind_speed_10m, tempUnit)}`,
+              `🌧️ Precip: ${formatPrecip(current.precipitation, tempUnit)}`,
+              `H: ${formatTemp(daily.temperature_2m_max[0], tempUnit)}°  L: ${formatTemp(daily.temperature_2m_min[0], tempUnit)}°`,
             ].join('\n')}
           />
         </div>
