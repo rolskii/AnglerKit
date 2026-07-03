@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Cloud, CloudRain, Sun, Moon, Droplets } from 'lucide-react';
 import WeatherGlyph from '@/components/weather/WeatherGlyph';
@@ -49,6 +49,12 @@ export default function HourlyConditionsCard({ hourly, selectedDate, daily }) {
   const allHours = hourly.time
     .map((hTime, hIdx) => ({ hTime, hIdx }))
     .filter(({ hTime }) => hTime.startsWith(todayStr) ? new Date(hTime) >= now : true);
+
+  useEffect(() => {
+    if (scrollRef.current && allHours.length > 0) {
+      scrollRef.current.scrollTo({ left: 0, behavior: 'instant' });
+    }
+  }, [selectedDate, allHours.length]);
 
   if (allHours.length === 0) return null;
 
