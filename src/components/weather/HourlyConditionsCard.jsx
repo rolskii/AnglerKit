@@ -34,6 +34,8 @@ export default function HourlyConditionsCard({ hourly, selectedDate, daily, temp
   const [visibleDate, setVisibleDate] = React.useState(selectedDate);
 
   const now = new Date();
+  // Round down to the start of the current hour so the current hour's entry isn't filtered out
+  now.setMinutes(0, 0, 0);
   const getLocalDateStr = (isoStr) => {
     const d = new Date(isoStr);
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
