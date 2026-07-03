@@ -37,14 +37,10 @@ export default function HourlyConditionsCard({ hourly, selectedDate, daily }) {
     const d = new Date(isoStr);
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   };
-  const todayLocalStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const allHours = hourly?.time
     ? hourly.time
         .map((hTime, hIdx) => ({ hTime, hIdx, localDate: getLocalDateStr(hTime) }))
-        .filter(({ hTime, localDate }) => {
-          if (localDate === todayLocalStr) return new Date(hTime) >= now;
-          return true;
-        })
+        .filter(({ hTime }) => new Date(hTime) >= now)
     : [];
 
   useEffect(() => {
