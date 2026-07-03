@@ -95,7 +95,7 @@ export default function HourlyConditionsCard({ hourly, selectedDate, daily }) {
                   style={{ scrollSnapAlign: 'start' }}
                 >
                   <p className="text-xs text-muted-foreground">{hourLabel}</p>
-                  <WeatherGlyph code={hourly.weather_code[hIdx]} isNight={isNight} className="w-12 h-14" />
+                  <WeatherGlyph code={hourly.weather_code[hIdx]} isNight={isNight} className="w-12 h-14 -mb-1" />
                   <p className="text-base font-semibold">{Math.round(hourly.temperature_2m[hIdx])}°</p>
                   <p className="text-xs text-primary flex items-center gap-0.5">
                     <Droplets className="w-3 h-3" />
