@@ -17,6 +17,7 @@ import CatchDetail from '@/pages/CatchDetail';
 import Moon from '@/pages/Moon';
 import Weather from '@/pages/Weather';
 // Add page imports here
+import { initAlarmService } from '@/lib/alarmService';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -77,6 +78,9 @@ const AuthenticatedApp = () => {
 
 
 function App() {
+  useEffect(() => {
+    initAlarmService();
+  }, []);
 
   return (
     <AuthProvider>

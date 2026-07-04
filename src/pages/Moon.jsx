@@ -14,7 +14,7 @@ import SunMoonFooter from '@/components/moon/SunMoonFooter';
 import WeeklyBiteForecast from '@/components/moon/WeeklyBiteForecast';
 import DaySolunarDialog from '@/components/moon/DaySolunarDialog';
 import ShareStatusButton from '@/components/ShareStatusButton';
-import { getAlarmSoundUrl } from '@/lib/alarmSounds';
+import { clearFiredAlarms } from '@/lib/alarmService';
 
 const todayStr = () => {
   const now = new Date();
@@ -145,7 +145,6 @@ export default function Moon() {
   const currentDayAlarmList = Array.isArray(rawDayAlarms) ? rawDayAlarms : (rawDayAlarms && rawDayAlarms.time ? [rawDayAlarms] : []);
   const [pendingTime, setPendingTime] = useState(null);
   const [pendingOffset, setPendingOffset] = useState(15);
-  const alarmIntervalsRef = useRef({});
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [locationDialogOpen, setLocationDialogOpen] = useState(false);
@@ -304,10 +303,7 @@ export default function Moon() {
       else updated[selectedDate] = newList;
       setAlarmsByDate(updated);
       setPendingTime(null);
-      if (alarmIntervalsRef.current[timeStr]) {
-        clearInterval(alarmIntervalsRef.current[timeStr]);
-        delete alarmIntervalsRef.current[timeStr];
-      }
+      clearFiredAlarms();
       return;
     }
     setPendingTime(timeStr);
@@ -320,15 +316,6 @@ export default function Moon() {
     if (!timeInMinutes) return;
 
     const offset = pendingOffset;
-    const alarmHours = Math.floor(timeInMinutes / 60);
-    const alarmMinutes = timeInMinutes % 60;
-
-    const alarmTime = new Date();
-    alarmTime.setHours(alarmHours, alarmMinutes, 0, 0);
-    alarmTime.setMinutes(alarmTime.getMinutes() - offset);
-    if (alarmTime <= new Date()) {
-      alarmTime.setDate(alarmTime.getDate() + 1);
-    }
 
     const existing = currentDayAlarmList.find(a => a.time === pendingTime);
     const newList = existing
@@ -336,58 +323,19 @@ export default function Moon() {
       : [...currentDayAlarmList, { time: pendingTime, enabled: true, offset }];
 
     setAlarmsByDate({ ...alarmsByDate, [selectedDate]: newList });
+    clearFiredAlarms();
 
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
     }
 
-    if (alarmIntervalsRef.current[pendingTime]) {
-      clearInterval(alarmIntervalsRef.current[pendingTime]);
-    }
-
-    const alarmKey = pendingTime;
-    const trigger = () => {
-      if (new Date() >= alarmTime) {
-        playAlarm(alarmKey, offset);
-        if (alarmIntervalsRef.current[alarmKey]) {
-          clearInterval(alarmIntervalsRef.current[alarmKey]);
-          delete alarmIntervalsRef.current[alarmKey];
-        }
-      }
-    };
-
-    alarmIntervalsRef.current[alarmKey] = setInterval(trigger, 5000);
-    trigger();
     setPendingTime(null);
-  };
-
-  const playAlarm = (time, offset) => {
-    const timeText = offset === 0 ? 'now' : `in ${offset} minutes`;
-    const message = `🎣 Time to fish! Your feeding window (${time}) is starting ${timeText}!`;
-
-    if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification('Fishing Time!', { body: message, tag: 'fishing-alarm' });
-    }
-
-    try {
-      const sound = new Audio(getAlarmSoundUrl());
-      sound.volume = 1;
-      sound.play().catch(() => {});
-    } catch (e) {}
-
-    alert(message);
   };
 
   // Persist alarms & cleanup
   useEffect(() => {
     localStorage.setItem('alarmsByDate', JSON.stringify(alarmsByDate));
   }, [alarmsByDate]);
-
-  useEffect(() => {
-    return () => {
-      Object.values(alarmIntervalsRef.current).forEach(clearInterval);
-    };
-  }, []);
 
   useEffect(() => {
     if (currentDayAlarmList.length > 0 && 'Notification' in window && Notification.permission === 'default') {

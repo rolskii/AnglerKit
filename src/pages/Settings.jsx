@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, ArrowLeftRight, Trash2, BellOff } from "lucide-react";
 import ImportExportSection from "@/components/settings/ImportExportSection";
 import AlarmSoundPicker from "@/components/settings/AlarmSoundPicker";
+import { clearFiredAlarms } from "@/lib/alarmService";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -92,6 +93,7 @@ export default function Settings() {
             variant="outline"
             onClick={() => {
               localStorage.removeItem("alarmsByDate");
+              clearFiredAlarms();
               toast.success("All alarms cleared");
             }}
             className="flex items-center gap-2"
