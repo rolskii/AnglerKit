@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Loader2, ArrowLeftRight, Trash2, BellOff } from "lucide-react";
 import ImportExportSection from "@/components/settings/ImportExportSection";
+import AlarmSoundPicker from "@/components/settings/AlarmSoundPicker";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -71,22 +72,33 @@ export default function Settings() {
         <ImportExportSection />
       </div>
 
-      <div className="rounded-lg border border-border bg-card p-6 space-y-4">
+      <div className="rounded-lg border border-border bg-card p-6 space-y-5">
         <div className="flex items-center gap-2">
           <BellOff className="w-5 h-5 text-primary" />
           <h2 className="font-heading text-lg font-semibold">Alarms</h2>
         </div>
-        <p className="text-sm text-muted-foreground">Remove all saved fishing alarms from this device.</p>
-        <Button
-          variant="outline"
-          onClick={() => {
-            localStorage.removeItem("alarmsByDate");
-            toast.success("All alarms cleared");
-          }}
-          className="flex items-center gap-2"
-        >
-          <BellOff className="w-4 h-4" /> Clear All Alarms
-        </Button>
+
+        <div className="space-y-2">
+          <div>
+            <p className="text-sm font-medium">Alarm Sound</p>
+            <p className="text-xs text-muted-foreground">Choose the sound played when a feeding-time alarm triggers.</p>
+          </div>
+          <AlarmSoundPicker />
+        </div>
+
+        <div className="space-y-2">
+          <p className="text-sm text-muted-foreground">Remove all saved fishing alarms from this device.</p>
+          <Button
+            variant="outline"
+            onClick={() => {
+              localStorage.removeItem("alarmsByDate");
+              toast.success("All alarms cleared");
+            }}
+            className="flex items-center gap-2"
+          >
+            <BellOff className="w-4 h-4" /> Clear All Alarms
+          </Button>
+        </div>
       </div>
 
       <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-6 space-y-4">

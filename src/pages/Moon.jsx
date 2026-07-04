@@ -14,6 +14,7 @@ import SunMoonFooter from '@/components/moon/SunMoonFooter';
 import WeeklyBiteForecast from '@/components/moon/WeeklyBiteForecast';
 import DaySolunarDialog from '@/components/moon/DaySolunarDialog';
 import ShareStatusButton from '@/components/ShareStatusButton';
+import { getAlarmSoundUrl } from '@/lib/alarmSounds';
 
 const todayStr = () => {
   const now = new Date();
@@ -369,11 +370,9 @@ export default function Moon() {
     }
 
     try {
-      // Real "First Call" bugle recording by U.S. Army Bands (public domain)
-      // — the authentic bugle call used at horse race tracks
-      const bugle = new Audio('https://upload.wikimedia.org/wikipedia/commons/transcoded/6/60/FirstCall.ogg/FirstCall.ogg.mp3');
-      bugle.volume = 1;
-      bugle.play().catch(() => {});
+      const sound = new Audio(getAlarmSoundUrl());
+      sound.volume = 1;
+      sound.play().catch(() => {});
     } catch (e) {}
 
     alert(message);
