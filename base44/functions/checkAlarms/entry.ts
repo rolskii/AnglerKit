@@ -5,7 +5,7 @@ const VAPID_PUBLIC_KEY = 'BFsm3txeTi8rhAzQUu39fke-rJS2AgfzGnPiVdzTFi8pNlVzQxt5nP
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const VAPID_PRIVATE_KEY = Deno.env.get('VAPID_PRIVATE_KEY');
+    const VAPID_PRIVATE_KEY = Deno.env.get("VAPID_PRIVATE_KEY");
     if (!VAPID_PRIVATE_KEY) {
       return Response.json({ error: 'VAPID_PRIVATE_KEY not set' }, { status: 500 });
     }
