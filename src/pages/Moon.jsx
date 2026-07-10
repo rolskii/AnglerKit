@@ -544,24 +544,6 @@ export default function Moon() {
                     )}
                   </div>
                 </div>
-                {savedLocations.length > 0 && (
-                  <div className="flex gap-1.5 mt-2 flex-wrap">
-                    {savedLocations.map((loc) => (
-                      <button
-                        key={loc.name}
-                        onClick={() => selectSavedLocation(loc)}
-                        className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors flex items-center gap-1 ${
-                          loc.name === location
-                            ? 'bg-primary text-primary-foreground border-primary'
-                            : 'bg-muted/50 text-muted-foreground border-border hover:bg-accent/20 hover:text-primary'
-                        }`}
-                      >
-                        <Star className="w-2.5 h-2.5" fill="currentColor" />
-                        {loc.name}
-                      </button>
-                    ))}
-                  </div>
-                )}
               </div>
               <div className={`shrink-0 relative w-20 h-20 flex items-center justify-center ${moonData.fishingRating >= 5 ? 'animate-pulse-slow' : ''}`}>
                 <svg className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none" viewBox="0 0 80 80">
