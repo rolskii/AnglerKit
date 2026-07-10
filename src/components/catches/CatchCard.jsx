@@ -97,6 +97,16 @@ export default function CatchCard({ catchItem, onEdit, onDelete }) {
         <Detail label="Conditions" value={catchItem.conditions} />
       </div>
 
+      {catchItem.video_url && (
+        <div className="border-t border-border pt-2">
+          <video src={catchItem.video_url} controls className="w-full max-h-64 rounded-lg bg-black" />
+        </div>
+      )}
+      {catchItem.audio_url && (
+        <div className="border-t border-border pt-2">
+          <audio src={catchItem.audio_url} controls className="w-full" />
+        </div>
+      )}
       {catchItem.notes && (
         <p className="text-sm text-muted-foreground italic border-t border-border pt-2">{catchItem.notes}</p>
       )}

@@ -9,6 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2 } from "lucide-react";
 import ImageUpload from "@/components/ImageUpload";
+import VideoUpload from "@/components/catches/VideoUpload";
+import AudioRecorder from "@/components/catches/AudioRecorder";
 import LineSelect from "@/components/catches/LineSelect";
 import BottomSheetSelect from "@/components/ui/bottom-sheet-select";
 
@@ -32,6 +34,8 @@ const emptyCatch = {
   water_temp: "",
   released: true,
   images: [],
+  video_url: "",
+  audio_url: "",
   notes: "",
 };
 
@@ -229,6 +233,16 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
           <div className="space-y-1.5">
             <Label>Photos</Label>
             <ImageUpload value={form.images} onChange={(imgs) => set("images", imgs)} compress={false} />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>Video</Label>
+            <VideoUpload value={form.video_url || ""} onChange={(url) => set("video_url", url)} />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>Audio</Label>
+            <AudioRecorder value={form.audio_url || ""} onChange={(url) => set("audio_url", url)} />
           </div>
 
           <div className="space-y-1.5">

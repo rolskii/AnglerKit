@@ -63,6 +63,14 @@
       },
       "description": "Photos of the catch"
     },
+    "video_url": {
+      "type": "string",
+      "description": "Video of the catch"
+    },
+    "audio_url": {
+      "type": "string",
+      "description": "Audio recording of the catch"
+    },
     "notes": {
       "type": "string"
     }
