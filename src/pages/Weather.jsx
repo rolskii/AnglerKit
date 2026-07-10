@@ -28,6 +28,10 @@ export default function Weather() {
   const [selectedDay, setSelectedDay] = useState(null);
   const [dayDialogOpen, setDayDialogOpen] = useState(false);
   const [mapPickerOpen, setMapPickerOpen] = useState(false);
+  const [savedLocations, setSavedLocations] = useState(() => {
+    const stored = localStorage.getItem('moonSavedLocations');
+    return stored ? JSON.parse(stored) : [];
+  });
   const todayStr = () => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
@@ -44,6 +48,15 @@ export default function Weather() {
   const handleMapSelect = (name, lat, lon) => {
     fetchWeatherByCoords(lat, lon, name, tempUnit);
   };
+
+  useEffect(() => {
+    const syncSaved = () => {
+      const stored = localStorage.getItem('moonSavedLocations');
+      setSavedLocations(stored ? JSON.parse(stored) : []);
+    };
+    window.addEventListener('moonSavedLocationsChanged', syncSaved);
+    return () => window.removeEventListener('moonSavedLocationsChanged', syncSaved);
+  }, []);
 
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
     const R = 3959;
@@ -436,6 +449,7 @@ export default function Weather() {
         open={mapPickerOpen}
         onOpenChange={setMapPickerOpen}
         initialCoords={lastCoords}
+        savedLocations={savedLocations}
         onSelect={handleMapSelect}
       />
 
