@@ -84,31 +84,27 @@ export default function DayForecastDialog({ open, onOpenChange, dayData, hourly,
               )}
             </div>
 
-            {/* Conditions Grid */}
-            <div className="grid grid-cols-4 gap-1">
-              <div className="bg-secondary p-1.5 rounded-lg flex flex-col items-center gap-0.5 overflow-hidden">
-                <WeatherGlyph code={51} className="w-6 h-7" />
-                <p className="text-[10px] font-semibold leading-tight">{midHumidity != null ? midHumidity + '%' : '—'}</p>
-                <span className="text-[9px] text-muted-foreground leading-tight">Humidity</span>
+            {/* Conditions List */}
+            <div className="flex flex-col gap-1">
+              <div className="bg-secondary p-2 rounded-lg flex items-center gap-3">
+                <WeatherGlyph code={51} className="w-6 h-7 shrink-0" />
+                <p className="text-sm font-semibold">{midHumidity != null ? midHumidity + '%' : '—'}</p>
+                <span className="text-xs text-muted-foreground ml-auto">Humidity</span>
               </div>
-              <div className="bg-secondary p-1.5 rounded-lg flex flex-col items-center gap-0.5 overflow-hidden">
-                <WeatherGlyph code={45} className="w-6 h-7" />
-                <p className="text-[10px] font-semibold leading-tight">
-                  {formatWind(daily.wind_speed_10m_max?.[idx] ?? 0, tempUnit)}
-                </p>
-                <span className="text-[9px] text-muted-foreground leading-tight">Wind</span>
+              <div className="bg-secondary p-2 rounded-lg flex items-center gap-3">
+                <WeatherGlyph code={45} className="w-6 h-7 shrink-0" />
+                <p className="text-sm font-semibold">{formatWind(daily.wind_speed_10m_max?.[idx] ?? 0, tempUnit)}</p>
+                <span className="text-xs text-muted-foreground ml-auto">Wind</span>
               </div>
-              <div className="bg-secondary p-1.5 rounded-lg flex flex-col items-center gap-0.5 overflow-hidden">
-                <WeatherGlyph code={63} className="w-6 h-7" />
-                <p className="text-[10px] font-semibold leading-tight">
-                  {formatPrecip(daily.precipitation_sum?.[idx] ?? 0, tempUnit)}
-                </p>
-                <span className="text-[9px] text-muted-foreground leading-tight">Precip</span>
+              <div className="bg-secondary p-2 rounded-lg flex items-center gap-3">
+                <WeatherGlyph code={63} className="w-6 h-7 shrink-0" />
+                <p className="text-sm font-semibold">{formatPrecip(daily.precipitation_sum?.[idx] ?? 0, tempUnit)}</p>
+                <span className="text-xs text-muted-foreground ml-auto">Precip</span>
               </div>
-              <div className="bg-secondary p-1.5 rounded-lg flex flex-col items-center gap-0.5 overflow-hidden">
-                <WeatherGlyph code={3} className="w-6 h-7" />
-                <p className="text-[10px] font-semibold leading-tight">{midPressure != null ? formatPressure(midPressure, tempUnit) : '—'}</p>
-                <span className="text-[9px] text-muted-foreground leading-tight">Pressure</span>
+              <div className="bg-secondary p-2 rounded-lg flex items-center gap-3">
+                <WeatherGlyph code={3} className="w-6 h-7 shrink-0" />
+                <p className="text-sm font-semibold">{midPressure != null ? formatPressure(midPressure, tempUnit) : '—'}</p>
+                <span className="text-xs text-muted-foreground ml-auto">Pressure</span>
               </div>
             </div>
 
@@ -134,25 +130,23 @@ export default function DayForecastDialog({ open, onOpenChange, dayData, hourly,
           {dayHours.length > 0 && (
             <div>
               <p className="text-xs font-semibold text-muted-foreground mb-2">Hourly Breakdown</p>
-              <div className="overflow-x-auto scrollbar-hide -mx-1 px-1">
-                <div className="flex gap-2 min-w-max pb-1">
-                  {dayHours.map(({ hTime, hIdx }) => {
-                    const hourDate = new Date(hTime);
-                    const isNight = sunrise && sunset ? (hourDate < sunrise || hourDate > sunset) : false;
-                    const hourLabel = hourDate.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true });
-                    return (
-                      <div key={hIdx} className="flex flex-col items-center gap-1 w-14 p-1.5 rounded-lg bg-secondary/40 shrink-0">
-                        <p className="text-[10px] text-muted-foreground">{hourLabel}</p>
-                        <WeatherGlyph code={hourly.weather_code[hIdx]} isNight={isNight} className="w-5 h-6" />
-                        <p className="text-xs font-semibold">{formatTemp(hourly.temperature_2m[hIdx], tempUnit)}°</p>
-                        <p className="text-[10px] text-primary flex items-center gap-0.5">
-                          <Droplets className="w-2.5 h-2.5" />
-                          {hourly.precipitation_probability?.[hIdx] ?? 0}%
-                        </p>
-                      </div>
-                    );
-                  })}
-                </div>
+              <div className="flex flex-col gap-1">
+                {dayHours.map(({ hTime, hIdx }) => {
+                  const hourDate = new Date(hTime);
+                  const isNight = sunrise && sunset ? (hourDate < sunrise || hourDate > sunset) : false;
+                  const hourLabel = hourDate.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true });
+                  return (
+                    <div key={hIdx} className="flex items-center gap-3 p-1.5 rounded-lg bg-secondary/40">
+                      <p className="text-xs text-muted-foreground w-12 shrink-0">{hourLabel}</p>
+                      <WeatherGlyph code={hourly.weather_code[hIdx]} isNight={isNight} className="w-6 h-7 shrink-0" />
+                      <p className="text-sm font-semibold shrink-0">{formatTemp(hourly.temperature_2m[hIdx], tempUnit)}°</p>
+                      <p className="text-[10px] text-primary flex items-center gap-0.5 ml-auto">
+                        <Droplets className="w-2.5 h-2.5" />
+                        {hourly.precipitation_probability?.[hIdx] ?? 0}%
+                      </p>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
