@@ -99,6 +99,7 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, o
         const map = new mapkit.Map(mapContainerRef.current, {
           center,
           cameraDistance: 80000,
+          mapType: mapkit.Map.MapTypes.Hybrid,
         });
 
         mapRef.current = map;
