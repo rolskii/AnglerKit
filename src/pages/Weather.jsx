@@ -65,7 +65,7 @@ export default function Weather() {
     try {
       setLoading(true);
       setError(null);
-      const res = await base44.functions.invoke('weatherkit', { lat, lon, unit });
+      const res = await base44.functions.invoke('ecweather', { lat, lon, unit });
       const data = res.data;
       const coords = { lat, lon, name: locationName };
       setLastCoords(coords);
