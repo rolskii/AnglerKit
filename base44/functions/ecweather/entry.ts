@@ -169,28 +169,38 @@ function parseWeatherXml(xmlText) {
   const rs = rsMatch ? rsMatch[1] : '';
 
   // --- Current conditions ---
+  const condition = getTagText(cc, 'condition');
   const temperature = parseFloat(getTagText(cc, 'temperature')) || 0;
+  const dewpoint = parseFloat(getTagText(cc, 'dewpoint')) || 0;
   const windChill = getTagText(cc, 'windChill');
-  const humidex = getTagText(cc, 'humidex');
+  const humidexVal = getTagText(cc, 'humidex');
+  const humidexNum = humidexVal ? parseFloat(humidexVal) : null;
   const pressure = parseFloat(getTagText(cc, 'pressure')) || 0;
+  const pressureTendency = getAttr(cc, 'pressure', 'tendency');
   const humidity = parseInt(getTagText(cc, 'relativeHumidity')) || 0;
   const visibility = parseFloat(getTagText(cc, 'visibility')) || 0;
   const windSpeed = parseFloat(getTagText(cc, 'speed')) || 0;
+  const windDirection = getTagText(cc, 'direction');
   const iconCode = parseInt(getTagText(cc, 'iconCode')) || 0;
 
   let apparentTemp = temperature;
   if (windChill) apparentTemp = parseFloat(windChill);
-  else if (humidex) apparentTemp = parseFloat(humidex);
+  else if (humidexVal) apparentTemp = parseFloat(humidexVal);
 
   const current = {
     temperature_2m: temperature,
+    dewpoint: dewpoint,
     relative_humidity_2m: humidity,
     apparent_temperature: apparentTemp,
+    humidex: humidexNum,
     precipitation: 0,
     weather_code: ecIconToWMO[iconCode] ?? 3,
+    condition: condition,
     wind_speed_10m: windSpeed,
-    visibility: visibility * 1000, // km → m
+    wind_direction: windDirection,
+    visibility: visibility, // km
     pressure: pressure,
+    pressure_tendency: pressureTendency,
   };
 
   // --- Forecast periods ---

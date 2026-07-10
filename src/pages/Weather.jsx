@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Droplets, MapPin, ChevronDown } from 'lucide-react';
+import { Droplets, MapPin, ChevronDown, Thermometer, Eye, Wind, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { searchLocations, geocodeLocation } from '@/lib/geocode';
 import LocationMapPicker from '@/components/moon/LocationMapPicker';
@@ -10,7 +10,7 @@ import HourlyConditionsCard from '@/components/weather/HourlyConditionsCard';
 import DayForecastDialog from '@/components/weather/DayForecastDialog';
 import WeatherGlyph from '@/components/weather/WeatherGlyph';
 import ShareStatusButton from '@/components/ShareStatusButton';
-import { formatTemp, formatWind, formatPrecip, formatPressure } from '@/lib/weatherUnits';
+import { formatTemp, formatWind, formatPrecip, formatPressure, formatVisibility } from '@/lib/weatherUnits';
 
 export default function Weather() {
   const savedLocation = localStorage.getItem('weatherLocation');
@@ -298,77 +298,77 @@ export default function Weather() {
         <Card className="bg-primary/10">
           <CardContent className="p-3">
             <div className="space-y-3">
-              {/* Temperature and Condition */}
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-stretch gap-3">
-                  <p className="text-6xl font-bold text-primary leading-none self-center">{formatTemp(current.temperature_2m, tempUnit)}°</p>
-                  <div className="flex flex-col justify-center">
-                    <p className="text-muted-foreground text-sm leading-tight">{getWeatherDescription(current.weather_code)}</p>
-                    <p className="text-xs text-muted-foreground leading-tight">Feels like {formatTemp(current.apparent_temperature, tempUnit)}°</p>
-                    <p className="text-xs text-muted-foreground leading-tight">H: {formatTemp(daily.temperature_2m_max[0], tempUnit)}°  L: {formatTemp(daily.temperature_2m_min[0], tempUnit)}°</p>
-                  </div>
-                </div>
-                <WeatherGlyph code={current.weather_code} isNight={isNight()} darkOutline className="w-24 h-28 shrink-0" />
-                {/* Date and Location */}
-                <div className="flex flex-col items-end gap-1 shrink-0">
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <button className="text-sm font-semibold text-primary flex items-center gap-1 hover:underline transition-colors">
-                        {formatDate(selectedDate)}
-                        <ChevronDown className="w-3.5 h-3.5 opacity-60" />
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="end">
-                      <Calendar
-                        mode="single"
-                        selected={new Date(selectedDate + 'T00:00:00')}
-                        onSelect={(date) => {
-                          if (date) {
-                            const y = date.getFullYear();
-                            const m = String(date.getMonth() + 1).padStart(2, '0');
-                            const d = String(date.getDate()).padStart(2, '0');
-                            setSelectedDate(`${y}-${m}-${d}`);
-                          }
-                        }}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <button
-                    onClick={() => setMapPickerOpen(true)}
-                    className="text-xs text-muted-foreground flex items-center gap-1 hover:text-primary transition-colors"
-                  >
-                    <MapPin className="w-3 h-3" />
-                    <span className="max-w-[120px] truncate">{location}</span>
-                    <ChevronDown className="w-3 h-3 opacity-60" />
-                  </button>
-                </div>
+              {/* Date and Location bar */}
+              <div className="flex items-center justify-between">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button className="text-sm font-semibold text-primary flex items-center gap-1 hover:underline transition-colors">
+                      {formatDate(selectedDate)}
+                      <ChevronDown className="w-3.5 h-3.5 opacity-60" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={new Date(selectedDate + 'T00:00:00')}
+                      onSelect={(date) => {
+                        if (date) {
+                          const y = date.getFullYear();
+                          const m = String(date.getMonth() + 1).padStart(2, '0');
+                          const d = String(date.getDate()).padStart(2, '0');
+                          setSelectedDate(`${y}-${m}-${d}`);
+                        }
+                      }}
+                    />
+                  </PopoverContent>
+                </Popover>
+                <button
+                  onClick={() => setMapPickerOpen(true)}
+                  className="text-xs text-muted-foreground flex items-center gap-1 hover:text-primary transition-colors"
+                >
+                  <MapPin className="w-3 h-3" />
+                  <span className="max-w-[120px] truncate">{location}</span>
+                  <ChevronDown className="w-3 h-3 opacity-60" />
+                </button>
+              </div>
+
+              {/* Temperature hero */}
+              <div className="flex items-center justify-center gap-3">
+                <p className="text-6xl font-bold text-primary leading-none">{formatTemp(current.temperature_2m, tempUnit)}°</p>
+                <WeatherGlyph code={current.weather_code} isNight={isNight()} darkOutline className="w-20 h-24 shrink-0" />
               </div>
 
               {/* Conditions Grid */}
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 <div className="bg-secondary p-2 rounded-lg flex flex-col items-center gap-1 overflow-hidden">
-                  <WeatherGlyph code={51} darkOutline className="w-10 h-12" />
-                  <p className="text-[11px] font-semibold leading-tight">{current.relative_humidity_2m}%</p>
-                  <span className="text-[10px] text-muted-foreground leading-tight">Humidity</span>
+                  <WeatherGlyph code={current.weather_code} darkOutline className="w-8 h-10" />
+                  <p className="text-xs font-semibold leading-tight text-center truncate w-full">{current.condition || getWeatherDescription(current.weather_code)}</p>
+                  <span className="text-[10px] text-muted-foreground leading-tight">Condition</span>
                 </div>
                 <div className="bg-secondary p-2 rounded-lg flex flex-col items-center gap-1 overflow-hidden">
-                  <WeatherGlyph code={45} darkOutline className="w-10 h-12" />
-                  <p className="text-[11px] font-semibold leading-tight">
-                    {formatWind(current.wind_speed_10m, tempUnit)}
-                  </p>
-                  <span className="text-[10px] text-muted-foreground leading-tight">Wind</span>
+                  {current.pressure_tendency === 'rising' ? <TrendingUp className="w-8 h-10 text-primary" /> : current.pressure_tendency === 'falling' ? <TrendingDown className="w-8 h-10 text-primary" /> : <Minus className="w-8 h-10 text-primary" />}
+                  <p className="text-xs font-semibold leading-tight capitalize">{current.pressure_tendency || '—'}</p>
+                  <span className="text-[10px] text-muted-foreground leading-tight">Tendency</span>
                 </div>
                 <div className="bg-secondary p-2 rounded-lg flex flex-col items-center gap-1 overflow-hidden">
-                  <WeatherGlyph code={63} darkOutline className="w-10 h-12" />
-                  <p className="text-[11px] font-semibold leading-tight">
-                    {formatPrecip(current.precipitation, tempUnit)}
-                  </p>
-                  <span className="text-[10px] text-muted-foreground leading-tight">Precip</span>
+                  <Thermometer className="w-8 h-10 text-primary" />
+                  <p className="text-xs font-semibold leading-tight">{formatTemp(current.dewpoint, tempUnit)}°</p>
+                  <span className="text-[10px] text-muted-foreground leading-tight">Dew Point</span>
                 </div>
                 <div className="bg-secondary p-2 rounded-lg flex flex-col items-center gap-1 overflow-hidden">
-                  <WeatherGlyph code={3} darkOutline className="w-10 h-12" />
-                  <p className="text-[11px] font-semibold leading-tight">{formatPressure(current.pressure, tempUnit)}</p>
-                  <span className="text-[10px] text-muted-foreground leading-tight">Pressure</span>
+                  <Droplets className="w-8 h-10 text-primary" />
+                  <p className="text-xs font-semibold leading-tight">{current.humidex != null ? formatTemp(current.humidex, tempUnit) : '—'}</p>
+                  <span className="text-[10px] text-muted-foreground leading-tight">Humidex</span>
+                </div>
+                <div className="bg-secondary p-2 rounded-lg flex flex-col items-center gap-1 overflow-hidden">
+                  <Eye className="w-8 h-10 text-primary" />
+                  <p className="text-xs font-semibold leading-tight">{formatVisibility(current.visibility, tempUnit)}</p>
+                  <span className="text-[10px] text-muted-foreground leading-tight">Visibility</span>
+                </div>
+                <div className="bg-secondary p-2 rounded-lg flex flex-col items-center gap-1 overflow-hidden">
+                  <Wind className="w-8 h-10 text-primary" />
+                  <p className="text-xs font-semibold leading-tight">{formatWind(current.wind_speed_10m, tempUnit)}</p>
+                  <span className="text-[10px] text-muted-foreground leading-tight">{current.wind_direction || 'Wind'}</span>
                 </div>
               </div>
 
@@ -434,10 +434,12 @@ export default function Weather() {
             text={[
               `📍 ${location}`,
               `🌡️ ${formatTemp(current.temperature_2m, tempUnit)}° (feels like ${formatTemp(current.apparent_temperature, tempUnit)}°)`,
-              `${getWeatherDescription(current.weather_code)}`,
-              `💧 Humidity: ${current.relative_humidity_2m}%`,
-              `💨 Wind: ${formatWind(current.wind_speed_10m, tempUnit)}`,
-              `🌧️ Precip: ${formatPrecip(current.precipitation, tempUnit)}`,
+              `${current.condition || getWeatherDescription(current.weather_code)}`,
+              `📊 Tendency: ${current.pressure_tendency || '—'}`,
+              `💧 Dew Point: ${formatTemp(current.dewpoint, tempUnit)}°`,
+              `🌡️ Humidex: ${current.humidex != null ? formatTemp(current.humidex, tempUnit) : '—'}`,
+              `👁️ Visibility: ${formatVisibility(current.visibility, tempUnit)}`,
+              `💨 Wind: ${formatWind(current.wind_speed_10m, tempUnit)} ${current.wind_direction || ''}`,
               `H: ${formatTemp(daily.temperature_2m_max[0], tempUnit)}°  L: ${formatTemp(daily.temperature_2m_min[0], tempUnit)}°`,
             ].join('\n')}
           />

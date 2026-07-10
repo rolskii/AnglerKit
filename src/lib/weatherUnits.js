@@ -31,3 +31,10 @@ export const formatPressure = (mbar, unit) => {
     ? `${mbarToInHg(mbar).toFixed(2)}inHg`
     : `${(mbar / 10).toFixed(1)}kPa`;
 };
+
+export const formatVisibility = (km, unit) => {
+  if (km == null) return '—';
+  return unit === 'fahrenheit'
+    ? `${(km / 1.60934).toFixed(1)}mi`
+    : `${km.toFixed(1)}km`;
+};
