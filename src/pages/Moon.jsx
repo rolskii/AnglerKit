@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { getMoonTimes } from '@/lib/moonTimes';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Sun, Waves, MapPin, Bell, BellOff, Save } from 'lucide-react';
+import { Sun, Waves, MapPin, Bell, BellOff, Save, Star } from 'lucide-react';
 import FishIcon from '@/components/FishIcon';
 import { searchLocations, geocodeLocation } from '@/lib/geocode';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
@@ -150,6 +150,10 @@ export default function Moon() {
   const [locationDialogOpen, setLocationDialogOpen] = useState(false);
   const [weeklyForecastOpen, setWeeklyForecastOpen] = useState(false);
   const [dayDetailOpen, setDayDetailOpen] = useState(false);
+  const [savedLocations, setSavedLocations] = useState(() => {
+    const stored = localStorage.getItem('moonSavedLocations');
+    return stored ? JSON.parse(stored) : [];
+  });
   const contentRef = useRef(null);
 
   const handleSelectDay = (dateStr) => {
@@ -164,6 +168,27 @@ export default function Moon() {
 
   const selectLocationFromMap = (name, lat, lon) => {
     handleLocationChange(name, lat, lon);
+  };
+
+  const isLocationSaved = () => {
+    return savedLocations.some(loc => loc.name === location);
+  };
+
+  const toggleSaveLocation = () => {
+    if (isLocationSaved()) {
+      const updated = savedLocations.filter(loc => loc.name !== location);
+      setSavedLocations(updated);
+      localStorage.setItem('moonSavedLocations', JSON.stringify(updated));
+    } else {
+      const newLoc = { name: location, lat: coords.lat, lon: coords.lon };
+      const updated = [...savedLocations, newLoc];
+      setSavedLocations(updated);
+      localStorage.setItem('moonSavedLocations', JSON.stringify(updated));
+    }
+  };
+
+  const selectSavedLocation = (loc) => {
+    handleLocationChange(loc.name, loc.lat, loc.lon);
   };
 
   // Moon phase calculation
@@ -492,6 +517,17 @@ export default function Moon() {
                     >
                       <MapPin className="w-3.5 h-3.5" />
                     </button>
+                    <button
+                      onClick={toggleSaveLocation}
+                      className={`p-1 rounded-full transition-colors ${
+                        isLocationSaved()
+                          ? 'text-amber-500 hover:text-amber-600'
+                          : 'text-muted-foreground hover:text-amber-500'
+                      }`}
+                      title={isLocationSaved() ? 'Remove from saved' : 'Save location'}
+                    >
+                      <Star className="w-3.5 h-3.5" fill={isLocationSaved() ? 'currentColor' : 'none'} />
+                    </button>
                     {showSuggestions && suggestions.length > 0 && (
                       <div className="absolute z-[5000] top-full left-0 mt-1 max-h-48 overflow-y-auto bg-popover rounded-lg shadow-lg border border-border min-w-48">
                         {suggestions.map((s, i) => (
@@ -508,6 +544,24 @@ export default function Moon() {
                     )}
                   </div>
                 </div>
+                {savedLocations.length > 0 && (
+                  <div className="flex gap-1.5 mt-2 flex-wrap">
+                    {savedLocations.map((loc) => (
+                      <button
+                        key={loc.name}
+                        onClick={() => selectSavedLocation(loc)}
+                        className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors flex items-center gap-1 ${
+                          loc.name === location
+                            ? 'bg-primary text-primary-foreground border-primary'
+                            : 'bg-muted/50 text-muted-foreground border-border hover:bg-accent/20 hover:text-primary'
+                        }`}
+                      >
+                        <Star className="w-2.5 h-2.5" fill="currentColor" />
+                        {loc.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
               <div className={`shrink-0 relative w-20 h-20 flex items-center justify-center ${moonData.fishingRating >= 5 ? 'animate-pulse-slow' : ''}`}>
                 <svg className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none" viewBox="0 0 80 80">
@@ -747,6 +801,7 @@ export default function Moon() {
         open={locationDialogOpen}
         onOpenChange={setLocationDialogOpen}
         initialCoords={coords}
+        savedLocations={savedLocations}
         onSelect={selectLocationFromMap}
       />
     </div>

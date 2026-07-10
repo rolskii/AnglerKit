@@ -1,7 +1,7 @@
 /* global mapkit */
 import React, { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Search, MapPin, Check } from 'lucide-react';
+import { Search, MapPin, Check, Star } from 'lucide-react';
 import { searchLocations } from '@/lib/geocode';
 import { base44 } from '@/api/base44Client';
 
@@ -53,7 +53,7 @@ function ensureMapKitInit() {
   mapkitInitialized = true;
 }
 
-export default function LocationMapPicker({ open, onOpenChange, initialCoords, onSelect }) {
+export default function LocationMapPicker({ open, onOpenChange, initialCoords, savedLocations = [], onSelect }) {
   const [searchValue, setSearchValue] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -66,6 +66,7 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, o
   const mapRef = useRef(null);
   const debounceRef = useRef(null);
   const skipReverseGeocodeRef = useRef(false);
+  const savedAnnotationsRef = useRef([]);
 
   useEffect(() => {
     if (open) {
@@ -104,6 +105,30 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, o
 
         mapRef.current = map;
 
+        // Add saved location markers (star annotations)
+        if (savedLocations && savedLocations.length > 0) {
+          const annotations = savedLocations.map((loc) => {
+            const coord = new mapkit.Coordinate(loc.lat, loc.lon);
+            const annotation = new mapkit.MarkerAnnotation(coord, {
+              title: loc.name,
+              subtitle: 'Saved location',
+              color: '#f59e0b',
+              glyphImage: { 1: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>' },
+            });
+            annotation.addEventListener('select', () => {
+              if (cancelled) return;
+              skipReverseGeocodeRef.current = true;
+              setMarkerPos([loc.lat, loc.lon]);
+              setPlaceName(loc.name);
+              setSearchValue(loc.name);
+              map.setCenterAnimated(coord);
+            });
+            return annotation;
+          });
+          map.addAnnotations(annotations);
+          savedAnnotationsRef.current = annotations;
+        }
+
         map.addEventListener('region-change-end', async () => {
           if (cancelled) return;
           const c = map.center;
@@ -132,6 +157,7 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, o
     return () => {
       cancelled = true;
       clearTimeout(timer);
+      savedAnnotationsRef.current = [];
       if (mapRef.current) {
         try { mapRef.current.destroy(); } catch (e) {}
         mapRef.current = null;
