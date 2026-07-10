@@ -1,0 +1,23 @@
+{
+  "name": "PushSubscription",
+  "type": "object",
+  "properties": {
+    "endpoint": {
+      "type": "string",
+      "description": "Push subscription endpoint URL"
+    },
+    "p256dh": {
+      "type": "string",
+      "description": "P-256 public key for payload encryption"
+    },
+    "auth": {
+      "type": "string",
+      "description": "Authentication secret for payload encryption"
+    }
+  },
+  "required": [
+    "endpoint",
+    "p256dh",
+    "auth"
+  ]
+}

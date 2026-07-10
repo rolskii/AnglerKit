@@ -18,6 +18,7 @@ import Moon from '@/pages/Moon';
 import Weather from '@/pages/Weather';
 // Add page imports here
 import { initAlarmService } from '@/lib/alarmService';
+import PushNotificationManager from '@/components/PushNotificationManager';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -87,6 +88,7 @@ function App() {
       <QueryClientProvider client={queryClientInstance}>
         <Router>
           <ScrollToTop />
+          <PushNotificationManager />
           <AuthenticatedApp />
         </Router>
         <Toaster />

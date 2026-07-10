@@ -15,6 +15,7 @@ import WeeklyBiteForecast from '@/components/moon/WeeklyBiteForecast';
 import DaySolunarDialog from '@/components/moon/DaySolunarDialog';
 import ShareStatusButton from '@/components/ShareStatusButton';
 import { clearFiredAlarms } from '@/lib/alarmService';
+import { ensurePushSubscription, syncAlarmToServer, removeAlarmFromServer } from '@/lib/pushService';
 
 const todayStr = () => {
   const now = new Date();
@@ -338,6 +339,7 @@ export default function Moon() {
       setAlarmsByDate(updated);
       setPendingTime(null);
       clearFiredAlarms();
+      removeAlarmFromServer(selectedDate, timeStr);
       return;
     }
     setPendingTime(timeStr);
@@ -358,6 +360,8 @@ export default function Moon() {
 
     setAlarmsByDate({ ...alarmsByDate, [selectedDate]: newList });
     clearFiredAlarms();
+    ensurePushSubscription();
+    syncAlarmToServer(selectedDate, pendingTime, pendingOffset, location);
 
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
