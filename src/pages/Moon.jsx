@@ -256,11 +256,11 @@ export default function Moon() {
     });
   }, [location, selectedDate]);
 
-  // Fetch sun data from WeatherKit when coords change
+  // Fetch sun data from Environment Canada when coords change
   useEffect(() => {
     const fetchSunData = async () => {
       try {
-        const res = await base44.functions.invoke('weatherkit', { lat: coords.lat, lon: coords.lon });
+        const res = await base44.functions.invoke('ecweather', { lat: coords.lat, lon: coords.lon });
         const data = res.data;
         if (data.daily && data.daily.time) {
           const byDate = {};
