@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Droplets, MapPin, ChevronDown, Thermometer, Eye, Wind, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Droplets, MapPin, ChevronDown, Thermometer, Eye, Wind, Gauge, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { searchLocations, geocodeLocation } from '@/lib/geocode';
 import LocationMapPicker from '@/components/moon/LocationMapPicker';
@@ -346,14 +346,29 @@ export default function Weather() {
                   <span className="text-[10px] text-muted-foreground leading-tight">Condition</span>
                 </div>
                 <div className="bg-secondary p-2 rounded-lg flex flex-col items-center gap-1 overflow-hidden">
+                  <Gauge className="w-8 h-10 text-primary" />
+                  <p className="text-xs font-semibold leading-tight">{formatPressure(current.pressure, tempUnit)}</p>
+                  <span className="text-[10px] text-muted-foreground leading-tight">Pressure</span>
+                </div>
+                <div className="bg-secondary p-2 rounded-lg flex flex-col items-center gap-1 overflow-hidden">
                   {current.pressure_tendency === 'rising' ? <TrendingUp className="w-8 h-10 text-primary" /> : current.pressure_tendency === 'falling' ? <TrendingDown className="w-8 h-10 text-primary" /> : <Minus className="w-8 h-10 text-primary" />}
                   <p className="text-xs font-semibold leading-tight capitalize">{current.pressure_tendency || '—'}</p>
                   <span className="text-[10px] text-muted-foreground leading-tight">Tendency</span>
                 </div>
                 <div className="bg-secondary p-2 rounded-lg flex flex-col items-center gap-1 overflow-hidden">
                   <Thermometer className="w-8 h-10 text-primary" />
+                  <p className="text-xs font-semibold leading-tight">{formatTemp(current.temperature_2m, tempUnit)}°</p>
+                  <span className="text-[10px] text-muted-foreground leading-tight">Temperature</span>
+                </div>
+                <div className="bg-secondary p-2 rounded-lg flex flex-col items-center gap-1 overflow-hidden">
+                  <Thermometer className="w-8 h-10 text-primary" />
                   <p className="text-xs font-semibold leading-tight">{formatTemp(current.dewpoint, tempUnit)}°</p>
                   <span className="text-[10px] text-muted-foreground leading-tight">Dew Point</span>
+                </div>
+                <div className="bg-secondary p-2 rounded-lg flex flex-col items-center gap-1 overflow-hidden">
+                  <Droplets className="w-8 h-10 text-primary" />
+                  <p className="text-xs font-semibold leading-tight">{current.relative_humidity_2m}%</p>
+                  <span className="text-[10px] text-muted-foreground leading-tight">Humidity</span>
                 </div>
                 <div className="bg-secondary p-2 rounded-lg flex flex-col items-center gap-1 overflow-hidden">
                   <Droplets className="w-8 h-10 text-primary" />
@@ -433,10 +448,11 @@ export default function Weather() {
             title={`Weather — ${formatDate(selectedDate)}`}
             text={[
               `📍 ${location}`,
-              `🌡️ ${formatTemp(current.temperature_2m, tempUnit)}° (feels like ${formatTemp(current.apparent_temperature, tempUnit)}°)`,
               `${current.condition || getWeatherDescription(current.weather_code)}`,
-              `📊 Tendency: ${current.pressure_tendency || '—'}`,
+              `🌡️ Temperature: ${formatTemp(current.temperature_2m, tempUnit)}° (feels like ${formatTemp(current.apparent_temperature, tempUnit)}°)`,
+              `📊 Pressure: ${formatPressure(current.pressure, tempUnit)} (${current.pressure_tendency || '—'})`,
               `💧 Dew Point: ${formatTemp(current.dewpoint, tempUnit)}°`,
+              `💦 Humidity: ${current.relative_humidity_2m}%`,
               `🌡️ Humidex: ${current.humidex != null ? formatTemp(current.humidex, tempUnit) : '—'}`,
               `👁️ Visibility: ${formatVisibility(current.visibility, tempUnit)}`,
               `💨 Wind: ${formatWind(current.wind_speed_10m, tempUnit)} ${current.wind_direction || ''}`,
