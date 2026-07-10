@@ -62,11 +62,21 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
   );
   const [placeName, setPlaceName] = useState(initialCoords?.name || '');
   const [mapLoading, setMapLoading] = useState(false);
+  const [localSavedLocations, setLocalSavedLocations] = useState(savedLocations);
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const debounceRef = useRef(null);
   const skipReverseGeocodeRef = useRef(false);
   const savedAnnotationsRef = useRef([]);
+
+  useEffect(() => {
+    const syncSaved = () => {
+      const stored = localStorage.getItem('moonSavedLocations');
+      setLocalSavedLocations(stored ? JSON.parse(stored) : []);
+    };
+    window.addEventListener('moonSavedLocationsChanged', syncSaved);
+    return () => window.removeEventListener('moonSavedLocationsChanged', syncSaved);
+  }, []);
 
   useEffect(() => {
     if (open) {
@@ -75,6 +85,8 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
       setSearchValue('');
       setSuggestions([]);
       setShowSuggestions(false);
+      const stored = localStorage.getItem('moonSavedLocations');
+      setLocalSavedLocations(stored ? JSON.parse(stored) : []);
     }
   }, [open, initialCoords]);
 
@@ -106,8 +118,8 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
         mapRef.current = map;
 
         // Add saved location markers (star annotations)
-        if (savedLocations && savedLocations.length > 0) {
-          const annotations = savedLocations.map((loc) => {
+        if (localSavedLocations && localSavedLocations.length > 0) {
+          const annotations = localSavedLocations.map((loc) => {
             const coord = new mapkit.Coordinate(loc.lat, loc.lon);
             const annotation = new mapkit.MarkerAnnotation(coord, {
               title: loc.name,
@@ -201,7 +213,7 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
   };
 
   const isCurrentSaved = () => {
-    return savedLocations.some(loc => loc.name === placeName);
+    return localSavedLocations.some(loc => loc.name === placeName);
   };
 
   const toggleSaveCurrent = () => {
@@ -214,6 +226,7 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
       updated = [...current, { name: placeName, lat: markerPos[0], lon: markerPos[1] }];
     }
     localStorage.setItem('moonSavedLocations', JSON.stringify(updated));
+    setLocalSavedLocations(updated);
     window.dispatchEvent(new Event('moonSavedLocationsChanged'));
   };
 
@@ -311,11 +324,11 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
         </div>
 
         {/* Saved locations list */}
-        {savedLocations.length > 0 && (
+        {localSavedLocations.length > 0 && (
           <div className="px-4 pb-3 border-t border-border pt-2">
             <p className="text-[10px] font-bold text-muted-foreground tracking-wide mb-1.5">SAVED LOCATIONS</p>
             <div className="flex gap-1.5 flex-wrap">
-              {savedLocations.map((loc) => (
+              {localSavedLocations.map((loc) => (
                 <button
                   key={loc.name}
                   onClick={() => handleSelectSaved(loc)}
