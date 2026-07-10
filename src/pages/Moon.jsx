@@ -526,17 +526,6 @@ export default function Moon() {
                     >
                       <MapPin className="w-3.5 h-3.5" />
                     </button>
-                    <button
-                      onClick={toggleSaveLocation}
-                      className={`p-1 rounded-full transition-colors ${
-                        isLocationSaved()
-                          ? 'text-amber-500 hover:text-amber-600'
-                          : 'text-muted-foreground hover:text-amber-500'
-                      }`}
-                      title={isLocationSaved() ? 'Remove from saved' : 'Save location'}
-                    >
-                      <Star className="w-3.5 h-3.5" fill={isLocationSaved() ? 'currentColor' : 'none'} />
-                    </button>
                     {showSuggestions && suggestions.length > 0 && (
                       <div className="absolute z-[5000] top-full left-0 mt-1 max-h-48 overflow-y-auto bg-popover rounded-lg shadow-lg border border-border min-w-48">
                         {suggestions.map((s, i) => (
