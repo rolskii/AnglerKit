@@ -418,10 +418,10 @@ export default function Weather() {
                   >
                     <div className="w-14 shrink-0">
                       <p className="text-sm font-medium text-foreground">
-                        {new Date(date).toLocaleDateString('en-US', { weekday: 'short' })}
+                        {new Date(date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short' })}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        {new Date(date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       </p>
                     </div>
                     <WeatherGlyph code={daily.weather_code[idx]} className="w-10 h-12 shrink-0" />
