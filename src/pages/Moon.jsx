@@ -472,12 +472,41 @@ export default function Moon() {
                       />
                     </PopoverContent>
                   </Popover>
-                  <button
-                    onClick={openLocationDialog}
-                    className="text-xs text-muted-foreground flex items-center gap-1 hover:text-primary transition-colors"
-                  >
-                    <MapPin className="w-3 h-3" />{moonData.location}
-                  </button>
+                  <div className="relative flex items-center gap-1">
+                    <div className="flex items-center gap-1 bg-muted/50 rounded-full px-2 py-0.5 border border-border">
+                      <MapPin className="w-3 h-3 text-muted-foreground shrink-0" />
+                      <input
+                        value={editingLocation}
+                        onChange={(e) => handleLocationInput(e.target.value)}
+                        onFocus={() => { if (suggestions.length) setShowSuggestions(true); }}
+                        onBlur={() => { setTimeout(() => setShowSuggestions(false), 200); handleLocationChange(editingLocation); }}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { setShowSuggestions(false); handleLocationChange(editingLocation); } }}
+                        placeholder="Search location..."
+                        className="text-xs bg-transparent outline-none w-32 placeholder:text-muted-foreground/50"
+                      />
+                    </div>
+                    <button
+                      onClick={openLocationDialog}
+                      className="p-1 rounded-full hover:bg-accent/20 text-muted-foreground hover:text-primary transition-colors"
+                      title="Pick on map"
+                    >
+                      <MapPin className="w-3.5 h-3.5" />
+                    </button>
+                    {showSuggestions && suggestions.length > 0 && (
+                      <div className="absolute z-[5000] top-full left-0 mt-1 max-h-48 overflow-y-auto bg-popover rounded-lg shadow-lg border border-border min-w-48">
+                        {suggestions.map((s, i) => (
+                          <button
+                            key={i}
+                            onMouseDown={(e) => { e.preventDefault(); handleLocationChange(s.name, s.lat, s.lon); setShowSuggestions(false); }}
+                            className="w-full text-left px-3 py-2 text-xs hover:bg-accent/10 truncate flex items-center gap-1.5"
+                          >
+                            <MapPin className="w-3 h-3 text-muted-foreground shrink-0" />
+                            {s.name}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
               <div className={`shrink-0 relative w-20 h-20 flex items-center justify-center ${moonData.fishingRating >= 5 ? 'animate-pulse-slow' : ''}`}>
