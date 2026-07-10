@@ -274,7 +274,7 @@ export default function Weather() {
   const current = weather.current;
   const daily = weather.daily;
   const forecastDays = daily.time
-    .slice(1, 9)
+    .slice(1, 6)
     .map((date, idx) => ({ date, idx: idx + 1 }));
   return (
     <div className="space-y-3 md:space-y-4 -mt-4 md:-mt-8">
@@ -406,33 +406,41 @@ export default function Weather() {
         {/* 10-Day Forecast */}
         <Card>
           <CardHeader className="pt-3 pb-2 flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-base">8-Day Forecast</CardTitle>
+            <CardTitle className="text-base">5-Day Forecast</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-4 gap-2">
+          <CardContent className="pt-0">
+            <div className="flex flex-col gap-0.5">
               {forecastDays.map(({ date, idx }) => {
                 return (
                   <div
                     key={idx}
-                    className="flex flex-col items-center gap-1 p-2.5 rounded-xl bg-secondary aspect-square justify-center"
+                    className="flex items-center gap-3 p-2 rounded-xl hover:bg-secondary/60 transition-colors"
                   >
-                    <p className="text-sm font-medium text-foreground truncate w-full text-center">
-                      {new Date(date).toLocaleDateString('en-US', { weekday: 'short' })}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                    </p>
-                    <WeatherGlyph code={daily.weather_code[idx]} className="w-12 h-14" />
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-sm font-semibold">{formatTemp(daily.temperature_2m_max[idx], tempUnit)}°</span>
-                      <span className="text-xs text-muted-foreground">{formatTemp(daily.temperature_2m_min[idx], tempUnit)}°</span>
+                    <div className="w-14 shrink-0">
+                      <p className="text-sm font-medium text-foreground">
+                        {new Date(date).toLocaleDateString('en-US', { weekday: 'short' })}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      </p>
                     </div>
+                    <WeatherGlyph code={daily.weather_code[idx]} className="w-10 h-12 shrink-0" />
                     {daily.precipitation_probability?.[idx] > 0 && (
-                      <p className="text-[10px] text-primary flex items-center gap-0.5">
+                      <p className="text-[10px] text-primary flex items-center gap-0.5 shrink-0 w-10">
                         <Droplets className="w-2.5 h-2.5" />
                         {daily.precipitation_probability[idx]}%
                       </p>
                     )}
+                    <div className="flex items-center gap-2 ml-auto">
+                      <span className="text-sm text-muted-foreground">{formatTemp(daily.temperature_2m_min[idx], tempUnit)}°</span>
+                      <div className="w-16 h-1.5 rounded-full bg-muted overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-primary"
+                          style={{ width: `${Math.min(100, Math.max(20, (daily.temperature_2m_max[idx] - daily.temperature_2m_min[idx]) * 3))}%` }}
+                        />
+                      </div>
+                      <span className="text-sm font-semibold">{formatTemp(daily.temperature_2m_max[idx], tempUnit)}°</span>
+                    </div>
                   </div>
                 );
               })}
