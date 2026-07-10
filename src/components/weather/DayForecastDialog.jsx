@@ -112,14 +112,14 @@ export default function DayForecastDialog({ open, onOpenChange, dayData, hourly,
 
           {/* Sun times */}
           {sunrise && sunset && (
-            <div className="flex items-center justify-between bg-secondary/40 rounded-lg p-3 text-xs">
+            <div className="flex items-center gap-4 bg-secondary/40 rounded-lg p-3 text-xs">
               <span className="flex items-center gap-1.5">
                 <Sun className="w-3.5 h-3.5 text-yellow-500" />
                 {sunrise.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
               </span>
               <span className="flex items-center gap-1.5">
-                {sunset.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
                 <Moon className="w-3.5 h-3.5 text-indigo-400" />
+                {sunset.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
               </span>
             </div>
           )}
