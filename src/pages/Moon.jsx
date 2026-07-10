@@ -156,6 +156,15 @@ export default function Moon() {
   });
   const contentRef = useRef(null);
 
+  useEffect(() => {
+    const syncSaved = () => {
+      const stored = localStorage.getItem('moonSavedLocations');
+      setSavedLocations(stored ? JSON.parse(stored) : []);
+    };
+    window.addEventListener('moonSavedLocationsChanged', syncSaved);
+    return () => window.removeEventListener('moonSavedLocationsChanged', syncSaved);
+  }, []);
+
   const handleSelectDay = (dateStr) => {
     setSelectedDate(dateStr);
     setWeeklyForecastOpen(false);

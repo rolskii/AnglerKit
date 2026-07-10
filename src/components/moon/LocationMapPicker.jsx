@@ -200,6 +200,33 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
     onOpenChange(false);
   };
 
+  const isCurrentSaved = () => {
+    return savedLocations.some(loc => loc.name === placeName);
+  };
+
+  const toggleSaveCurrent = () => {
+    const stored = localStorage.getItem('moonSavedLocations');
+    const current = stored ? JSON.parse(stored) : [];
+    let updated;
+    if (current.some(loc => loc.name === placeName)) {
+      updated = current.filter(loc => loc.name !== placeName);
+    } else {
+      updated = [...current, { name: placeName, lat: markerPos[0], lon: markerPos[1] }];
+    }
+    localStorage.setItem('moonSavedLocations', JSON.stringify(updated));
+    window.dispatchEvent(new Event('moonSavedLocationsChanged'));
+  };
+
+  const handleSelectSaved = (loc) => {
+    skipReverseGeocodeRef.current = true;
+    setMarkerPos([loc.lat, loc.lon]);
+    setPlaceName(loc.name);
+    setSearchValue(loc.name);
+    if (mapRef.current) {
+      mapRef.current.setCenterAnimated(new mapkit.Coordinate(loc.lat, loc.lon));
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md p-0 overflow-hidden gap-0">
@@ -255,18 +282,56 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
           </div>
         </div>
 
-        {/* Confirm button */}
+        {/* Confirm button + Save */}
         <div className="px-4 py-3 flex items-center justify-between gap-2 border-t border-border">
           <p className="text-xs text-muted-foreground truncate flex-1">
             {placeName || 'Drag the map to pick a spot'}
           </p>
-          <button
-            onClick={handleConfirm}
-            className="px-4 py-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-1.5 transition-colors shrink-0"
-          >
-            <Check className="w-4 h-4" /> Use
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={toggleSaveCurrent}
+              disabled={!placeName}
+              className={`px-3 py-2 rounded-lg text-sm font-medium border transition-colors flex items-center gap-1.5 ${
+                isCurrentSaved()
+                  ? 'text-amber-500 border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/20'
+                  : 'text-muted-foreground border-border hover:text-amber-500 hover:border-amber-500/40'
+              } disabled:opacity-40 disabled:pointer-events-none`}
+              title={isCurrentSaved() ? 'Remove from saved' : 'Save this location'}
+            >
+              <Star className="w-4 h-4" fill={isCurrentSaved() ? 'currentColor' : 'none'} />
+              {isCurrentSaved() ? 'Saved' : 'Save'}
+            </button>
+            <button
+              onClick={handleConfirm}
+              className="px-4 py-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-1.5 transition-colors"
+            >
+              <Check className="w-4 h-4" /> Use
+            </button>
+          </div>
         </div>
+
+        {/* Saved locations list */}
+        {savedLocations.length > 0 && (
+          <div className="px-4 pb-3 border-t border-border pt-2">
+            <p className="text-[10px] font-bold text-muted-foreground tracking-wide mb-1.5">SAVED LOCATIONS</p>
+            <div className="flex gap-1.5 flex-wrap">
+              {savedLocations.map((loc) => (
+                <button
+                  key={loc.name}
+                  onClick={() => handleSelectSaved(loc)}
+                  className={`text-xs px-2.5 py-1 rounded-full border transition-colors flex items-center gap-1 ${
+                    loc.name === placeName
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'bg-muted/50 text-muted-foreground border-border hover:bg-accent/20 hover:text-primary'
+                  }`}
+                >
+                  <Star className="w-2.5 h-2.5" fill="currentColor" />
+                  {loc.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
