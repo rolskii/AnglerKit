@@ -231,9 +231,12 @@ export default function Home() {
         }
       } catch {}
 
+      let totalDrawings = routes.reduce((sum, r) => sum + (r.drawings?.length || 0), 0);
+      let totalMeasurements = routes.reduce((sum, r) => sum + (r.measurements?.length || 0), 0);
+
       setDescriptions(prev => ({
         ...prev,
-        map: `${routeCount} ${routeCount === 1 ? "route" : "routes"} · ${totalPins} ${totalPins === 1 ? "pin" : "pins"}`
+        map: `${routeCount} ${routeCount === 1 ? "route" : "routes"} · ${totalPins} ${totalPins === 1 ? "pin" : "pins"} · ${totalDrawings} ${totalDrawings === 1 ? "drawing" : "drawings"} · ${totalMeasurements} ${totalMeasurements === 1 ? "measurement" : "measurements"}`
       }));
     } catch (e) {}
   };
