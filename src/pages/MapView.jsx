@@ -546,6 +546,42 @@ export default function MapView() {
             </div>
           );
         })}
+        {/* Preview pin while dialog is open — shows immediately at tapped location */}
+        {mapReady && mapRef.current && pendingPin && pinDialogOpen && editingPinIdx === null && (() => {
+          const coord = new mapkit.Coordinate(pendingPin.lat, pendingPin.lon);
+          const point = mapRef.current.convertCoordinateToPointOnPage(coord);
+          if (!point) return null;
+          const containerRect = mapContainerRef.current?.getBoundingClientRect();
+          if (!containerRect) return null;
+          const left = point.x - containerRect.left;
+          const top = point.y - containerRect.top;
+          if (left < -30 || left > containerRect.width + 30 || top < -30 || top > containerRect.height + 30) return null;
+          return (
+            <div
+              className="absolute z-[460] pointer-events-none"
+              style={{ left, top, transform: 'translate(-50%, -100%)' }}
+            >
+              <div style={{
+                width: '32px', height: '32px',
+                background: '#ef4444', border: '3px solid #ffffff',
+                borderRadius: '50% 50% 50% 0',
+                transform: 'rotate(-45deg)',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                animation: 'pulse-slow 1.5s ease-in-out infinite',
+              }}>
+                <div style={{ width: '10px', height: '10px', background: '#ffffff', borderRadius: '50%', transform: 'rotate(45deg)' }} />
+              </div>
+              <div style={{
+                position: 'absolute', top: '36px', left: '50%', transform: 'translateX(-50%)',
+                whiteSpace: 'nowrap', fontSize: '11px', fontWeight: 600,
+                background: 'rgba(239,68,68,0.9)', color: 'white', padding: '2px 8px', borderRadius: '4px',
+              }}>
+                New Pin
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Stats bar */}
@@ -586,7 +622,13 @@ export default function MapView() {
       {/* Dialogs */}
       <PinDialog
         open={pinDialogOpen}
-        onOpenChange={setPinDialogOpen}
+        onOpenChange={(open) => {
+          setPinDialogOpen(open);
+          if (!open) {
+            setPendingPin(null);
+            setEditingPinIdx(null);
+          }
+        }}
         initialLabel={editingPinIdx !== null ? pins[editingPinIdx]?.label : ''}
         onSave={handlePinSave}
       />
