@@ -369,7 +369,7 @@ export default function MapView() {
         const center = new mapkit.Coordinate(43.6532, -79.3832);
         const map = new mapkit.Map(mapContainerRef.current, {
           center,
-          cameraDistance: 5000,
+          cameraDistance: 800,
           mapType: mapkit.Map.MapTypes.Hybrid,
         });
         mapRef.current = map;
@@ -416,6 +416,7 @@ export default function MapView() {
         const c = [pos.coords.latitude, pos.coords.longitude];
         setGpsPos(c);
         const coord = new mapkit.Coordinate(c[0], c[1]);
+        mapRef.current.setCameraDistanceAnimated(800);
         mapRef.current.setCenterAnimated(coord);
       },
       (err) => console.warn('Geolocation failed:', err.message),
