@@ -273,11 +273,11 @@ export default function MapView() {
     setPinMode((v) => !v);
   }, []);
 
-  const handlePinSave = useCallback((label) => {
+  const handlePinSave = useCallback((label, marker) => {
     if (editingPinIdx !== null) {
-      setPins((prev) => prev.map((p, i) => (i === editingPinIdx ? { ...p, label } : p)));
+      setPins((prev) => prev.map((p, i) => (i === editingPinIdx ? { ...p, label, marker: marker || 'pin' } : p)));
     } else if (pendingPin) {
-      setPins((prev) => [...prev, { ...pendingPin, label }]);
+      setPins((prev) => [...prev, { ...pendingPin, label, marker: marker || 'pin' }]);
     }
     setPendingPin(null);
     setEditingPinIdx(null);
@@ -513,18 +513,32 @@ export default function MapView() {
               className="absolute z-[450] cursor-pointer"
               style={{ left, top, transform: 'translate(-50%, -100%)' }}
             >
+              {pin.marker === 'fish' ? (
+                <div style={{
+                  width: '36px', height: '36px',
+                  background: '#10b981', border: '3px solid #ffffff',
+                  borderRadius: '50%',
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <svg viewBox="0 0 24 24" fill="white" style={{ width: '20px', height: '20px' }}>
+                    <path d="M 2 12 Q 6 4 14 8 Q 20 10 22 12 Q 20 14 14 16 Q 6 20 2 12 Z M 14 8 L 18 4 L 17 10 M 14 16 L 18 20 L 17 14" stroke="white" strokeWidth="0.5" />
+                  </svg>
+                </div>
+              ) : (
+                <div style={{
+                  width: '28px', height: '28px',
+                  background: '#f59e0b', border: '3px solid #ffffff',
+                  borderRadius: '50% 50% 50% 0',
+                  transform: 'rotate(-45deg)',
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <div style={{ width: '8px', height: '8px', background: '#ffffff', borderRadius: '50%', transform: 'rotate(45deg)' }} />
+                </div>
+              )}
               <div style={{
-                width: '28px', height: '28px',
-                background: '#f59e0b', border: '3px solid #ffffff',
-                borderRadius: '50% 50% 50% 0',
-                transform: 'rotate(-45deg)',
-                boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <div style={{ width: '8px', height: '8px', background: '#ffffff', borderRadius: '50%', transform: 'rotate(45deg)' }} />
-              </div>
-              <div style={{
-                position: 'absolute', top: '32px', left: '50%', transform: 'translateX(-50%)',
+                position: 'absolute', top: '40px', left: '50%', transform: 'translateX(-50%)',
                 whiteSpace: 'nowrap', fontSize: '11px', fontWeight: 600,
                 background: 'rgba(0,0,0,0.7)', color: 'white', padding: '2px 6px', borderRadius: '4px',
                 pointerEvents: 'none',
@@ -618,6 +632,7 @@ export default function MapView() {
           }
         }}
         initialLabel={editingPinIdx !== null ? pins[editingPinIdx]?.label : ''}
+        initialMarker={editingPinIdx !== null ? pins[editingPinIdx]?.marker : 'pin'}
         isEditing={editingPinIdx !== null}
         onSave={handlePinSave}
         onDelete={handlePinDelete}

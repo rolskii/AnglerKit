@@ -43,6 +43,15 @@
           },
           "label": {
             "type": "string"
+          },
+          "marker": {
+            "type": "string",
+            "enum": [
+              "pin",
+              "fish"
+            ],
+            "default": "pin",
+            "description": "Marker type for this pin"
           }
         }
       },
