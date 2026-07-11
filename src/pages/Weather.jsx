@@ -340,7 +340,6 @@ export default function Weather() {
                   <p className="text-6xl font-bold text-primary leading-none">{formatTemp(current.temperature_2m, tempUnit)}°</p>
                   <WeatherGlyph code={current.weather_code} isNight={isNight()} darkOutline className="w-20 h-24 shrink-0" />
                 </div>
-                <p className="text-sm font-medium text-muted-foreground mt-1">{current.condition || getWeatherDescription(current.weather_code)}</p>
               </div>
 
               {/* EC Text Summaries */}
