@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { ChevronRight, Camera, Moon as MoonIcon, Cloud, Bell, MapPin, ChevronDown } from "lucide-react";
+import { ChevronRight, Camera, Moon as MoonIcon, Cloud, Bell, MapPin, ChevronDown, Map as MapIcon } from "lucide-react";
 import WeatherGlyph from "@/components/weather/WeatherGlyph";
 import { ReelIcon as ReelDiscIcon } from "@/components/GearIcons";
 import FishIcon from "@/components/FishIcon";
@@ -83,6 +83,7 @@ const items = [
   { to: "/catches", title: "Fish Log", icon: Camera, tint: "blue", key: "catch" },
   { to: "/moon", title: "Moon Phase", icon: MoonIcon, tint: "purple", key: "moon" },
   { to: "/weather", title: "Weather", icon: Cloud, tint: "teal", key: "weather" },
+  { to: "/map", title: "Map", icon: MapIcon, tint: "blue", key: "map" },
 ];
 
 const tintClasses = {
