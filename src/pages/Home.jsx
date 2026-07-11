@@ -281,7 +281,7 @@ export default function Home() {
             </div>
             <div className="flex items-start justify-end pr-2 -mt-3">
               {weatherInfo && (
-                <WeatherGlyph code={weatherInfo.code} isNight={weatherInfo.isNight} className="w-16 h-20" />
+                <WeatherGlyph code={weatherInfo.code} isNight={weatherInfo.isNight} animated className="w-16 h-20" />
               )}
             </div>
           </div>
