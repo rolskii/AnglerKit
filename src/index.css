@@ -164,4 +164,98 @@
     0%, 100% { opacity: 1; }
     50% { opacity: 0.85; }
   }
+
+  .wx-anim {
+    transform-box: fill-box;
+  }
+
+  .wx-anim-rays {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: weather-ray-rotate 20s linear infinite;
+  }
+
+  .wx-anim-sun {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: weather-sun-glow 3s ease-in-out infinite;
+  }
+
+  .wx-anim-moon {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: weather-sun-glow 4s ease-in-out infinite;
+  }
+
+  .wx-anim-cloud {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: weather-cloud-drift 4s ease-in-out infinite;
+  }
+
+  .wx-anim-rain-1 {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: weather-rain-fall 1.2s ease-in infinite;
+  }
+
+  .wx-anim-rain-2 {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: weather-rain-fall 1.2s ease-in infinite;
+    animation-delay: 0.4s;
+  }
+
+  .wx-anim-rain-3 {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: weather-rain-fall 1.2s ease-in infinite;
+    animation-delay: 0.8s;
+  }
+
+  .wx-anim-snow-1 {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: weather-snow-fall 1.8s ease-in-out infinite;
+  }
+
+  .wx-anim-snow-2 {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: weather-snow-fall 1.8s ease-in-out infinite;
+    animation-delay: 0.5s;
+  }
+
+  .wx-anim-snow-3 {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: weather-snow-fall 1.8s ease-in-out infinite;
+    animation-delay: 1s;
+  }
+
+  .wx-anim-lightning {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: weather-lightning-flash 3s ease-in-out infinite;
+  }
+
+  .wx-anim-fog-1 {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: weather-fog-shift 3s ease-in-out infinite;
+  }
+
+  .wx-anim-fog-2 {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: weather-fog-shift 3s ease-in-out infinite;
+    animation-delay: 0.5s;
+  }
+
+  .wx-anim-fog-3 {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: weather-fog-shift 3s ease-in-out infinite;
+    animation-delay: 1s;
+  }
 }
