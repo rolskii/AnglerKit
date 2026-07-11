@@ -94,6 +94,34 @@
       "description": "Freehand drawing strokes with color and optional label/description",
       "default": []
     },
+    "measurements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "points": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "lat": {
+                  "type": "number"
+                },
+                "lon": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "distance_km": {
+            "type": "number",
+            "description": "Total distance of this measurement in kilometers"
+          }
+        }
+      },
+      "description": "Saved distance measurements",
+      "default": []
+    },
     "distance_km": {
       "type": "number",
       "description": "Total distance travelled in kilometers",

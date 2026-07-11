@@ -70,7 +70,7 @@ export default function MapControls({
           onClick={onToggleMeasure}
           className={`${ctrlBase} ${ctrlSize} border ${
             measureMode
-              ? 'bg-blue-500 text-white border-blue-500'
+              ? 'bg-yellow-500 text-white border-yellow-500'
               : 'bg-background/90 text-foreground border-border'
           }`}
           title="Measure distance"
