@@ -107,6 +107,42 @@ export default function MapView() {
 
   useEffect(() => { pinModeRef.current = pinMode; }, [pinMode]);
 
+  // Native pointer-based tap detection on the map container (replaces MapKit single-tap)
+  useEffect(() => {
+    const el = mapContainerRef.current;
+    if (!el || !mapReady || !mapRef.current) return;
+
+    let downX = 0, downY = 0, isDown = false;
+
+    const onPointerDown = (e) => {
+      downX = e.clientX;
+      downY = e.clientY;
+      isDown = true;
+    };
+
+    const onPointerUp = (e) => {
+      if (!isDown) return;
+      isDown = false;
+      const dx = e.clientX - downX;
+      const dy = e.clientY - downY;
+      if (Math.sqrt(dx * dx + dy * dy) > 10) return; // ignore drags
+      if (!pinModeRef.current) return;
+      const map = mapRef.current;
+      if (!map) return;
+      const coord = map.convertPointOnPageToCoordinate(new DOMPoint(e.pageX, e.pageY));
+      if (coord) {
+        handleMapClickRef.current({ lat: coord.latitude, lon: coord.longitude });
+      }
+    };
+
+    el.addEventListener('pointerdown', onPointerDown);
+    el.addEventListener('pointerup', onPointerUp);
+    return () => {
+      el.removeEventListener('pointerdown', onPointerDown);
+      el.removeEventListener('pointerup', onPointerUp);
+    };
+  }, [mapReady]);
+
   const handleMapClick = useCallback((latlng) => {
     setPendingPin({ lat: latlng.lat, lon: latlng.lon });
     setEditingPinIdx(null);
@@ -345,18 +381,6 @@ export default function MapView() {
           mapType: mapkit.Map.MapTypes.Hybrid,
         });
         mapRef.current = map;
-
-        map.addEventListener('single-tap', (event) => {
-          if (pinModeRef.current && event.pointOnPage) {
-            const coord = map.convertPointOnPageToCoordinate(event.pointOnPage);
-            if (coord) {
-              handleMapClickRef.current({
-                lat: coord.latitude,
-                lon: coord.longitude,
-              });
-            }
-          }
-        });
 
         setMapReady(true);
       } catch (e) {
