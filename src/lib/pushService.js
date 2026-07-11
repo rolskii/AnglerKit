@@ -31,13 +31,21 @@ export async function ensurePushSubscription() {
 
   // Request permission if not yet granted
   if (Notification.permission === 'default') {
-    const permission = await Notification.requestPermission();
-    if (permission !== 'granted') {
-      return { ok: false, error: 'Permission was not granted. The browser may have silently blocked the prompt — try resetting site permissions in your browser settings.' };
+    let result;
+    try {
+      result = await Notification.requestPermission();
+    } catch (e) {
+      return { ok: false, error: `Browser rejected the permission request: ${e.message}` };
+    }
+    if (result === 'denied') {
+      return { ok: false, error: 'Notifications were blocked (either by you or the browser). To fix: click the lock/settings icon in your browser address bar, find Notifications, and set it to "Allow" or "Ask", then reload and try again.', permission: 'denied' };
+    }
+    if (result === 'default') {
+      return { ok: false, error: 'The permission prompt was dismissed without a choice. Click "Enable Notifications" again, and this time click "Allow" on the popup.', permission: 'default' };
     }
   }
   if (Notification.permission !== 'granted') {
-    return { ok: false, error: 'Notification permission was previously denied. Reset it in your browser settings: Site Settings → Notifications → Allow.' };
+    return { ok: false, error: `Notification permission is "${Notification.permission}". Reset it in your browser settings: click the lock icon in the address bar → Site Settings → Notifications → Allow.`, permission: Notification.permission };
   }
 
   try {

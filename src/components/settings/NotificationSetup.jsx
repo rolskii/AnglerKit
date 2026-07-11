@@ -55,10 +55,13 @@ export default function NotificationSetup() {
         description: 'Alarms will fire even when the app is closed.',
       });
     } else {
+      // Update local state to reflect what the browser actually returned
+      if (result.permission) setPermission(result.permission);
       toast({
         variant: 'destructive',
         title: 'Could not enable notifications',
         description: result.error || 'Unknown error.',
+        duration: 8000,
       });
     }
   };
