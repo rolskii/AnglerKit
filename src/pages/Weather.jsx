@@ -427,7 +427,7 @@ export default function Weather() {
                 </div>
                 <div className="bg-secondary p-2 rounded-lg flex flex-col items-center gap-1 overflow-hidden">
                   <Droplets className="w-8 h-10 text-primary" />
-                  <p className="text-xs font-semibold leading-tight">{current.humidex != null ? formatTemp(current.humidex, tempUnit) : '—'}</p>
+                  <p className="text-xs font-semibold leading-tight">{current.humidex != null ? `${formatTemp(current.humidex, tempUnit)}°` : '—'}</p>
                   <span className="text-[10px] text-muted-foreground leading-tight">Humidex</span>
                 </div>
                 <div className="bg-secondary p-2 rounded-lg flex flex-col items-center gap-1 overflow-hidden">
