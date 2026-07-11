@@ -78,9 +78,15 @@ Deno.serve(async (req) => {
 
     const accessToken = await getMapsAccessToken();
 
-    const endpoint = mode === 'geocode'
-      ? `${MAPS_BASE}/geocode?q=${encodeURIComponent(query)}&limit=1`
-      : `${MAPS_BASE}/search?q=${encodeURIComponent(query)}&limit=${body.limit || 5}`;
+    let endpoint;
+    if (mode === 'geocode') {
+      endpoint = `${MAPS_BASE}/geocode?q=${encodeURIComponent(query)}&limit=1`;
+    } else {
+      endpoint = `${MAPS_BASE}/search?q=${encodeURIComponent(query)}&limit=${body.limit || 5}`;
+      if (body.searchLocation) {
+        endpoint += `&searchLocation=${encodeURIComponent(body.searchLocation)}`;
+      }
+    }
 
     const response = await fetch(endpoint, {
       headers: { Authorization: `Bearer ${accessToken}` },

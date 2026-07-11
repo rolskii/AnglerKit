@@ -2,7 +2,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Search, MapPin, Check, Star } from 'lucide-react';
-import { searchLocations } from '@/lib/geocode';
 import { base44 } from '@/api/base44Client';
 
 // Reverse geocode using BigDataCloud free API
@@ -68,6 +67,8 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
   const debounceRef = useRef(null);
   const skipReverseGeocodeRef = useRef(false);
   const savedAnnotationsRef = useRef([]);
+  const autoSearchRef = useRef(null);
+  const searchRef = useRef(null);
 
   useEffect(() => {
     const syncSaved = () => {
@@ -117,6 +118,10 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
 
         mapRef.current = map;
 
+        // Create MapKit JS search instances for location-biased autocomplete
+        autoSearchRef.current = new mapkit.AutocompleteSearch({ region: map.region });
+        searchRef.current = new mapkit.Search({ region: map.region });
+
         // Ensure placeName is set (in case region-change-end doesn't fire on init)
         if (!placeName) {
           const initName = await reverseGeocode(markerPos[0], markerPos[1]);
@@ -157,6 +162,8 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
           if (cancelled) return;
           const c = map.center;
           setMarkerPos([c.latitude, c.longitude]);
+          if (autoSearchRef.current) autoSearchRef.current.region = map.region;
+          if (searchRef.current) searchRef.current.region = map.region;
           if (skipReverseGeocodeRef.current) {
             skipReverseGeocodeRef.current = false;
             return;
@@ -198,26 +205,40 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
       setShowSuggestions(false);
       return;
     }
-    debounceRef.current = setTimeout(async () => {
-      try {
-        const results = await searchLocations(value, 5);
+    debounceRef.current = setTimeout(() => {
+      if (!autoSearchRef.current) { setSuggestions([]); return; }
+      autoSearchRef.current.search(value, (err, data) => {
+        if (err || !data || !data.results) { setSuggestions([]); return; }
+        const results = data.results.map(r => {
+          const title = r.displayTitle || r.title || '';
+          const subtitle = r.displaySubtitle || r.subtitle || '';
+          return {
+            name: subtitle ? `${title}, ${subtitle}` : title,
+            title,
+            subtitle,
+          };
+        }).filter(r => r.name);
         setSuggestions(results);
         setShowSuggestions(true);
-      } catch (e) {
-        setSuggestions([]);
-      }
+      });
     }, 300);
   };
 
   const selectSuggestion = (s) => {
-    skipReverseGeocodeRef.current = true;
-    setMarkerPos([s.lat, s.lon]);
-    setPlaceName(s.name);
-    setSearchValue(s.name);
     setShowSuggestions(false);
-    if (mapRef.current) {
-      mapRef.current.setCenterAnimated(new mapkit.Coordinate(s.lat, s.lon));
-    }
+    setSearchValue(s.name);
+    if (!searchRef.current) return;
+    searchRef.current.search(s.name, (err, data) => {
+      if (err || !data || !data.places || !data.places[0]) return;
+      const place = data.places[0];
+      if (!place.coordinate) return;
+      skipReverseGeocodeRef.current = true;
+      setMarkerPos([place.coordinate.latitude, place.coordinate.longitude]);
+      setPlaceName(s.name);
+      if (mapRef.current) {
+        mapRef.current.setCenterAnimated(place.coordinate);
+      }
+    });
   };
 
   const handleConfirm = () => {
