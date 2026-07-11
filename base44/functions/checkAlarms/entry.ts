@@ -18,7 +18,7 @@ Deno.serve(async (req) => {
     );
 
     const now = new Date();
-    const unfiredAlarms = await base44.asServiceRole.entities.FishingAlarm.filter({ fired: false });
+    const unfiredAlarms = await base44.asServiceRole.entities.FishingAlarm.filter({ fired: false, enabled: true });
     const dueAlarms = unfiredAlarms.filter(a => new Date(a.fire_time) <= now);
     let sentCount = 0;
 

@@ -25,30 +25,50 @@ const urlBase64ToUint8Array = (base64String) => {
 };
 
 export async function ensurePushSubscription() {
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    console.warn('Push notifications not supported on this device/browser.');
+    return false;
+  }
 
+  // Request permission if not yet granted
   if (Notification.permission === 'default') {
     const permission = await Notification.requestPermission();
-    if (permission !== 'granted') return;
+    if (permission !== 'granted') {
+      console.warn('Notification permission not granted.');
+      return false;
+    }
   }
-  if (Notification.permission !== 'granted') return;
+  if (Notification.permission !== 'granted') {
+    console.warn('Notification permission denied.');
+    return false;
+  }
 
   try {
+    // Register the service worker and wait for it to be ready
     const registration = await navigator.serviceWorker.register('/sw.js');
+    await navigator.serviceWorker.ready;
+
     let subscription = await registration.pushManager.getSubscription();
     if (!subscription) {
       subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
       });
+      console.info('New push subscription created.');
     }
 
-    await base44.functions.invoke('registerPush', {
+    // Register the subscription with the backend
+    const res = await base44.functions.invoke('registerPush', {
       endpoint: subscription.endpoint,
       p256dh: subscription.keys.p256dh,
       auth: subscription.keys.auth,
     });
-  } catch (e) {}
+    console.info('Push subscription registered:', res.data);
+    return true;
+  } catch (e) {
+    console.error('Push subscription failed:', e);
+    return false;
+  }
 }
 
 export async function syncAlarmToServer(date, time, offset, location) {
@@ -69,7 +89,9 @@ export async function syncAlarmToServer(date, time, offset, location) {
       fired: false,
       enabled: true,
     });
-  } catch (e) {}
+  } catch (e) {
+    console.error('Failed to sync alarm to server:', e);
+  }
 }
 
 export async function removeAlarmFromServer(date, time) {
@@ -78,5 +100,7 @@ export async function removeAlarmFromServer(date, time) {
     for (const m of matching) {
       await base44.entities.FishingAlarm.delete(m.id);
     }
-  } catch (e) {}
+  } catch (e) {
+    console.error('Failed to remove alarm from server:', e);
+  }
 }

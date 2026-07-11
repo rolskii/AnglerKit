@@ -3,9 +3,9 @@ import { ensurePushSubscription } from '@/lib/pushService';
 
 export default function PushNotificationManager() {
   useEffect(() => {
-    if (Notification.permission === 'granted') {
-      ensurePushSubscription();
-    }
+    // Always attempt to ensure a push subscription exists.
+    // ensurePushSubscription() handles permission requests internally.
+    ensurePushSubscription();
   }, []);
 
   return null;
