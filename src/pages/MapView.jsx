@@ -407,9 +407,9 @@ export default function MapView() {
     setDrawDialogOpen(true);
   }, []);
 
-  const handleDrawingSave = useCallback((label, description) => {
+  const handleDrawingSave = useCallback((label, description, newColor) => {
     if (editingDrawingIdx !== null) {
-      setDrawings((prev) => prev.map((d, i) => (i === editingDrawingIdx ? { ...d, label, description } : d)));
+      setDrawings((prev) => prev.map((d, i) => (i === editingDrawingIdx ? { ...d, label, description, color: newColor } : d)));
     }
     setEditingDrawingIdx(null);
   }, [editingDrawingIdx]);
