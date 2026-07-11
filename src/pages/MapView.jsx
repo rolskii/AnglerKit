@@ -4,8 +4,9 @@ import MapControls from '@/components/map/MapControls';
 import RouteStatsBar from '@/components/map/RouteStatsBar';
 import PinDialog from '@/components/map/PinDialog';
 import SaveRouteDialog from '@/components/map/SaveRouteDialog';
+import RouteInfoDialog from '@/components/map/RouteInfoDialog';
 import SavedRoutesDrawer from '@/components/map/SavedRoutesDrawer';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Route } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import BottomTabBar from '@/components/BottomTabBar';
 import MapSearchBar from '@/components/map/MapSearchBar';
@@ -94,6 +95,9 @@ export default function MapView() {
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [routesOpen, setRoutesOpen] = useState(false);
   const [savedRoutes, setSavedRoutes] = useState([]);
+  const [showAllRoutes, setShowAllRoutes] = useState(false);
+  const [selectedRoute, setSelectedRoute] = useState(null);
+  const [routeInfoOpen, setRouteInfoOpen] = useState(false);
   const [mapReady, setMapReady] = useState(false);
   const [mapVersion, setMapVersion] = useState(0);
 
@@ -114,6 +118,7 @@ export default function MapView() {
   const pinAnnotationsRef = useRef([]);
   const pinModeRef = useRef(false);
   const handleMapClickRef = useRef(() => {});
+  const allRoutesOverlaysRef = useRef([]);
 
   useEffect(() => { pinModeRef.current = pinMode; }, [pinMode]);
 
@@ -385,6 +390,22 @@ export default function MapView() {
     setSavedRoutes((prev) => prev.filter((r) => r.id !== id));
   }, []);
 
+  const handleSaveRouteName = useCallback(async (name) => {
+    if (!selectedRoute) return;
+    try {
+      await base44.entities.MapCourse.update(selectedRoute.id, { name });
+      await loadRoutes();
+    } catch (e) {
+      console.error('Failed to update route name:', e);
+      alert('Failed to save name.');
+    }
+  }, [selectedRoute, loadRoutes]);
+
+  const handleLoadRouteFromInfo = useCallback((route) => {
+    handleLoadRoute(route);
+    setShowAllRoutes(false);
+  }, [handleLoadRoute]);
+
   // Map type toggle (Hybrid → Satellite → Standard → Hybrid)
   const handleToggleLayer = useCallback(() => {
     if (!mapRef.current) return;
@@ -491,6 +512,36 @@ export default function MapView() {
     }
   }, [trackPoints, mapReady]);
 
+  // Render all saved routes as polyline overlays
+  useEffect(() => {
+    if (!mapReady || !mapRef.current) return;
+    const map = mapRef.current;
+    const ROUTE_COLORS = ['#2563eb', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4', '#ec4899', '#84cc16'];
+
+    if (showAllRoutes) {
+      savedRoutes.forEach((route, idx) => {
+        if (!route.track || route.track.length < 2) return;
+        const coords = route.track.map((p) => new mapkit.Coordinate(p.lat, p.lon));
+        const style = new mapkit.Style({
+          strokeColor: ROUTE_COLORS[idx % ROUTE_COLORS.length],
+          lineWidth: 4,
+          lineJoin: 'round',
+          lineCap: 'round',
+        });
+        const overlay = new mapkit.PolylineOverlay(coords, { style });
+        map.addOverlay(overlay);
+        allRoutesOverlaysRef.current.push(overlay);
+      });
+    }
+
+    return () => {
+      allRoutesOverlaysRef.current.forEach((o) => {
+        try { map.removeOverlay(o); } catch (e) {}
+      });
+      allRoutesOverlaysRef.current = [];
+    };
+  }, [showAllRoutes, savedRoutes, mapReady]);
+
   // Update GPS annotation
   useEffect(() => {
     if (!mapReady || !mapRef.current) return;
@@ -590,6 +641,48 @@ export default function MapView() {
             </div>
           );
         })}
+        {/* All routes centroid markers — clickable to view stats & rename */}
+        {mapReady && mapRef.current && showAllRoutes && savedRoutes.map((route, idx) => {
+          if (!route.track || route.track.length === 0) return null;
+          const lat = route.track.reduce((sum, p) => sum + p.lat, 0) / route.track.length;
+          const lon = route.track.reduce((sum, p) => sum + p.lon, 0) / route.track.length;
+          const coord = new mapkit.Coordinate(lat, lon);
+          const point = mapRef.current.convertCoordinateToPointOnPage(coord);
+          if (!point) return null;
+          const containerRect = mapContainerRef.current?.getBoundingClientRect();
+          if (!containerRect) return null;
+          const left = point.x - containerRect.left;
+          const top = point.y - containerRect.top;
+          if (left < -30 || left > containerRect.width + 30 || top < -30 || top > containerRect.height + 30) return null;
+          const colors = ['#2563eb', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4', '#ec4899', '#84cc16'];
+          const color = colors[idx % colors.length];
+          return (
+            <div
+              key={route.id}
+              onClick={() => { setSelectedRoute(route); setRouteInfoOpen(true); }}
+              className="absolute z-[455] cursor-pointer"
+              style={{ left, top, transform: 'translate(-50%, -50%)' }}
+            >
+              <div style={{
+                width: '32px', height: '32px',
+                background: color, border: '3px solid #ffffff',
+                borderRadius: '50%',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Route className="w-4 h-4 text-white" />
+              </div>
+              <div style={{
+                position: 'absolute', top: '36px', left: '50%', transform: 'translateX(-50%)',
+                whiteSpace: 'nowrap', fontSize: '11px', fontWeight: 600,
+                background: 'rgba(0,0,0,0.7)', color: 'white', padding: '2px 6px', borderRadius: '4px',
+                pointerEvents: 'none',
+              }}>
+                {route.name}
+              </div>
+            </div>
+          );
+        })}
         {/* Preview pin while dialog is open — shows immediately at tapped location */}
         {mapReady && mapRef.current && pendingPin && pinDialogOpen && editingPinIdx === null && (() => {
           const coord = new mapkit.Coordinate(pendingPin.lat, pendingPin.lon);
@@ -661,6 +754,8 @@ export default function MapView() {
         onCenter={centerOnGPS}
         onToggleLayer={handleToggleLayer}
         onOpenRoutes={() => { loadRoutes(); setRoutesOpen(true); }}
+        showAllRoutes={showAllRoutes}
+        onToggleAllRoutes={() => { loadRoutes(); setShowAllRoutes((v) => !v); }}
       />
 
       {/* Dialogs */}
@@ -683,6 +778,14 @@ export default function MapView() {
         open={saveDialogOpen}
         onOpenChange={setSaveDialogOpen}
         onSave={handleSaveRoute}
+      />
+      <RouteInfoDialog
+        open={routeInfoOpen}
+        onOpenChange={setRouteInfoOpen}
+        route={selectedRoute}
+        onSaveName={handleSaveRouteName}
+        onLoad={handleLoadRouteFromInfo}
+        onDelete={handleRouteDeleted}
       />
       <SavedRoutesDrawer
         open={routesOpen}
