@@ -279,13 +279,13 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md p-0 overflow-hidden gap-0">
+      <DialogContent className="max-w-md p-0 overflow-hidden gap-0 !top-4 sm:!top-6 !translate-y-0">
         <DialogHeader className="px-4 pt-4 pb-2">
           <DialogTitle>Choose Location</DialogTitle>
         </DialogHeader>
 
         {/* Map */}
-        <div className="relative h-[300px] w-full bg-muted">
+        <div className="relative h-[50vh] min-h-[280px] w-full bg-muted">
           <div ref={mapContainerRef} className="h-full w-full" />
           {mapLoading && (
             <div className="absolute inset-0 flex items-center justify-center">
