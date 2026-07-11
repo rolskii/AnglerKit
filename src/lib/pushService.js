@@ -64,14 +64,30 @@ export async function ensurePushSubscription() {
 
     if (!subscription || !subscription.keys || !subscription.keys.p256dh || !subscription.keys.auth) {
       // Stale subscription without encryption keys — do a full reset:
-      // unsubscribe, unregister the service worker, re-register, re-subscribe
+      // unsubscribe, unregister the service worker, re-register, wait for
+      // activation, then re-subscribe
       console.warn('Subscription missing keys, doing full SW reset…');
       if (subscription) { try { await subscription.unsubscribe(); } catch (_) {} }
       const registrations = await navigator.serviceWorker.getRegistrations();
       for (const reg of registrations) { try { await reg.unregister(); } catch (_) {} }
       await new Promise(r => setTimeout(r, 500));
       const freshReg = await navigator.serviceWorker.register('/sw.js');
-      await navigator.serviceWorker.ready;
+      // Wait for the new SW to be fully activated before subscribing
+      if (freshReg.active) {
+        // already active — good
+      } else if (freshReg.installing || freshReg.waiting) {
+        await new Promise((resolve) => {
+          const sw = freshReg.installing || freshReg.waiting;
+          const checkState = () => {
+            if (sw.state === 'activated') resolve();
+            else if (sw.state === 'redundant') resolve();
+          };
+          sw.addEventListener('statechange', checkState);
+          checkState();
+        });
+      } else {
+        await navigator.serviceWorker.ready;
+      }
       subscription = await freshReg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
