@@ -91,19 +91,17 @@ export default function MapControls({
         )}
 
         {/* Add pin */}
-        {(isTracking || isPaused || hasTrack) && (
-          <button
-            onClick={onAddPin}
-            className={`${ctrlBase} ${ctrlSize} border ${
-              pinMode
-                ? 'bg-amber-500 text-white border-amber-500'
-                : 'bg-background/90 text-primary border-border'
-            }`}
-            title="Add a point of interest"
-          >
-            <MapPin className="w-5 h-5" />
-          </button>
-        )}
+        <button
+          onClick={onAddPin}
+          className={`${ctrlBase} ${ctrlSize} border ${
+            pinMode
+              ? 'bg-amber-500 text-white border-amber-500'
+              : 'bg-background/90 text-primary border-border'
+          }`}
+          title="Add a point of interest"
+        >
+          <MapPin className="w-5 h-5" />
+        </button>
 
         {/* Save */}
         {hasTrack && !isTracking && !isPaused && (
