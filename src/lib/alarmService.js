@@ -2,6 +2,23 @@ import { getAlarmSoundUrl } from '@/lib/alarmSounds';
 
 let intervalId = null;
 const firedAlarms = new Set();
+let preloadedAudio = null;
+let preloadedUrl = null;
+
+function ensurePreloaded() {
+  const url = getAlarmSoundUrl();
+  if (preloadedUrl !== url || !preloadedAudio) {
+    try {
+      preloadedAudio = new Audio(url);
+      preloadedAudio.preload = 'auto';
+      preloadedAudio.load();
+      preloadedUrl = url;
+    } catch (e) {
+      console.warn('Failed to preload alarm sound:', e);
+    }
+  }
+  return preloadedAudio;
+}
 
 const parseTimeToMinutes = (timeStr) => {
   const match = String(timeStr).match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
@@ -24,14 +41,19 @@ const playAlarm = (time, offset) => {
     } catch (e) {}
   }
 
+  // Play the preloaded alarm sound — must start before any blocking call
   try {
-    const sound = new Audio(getAlarmSoundUrl());
+    const sound = ensurePreloaded();
+    sound.currentTime = 0;
     sound.volume = 1;
-    sound.play().catch(() => {});
-  } catch (e) {}
+    sound.play().catch((e) => console.warn('Alarm sound playback failed:', e));
+  } catch (e) {
+    console.warn('Alarm sound error:', e);
+  }
 
+  // Delay the alert so the audio engine has time to actually start playing
   if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
-    alert(message);
+    setTimeout(() => alert(message), 500);
   }
 };
 
@@ -78,6 +100,7 @@ const tick = () => {
 
 export function initAlarmService() {
   if (intervalId !== null) return;
+  ensurePreloaded();
   intervalId = setInterval(tick, 1000);
   tick();
 }
