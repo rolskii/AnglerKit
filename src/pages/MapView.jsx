@@ -57,6 +57,14 @@ const gpsDotFactory = () => {
   return div;
 };
 
+// Pin marker factory for custom Annotation
+const pinMarkerFactory = () => {
+  const div = document.createElement('div');
+  div.style.cssText = 'width:32px;height:42px;cursor:pointer;';
+  div.innerHTML = `<svg width="32" height="42" viewBox="0 0 32 42" xmlns="http://www.w3.org/2000/svg"><path d="M16 0C7.2 0 0 7.2 0 16c0 12 16 26 16 26s16-14 16-26C32 7.2 24.8 0 16 0z" fill="#f59e0b" stroke="#ffffff" stroke-width="2.5"/><circle cx="16" cy="16" r="6" fill="#ffffff"/></svg>`;
+  return div;
+};
+
 export default function MapView() {
   const [trackPoints, setTrackPoints] = useState([]);
   const [pins, setPins] = useState([]);
@@ -411,11 +419,11 @@ export default function MapView() {
 
     pins.forEach((pin, idx) => {
       const coord = new mapkit.Coordinate(pin.lat, pin.lon);
-      const annotation = new mapkit.MarkerAnnotation(coord, {
+      const annotation = new mapkit.Annotation(coord, pinMarkerFactory, {
         title: pin.label,
-        color: '#f59e0b',
-        glyphColor: '#ffffff',
+        displayPriority: 1000,
         animates: false,
+        calloutEnabled: true,
       });
       annotation.addEventListener('select', () => {
         handlePinClick(idx);
