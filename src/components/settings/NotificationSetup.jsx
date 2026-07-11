@@ -171,10 +171,20 @@ export default function NotificationSetup() {
       </div>
 
       {permission === 'denied' ? (
-        <p className="text-xs text-muted-foreground">
-          Notification permission was blocked. To receive alarm notifications when the app is closed,
-          reset the permission in your browser settings: Site Settings → Notifications → Allow.
-        </p>
+        <div className="space-y-2">
+          <p className="text-xs text-muted-foreground">
+            Your browser blocked notifications for this site. You need to manually reset this — it can't be done from the app itself.
+          </p>
+          <div className="rounded-lg border border-border bg-muted/50 p-3 space-y-1.5">
+            <p className="text-xs font-semibold text-foreground">Chrome / Edge:</p>
+            <p className="text-xs text-muted-foreground">Click the 🔒 lock icon left of the address bar → Site Settings → Notifications → Allow → Reload page.</p>
+            <p className="text-xs font-semibold text-foreground pt-1">Safari (macOS):</p>
+            <p className="text-xs text-muted-foreground">Safari → Settings → Websites → Notifications → Find this site → Set to Allow.</p>
+            <p className="text-xs font-semibold text-foreground pt-1">Firefox:</p>
+            <p className="text-xs text-muted-foreground">Click the 🔒 icon → Clear permissions → Reload → Click Enable again.</p>
+          </div>
+          <p className="text-xs text-muted-foreground">After resetting, reload this page and tap "Enable Notifications" again.</p>
+        </div>
       ) : permission !== 'granted' ? (
         <p className="text-xs text-muted-foreground">
           Tap the button below and choose "Allow" to receive alarm alerts when the app is closed.
