@@ -289,6 +289,24 @@ export default function MapView() {
           }
           return updated;
         });
+
+        // Auto-recenter if the GPS position has moved off-screen
+        const map = mapRef.current;
+        const container = mapContainerRef.current;
+        if (map && container) {
+          try {
+            const coord = new mapkit.Coordinate(latitude, longitude);
+            const pt = map.convertCoordinateToPointOnPage(coord);
+            if (pt) {
+              const rect = container.getBoundingClientRect();
+              const margin = 60; // pixels of slack before recentering
+              if (pt.x < rect.left + margin || pt.x > rect.right - margin ||
+                  pt.y < rect.top + margin || pt.y > rect.bottom - margin) {
+                map.setCenterAnimated(coord);
+              }
+            }
+          } catch (e) {}
+        }
       },
       (err) => {
         console.error('GPS error:', err);
