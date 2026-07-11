@@ -1,0 +1,71 @@
+{
+  "name": "MapCourse",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Route name"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description of the route"
+    },
+    "track": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "lat": {
+            "type": "number"
+          },
+          "lon": {
+            "type": "number"
+          },
+          "ts": {
+            "type": "number",
+            "description": "Unix timestamp in ms"
+          }
+        }
+      },
+      "description": "GPS track points recorded in real-time",
+      "default": []
+    },
+    "pins": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "lat": {
+            "type": "number"
+          },
+          "lon": {
+            "type": "number"
+          },
+          "label": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Points of interest with labels",
+      "default": []
+    },
+    "distance_km": {
+      "type": "number",
+      "description": "Total distance travelled in kilometers",
+      "default": 0
+    },
+    "duration_sec": {
+      "type": "number",
+      "description": "Total duration of the route in seconds",
+      "default": 0
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the route was recorded"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

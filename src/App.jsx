@@ -16,6 +16,7 @@ import Catches from '@/pages/Catches';
 import CatchDetail from '@/pages/CatchDetail';
 import Moon from '@/pages/Moon';
 import Weather from '@/pages/Weather';
+import MapView from '@/pages/MapView';
 // Add page imports here
 import { initAlarmService } from '@/lib/alarmService';
 import PushNotificationManager from '@/components/PushNotificationManager';
@@ -69,6 +70,7 @@ const AuthenticatedApp = () => {
         <Route path="/catches/:id" element={<CatchDetail />} />
         <Route path="/moon" element={<Moon />} />
         <Route path="/weather" element={<Weather />} />
+        <Route path="/map" element={<MapView />} />
         <Route path="/about" element={<About />} />
         <Route path="/settings" element={<Settings />} />
       </Route>

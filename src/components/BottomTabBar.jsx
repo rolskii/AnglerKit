@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { Home as HomeIcon, Camera, Cloud, Moon as MoonIcon } from "lucide-react";
+import { Home as HomeIcon, Camera, Cloud, Moon as MoonIcon, Map as MapIcon } from "lucide-react";
 import { ReelIcon as ReelDiscIcon } from "@/components/GearIcons";
 
 const tabs = [
@@ -9,6 +9,7 @@ const tabs = [
   { to: "/catches", label: "Fish Log", icon: Camera, matchPrefix: "/catches" },
   { to: "/moon", label: "Moon", icon: MoonIcon, matchExact: true },
   { to: "/weather", label: "Weather", icon: Cloud, matchExact: true },
+  { to: "/map", label: "Map", icon: MapIcon, matchExact: true },
 ];
 
 export default function BottomTabBar() {
