@@ -11,7 +11,7 @@ export default function SavedRoutesDrawer({ open, onOpenChange, routes, onLoad, 
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="max-h-[70vh] flex flex-col">
+      <SheetContent side="bottom" className="max-h-[70vh] flex flex-col z-[5000] [&~*]:z-[5000]" style={{ zIndex: 5000 }}>
         <SheetHeader>
           <SheetTitle>Saved Routes</SheetTitle>
         </SheetHeader>
