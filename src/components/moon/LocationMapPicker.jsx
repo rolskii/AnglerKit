@@ -117,9 +117,21 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
 
         mapRef.current = map;
 
-        // Add saved location markers (star annotations)
-        if (localSavedLocations && localSavedLocations.length > 0) {
-          const annotations = localSavedLocations.map((loc) => {
+        // Ensure placeName is set (in case region-change-end doesn't fire on init)
+        if (!placeName) {
+          const initName = await reverseGeocode(markerPos[0], markerPos[1]);
+          if (!cancelled) {
+            const fallback = initName || `${markerPos[0].toFixed(2)}, ${markerPos[1].toFixed(2)}`;
+            setPlaceName(fallback);
+            setSearchValue(fallback);
+          }
+        }
+
+        // Add saved location markers (star annotations) — read fresh from localStorage
+        const storedLocs = localStorage.getItem('moonSavedLocations');
+        const freshSaved = storedLocs ? JSON.parse(storedLocs) : [];
+        if (freshSaved && freshSaved.length > 0) {
+          const annotations = freshSaved.map((loc) => {
             const coord = new mapkit.Coordinate(loc.lat, loc.lon);
             const annotation = new mapkit.MarkerAnnotation(coord, {
               title: loc.name,
@@ -150,9 +162,10 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
             return;
           }
           const name = await reverseGeocode(c.latitude, c.longitude);
-          if (name && !cancelled) {
-            setPlaceName(name);
-            setSearchValue(name);
+          if (!cancelled) {
+            const finalName = name || `${c.latitude.toFixed(2)}, ${c.longitude.toFixed(2)}`;
+            setPlaceName(finalName);
+            setSearchValue(finalName);
           }
         });
 
@@ -213,15 +226,22 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
   };
 
   const isCurrentSaved = () => {
-    return localSavedLocations.some(loc => loc.name === placeName);
+    return localSavedLocations.some(loc =>
+      loc.name === placeName ||
+      (Math.abs(loc.lat - markerPos[0]) < 0.001 && Math.abs(loc.lon - markerPos[1]) < 0.001)
+    );
   };
 
   const toggleSaveCurrent = () => {
+    if (!placeName) return;
     const stored = localStorage.getItem('moonSavedLocations');
     const current = stored ? JSON.parse(stored) : [];
     let updated;
-    if (current.some(loc => loc.name === placeName)) {
-      updated = current.filter(loc => loc.name !== placeName);
+    const isMatch = (loc) =>
+      loc.name === placeName ||
+      (Math.abs(loc.lat - markerPos[0]) < 0.001 && Math.abs(loc.lon - markerPos[1]) < 0.001);
+    if (current.some(isMatch)) {
+      updated = current.filter(loc => !isMatch(loc));
     } else {
       updated = [...current, { name: placeName, lat: markerPos[0], lon: markerPos[1] }];
     }
