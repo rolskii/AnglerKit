@@ -57,11 +57,20 @@ const gpsDotFactory = () => {
   return div;
 };
 
-// Pin marker factory for custom Annotation
+// Pin marker factory for custom Annotation — CSS-based pin shape
 const pinMarkerFactory = () => {
   const div = document.createElement('div');
-  div.style.cssText = 'width:32px;height:42px;cursor:pointer;';
-  div.innerHTML = `<svg width="32" height="42" viewBox="0 0 32 42" xmlns="http://www.w3.org/2000/svg"><path d="M16 0C7.2 0 0 7.2 0 16c0 12 16 26 16 26s16-14 16-26C32 7.2 24.8 0 16 0z" fill="#f59e0b" stroke="#ffffff" stroke-width="2.5"/><circle cx="16" cy="16" r="6" fill="#ffffff"/></svg>`;
+  div.style.cssText = [
+    'width:28px', 'height:28px', 'cursor:pointer',
+    'background:#f59e0b', 'border:3px solid #ffffff',
+    'border-radius:50% 50% 50% 0',
+    'transform:rotate(-45deg)',
+    'box-shadow:0 2px 6px rgba(0,0,0,0.4)',
+    'display:flex', 'align-items:center', 'justify-content:center',
+  ].join(';');
+  const dot = document.createElement('div');
+  dot.style.cssText = 'width:8px;height:8px;background:#ffffff;border-radius:50%;transform:rotate(45deg)';
+  div.appendChild(dot);
   return div;
 };
 
@@ -423,7 +432,7 @@ export default function MapView() {
         title: pin.label,
         displayPriority: 1000,
         animates: false,
-        calloutEnabled: true,
+        calloutEnabled: false,
       });
       annotation.addEventListener('select', () => {
         handlePinClick(idx);
