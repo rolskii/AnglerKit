@@ -108,6 +108,7 @@ export default function MapView() {
   const [currentStroke, setCurrentStroke] = useState(null);
   const [drawDialogOpen, setDrawDialogOpen] = useState(false);
   const [editingDrawingIdx, setEditingDrawingIdx] = useState(null);
+  const [redrawingIdx, setRedrawingIdx] = useState(null);
   const [measureMode, setMeasureMode] = useState(false);
   const [measurePoints, setMeasurePoints] = useState([]);
   const [mapReady, setMapReady] = useState(false);
@@ -135,9 +136,12 @@ export default function MapView() {
   const handleMeasureClickRef = useRef(() => {});
   const drawingOverlaysRef = useRef([]);
   const measureOverlayRef = useRef(null);
+  const redrawingIdxRef = useRef(null);
 
   useEffect(() => { pinModeRef.current = pinMode; }, [pinMode]);
   useEffect(() => { measureModeRef.current = measureMode; }, [measureMode]);
+  useEffect(() => { redrawingIdxRef.current = redrawingIdx; }, [redrawingIdx]);
+  useEffect(() => { if (!drawMode && redrawingIdx !== null) setRedrawingIdx(null); }, [drawMode, redrawingIdx]);
 
   // Native pointer-based tap detection on the map container (replaces MapKit single-tap)
   useEffect(() => {
@@ -374,7 +378,14 @@ export default function MapView() {
 
   const handleDrawStroke = useCallback((points, done) => {
     if (done) {
-      if (points.length > 1) setDrawings((prev) => [...prev, { color: drawColor, points }]);
+      if (points.length > 1) {
+        if (redrawingIdxRef.current !== null) {
+          setDrawings((prev) => prev.map((d, i) => (i === redrawingIdxRef.current ? { ...d, points } : d)));
+          setRedrawingIdx(null);
+        } else {
+          setDrawings((prev) => [...prev, { color: drawColor, points }]);
+        }
+      }
       setCurrentStroke(null);
     } else {
       setCurrentStroke({ color: drawColor, points });
@@ -420,6 +431,18 @@ export default function MapView() {
     }
     setEditingDrawingIdx(null);
   }, [editingDrawingIdx]);
+
+  const handleRedraw = useCallback(() => {
+    if (editingDrawingIdx === null) return;
+    const drawing = drawings[editingDrawingIdx];
+    setRedrawingIdx(editingDrawingIdx);
+    setDrawColor(drawing?.color || '#ef4444');
+    setDrawDialogOpen(false);
+    setEditingDrawingIdx(null);
+    setDrawMode(true);
+    setPinMode(false);
+    setMeasureMode(false);
+  }, [editingDrawingIdx, drawings]);
 
   // Save route
   const handleSaveRoute = useCallback(async (name, description) => {
@@ -980,6 +1003,12 @@ export default function MapView() {
           Tap the map to add measurement points
         </div>
       )}
+      {/* Redraw hint */}
+      {redrawingIdx !== null && (
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-[500] px-4 py-2 rounded-full bg-purple-500 text-white text-sm font-medium shadow-lg">
+          Redraw to replace this stroke
+        </div>
+      )}
       {/* Draw mode bar */}
       {drawMode && (
         <DrawBar onClear={handleDrawClear} strokeCount={drawings.length} color={drawColor} onColorChange={setDrawColor} />
@@ -1058,6 +1087,7 @@ export default function MapView() {
         color={editingDrawingIdx !== null ? (drawings[editingDrawingIdx]?.color || '#ef4444') : '#ef4444'}
         onSave={handleDrawingSave}
         onDelete={handleDrawingDelete}
+        onRedraw={handleRedraw}
       />
       <SavedRoutesDrawer
         open={routesOpen}

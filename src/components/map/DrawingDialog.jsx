@@ -3,14 +3,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Pencil } from 'lucide-react';
 
 const COLORS = [
   '#ef4444', '#f59e0b', '#22c55e', '#3b82f6',
   '#8b5cf6', '#ffffff', '#000000',
 ];
 
-export default function DrawingDialog({ open, onOpenChange, initialLabel, initialDescription, color, onSave, onDelete }) {
+export default function DrawingDialog({ open, onOpenChange, initialLabel, initialDescription, color, onSave, onDelete, onRedraw }) {
   const [label, setLabel] = useState('');
   const [description, setDescription] = useState('');
   const [selectedColor, setSelectedColor] = useState(color || '#ef4444');
@@ -66,6 +66,9 @@ export default function DrawingDialog({ open, onOpenChange, initialLabel, initia
               />
             ))}
           </div>
+          <Button variant="outline" onClick={onRedraw} className="w-full">
+            <Pencil className="w-4 h-4 mr-1" /> Redraw Path
+          </Button>
         </div>
         <DialogFooter>
           <Button variant="destructive" onClick={handleDelete} className="mr-auto">
