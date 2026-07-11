@@ -54,7 +54,7 @@ export default function MapControls({
         {!isTracking && !isPaused && (
           <button
             onClick={onStart}
-            className={`${ctrlBase} w-16 h-16 bg-primary text-primary-foreground`}
+            className={`${ctrlBase} w-16 h-16 bg-red-600 text-white`}
             title="Start recording"
           >
             <Circle className="w-7 h-7" fill="currentColor" />
