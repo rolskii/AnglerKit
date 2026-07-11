@@ -63,16 +63,34 @@ export async function ensurePushSubscription() {
     }
 
     if (!subscription || !subscription.keys || !subscription.keys.p256dh || !subscription.keys.auth) {
-      const oldSub = subscription;
-      if (oldSub) { try { await oldSub.unsubscribe(); } catch (_) {} }
-      subscription = await registration.pushManager.subscribe({
+      // Stale subscription without encryption keys — do a full reset:
+      // unsubscribe, unregister the service worker, re-register, re-subscribe
+      console.warn('Subscription missing keys, doing full SW reset…');
+      if (subscription) { try { await subscription.unsubscribe(); } catch (_) {} }
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      for (const reg of registrations) { try { await reg.unregister(); } catch (_) {} }
+      await new Promise(r => setTimeout(r, 500));
+      const freshReg = await navigator.serviceWorker.register('/sw.js');
+      await navigator.serviceWorker.ready;
+      subscription = await freshReg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
       });
+      console.info('Subscription after reset:', JSON.stringify({
+        endpoint: subscription?.endpoint,
+        hasKeys: !!(subscription?.keys?.p256dh && subscription?.keys?.auth),
+      }));
     }
 
-    if (!subscription.keys || !subscription.keys.p256dh || !subscription.keys.auth) {
-      return { ok: false, error: 'The browser returned an incomplete push subscription. Try reloading the page, or use a different browser (Chrome or Edge recommended).' };
+    if (!subscription || !subscription.keys || !subscription.keys.p256dh || !subscription.keys.auth) {
+      const ua = navigator.userAgent || '';
+      const isSafari = /^((?!chrome|android).)*safari/i.test(ua);
+      return {
+        ok: false,
+        error: isSafari
+          ? 'Safari did not return a valid push subscription. Try: 1) Quit Safari completely, 2) Reopen and navigate to this page, 3) Click Enable again. If it still fails, try Chrome or Edge.'
+          : 'The browser returned an incomplete push subscription. Try reloading the page, or use a different browser (Chrome or Edge recommended).',
+      };
     }
 
     // Register the subscription with the backend

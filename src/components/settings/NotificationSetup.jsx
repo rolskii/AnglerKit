@@ -64,7 +64,7 @@ export default function NotificationSetup() {
           variant: 'destructive',
           title: 'Could not enable notifications',
           description: result.error || 'Unknown error.',
-          duration: 8000,
+          duration: 10000,
         });
       }
     }
