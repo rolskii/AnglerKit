@@ -334,44 +334,44 @@ export default function Weather() {
         <Card className="bg-primary/10">
           <CardContent className="p-3">
             <div className="space-y-2">
-              {/* Date and Location bar */}
-              <div className="flex items-center justify-between">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <button className="text-sm font-semibold text-primary flex items-center gap-1 hover:underline transition-colors">
-                      {formatDate(selectedDate)}
-                      <ChevronDown className="w-3.5 h-3.5 opacity-60" />
-                    </button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={new Date(selectedDate + 'T00:00:00')}
-                      onSelect={(date) => {
-                        if (date) {
-                          const y = date.getFullYear();
-                          const m = String(date.getMonth() + 1).padStart(2, '0');
-                          const d = String(date.getDate()).padStart(2, '0');
-                          setSelectedDate(`${y}-${m}-${d}`);
-                        }
-                      }}
-                    />
-                  </PopoverContent>
-                </Popover>
-                <button
-                  onClick={() => setMapPickerOpen(true)}
-                  className="text-xs text-muted-foreground flex items-center gap-1 hover:text-primary transition-colors"
-                >
-                  <MapPin className="w-3 h-3" />
-                  <span className="max-w-[120px] truncate">{location}</span>
-                  <ChevronDown className="w-3 h-3 opacity-60" />
-                </button>
-              </div>
-
-              {/* Temperature hero + description */}
-              <div className="flex items-center justify-center gap-2 py-0">
-                <p className="text-6xl font-bold text-primary leading-none">{formatTemp(current.temperature_2m, tempUnit)}°</p>
-                <WeatherGlyph code={current.weather_code} isNight={isNight()} darkOutline animated className="w-16 h-20 shrink-0" />
+              {/* Temperature hero (left) + Date/Location (right, stacked) */}
+              <div className="flex items-center justify-between gap-2 py-0">
+                <div className="flex items-center gap-2">
+                  <p className="text-6xl font-bold text-primary leading-none">{formatTemp(current.temperature_2m, tempUnit)}°</p>
+                  <WeatherGlyph code={current.weather_code} isNight={isNight()} darkOutline animated className="w-16 h-20 shrink-0" />
+                </div>
+                <div className="flex flex-col items-end gap-1 shrink-0">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button className="text-sm font-semibold text-primary flex items-center gap-1 hover:underline transition-colors">
+                        {formatDate(selectedDate)}
+                        <ChevronDown className="w-3.5 h-3.5 opacity-60" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="end">
+                      <Calendar
+                        mode="single"
+                        selected={new Date(selectedDate + 'T00:00:00')}
+                        onSelect={(date) => {
+                          if (date) {
+                            const y = date.getFullYear();
+                            const m = String(date.getMonth() + 1).padStart(2, '0');
+                            const d = String(date.getDate()).padStart(2, '0');
+                            setSelectedDate(`${y}-${m}-${d}`);
+                          }
+                        }}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <button
+                    onClick={() => setMapPickerOpen(true)}
+                    className="text-xs text-muted-foreground flex items-center gap-1 hover:text-primary transition-colors"
+                  >
+                    <MapPin className="w-3 h-3" />
+                    <span className="max-w-[120px] truncate">{location}</span>
+                    <ChevronDown className="w-3 h-3 opacity-60" />
+                  </button>
+                </div>
               </div>
 
               {/* EC Text Summaries + Health Advisories */}
