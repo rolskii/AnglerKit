@@ -1,5 +1,5 @@
 import React from 'react';
-import { Play, Pause, Square, MapPin, Save, Crosshair, Layers, FolderOpen } from 'lucide-react';
+import { Play, Pause, Square, MapPin, Save, Crosshair, Layers, FolderOpen, Circle } from 'lucide-react';
 
 const ctrlBase = "flex items-center justify-center rounded-full shadow-lg backdrop-blur-xl transition-all active:scale-90";
 const ctrlSize = "w-12 h-12";
@@ -55,9 +55,9 @@ export default function MapControls({
           <button
             onClick={onStart}
             className={`${ctrlBase} w-16 h-16 bg-primary text-primary-foreground`}
-            title="Start tracking"
+            title="Start recording"
           >
-            <Play className="w-7 h-7" fill="currentColor" />
+            <Circle className="w-7 h-7" fill="currentColor" />
           </button>
         )}
 
