@@ -374,7 +374,7 @@ export default function Weather() {
                 <WeatherGlyph code={current.weather_code} isNight={isNight()} darkOutline animated className="w-16 h-20 shrink-0" />
               </div>
 
-              {/* EC Text Summaries */}
+              {/* EC Text Summaries + Health Advisories */}
               <div className="bg-secondary/60 rounded-lg p-2.5 space-y-1">
                 {ecDaySummary ? (
                   <p className="text-sm text-foreground leading-snug">{ecDaySummary}</p>
@@ -386,18 +386,12 @@ export default function Weather() {
                     <span className="font-semibold">Night:</span> {ecNightSummary}
                   </p>
                 )}
+                {getHealthAdvisory().map((adv, i) => (
+                  <p key={i} className={`text-xs font-medium leading-snug ${adv.tone}`}>
+                    {adv.icon} {adv.text}
+                  </p>
+                ))}
               </div>
-
-              {/* Health Advisory */}
-              {getHealthAdvisory().length > 0 && (
-                <div className="space-y-1">
-                  {getHealthAdvisory().map((adv, i) => (
-                    <p key={i} className={`text-xs font-medium leading-snug ${adv.tone}`}>
-                      {adv.icon} {adv.text}
-                    </p>
-                  ))}
-                </div>
-              )}
 
               {/* Conditions Grid */}
               <div className="grid grid-cols-3 gap-2">
