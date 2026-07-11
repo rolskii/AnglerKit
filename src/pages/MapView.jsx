@@ -302,10 +302,26 @@ export default function MapView() {
         await new Promise((r) => requestAnimationFrame(r));
         if (cancelled || !mapContainerRef.current) return;
 
-        const center = new mapkit.Coordinate(
-          gpsPos?.[0] || 43.6532,
-          gpsPos?.[1] || -79.3832
-        );
+        // Try to get current GPS position before initializing
+        let lat = 43.6532;
+        let lon = -79.3832;
+        if (gpsPos) {
+          lat = gpsPos[0];
+          lon = gpsPos[1];
+        } else if (navigator.geolocation) {
+          try {
+            const pos = await new Promise((resolve, reject) => {
+              navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 8000 });
+            });
+            lat = pos.coords.latitude;
+            lon = pos.coords.longitude;
+            setGpsPos([lat, lon]);
+          } catch (e) {
+            // Fall back to default Toronto location
+          }
+        }
+
+        const center = new mapkit.Coordinate(lat, lon);
         const map = new mapkit.Map(mapContainerRef.current, {
           center,
           cameraDistance: 5000,
