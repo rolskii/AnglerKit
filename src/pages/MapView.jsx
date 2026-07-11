@@ -8,8 +8,9 @@ import RouteInfoDialog from '@/components/map/RouteInfoDialog';
 import SavedRoutesDrawer from '@/components/map/SavedRoutesDrawer';
 import DrawLayer from '@/components/map/DrawLayer';
 import DrawBar from '@/components/map/DrawBar';
+import DrawingDialog from '@/components/map/DrawingDialog';
 import MeasureBar from '@/components/map/MeasureBar';
-import { ChevronLeft, Route } from 'lucide-react';
+import { ChevronLeft, Route, Pencil } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import BottomTabBar from '@/components/BottomTabBar';
 import MapSearchBar from '@/components/map/MapSearchBar';
@@ -105,6 +106,8 @@ export default function MapView() {
   const [drawColor, setDrawColor] = useState('#ef4444');
   const [drawings, setDrawings] = useState([]);
   const [currentStroke, setCurrentStroke] = useState(null);
+  const [drawDialogOpen, setDrawDialogOpen] = useState(false);
+  const [editingDrawingIdx, setEditingDrawingIdx] = useState(null);
   const [measureMode, setMeasureMode] = useState(false);
   const [measurePoints, setMeasurePoints] = useState([]);
   const [mapReady, setMapReady] = useState(false);
@@ -397,6 +400,26 @@ export default function MapView() {
   const handleMeasureClear = useCallback(() => {
     setMeasurePoints([]);
   }, []);
+
+  // Drawing label/description handlers
+  const handleDrawingClick = useCallback((idx) => {
+    setEditingDrawingIdx(idx);
+    setDrawDialogOpen(true);
+  }, []);
+
+  const handleDrawingSave = useCallback((label, description) => {
+    if (editingDrawingIdx !== null) {
+      setDrawings((prev) => prev.map((d, i) => (i === editingDrawingIdx ? { ...d, label, description } : d)));
+    }
+    setEditingDrawingIdx(null);
+  }, [editingDrawingIdx]);
+
+  const handleDrawingDelete = useCallback(() => {
+    if (editingDrawingIdx !== null) {
+      setDrawings((prev) => prev.filter((_, i) => i !== editingDrawingIdx));
+    }
+    setEditingDrawingIdx(null);
+  }, [editingDrawingIdx]);
 
   // Save route
   const handleSaveRoute = useCallback(async (name, description) => {
@@ -810,6 +833,51 @@ export default function MapView() {
         {/* Drawing capture layer */}
         <DrawLayer active={drawMode} mapRef={mapRef} onStroke={handleDrawStroke} />
 
+        {/* Drawing centroid markers — clickable to view/edit details */}
+        {!drawMode && mapReady && mapRef.current && drawings.map((stroke, idx) => {
+          const pts = Array.isArray(stroke) ? stroke : stroke.points;
+          if (!pts || pts.length < 2) return null;
+          const lat = pts.reduce((sum, p) => sum + p.lat, 0) / pts.length;
+          const lon = pts.reduce((sum, p) => sum + p.lon, 0) / pts.length;
+          const coord = new mapkit.Coordinate(lat, lon);
+          const point = mapRef.current.convertCoordinateToPointOnPage(coord);
+          if (!point) return null;
+          const containerRect = mapContainerRef.current?.getBoundingClientRect();
+          if (!containerRect) return null;
+          const left = point.x - containerRect.left;
+          const top = point.y - containerRect.top;
+          if (left < -30 || left > containerRect.width + 30 || top < -30 || top > containerRect.height + 30) return null;
+          const color = Array.isArray(stroke) ? '#ef4444' : (stroke.color || '#ef4444');
+          return (
+            <div
+              key={`draw-${idx}`}
+              onClick={() => handleDrawingClick(idx)}
+              className="absolute z-[457] cursor-pointer"
+              style={{ left, top, transform: 'translate(-50%, -50%)' }}
+            >
+              <div style={{
+                width: '22px', height: '22px',
+                background: color, border: '2px solid #ffffff',
+                borderRadius: '50%',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.5)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Pencil className="w-3 h-3 text-white" />
+              </div>
+              {stroke.label && (
+                <div style={{
+                  position: 'absolute', top: '26px', left: '50%', transform: 'translateX(-50%)',
+                  whiteSpace: 'nowrap', fontSize: '11px', fontWeight: 600,
+                  background: 'rgba(0,0,0,0.7)', color: 'white', padding: '2px 6px', borderRadius: '4px',
+                  pointerEvents: 'none',
+                }}>
+                  {stroke.label}
+                </div>
+              )}
+            </div>
+          );
+        })}
+
         {/* Measurement point markers */}
         {mapReady && mapRef.current && measurePoints.map((pt, idx) => {
           const coord = new mapkit.Coordinate(pt.lat, pt.lon);
@@ -978,6 +1046,18 @@ export default function MapView() {
         onSaveName={handleSaveRouteName}
         onLoad={handleLoadRouteFromInfo}
         onDelete={handleRouteDeleted}
+      />
+      <DrawingDialog
+        open={drawDialogOpen}
+        onOpenChange={(open) => {
+          setDrawDialogOpen(open);
+          if (!open) setEditingDrawingIdx(null);
+        }}
+        initialLabel={editingDrawingIdx !== null ? drawings[editingDrawingIdx]?.label : ''}
+        initialDescription={editingDrawingIdx !== null ? drawings[editingDrawingIdx]?.description : ''}
+        color={editingDrawingIdx !== null ? (drawings[editingDrawingIdx]?.color || '#ef4444') : '#ef4444'}
+        onSave={handleDrawingSave}
+        onDelete={handleDrawingDelete}
       />
       <SavedRoutesDrawer
         open={routesOpen}
