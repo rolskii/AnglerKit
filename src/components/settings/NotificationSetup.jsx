@@ -1,14 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Bell, CheckCircle2, AlertCircle, Loader2, Send, Share, Plus } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
+import { Bell, CheckCircle2, AlertCircle, Loader2, Send, Share, Plus, ExternalLink } from 'lucide-react';
 import { ensurePushSubscription } from '@/lib/pushService';
-import { toast } from 'sonner';
 
 function detectIOS() {
   if (typeof navigator === 'undefined') return false;
   const ua = navigator.userAgent || '';
-  const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  return isIOS;
+  return /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 }
 
 function isStandaloneMode() {
@@ -18,7 +17,16 @@ function isStandaloneMode() {
   );
 }
 
+function isInIframe() {
+  try {
+    return window.self !== window.top;
+  } catch (e) {
+    return true;
+  }
+}
+
 export default function NotificationSetup() {
+  const { toast } = useToast();
   const [permission, setPermission] = useState(
     typeof Notification !== 'undefined' ? Notification.permission : 'denied'
   );
@@ -26,33 +34,38 @@ export default function NotificationSetup() {
   const [testing, setTesting] = useState(false);
   const [ios] = useState(detectIOS());
   const [standalone] = useState(isStandaloneMode());
+  const [inIframe] = useState(isInIframe());
 
   const pushSupported = typeof window !== 'undefined' &&
     'serviceWorker' in navigator &&
     'PushManager' in window;
 
   const notificationSupported = typeof Notification !== 'undefined';
-
-  // On iOS Safari (not installed as PWA), neither Notification nor PushManager exist
   const iosNeedsInstall = ios && !standalone;
-
-  useEffect(() => {
-    if (!notificationSupported || !pushSupported) return;
-  }, []);
 
   const handleEnable = async () => {
     setSubscribing(true);
     const ok = await ensurePushSubscription();
     setSubscribing(false);
-    if (typeof Notification !== 'undefined') {
-      setPermission(Notification.permission);
-    }
+    const currentPerm = typeof Notification !== 'undefined' ? Notification.permission : 'denied';
+    setPermission(currentPerm);
     if (ok) {
-      toast.success('Push notifications enabled! Alarms will fire even when the app is closed.');
-    } else if (typeof Notification !== 'undefined' && Notification.permission === 'denied') {
-      toast.error('Notifications were blocked. Please enable them in your browser/site settings.');
+      toast({
+        title: 'Push notifications enabled',
+        description: 'Alarms will fire even when the app is closed.',
+      });
+    } else if (currentPerm === 'denied') {
+      toast({
+        variant: 'destructive',
+        title: 'Notifications blocked',
+        description: 'Enable them in your browser settings: Site Settings → Notifications → Allow.',
+      });
     } else {
-      toast.error('Could not enable notifications. Make sure you allow the permission prompt.');
+      toast({
+        variant: 'destructive',
+        title: 'Could not enable',
+        description: 'The permission prompt may have been blocked. Try opening the app in a new tab.',
+      });
     }
   };
 
@@ -67,9 +80,9 @@ export default function NotificationSetup() {
         requireInteraction: true,
         tag: 'test-notification',
       });
-      toast.success('Test notification sent — check your screen!');
+      toast({ title: 'Test sent', description: 'Check your screen for the notification.' });
     } catch (e) {
-      toast.error('Could not show test notification: ' + e.message);
+      toast({ variant: 'destructive', title: 'Failed', description: e.message });
     } finally {
       setTesting(false);
     }
@@ -87,27 +100,37 @@ export default function NotificationSetup() {
           iOS only allows push notifications from apps installed on your Home Screen. Follow these steps:
         </p>
         <ol className="space-y-2 text-xs text-muted-foreground list-decimal list-inside">
-          <li>
-            Tap the <strong>Share</strong> button
-            <Share className="inline w-3 h-3 mx-1" />
-            in Safari's bottom toolbar
-          </li>
-          <li>
-            Scroll down and tap <strong>Add to Home Screen</strong>
-            <Plus className="inline w-3 h-3 mx-1" />
-          </li>
+          <li>Tap the <strong>Share</strong> button <Share className="inline w-3 h-3 mx-1" /> in Safari's bottom toolbar</li>
+          <li>Scroll down and tap <strong>Add to Home Screen</strong> <Plus className="inline w-3 h-3 mx-1" /></li>
           <li>Tap <strong>Add</strong> — the app appears as an icon on your Home Screen</li>
           <li>Open the app <strong>from that Home Screen icon</strong> (not Safari)</li>
           <li>Come back to Settings → Enable Notifications</li>
         </ol>
-        <p className="text-xs text-muted-foreground">
-          Requires iOS 16.4 or later.
-        </p>
+        <p className="text-xs text-muted-foreground">Requires iOS 16.4 or later.</p>
       </div>
     );
   }
 
-  // ── Not supported (non-iOS) ──
+  // ── Running inside an iframe (app preview) ──
+  if (inIframe && permission !== 'granted') {
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center gap-2 text-amber-600">
+          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+          <p className="text-sm font-medium">Open in new tab to enable</p>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Browsers block notification permission requests inside embedded previews. Open the app in its own tab to enable notifications.
+        </p>
+        <Button onClick={() => window.open(window.location.href, '_blank')} className="flex items-center gap-2">
+          <ExternalLink className="w-4 h-4" />
+          Open in New Tab
+        </Button>
+      </div>
+    );
+  }
+
+  // ── Not supported ──
   if (!pushSupported || !notificationSupported) {
     return (
       <div className="space-y-2">
@@ -145,12 +168,11 @@ export default function NotificationSetup() {
       {permission === 'denied' ? (
         <p className="text-xs text-muted-foreground">
           Notification permission was blocked. To receive alarm notifications when the app is closed,
-          you need to reset the permission in your browser settings: Site Settings → Notifications → Allow.
+          reset the permission in your browser settings: Site Settings → Notifications → Allow.
         </p>
       ) : permission !== 'granted' ? (
         <p className="text-xs text-muted-foreground">
-          You must enable notifications to receive alarm alerts when the app is closed.
-          Tap the button below and choose "Allow".
+          Tap the button below and choose "Allow" to receive alarm alerts when the app is closed.
         </p>
       ) : (
         <p className="text-xs text-muted-foreground">
