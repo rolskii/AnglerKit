@@ -1,7 +1,4 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { MapContainer, TileLayer, Polyline, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 import { base44 } from '@/api/base44Client';
 import MapControls from '@/components/map/MapControls';
 import RouteStatsBar from '@/components/map/RouteStatsBar';
@@ -11,30 +8,38 @@ import SavedRoutesDrawer from '@/components/map/SavedRoutesDrawer';
 import { ChevronLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-// Fix Leaflet default marker icon paths for bundlers
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-});
+/* global mapkit */
 
-// Custom pin icon (amber)
-const pinIcon = L.divIcon({
-  html: '<div style="font-size: 28px; line-height: 1; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));">📍</div>',
-  className: 'custom-pin-marker',
-  iconSize: [28, 28],
-  iconAnchor: [14, 28],
-  popupAnchor: [0, -28],
-});
+// Load MapKit JS script once
+let mapkitLoaded = false;
+let mapkitLoadPromise = null;
 
-// GPS position icon (blue dot)
-const gpsIcon = L.divIcon({
-  html: '<div style="width:16px;height:16px;background:#3b82f6;border:3px solid white;border-radius:50%;box-shadow:0 0 8px rgba(59,130,246,0.6);"></div>',
-  className: 'gps-marker',
-  iconSize: [22, 22],
-  iconAnchor: [11, 11],
-});
+function loadMapKit() {
+  if (mapkitLoaded) return Promise.resolve();
+  if (mapkitLoadPromise) return mapkitLoadPromise;
+  mapkitLoadPromise = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.js';
+    script.onload = () => { mapkitLoaded = true; resolve(); };
+    script.onerror = () => reject(new Error('Failed to load MapKit JS'));
+    document.head.appendChild(script);
+  });
+  return mapkitLoadPromise;
+}
+
+let mapkitInitialized = false;
+function ensureMapKitInit() {
+  if (mapkitInitialized) return;
+  mapkit.init({
+    authorizationCallback: (done) => {
+      const origin = window.location.hostname || '*';
+      base44.functions.invoke('applemaps', { mode: 'mapkit_token', origin })
+        .then((res) => done(res.data.token))
+        .catch((err) => console.error('MapKit token fetch failed:', err));
+    },
+  });
+  mapkitInitialized = true;
+}
 
 // Haversine distance in km
 const haversine = (lat1, lon1, lat2, lon2) => {
@@ -45,26 +50,12 @@ const haversine = (lat1, lon1, lat2, lon2) => {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 };
 
-// Component that re-centers the map
-function Recenter({ center, trigger }) {
-  const map = useMap();
-  useEffect(() => {
-    if (center) {
-      map.setView(center, Math.max(map.getZoom(), 15), { animate: true });
-    }
-  }, [trigger]); // eslint-disable-line react-hooks/exhaustive-deps
-  return null;
-}
-
-// Component that handles map clicks for pin placement
-function MapClickHandler({ pinMode, onMapClick }) {
-  useMapEvents({
-    click: (e) => {
-      if (pinMode) onMapClick(e.latlng);
-    },
-  });
-  return null;
-}
+// GPS dot factory for custom Annotation
+const gpsDotFactory = () => {
+  const div = document.createElement('div');
+  div.style.cssText = 'width:16px;height:16px;background:#3b82f6;border:3px solid white;border-radius:50%;box-shadow:0 0 8px rgba(59,130,246,0.6);';
+  return div;
+};
 
 export default function MapView() {
   const [trackPoints, setTrackPoints] = useState([]);
@@ -83,13 +74,29 @@ export default function MapView() {
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [routesOpen, setRoutesOpen] = useState(false);
   const [savedRoutes, setSavedRoutes] = useState([]);
-  const [useTopo, setUseTopo] = useState(true);
+  const [mapReady, setMapReady] = useState(false);
 
   const watchIdRef = useRef(null);
   const startTimeRef = useRef(null);
   const elapsedBeforePauseRef = useRef(0);
   const durationTimerRef = useRef(null);
+  const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
+  const trackOverlayRef = useRef(null);
+  const gpsAnnotationRef = useRef(null);
+  const pinAnnotationsRef = useRef([]);
+  const pinModeRef = useRef(false);
+  const handleMapClickRef = useRef(() => {});
+
+  useEffect(() => { pinModeRef.current = pinMode; }, [pinMode]);
+
+  const handleMapClick = useCallback((latlng) => {
+    setPendingPin({ lat: latlng.lat, lon: latlng.lon });
+    setEditingPinIdx(null);
+    setPinDialogOpen(true);
+    setPinMode(false);
+  }, []);
+  useEffect(() => { handleMapClickRef.current = handleMapClick; }, [handleMapClick]);
 
   // Load saved routes
   const loadRoutes = useCallback(async () => {
@@ -207,19 +214,7 @@ export default function MapView() {
 
   // Pin handling
   const handleAddPin = useCallback(() => {
-    if (pinMode) {
-      // In pin mode, tapping the map places a pin. If on GPS, use current position.
-      setPinMode(false);
-    } else {
-      setPinMode(true);
-    }
-  }, [pinMode]);
-
-  const handleMapClick = useCallback((latlng) => {
-    setPendingPin({ lat: latlng.lat, lon: latlng.lng });
-    setEditingPinIdx(null);
-    setPinDialogOpen(true);
-    setPinMode(false);
+    setPinMode((v) => !v);
   }, []);
 
   const handlePinSave = useCallback((label) => {
@@ -252,7 +247,6 @@ export default function MapView() {
         date: dateStr,
       });
       await loadRoutes();
-      // Clear current track
       setTrackPoints([]);
       setPins([]);
       setDistanceKm(0);
@@ -284,12 +278,145 @@ export default function MapView() {
     setSavedRoutes((prev) => prev.filter((r) => r.id !== id));
   }, []);
 
+  // Map type toggle (Hybrid → Satellite → Standard → Hybrid)
   const handleToggleLayer = useCallback(() => {
-    setUseTopo((v) => !v);
+    if (!mapRef.current) return;
+    const types = [
+      mapkit.Map.MapTypes.Hybrid,
+      mapkit.Map.MapTypes.Satellite,
+      mapkit.Map.MapTypes.Standard,
+    ];
+    const currentIdx = types.indexOf(mapRef.current.mapType);
+    const nextIdx = (currentIdx + 1) % types.length;
+    mapRef.current.mapType = types[nextIdx];
   }, []);
 
+  // Initialize map
+  useEffect(() => {
+    let cancelled = false;
+    const initMap = async () => {
+      try {
+        await loadMapKit();
+        if (cancelled) return;
+        ensureMapKitInit();
+        await new Promise((r) => requestAnimationFrame(r));
+        if (cancelled || !mapContainerRef.current) return;
+
+        const center = new mapkit.Coordinate(
+          gpsPos?.[0] || 43.6532,
+          gpsPos?.[1] || -79.3832
+        );
+        const map = new mapkit.Map(mapContainerRef.current, {
+          center,
+          cameraDistance: 5000,
+          mapType: mapkit.Map.MapTypes.Hybrid,
+        });
+        mapRef.current = map;
+
+        map.addEventListener('single-tap', (event) => {
+          if (pinModeRef.current && event.coordinate) {
+            handleMapClickRef.current({
+              lat: event.coordinate.latitude,
+              lon: event.coordinate.longitude,
+            });
+          }
+        });
+
+        setMapReady(true);
+      } catch (e) {
+        console.error('MapKit init failed:', e);
+      }
+    };
+    const timer = setTimeout(initMap, 100);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+      if (mapRef.current) {
+        try { mapRef.current.destroy(); } catch (e) {}
+        mapRef.current = null;
+      }
+      setMapReady(false);
+    };
+  }, []);
+
+  // Update track overlay
+  useEffect(() => {
+    if (!mapReady || !mapRef.current) return;
+    const map = mapRef.current;
+
+    if (trackOverlayRef.current) {
+      map.removeOverlay(trackOverlayRef.current);
+      trackOverlayRef.current = null;
+    }
+
+    if (trackPoints.length > 1) {
+      const coords = trackPoints.map((p) => new mapkit.Coordinate(p.lat, p.lon));
+      const style = new mapkit.Style({
+        strokeColor: '#2563eb',
+        lineWidth: 4,
+        lineJoin: 'round',
+        lineCap: 'round',
+      });
+      const overlay = new mapkit.PolylineOverlay(coords, { style });
+      map.addOverlay(overlay);
+      trackOverlayRef.current = overlay;
+    }
+  }, [trackPoints, mapReady]);
+
+  // Update GPS annotation
+  useEffect(() => {
+    if (!mapReady || !mapRef.current) return;
+    const map = mapRef.current;
+
+    if (gpsAnnotationRef.current) {
+      map.removeAnnotation(gpsAnnotationRef.current);
+      gpsAnnotationRef.current = null;
+    }
+
+    if (gpsPos) {
+      const coord = new mapkit.Coordinate(gpsPos[0], gpsPos[1]);
+      const annotation = new mapkit.Annotation(coord, gpsDotFactory, {
+        displayPriority: 1000,
+        animates: false,
+        calloutEnabled: false,
+      });
+      map.addAnnotation(annotation);
+      gpsAnnotationRef.current = annotation;
+    }
+  }, [gpsPos, mapReady]);
+
+  // Update pin annotations
+  useEffect(() => {
+    if (!mapReady || !mapRef.current) return;
+    const map = mapRef.current;
+
+    pinAnnotationsRef.current.forEach((a) => map.removeAnnotation(a));
+    pinAnnotationsRef.current = [];
+
+    pins.forEach((pin, idx) => {
+      const coord = new mapkit.Coordinate(pin.lat, pin.lon);
+      const annotation = new mapkit.MarkerAnnotation(coord, {
+        title: pin.label,
+        color: '#f59e0b',
+        glyphColor: '#ffffff',
+        animates: false,
+      });
+      annotation.addEventListener('select', () => {
+        handlePinClick(idx);
+      });
+      map.addAnnotation(annotation);
+      pinAnnotationsRef.current.push(annotation);
+    });
+  }, [pins, mapReady, handlePinClick]);
+
+  // Recenter
+  useEffect(() => {
+    if (!mapReady || !mapRef.current || !recenterTarget) return;
+    const coord = new mapkit.Coordinate(recenterTarget[0], recenterTarget[1]);
+    mapRef.current.setCenterAnimated(coord);
+  }, [recenterTrigger, recenterTarget, mapReady]);
+
   const hasTrack = trackPoints.length > 0;
-  const polylinePositions = trackPoints.map((p) => [p.lat, p.lon]);
 
   return (
     <div className="fixed inset-0 z-[4000] bg-background" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
@@ -300,59 +427,12 @@ export default function MapView() {
         <Link to="/" className="p-2 -ml-1 rounded-lg hover:bg-accent/10 transition-colors">
           <ChevronLeft className="w-5 h-5" />
         </Link>
-        <h1 className="text-base font-heading font-semibold flex-1">Topo Map</h1>
+        <h1 className="text-base font-heading font-semibold flex-1">Map</h1>
       </div>
 
       {/* Map */}
       <div className="absolute inset-0" style={{ top: 'calc(env(safe-area-inset-top) + 48px)' }}>
-        <MapContainer
-          center={gpsPos || [43.6532, -79.3832]}
-          zoom={13}
-          className="w-full h-full"
-          zoomControl={false}
-          ref={mapRef}
-        >
-          {useTopo ? (
-            <TileLayer
-              url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
-              attribution='&copy; OpenTopoMap (CC-BY-SA)'
-              maxZoom={17}
-            />
-          ) : (
-            <>
-              <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; OpenStreetMap'
-                maxZoom={19}
-              />
-            </>
-          )}
-
-          {/* Recorded track */}
-          {polylinePositions.length > 1 && (
-            <Polyline positions={polylinePositions} pathOptions={{ color: '#2563eb', weight: 4, opacity: 0.8 }} />
-          )}
-
-          {/* GPS position marker */}
-          {gpsPos && <Marker position={gpsPos} icon={gpsIcon} />}
-
-          {/* POI pins */}
-          {pins.map((pin, idx) => (
-            <Marker
-              key={idx}
-              position={[pin.lat, pin.lon]}
-              icon={pinIcon}
-              eventHandlers={{ click: () => handlePinClick(idx) }}
-            >
-              <Popup>
-                <div className="text-sm font-medium">{pin.label}</div>
-              </Popup>
-            </Marker>
-          ))}
-
-          <Recenter center={recenterTarget} trigger={recenterTrigger} />
-          <MapClickHandler pinMode={pinMode} onMapClick={handleMapClick} />
-        </MapContainer>
+        <div ref={mapContainerRef} className="w-full h-full" />
       </div>
 
       {/* Stats bar */}
