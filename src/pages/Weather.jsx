@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Droplets, MapPin, ChevronDown, Thermometer, Eye, Wind, Gauge, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Droplets, MapPin, ChevronDown, Thermometer, Eye, Wind, Gauge, TrendingUp, TrendingDown, Minus, Sunrise, Sunset } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { searchLocations, geocodeLocation } from '@/lib/geocode';
 import LocationMapPicker from '@/components/moon/LocationMapPicker';
@@ -43,6 +43,11 @@ export default function Weather() {
   const formatDate = (dateStr) => {
     const d = new Date(dateStr + 'T00:00:00');
     return d.toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric', year: '2-digit' });
+  };
+
+  const formatTime = (isoStr) => {
+    if (!isoStr) return '';
+    return new Date(isoStr).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
   };
 
   const handleMapSelect = (name, lat, lon) => {
@@ -307,7 +312,11 @@ export default function Weather() {
 
   const current = weather.current;
   const daily = weather.daily;
-  const ecDaySummary = daily.text_summary?.[0] || null;
+  const selectedDayIdx = (() => {
+    const idx = daily.time.indexOf(selectedDate);
+    return idx === -1 ? 0 : idx;
+  })();
+  const ecDaySummary = daily.text_summary?.[selectedDayIdx] || null;
   const displayHumidex = (() => {
     if (ecDaySummary) {
       const m = ecDaySummary.match(/humidex\s+(\d+)/i);
@@ -315,7 +324,9 @@ export default function Weather() {
     }
     return current.humidex != null ? Math.round(current.humidex) : null;
   })();
-  const ecNightSummary = daily.night_text_summary?.[0] || null;
+  const ecNightSummary = daily.night_text_summary?.[selectedDayIdx] || null;
+  const sunriseTime = daily.sunrise?.[selectedDayIdx];
+  const sunsetTime = daily.sunset?.[selectedDayIdx];
   const forecastDays = daily.time
     .slice(1, 6)
     .map((date, idx) => ({ date, idx: idx + 1 }));
@@ -398,6 +409,24 @@ export default function Weather() {
                     {adv.icon} {adv.text}
                   </p>
                 ))}
+                {(sunriseTime || sunsetTime) && (
+                  <div className="flex items-center gap-4 pt-0.5">
+                    {sunriseTime && (
+                      <div className="flex items-center gap-1.5">
+                        <Sunrise className="w-3.5 h-3.5 text-amber-500" />
+                        <span className="text-xs text-muted-foreground">Sunrise</span>
+                        <span className="text-xs font-medium">{formatTime(sunriseTime)}</span>
+                      </div>
+                    )}
+                    {sunsetTime && (
+                      <div className="flex items-center gap-1.5">
+                        <Sunset className="w-3.5 h-3.5 text-orange-500" />
+                        <span className="text-xs text-muted-foreground">Sunset</span>
+                        <span className="text-xs font-medium">{formatTime(sunsetTime)}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Conditions Grid */}
