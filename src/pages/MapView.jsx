@@ -15,6 +15,7 @@ import { Link } from 'react-router-dom';
 import BottomTabBar from '@/components/BottomTabBar';
 import MapSearchBar from '@/components/map/MapSearchBar';
 import FishIcon from '@/components/FishIcon';
+import { useToast } from '@/components/ui/use-toast';
 
 /* global mapkit */
 
@@ -83,6 +84,7 @@ const pinMarkerFactory = () => {
 };
 
 export default function MapView() {
+  const { toast } = useToast();
   const [trackPoints, setTrackPoints] = useState([]);
   const [pins, setPins] = useState([]);
   const [gpsPos, setGpsPos] = useState(null);
@@ -478,7 +480,6 @@ export default function MapView() {
 
   // Save route
   const handleSaveRoute = useCallback(async (name, description) => {
-    console.log('[SaveRoute] handleSaveRoute called', { name, description, pinsCount: pins.length, pins, trackCount: trackPoints.length });
     const today = new Date();
     const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     try {
@@ -502,11 +503,9 @@ export default function MapView() {
         duration_sec: Math.round(durationSec),
         date: dateStr,
       };
-      console.log('[SaveRoute] Creating MapCourse with payload:', payload);
-      const created = await base44.entities.MapCourse.create(payload);
-      console.log('[SaveRoute] Create succeeded, entry:', created);
+      await base44.entities.MapCourse.create(payload);
       await loadRoutes();
-      console.log('[SaveRoute] Routes reloaded');
+      toast({ title: 'Saved successfully', description: `${name} has been saved.` });
       setTrackPoints([]);
       setPins([]);
       setDrawings([]);
@@ -516,7 +515,6 @@ export default function MapView() {
       setDistanceKm(0);
       setDurationSec(0);
       elapsedBeforePauseRef.current = 0;
-      // Clear localStorage draft since route is now saved
       try {
         localStorage.removeItem(PINS_KEY);
         localStorage.removeItem(TRACK_KEY);
@@ -524,10 +522,15 @@ export default function MapView() {
         localStorage.removeItem(DUR_KEY);
       } catch (e) {}
     } catch (e) {
-      console.error('[SaveRoute] Failed to save route:', e);
-      alert(`Failed to save: ${e?.message || e?.data?.message || 'Unknown error'}. Check console for details.`);
+      const errMsg = e?.response?.data?.detail || e?.response?.data?.message || e?.message || e?.data?.message || 'Unknown error';
+      const errStatus = e?.response?.status || e?.status;
+      toast({
+        title: 'Failed to save',
+        description: errStatus ? `${errStatus}: ${errMsg}` : errMsg,
+        variant: 'destructive',
+      });
     }
-  }, [trackPoints, pins, drawings, distanceKm, durationSec, savedMeasurements, measurePoints, loadRoutes]);
+  }, [trackPoints, pins, drawings, distanceKm, durationSec, savedMeasurements, measurePoints, loadRoutes, toast]);
 
   // Load a saved route
   const handleLoadRoute = useCallback((route) => {
