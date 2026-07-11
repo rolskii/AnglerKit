@@ -21,7 +21,7 @@ export default function MapControls({
   return (
     <>
       {/* Top-right: layers + saved routes */}
-      <div className="absolute top-3 right-3 z-[500] flex flex-col gap-2">
+      <div className="absolute top-16 right-3 z-[500] flex flex-col gap-2">
         <button
           onClick={onToggleLayer}
           className={`${ctrlBase} ${ctrlSize} bg-background/90 text-foreground border border-border`}
