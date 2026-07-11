@@ -109,17 +109,21 @@ export default function NotificationSetup() {
   }
 
   // ── Running inside an iframe (app preview) ──
-  if (inIframe && permission !== 'granted') {
+  // Always redirect to a new tab — push subscriptions can't be created
+  // inside a cross-origin iframe even if permission was previously granted.
+  if (inIframe) {
     const appUrl = window.location.href;
     const cleanUrl = appUrl.replace(/\/+$/, '');
     return (
       <div className="space-y-3">
         <div className="flex items-center gap-2 text-amber-600">
           <AlertCircle className="w-4 h-4 flex-shrink-0" />
-          <p className="text-sm font-medium">Open in new tab to enable</p>
+          <p className="text-sm font-medium">Open in new tab to {permission === 'granted' ? 'complete setup' : 'enable'}</p>
         </div>
         <p className="text-xs text-muted-foreground">
-          Browsers block notification permission requests inside embedded previews. Copy this link and open it directly in your browser:
+          {permission === 'granted'
+            ? 'Notification permission is granted, but the browser won\'t allow push subscription setup inside an embedded preview. Open the app in its own tab to finish.'
+            : 'Browsers block notification permission requests inside embedded previews. Open the app directly in your browser to enable them.'}
         </p>
         <div className="flex items-center gap-2">
           <code className="flex-1 px-2 py-1.5 text-xs bg-muted rounded-md truncate">{cleanUrl}</code>
