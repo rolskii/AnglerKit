@@ -122,4 +122,46 @@
   .animate-pulse-slow {
     animation: pulse-slow 2.5s ease-in-out infinite;
   }
+
+  @keyframes weather-ray-rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes weather-rain-fall {
+    0% { transform: translateY(-2px); opacity: 0; }
+    20% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { transform: translateY(8px); opacity: 0; }
+  }
+
+  @keyframes weather-snow-fall {
+    0% { transform: translateY(-2px) translateX(0); opacity: 0; }
+    20% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { transform: translateY(8px) translateX(3px); opacity: 0; }
+  }
+
+  @keyframes weather-lightning-flash {
+    0%, 82%, 100% { opacity: 1; }
+    84% { opacity: 0.2; }
+    86% { opacity: 0.9; }
+    88%, 90% { opacity: 0.1; }
+    92% { opacity: 1; }
+  }
+
+  @keyframes weather-cloud-drift {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(2px); }
+  }
+
+  @keyframes weather-fog-shift {
+    0%, 100% { transform: translateX(0); opacity: 0.7; }
+    50% { transform: translateX(5px); opacity: 1; }
+  }
+
+  @keyframes weather-sun-glow {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.85; }
+  }
 }

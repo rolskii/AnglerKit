@@ -6,8 +6,9 @@ import React from 'react';
  * @param {number} code - WMO weather code
  * @param {boolean} isNight - whether to show night variants (moon instead of sun)
  * @param {string} className - size/positioning classes (e.g. "w-7 h-7")
+ * @param {boolean} animated - enable weather animations (rain, snow, lightning, etc.)
  */
-export default function WeatherGlyph({ code, isNight = false, className = 'w-7 h-7', darkOutline = false }) {
+export default function WeatherGlyph({ code, isNight = false, className = 'w-7 h-7', darkOutline = false, animated = false }) {
   // Determine icon type from code
   const isClear = code === 0 || code === 1;
   const isPartlyCloudy = code === 2;
@@ -36,26 +37,30 @@ export default function WeatherGlyph({ code, isNight = false, className = 'w-7 h
   // Reusable SVG sub-shapes
   const SunShape = ({ cx = 32, cy = 28, r = 11 }) => (
     <g>
-      {/* Rays */}
-      {Array.from({ length: 8 }).map((_, i) => {
-        const angle = (i * 45) * Math.PI / 180;
-        const x1 = cx + Math.cos(angle) * (r + 3);
-        const y1 = cy + Math.sin(angle) * (r + 3);
-        const x2 = cx + Math.cos(angle) * (r + 7);
-        const y2 = cy + Math.sin(angle) * (r + 7);
-        return (
-          <line key={i} x1={x1} y1={y1} x2={x2} y2={y2}
-            stroke={sunStroke} strokeWidth="2.5" strokeLinecap="round" />
-        );
-      })}
-      <circle cx={cx} cy={cy} r={r} fill={sunFill} stroke={sunStroke} strokeWidth={darkOutline ? 2.5 : 1.5} />
+      {/* Rays — rotate when animated */}
+      <g style={animated ? { transformOrigin: `${cx}px ${cy}px`, animation: 'weather-ray-rotate 20s linear infinite' } : undefined}>
+        {Array.from({ length: 8 }).map((_, i) => {
+          const angle = (i * 45) * Math.PI / 180;
+          const x1 = cx + Math.cos(angle) * (r + 3);
+          const y1 = cy + Math.sin(angle) * (r + 3);
+          const x2 = cx + Math.cos(angle) * (r + 7);
+          const y2 = cy + Math.sin(angle) * (r + 7);
+          return (
+            <line key={i} x1={x1} y1={y1} x2={x2} y2={y2}
+              stroke={sunStroke} strokeWidth="2.5" strokeLinecap="round" />
+          );
+        })}
+      </g>
+      <circle cx={cx} cy={cy} r={r} fill={sunFill} stroke={sunStroke} strokeWidth={darkOutline ? 2.5 : 1.5}
+        style={animated ? { animation: 'weather-sun-glow 3s ease-in-out infinite' } : undefined} />
     </g>
   );
 
   const MoonShape = ({ cx = 32, cy = 26, r = 11 }) => (
     <g>
       {/* Full light circle (the lit moon) */}
-      <circle cx={cx} cy={cy} r={r} fill={moonFill} stroke={moonStroke} strokeWidth={darkOutline ? 2 : 1} />
+      <circle cx={cx} cy={cy} r={r} fill={moonFill} stroke={moonStroke} strokeWidth={darkOutline ? 2 : 1}
+        style={animated ? { animation: 'weather-sun-glow 4s ease-in-out infinite' } : undefined} />
       {/* Offset dark circle on top creates the crescent cutout */}
       <circle cx={cx + r * 0.45} cy={cy - r * 0.15} r={r} fill={moonStroke} />
     </g>
@@ -64,14 +69,16 @@ export default function WeatherGlyph({ code, isNight = false, className = 'w-7 h
   const CloudShape = ({ cx = 34, cy = 38, scale = 1, fill = cloudLight, stroke = cloudMid }) => {
     const s = scale;
     return (
-      <g transform={`translate(${cx - 34 * s}, ${cy - 38 * s}) scale(${s})`}>
-        <path
-          d="M 22 44 Q 14 44 14 36 Q 14 28 22 28 Q 24 21 32 21 Q 40 21 43 28 Q 54 27 54 36 Q 54 44 46 44 Z"
-          fill={fill}
-          stroke={stroke}
-          strokeWidth={darkOutline ? 2.5 : 1.5}
-          strokeLinejoin="round"
-        />
+      <g style={animated ? { animation: 'weather-cloud-drift 4s ease-in-out infinite' } : undefined}>
+        <g transform={`translate(${cx - 34 * s}, ${cy - 38 * s}) scale(${s})`}>
+          <path
+            d="M 22 44 Q 14 44 14 36 Q 14 28 22 28 Q 24 21 32 21 Q 40 21 43 28 Q 54 27 54 36 Q 54 44 46 44 Z"
+            fill={fill}
+            stroke={stroke}
+            strokeWidth={darkOutline ? 2.5 : 1.5}
+            strokeLinejoin="round"
+          />
+        </g>
       </g>
     );
   };
@@ -89,6 +96,7 @@ export default function WeatherGlyph({ code, isNight = false, className = 'w-7 h
             key={i}
             d={`M ${p.x} ${p.y} Q ${p.x - 2} ${p.y + 5} ${p.x} ${p.y + 8} Q ${p.x + 2} ${p.y + 5} ${p.x} ${p.y} Z`}
             fill={i % 2 === 0 ? rainColor : rainLight}
+            style={animated ? { animation: `weather-rain-fall 1.2s ease-in infinite`, animationDelay: `${i * 0.4}s` } : undefined}
           />
         ))}
       </g>
@@ -104,7 +112,8 @@ export default function WeatherGlyph({ code, isNight = false, className = 'w-7 h
     return (
       <g>
         {positions.slice(0, count).map((p, i) => (
-          <g key={i} stroke={snowColor} strokeWidth="1.8" strokeLinecap="round">
+          <g key={i} stroke={snowColor} strokeWidth="1.8" strokeLinecap="round"
+            style={animated ? { animation: `weather-snow-fall 1.8s ease-in-out infinite`, animationDelay: `${i * 0.5}s` } : undefined}>
             <line x1={p.x} y1={p.y} x2={p.x} y2={p.y + 7} />
             <line x1={p.x - 3} y1={p.y + 3.5} x2={p.x + 3} y2={p.y + 3.5} />
             <line x1={p.x - 2.5} y1={p.y + 1} x2={p.x + 2.5} y2={p.y + 6} />
@@ -122,14 +131,15 @@ export default function WeatherGlyph({ code, isNight = false, className = 'w-7 h
       stroke="#EAB308"
       strokeWidth="1"
       strokeLinejoin="round"
+      style={animated ? { animation: 'weather-lightning-flash 3s ease-in-out infinite' } : undefined}
     />
   );
 
   const FogLines = () => (
     <g stroke={fogColor} strokeWidth="2.5" strokeLinecap="round">
-      <line x1="18" y1="50" x2="50" y2="50" />
-      <line x1="22" y1="55" x2="46" y2="55" />
-      <line x1="18" y1="60" x2="42" y2="60" />
+      <line x1="18" y1="50" x2="50" y2="50" style={animated ? { animation: 'weather-fog-shift 3s ease-in-out infinite' } : undefined} />
+      <line x1="22" y1="55" x2="46" y2="55" style={animated ? { animation: 'weather-fog-shift 3s ease-in-out infinite', animationDelay: '0.5s' } : undefined} />
+      <line x1="18" y1="60" x2="42" y2="60" style={animated ? { animation: 'weather-fog-shift 3s ease-in-out infinite', animationDelay: '1s' } : undefined} />
     </g>
   );
 

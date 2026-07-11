@@ -337,7 +337,7 @@ export default function Weather() {
               {/* Temperature hero + description */}
               <div className="flex items-center justify-center gap-2 py-0">
                 <p className="text-6xl font-bold text-primary leading-none">{formatTemp(current.temperature_2m, tempUnit)}°</p>
-                <WeatherGlyph code={current.weather_code} isNight={isNight()} darkOutline className="w-16 h-20 shrink-0" />
+                <WeatherGlyph code={current.weather_code} isNight={isNight()} darkOutline animated className="w-16 h-20 shrink-0" />
               </div>
 
               {/* EC Text Summaries */}
