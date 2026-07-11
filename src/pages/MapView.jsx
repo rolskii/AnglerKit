@@ -283,6 +283,14 @@ export default function MapView() {
     setEditingPinIdx(null);
   }, [pendingPin, editingPinIdx]);
 
+  const handlePinDelete = useCallback(() => {
+    if (editingPinIdx !== null) {
+      setPins((prev) => prev.filter((_, i) => i !== editingPinIdx));
+    }
+    setPendingPin(null);
+    setEditingPinIdx(null);
+  }, [editingPinIdx]);
+
   const handlePinClick = useCallback((idx) => {
     setEditingPinIdx(idx);
     setPinDialogOpen(true);
@@ -632,7 +640,9 @@ export default function MapView() {
           }
         }}
         initialLabel={editingPinIdx !== null ? pins[editingPinIdx]?.label : ''}
+        isEditing={editingPinIdx !== null}
         onSave={handlePinSave}
+        onDelete={handlePinDelete}
       />
       <SaveRouteDialog
         open={saveDialogOpen}
