@@ -65,21 +65,19 @@ export default function DayForecastDialog({ open, onOpenChange, dayData, hourly,
         <div className="px-4 pb-4 space-y-3">
           {/* Summary */}
           <div className="space-y-3">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-stretch gap-3">
-                <p className="text-6xl font-bold text-primary leading-none self-center">{formatTemp(daily.temperature_2m_max[idx], tempUnit)}°</p>
-                <div className="flex flex-col justify-center">
-                  <p className="text-muted-foreground text-sm leading-tight">{getWeatherDescription(daily.weather_code[idx])}</p>
-                  {midApparent != null && (
-                    <p className="text-xs text-muted-foreground leading-tight">Feels like {formatTemp(midApparent, tempUnit)}°</p>
-                  )}
-                  <p className="text-xs text-muted-foreground leading-tight">H: {formatTemp(daily.temperature_2m_max[idx], tempUnit)}°  L: {formatTemp(daily.temperature_2m_min[idx], tempUnit)}°</p>
-                  {location && (
-                    <p className="text-xs text-muted-foreground leading-tight truncate">{location}</p>
-                  )}
-                </div>
-              </div>
+            <div className="flex items-center gap-3">
               <WeatherGlyph code={daily.weather_code[idx]} className="w-20 h-24 shrink-0" />
+              <p className="text-6xl font-bold text-primary leading-none">{formatTemp(daily.temperature_2m_max[idx], tempUnit)}°</p>
+              <div className="flex flex-col justify-center">
+                <p className="text-muted-foreground text-sm leading-tight">{getWeatherDescription(daily.weather_code[idx])}</p>
+                {midApparent != null && (
+                  <p className="text-xs text-muted-foreground leading-tight">Feels like {formatTemp(midApparent, tempUnit)}°</p>
+                )}
+                <p className="text-xs text-muted-foreground leading-tight">H: {formatTemp(daily.temperature_2m_max[idx], tempUnit)}°  L: {formatTemp(daily.temperature_2m_min[idx], tempUnit)}°</p>
+                {location && (
+                  <p className="text-xs text-muted-foreground leading-tight truncate">{location}</p>
+                )}
+              </div>
             </div>
 
             {/* Conditions List */}
