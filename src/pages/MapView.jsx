@@ -356,26 +356,7 @@ export default function MapView() {
         await new Promise((r) => requestAnimationFrame(r));
         if (cancelled || !mapContainerRef.current) return;
 
-        // Try to get current GPS position before initializing
-        let lat = 43.6532;
-        let lon = -79.3832;
-        if (gpsPos) {
-          lat = gpsPos[0];
-          lon = gpsPos[1];
-        } else if (navigator.geolocation) {
-          try {
-            const pos = await new Promise((resolve, reject) => {
-              navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 8000 });
-            });
-            lat = pos.coords.latitude;
-            lon = pos.coords.longitude;
-            setGpsPos([lat, lon]);
-          } catch (e) {
-            // Fall back to default Toronto location
-          }
-        }
-
-        const center = new mapkit.Coordinate(lat, lon);
+        const center = new mapkit.Coordinate(43.6532, -79.3832);
         const map = new mapkit.Map(mapContainerRef.current, {
           center,
           cameraDistance: 5000,
@@ -415,6 +396,22 @@ export default function MapView() {
       setMapReady(false);
     };
   }, []);
+
+  // Request GPS position and recenter map once available
+  useEffect(() => {
+    if (!mapReady || !mapRef.current || gpsPos) return;
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const c = [pos.coords.latitude, pos.coords.longitude];
+        setGpsPos(c);
+        const coord = new mapkit.Coordinate(c[0], c[1]);
+        mapRef.current.setCenterAnimated(coord);
+      },
+      (err) => console.warn('Geolocation failed:', err.message),
+      { enableHighAccuracy: true, maximumAge: 30000, timeout: 15000 }
+    );
+  }, [mapReady, gpsPos]);
 
   // Update track overlay
   useEffect(() => {
