@@ -159,7 +159,7 @@ function getRiseSet(riseSetXml, name) {
   return null;
 }
 
-function parseWeatherXml(xmlText) {
+function parseWeatherXml(xmlText, localDate) {
   const ccMatch = xmlText.match(/<currentConditions>([\s\S]*?)<\/currentConditions>/);
   const fgMatch = xmlText.match(/<forecastGroup>([\s\S]*?)<\/forecastGroup>/);
   const rsMatch = xmlText.match(/<riseSet>([\s\S]*?)<\/riseSet>/);
@@ -234,7 +234,8 @@ function parseWeatherXml(xmlText) {
     night_text_summary: [],
   };
 
-  const today = new Date();
+  // Use the frontend-provided local date to avoid UTC timezone drift
+  const today = localDate ? new Date(localDate + 'T00:00:00') : new Date();
   let dayOffset = 0;
   let i = 0;
   while (i < forecasts.length) {
@@ -368,7 +369,7 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json();
-    const { lat, lon } = body;
+    const { lat, lon, localDate } = body;
     if (!lat || !lon) {
       return Response.json({ error: 'Missing lat/lon parameters' }, { status: 400 });
     }
@@ -386,7 +387,7 @@ Deno.serve(async (req) => {
     }
 
     const xml = await fetchWeatherXml(site.province, site.code);
-    const weatherData = parseWeatherXml(xml);
+    const weatherData = parseWeatherXml(xml, localDate);
 
     return Response.json(weatherData);
   } catch (error) {
