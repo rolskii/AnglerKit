@@ -219,8 +219,18 @@ export default function Home() {
   const fetchMapStats = async () => {
     try {
       const routes = await base44.entities.MapCourse.list("-updated_date", 500);
-      const totalPins = routes.reduce((sum, r) => sum + (r.pins?.length || 0), 0);
+      let totalPins = routes.reduce((sum, r) => sum + (r.pins?.length || 0), 0);
       const routeCount = routes.length;
+
+      // Include unsaved pins persisted in localStorage from the Maps page
+      try {
+        const draftPins = localStorage.getItem('mapview_pins');
+        if (draftPins) {
+          const parsed = JSON.parse(draftPins);
+          if (Array.isArray(parsed)) totalPins += parsed.length;
+        }
+      } catch {}
+
       setDescriptions(prev => ({
         ...prev,
         map: `${routeCount} ${routeCount === 1 ? "route" : "routes"} · ${totalPins} ${totalPins === 1 ? "pin" : "pins"}`
