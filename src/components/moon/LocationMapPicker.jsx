@@ -67,8 +67,8 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
   const debounceRef = useRef(null);
   const skipReverseGeocodeRef = useRef(false);
   const savedAnnotationsRef = useRef([]);
-  const autoSearchRef = useRef(null);
   const searchRef = useRef(null);
+  const lastAutocompleteResultsRef = useRef([]);
 
   useEffect(() => {
     const syncSaved = () => {
@@ -118,8 +118,7 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
 
         mapRef.current = map;
 
-        // Create MapKit JS search instances for location-biased autocomplete
-        autoSearchRef.current = new mapkit.AutocompleteSearch({ region: map.region });
+        // Create MapKit JS search instance for location-biased autocomplete
         searchRef.current = new mapkit.Search({ region: map.region });
 
         // Ensure placeName is set (in case region-change-end doesn't fire on init)
@@ -162,7 +161,6 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
           if (cancelled) return;
           const c = map.center;
           setMarkerPos([c.latitude, c.longitude]);
-          if (autoSearchRef.current) autoSearchRef.current.region = map.region;
           if (searchRef.current) searchRef.current.region = map.region;
           if (skipReverseGeocodeRef.current) {
             skipReverseGeocodeRef.current = false;
@@ -206,18 +204,15 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
       return;
     }
     debounceRef.current = setTimeout(() => {
-      if (!autoSearchRef.current) { setSuggestions([]); return; }
-      autoSearchRef.current.search(value, (err, data) => {
+      if (!searchRef.current) { setSuggestions([]); return; }
+      searchRef.current.autocomplete(value, (err, data) => {
         if (err || !data || !data.results) { setSuggestions([]); return; }
+        lastAutocompleteResultsRef.current = data.results;
         const results = data.results.map(r => {
-          const title = r.displayTitle || r.title || '';
-          const subtitle = r.displaySubtitle || r.subtitle || '';
-          return {
-            name: subtitle ? `${title}, ${subtitle}` : title,
-            title,
-            subtitle,
-          };
-        }).filter(r => r.name);
+          const lines = r.displayLines || [];
+          const name = lines.join(', ') || r.name || 'Unknown';
+          return { name, autocompleteResult: r };
+        }).filter(r => r.name && r.name !== 'Unknown');
         setSuggestions(results);
         setShowSuggestions(true);
       });
@@ -227,8 +222,9 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
   const selectSuggestion = (s) => {
     setShowSuggestions(false);
     setSearchValue(s.name);
-    if (!searchRef.current) return;
-    searchRef.current.search(s.name, (err, data) => {
+    if (!searchRef.current || !s.autocompleteResult) return;
+    // Pass the SearchAutocompleteResult object directly to search() for full place details
+    searchRef.current.search(s.autocompleteResult, (err, data) => {
       if (err || !data || !data.places || !data.places[0]) return;
       const place = data.places[0];
       if (!place.coordinate) return;
