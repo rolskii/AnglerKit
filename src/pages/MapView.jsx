@@ -538,6 +538,10 @@ export default function MapView() {
       const first = route.track[0];
       setRecenterTarget([first.lat, first.lon]);
       setRecenterTrigger((t) => t + 1);
+    } else if (route.pins && route.pins.length > 0) {
+      const first = route.pins[0];
+      setRecenterTarget([first.lat, first.lon]);
+      setRecenterTrigger((t) => t + 1);
     }
   }, []);
 
@@ -881,6 +885,58 @@ export default function MapView() {
         })}
         {/* All routes centroid markers — clickable to view stats & rename */}
         {mapReady && mapRef.current && showAllRoutes && savedRoutes.map((route, idx) => {
+          // Pins-only entries: show each pin as a clickable marker
+          if ((!route.track || route.track.length === 0) && route.pins && route.pins.length > 0) {
+            return route.pins.map((pin, pIdx) => {
+              const coord = new mapkit.Coordinate(pin.lat, pin.lon);
+              const point = mapRef.current.convertCoordinateToPointOnPage(coord);
+              if (!point) return null;
+              const containerRect = mapContainerRef.current?.getBoundingClientRect();
+              if (!containerRect) return null;
+              const left = point.x - containerRect.left;
+              const top = point.y - containerRect.top;
+              if (left < -30 || left > containerRect.width + 30 || top < -30 || top > containerRect.height + 30) return null;
+              return (
+                <div
+                  key={`${route.id}-pin-${pIdx}`}
+                  onClick={() => { setSelectedRoute(route); setRouteInfoOpen(true); }}
+                  className="absolute z-[455] cursor-pointer"
+                  style={{ left, top, transform: 'translate(-50%, -100%)' }}
+                >
+                  {pin.marker === 'fish' ? (
+                    <div style={{
+                      width: '32px', height: '32px',
+                      background: '#10b981', border: '3px solid #ffffff',
+                      borderRadius: '50%',
+                      boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      <FishIcon style={{ width: '20px', height: '20px', color: 'white' }} />
+                    </div>
+                  ) : (
+                    <div style={{
+                      width: '28px', height: '28px',
+                      background: '#f59e0b', border: '3px solid #ffffff',
+                      borderRadius: '50% 50% 50% 0',
+                      transform: 'rotate(-45deg)',
+                      boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      <div style={{ width: '8px', height: '8px', background: '#ffffff', borderRadius: '50%', transform: 'rotate(45deg)' }} />
+                    </div>
+                  )}
+                  <div style={{
+                    position: 'absolute', top: '40px', left: '50%', transform: 'translateX(-50%)',
+                    whiteSpace: 'nowrap', fontSize: '11px', fontWeight: 600,
+                    background: 'rgba(0,0,0,0.7)', color: 'white', padding: '2px 6px', borderRadius: '4px',
+                    pointerEvents: 'none',
+                  }}>
+                    {pin.label || route.name}
+                  </div>
+                </div>
+              );
+            });
+          }
           if (!route.track || route.track.length === 0) return null;
           const lat = route.track.reduce((sum, p) => sum + p.lat, 0) / route.track.length;
           const lon = route.track.reduce((sum, p) => sum + p.lon, 0) / route.track.length;
@@ -1152,6 +1208,7 @@ export default function MapView() {
         open={saveDialogOpen}
         onOpenChange={setSaveDialogOpen}
         onSave={handleSaveRoute}
+        hasTrack={hasTrack}
       />
       <RouteInfoDialog
         open={routeInfoOpen}

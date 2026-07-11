@@ -4,20 +4,20 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 
-export default function SaveRouteDialog({ open, onOpenChange, onSave }) {
+export default function SaveRouteDialog({ open, onOpenChange, onSave, hasTrack }) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
 
   useEffect(() => {
     if (open) {
       const now = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-      setName(`Route — ${now}`);
+      setName(`${hasTrack ? 'Route' : 'Pins'} — ${now}`);
       setDescription('');
     }
-  }, [open]);
+  }, [open, hasTrack]);
 
   const handleSave = () => {
-    onSave(name.trim() || 'Untitled Route', description.trim());
+    onSave(name.trim() || (hasTrack ? 'Untitled Route' : 'Untitled Pins'), description.trim());
     onOpenChange(false);
   };
 
@@ -25,7 +25,7 @@ export default function SaveRouteDialog({ open, onOpenChange, onSave }) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>Save Route</DialogTitle>
+          <DialogTitle>{hasTrack ? 'Save Route' : 'Save Pins & POIs'}</DialogTitle>
         </DialogHeader>
         <div className="space-y-3 mt-2">
           <div>

@@ -19,14 +19,16 @@ export default function SavedRoutesDrawer({ open, onOpenChange, routes, onLoad, 
           {routes.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-8">No saved routes yet. Record a route and save it!</p>
           ) : (
-            routes.map((r) => (
+            routes.map((r) => {
+                const isPinsOnly = (!r.track || r.track.length === 0) && (r.pins?.length || 0) > 0;
+                return (
               <div key={r.id} className="flex items-center gap-3 p-3 rounded-xl border border-border hover:bg-accent/10 transition-colors">
                 <button
                   onClick={() => onLoad(r)}
                   className="flex-1 flex items-center gap-3 text-left min-w-0"
                 >
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                    <Route className="w-5 h-5 text-primary" />
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${isPinsOnly ? 'bg-amber-500/10' : 'bg-primary/10'}`}>
+                    {isPinsOnly ? <MapPin className="w-5 h-5 text-amber-500" /> : <Route className="w-5 h-5 text-primary" />}
                   </div>
                   <div className="min-w-0">
                     <p className="text-sm font-medium truncate">{r.name}</p>
@@ -38,10 +40,12 @@ export default function SavedRoutesDrawer({ open, onOpenChange, routes, onLoad, 
                         </span>
                       )}
                       {r.distance_km != null && r.distance_km > 0 && <span>{r.distance_km.toFixed(2)} km</span>}
-                      <span className="flex items-center gap-0.5">
-                        <MapPin className="w-3 h-3" />
-                        {r.pins?.length || 0}
-                      </span>
+                      {(r.pins?.length || 0) > 0 && (
+                        <span className="flex items-center gap-0.5">
+                          <MapPin className="w-3 h-3" />
+                          {r.pins?.length || 0}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </button>
@@ -52,7 +56,8 @@ export default function SavedRoutesDrawer({ open, onOpenChange, routes, onLoad, 
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
-            ))
+                );
+              })
           )}
         </div>
       </SheetContent>
