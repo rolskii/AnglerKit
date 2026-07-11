@@ -469,29 +469,7 @@ export default function MapView() {
     }
   }, [gpsPos, mapReady]);
 
-  // Update pin annotations
-  useEffect(() => {
-    if (!mapReady || !mapRef.current) return;
-    const map = mapRef.current;
-
-    pinAnnotationsRef.current.forEach((a) => map.removeAnnotation(a));
-    pinAnnotationsRef.current = [];
-
-    pins.forEach((pin, idx) => {
-      const coord = new mapkit.Coordinate(pin.lat, pin.lon);
-      const annotation = new mapkit.Annotation(coord, pinMarkerFactory, {
-        title: pin.label,
-        displayPriority: 1000,
-        animates: false,
-        calloutEnabled: false,
-      });
-      annotation.addEventListener('select', () => {
-        handlePinClick(idx);
-      });
-      map.addAnnotation(annotation);
-      pinAnnotationsRef.current.push(annotation);
-    });
-  }, [pins, mapReady, handlePinClick]);
+  // Pins are rendered as DOM overlays (see JSX below) — no MapKit annotations needed
 
   // Recenter
   useEffect(() => {
