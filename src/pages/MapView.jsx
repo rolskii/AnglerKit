@@ -7,6 +7,7 @@ import SaveRouteDialog from '@/components/map/SaveRouteDialog';
 import SavedRoutesDrawer from '@/components/map/SavedRoutesDrawer';
 import { ChevronLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import BottomTabBar from '@/components/BottomTabBar';
 
 /* global mapkit */
 
@@ -644,6 +645,8 @@ export default function MapView() {
         onLoad={handleLoadRoute}
         onDeleted={handleRouteDeleted}
       />
+
+      <BottomTabBar />
     </div>
   );
 }
