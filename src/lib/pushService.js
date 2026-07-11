@@ -26,21 +26,18 @@ const urlBase64ToUint8Array = (base64String) => {
 
 export async function ensurePushSubscription() {
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-    console.warn('Push notifications not supported on this device/browser.');
-    return false;
+    return { ok: false, error: 'Push notifications are not supported by this browser.' };
   }
 
   // Request permission if not yet granted
   if (Notification.permission === 'default') {
     const permission = await Notification.requestPermission();
     if (permission !== 'granted') {
-      console.warn('Notification permission not granted.');
-      return false;
+      return { ok: false, error: 'Permission was not granted. The browser may have silently blocked the prompt — try resetting site permissions in your browser settings.' };
     }
   }
   if (Notification.permission !== 'granted') {
-    console.warn('Notification permission denied.');
-    return false;
+    return { ok: false, error: 'Notification permission was previously denied. Reset it in your browser settings: Site Settings → Notifications → Allow.' };
   }
 
   try {
@@ -64,10 +61,10 @@ export async function ensurePushSubscription() {
       auth: subscription.keys.auth,
     });
     console.info('Push subscription registered:', res.data);
-    return true;
+    return { ok: true };
   } catch (e) {
     console.error('Push subscription failed:', e);
-    return false;
+    return { ok: false, error: e.message || 'Unknown error during push subscription.' };
   }
 }
 

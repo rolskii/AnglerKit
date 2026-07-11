@@ -45,26 +45,20 @@ export default function NotificationSetup() {
 
   const handleEnable = async () => {
     setSubscribing(true);
-    const ok = await ensurePushSubscription();
+    const result = await ensurePushSubscription();
     setSubscribing(false);
     const currentPerm = typeof Notification !== 'undefined' ? Notification.permission : 'denied';
     setPermission(currentPerm);
-    if (ok) {
+    if (result.ok) {
       toast({
         title: 'Push notifications enabled',
         description: 'Alarms will fire even when the app is closed.',
       });
-    } else if (currentPerm === 'denied') {
-      toast({
-        variant: 'destructive',
-        title: 'Notifications blocked',
-        description: 'Enable them in your browser settings: Site Settings → Notifications → Allow.',
-      });
     } else {
       toast({
         variant: 'destructive',
-        title: 'Could not enable',
-        description: 'The permission prompt may have been blocked. Try opening the app in a new tab.',
+        title: 'Could not enable notifications',
+        description: result.error || 'Unknown error.',
       });
     }
   };
@@ -113,6 +107,8 @@ export default function NotificationSetup() {
 
   // ── Running inside an iframe (app preview) ──
   if (inIframe && permission !== 'granted') {
+    const appUrl = window.location.href;
+    const cleanUrl = appUrl.replace(/\/+$/, '');
     return (
       <div className="space-y-3">
         <div className="flex items-center gap-2 text-amber-600">
@@ -120,9 +116,15 @@ export default function NotificationSetup() {
           <p className="text-sm font-medium">Open in new tab to enable</p>
         </div>
         <p className="text-xs text-muted-foreground">
-          Browsers block notification permission requests inside embedded previews. Open the app in its own tab to enable notifications.
+          Browsers block notification permission requests inside embedded previews. Copy this link and open it directly in your browser:
         </p>
-        <Button onClick={() => window.open(window.location.href, '_blank')} className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
+          <code className="flex-1 px-2 py-1.5 text-xs bg-muted rounded-md truncate">{cleanUrl}</code>
+          <Button size="sm" onClick={() => navigator.clipboard?.writeText(cleanUrl)} variant="outline">
+            Copy
+          </Button>
+        </div>
+        <Button onClick={() => window.open(cleanUrl, '_blank')} className="flex items-center gap-2">
           <ExternalLink className="w-4 h-4" />
           Open in New Tab
         </Button>
