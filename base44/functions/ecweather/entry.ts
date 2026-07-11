@@ -159,7 +159,7 @@ function getRiseSet(riseSetXml, name) {
   return null;
 }
 
-function parseWeatherXml(xmlText, localDate) {
+function parseWeatherXml(xmlText, localDate, tzOffset) {
   const ccMatch = xmlText.match(/<currentConditions>([\s\S]*?)<\/currentConditions>/);
   const fgMatch = xmlText.match(/<forecastGroup>([\s\S]*?)<\/forecastGroup>/);
   const rsMatch = xmlText.match(/<riseSet>([\s\S]*?)<\/riseSet>/);
@@ -331,11 +331,14 @@ function parseWeatherXml(xmlText, localDate) {
 
   const nowHour = new Date();
   nowHour.setMinutes(0, 0, 0);
+  const tzOffsetHours = tzOffset != null ? -tzOffset / 60 : 0;
 
   for (let h = 0; h < 48; h++) {
     const hourTime = new Date(nowHour.getTime() + h * 3600000);
-    const hourDateStr = `${hourTime.getFullYear()}-${String(hourTime.getMonth() + 1).padStart(2, '0')}-${String(hourTime.getDate()).padStart(2, '0')}`;
-    const hour = hourTime.getHours();
+    // Shift UTC to local for daily.time matching and temperature interpolation
+    const localTime = new Date(hourTime.getTime() + tzOffsetHours * 3600000);
+    const hourDateStr = `${localTime.getFullYear()}-${String(localTime.getMonth() + 1).padStart(2, '0')}-${String(localTime.getDate()).padStart(2, '0')}`;
+    const hour = localTime.getHours();
 
     const dayIdx = daily.time.indexOf(hourDateStr);
     let highT = temperature, lowT = temperature;
@@ -369,7 +372,7 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json();
-    const { lat, lon, localDate } = body;
+    const { lat, lon, localDate, tzOffset } = body;
     if (!lat || !lon) {
       return Response.json({ error: 'Missing lat/lon parameters' }, { status: 400 });
     }
@@ -387,7 +390,7 @@ Deno.serve(async (req) => {
     }
 
     const xml = await fetchWeatherXml(site.province, site.code);
-    const weatherData = parseWeatherXml(xml, localDate);
+    const weatherData = parseWeatherXml(xml, localDate, tzOffset);
 
     return Response.json(weatherData);
   } catch (error) {

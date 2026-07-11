@@ -78,7 +78,7 @@ export default function Weather() {
     try {
       setLoading(true);
       setError(null);
-      const res = await base44.functions.invoke('ecweather', { lat, lon, unit, localDate: todayStr() });
+      const res = await base44.functions.invoke('ecweather', { lat, lon, unit, localDate: todayStr(), tzOffset: new Date().getTimezoneOffset() });
       const data = res.data;
       const coords = { lat, lon, name: locationName };
       setLastCoords(coords);
