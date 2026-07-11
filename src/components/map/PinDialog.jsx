@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Trash2, MapPin, Fish } from 'lucide-react';
+import { Trash2, MapPin } from 'lucide-react';
+import FishIcon from '@/components/FishIcon';
 
 export default function PinDialog({ open, onOpenChange, initialLabel, initialMarker, isEditing, onSave, onDelete }) {
   const [label, setLabel] = useState('');
@@ -47,7 +48,7 @@ export default function PinDialog({ open, onOpenChange, initialLabel, initialMar
               marker === 'fish' ? 'border-emerald-500 bg-emerald-50 text-emerald-600' : 'border-border text-muted-foreground'
             }`}
           >
-            <Fish className="w-6 h-6" />
+            <FishIcon className="w-6 h-6" />
             <span className="text-xs font-medium">Fish Spot</span>
           </button>
         </div>
