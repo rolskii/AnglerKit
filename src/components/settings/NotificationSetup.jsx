@@ -57,12 +57,16 @@ export default function NotificationSetup() {
     } else {
       // Update local state to reflect what the browser actually returned
       if (result.permission) setPermission(result.permission);
-      toast({
-        variant: 'destructive',
-        title: 'Could not enable notifications',
-        description: result.error || 'Unknown error.',
-        duration: 8000,
-      });
+      // Only show toast for unexpected errors — if permission was denied,
+      // the inline denied-state UI below already has browser-specific instructions.
+      if (!result.permission || result.permission === 'default') {
+        toast({
+          variant: 'destructive',
+          title: 'Could not enable notifications',
+          description: result.error || 'Unknown error.',
+          duration: 8000,
+        });
+      }
     }
   };
 
