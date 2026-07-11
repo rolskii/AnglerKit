@@ -218,6 +218,40 @@ export default function Weather() {
     return codes[code] || 'Unknown';
   };
 
+  const getHealthAdvisory = () => {
+    const parts = [];
+
+    // Humidex advisory (based on Celsius thresholds)
+    if (current.humidex != null) {
+      const h = current.humidex;
+      if (h >= 46) {
+        parts.push({ icon: '🔥', text: `Humidex ${formatTemp(h, tempUnit)}° — dangerous heat. Avoid exertion and stay hydrated.`, tone: 'text-red-600' });
+      } else if (h >= 40) {
+        parts.push({ icon: '⚠️', text: `Humidex ${formatTemp(h, tempUnit)}° — great discomfort. Avoid strenuous outdoor activity.`, tone: 'text-orange-600' });
+      } else if (h >= 30) {
+        parts.push({ icon: '💧', text: `Humidex ${formatTemp(h, tempUnit)}° — some discomfort from humidity.`, tone: 'text-amber-600' });
+      } else {
+        parts.push({ icon: '✅', text: `Humidex ${formatTemp(h, tempUnit)}° — comfortable.`, tone: 'text-green-600' });
+      }
+    }
+
+    // UV index advisory
+    if (current.uv_index != null) {
+      const uv = current.uv_index;
+      if (uv >= 8) {
+        parts.push({ icon: '🧴', text: `UV index ${uv} (${current.uv_category || 'very high'}) — apply heavy sunblock, wear a hat, and limit sun exposure.`, tone: 'text-red-600' });
+      } else if (uv >= 6) {
+        parts.push({ icon: '🧴', text: `UV index ${uv} (${current.uv_category || 'high'}) — apply sunblock and seek shade during midday.`, tone: 'text-orange-600' });
+      } else if (uv >= 3) {
+        parts.push({ icon: '🧴', text: `UV index ${uv} (${current.uv_category || 'moderate'}) — sunblock recommended.`, tone: 'text-amber-600' });
+      } else {
+        parts.push({ icon: '✅', text: `UV index ${uv} (${current.uv_category || 'low'}) — no sun protection needed.`, tone: 'text-green-600' });
+      }
+    }
+
+    return parts;
+  };
+
   const isNight = () => {
     if (!weather?.daily?.sunrise?.[0] || !weather?.daily?.sunset?.[0]) return false;
     const now = new Date();
@@ -353,6 +387,17 @@ export default function Weather() {
                   </p>
                 )}
               </div>
+
+              {/* Health Advisory */}
+              {getHealthAdvisory().length > 0 && (
+                <div className="space-y-1">
+                  {getHealthAdvisory().map((adv, i) => (
+                    <p key={i} className={`text-xs font-medium leading-snug ${adv.tone}`}>
+                      {adv.icon} {adv.text}
+                    </p>
+                  ))}
+                </div>
+              )}
 
               {/* Conditions Grid */}
               <div className="grid grid-cols-3 gap-2">

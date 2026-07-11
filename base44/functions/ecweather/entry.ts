@@ -182,6 +182,26 @@ function parseWeatherXml(xmlText, localDate, tzOffset) {
   const windSpeed = parseFloat(getTagText(cc, 'speed')) || 0;
   const windDirection = getTagText(cc, 'direction');
   const iconCode = parseInt(getTagText(cc, 'iconCode')) || 0;
+  const uvIndexVal = getAttr(cc, 'uv', 'index');
+  const uvIndexNum = uvIndexVal ? parseFloat(uvIndexVal) : null;
+  const uvCategory = getAttr(cc, 'uv', 'category');
+
+  // Fallback: extract UV index from the first forecast's text summary
+  // (EC XML includes UV in currentConditions only during certain hours,
+  //  but the forecast text consistently mentions it, e.g. "UV index 8 or very high")
+  let uvIndexFallback = uvIndexNum;
+  let uvCategoryFallback = uvCategory;
+  if (uvIndexFallback == null) {
+    const firstForecast = fgMatch ? (fgMatch[1].match(/<forecast[^>]*>[\s\S]*?<\/forecast>/) || [])[0] : null;
+    const summaryText = firstForecast ? getTagText(firstForecast, 'textSummary') : null;
+    if (summaryText) {
+      const uvMatch = summaryText.match(/UV index\s+(\d+)\s+or\s+(\w+)/i);
+      if (uvMatch) {
+        uvIndexFallback = parseFloat(uvMatch[1]);
+        uvCategoryFallback = uvMatch[2];
+      }
+    }
+  }
 
   let apparentTemp = temperature;
   if (windChill) apparentTemp = parseFloat(windChill);
@@ -201,6 +221,8 @@ function parseWeatherXml(xmlText, localDate, tzOffset) {
     visibility: visibility, // km
     pressure: pressure,
     pressure_tendency: pressureTendency,
+    uv_index: uvIndexFallback,
+    uv_category: uvCategoryFallback,
   };
 
   // --- Forecast periods ---
