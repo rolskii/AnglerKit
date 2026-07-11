@@ -342,6 +342,22 @@ export default function Weather() {
               </div>
               <p className="text-center text-sm font-medium text-muted-foreground -mt-1">{current.condition || getWeatherDescription(current.weather_code)}</p>
 
+              {/* EC Text Summaries */}
+              {(ecDaySummary || ecNightSummary) ? (
+                <div className="space-y-1 pt-0.5">
+                  {ecDaySummary && (
+                    <p className="text-sm text-foreground/80 leading-relaxed text-center">{ecDaySummary}</p>
+                  )}
+                  {ecNightSummary && (
+                    <p className="text-sm text-foreground/80 leading-relaxed text-center">
+                      <span className="font-semibold">Night:</span> {ecNightSummary}
+                    </p>
+                  )}
+                </div>
+              ) : getDailySummary() ? (
+                <p className="text-sm text-foreground/80 leading-relaxed text-center pt-0.5">{getDailySummary()}</p>
+              ) : null}
+
               {/* Conditions Grid */}
               <div className="grid grid-cols-3 gap-2">
                 <div className="bg-secondary p-2 rounded-lg flex flex-col items-center gap-1 overflow-hidden">
@@ -391,21 +407,6 @@ export default function Weather() {
                 </div>
               </div>
 
-              {/* EC Text Summaries / Daily Summary */}
-              {(ecDaySummary || ecNightSummary) ? (
-                <div className="space-y-1.5 pt-1">
-                  {ecDaySummary && (
-                    <p className="text-xs text-muted-foreground leading-relaxed">{ecDaySummary}</p>
-                  )}
-                  {ecNightSummary && (
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      <span className="font-semibold">Night:</span> {ecNightSummary}
-                    </p>
-                  )}
-                </div>
-              ) : getDailySummary() ? (
-                <p className="text-xs text-muted-foreground leading-relaxed pt-1">{getDailySummary()}</p>
-              ) : null}
             </div>
           </CardContent>
         </Card>
