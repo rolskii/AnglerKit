@@ -17,7 +17,7 @@ export default function PinDialog({ open, onOpenChange, initialLabel, onSave }) 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm">
+      <DialogContent className="max-w-sm top-4 translate-y-0 data-[state=closed]:slide-out-to-top-[2%] data-[state=open]:slide-in-from-top-[2%]">
         <DialogHeader>
           <DialogTitle>Label this point</DialogTitle>
         </DialogHeader>
