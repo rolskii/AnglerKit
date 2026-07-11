@@ -284,26 +284,6 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
           <DialogTitle>Choose Location</DialogTitle>
         </DialogHeader>
 
-        {/* Map */}
-        <div className="relative h-[50vh] min-h-[280px] w-full bg-muted">
-          <div ref={mapContainerRef} className="h-full w-full" />
-          {mapLoading && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
-            </div>
-          )}
-          {/* Center pin overlay */}
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-            <div className="w-8 h-8 -mt-8 text-primary drop-shadow-lg">
-              <MapPin className="w-8 h-8" fill="currentColor" />
-            </div>
-          </div>
-          {/* Hint */}
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-black/60 text-white text-[10px] whitespace-nowrap">
-            Drag map to set location
-          </div>
-        </div>
-
         {/* Search bar */}
         <div className="px-4 py-2 relative">
           <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted">
@@ -330,6 +310,26 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
               ))}
             </div>
           )}
+        </div>
+
+        {/* Map */}
+        <div className="relative h-[45vh] min-h-[240px] w-full bg-muted">
+          <div ref={mapContainerRef} className="h-full w-full" />
+          {mapLoading && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
+            </div>
+          )}
+          {/* Center pin overlay */}
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+            <div className="w-8 h-8 -mt-8 text-primary drop-shadow-lg">
+              <MapPin className="w-8 h-8" fill="currentColor" />
+            </div>
+          </div>
+          {/* Hint */}
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-black/60 text-white text-[10px] whitespace-nowrap">
+            Drag map to set location
+          </div>
         </div>
 
         {/* Confirm button + Save */}
