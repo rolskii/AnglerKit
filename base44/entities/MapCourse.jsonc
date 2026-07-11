@@ -61,20 +61,29 @@
     "drawings": {
       "type": "array",
       "items": {
-        "type": "array",
-        "items": {
-          "type": "object",
-          "properties": {
-            "lat": {
-              "type": "number"
-            },
-            "lon": {
-              "type": "number"
+        "type": "object",
+        "properties": {
+          "color": {
+            "type": "string",
+            "description": "Stroke color (hex)"
+          },
+          "points": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "lat": {
+                  "type": "number"
+                },
+                "lon": {
+                  "type": "number"
+                }
+              }
             }
           }
         }
       },
-      "description": "Freehand drawing strokes as arrays of coordinate points",
+      "description": "Freehand drawing strokes with color",
       "default": []
     },
     "distance_km": {

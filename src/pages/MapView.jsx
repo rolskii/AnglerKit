@@ -102,8 +102,9 @@ export default function MapView() {
   const [selectedRoute, setSelectedRoute] = useState(null);
   const [routeInfoOpen, setRouteInfoOpen] = useState(false);
   const [drawMode, setDrawMode] = useState(false);
+  const [drawColor, setDrawColor] = useState('#ef4444');
   const [drawings, setDrawings] = useState([]);
-  const [currentStroke, setCurrentStroke] = useState([]);
+  const [currentStroke, setCurrentStroke] = useState(null);
   const [measureMode, setMeasureMode] = useState(false);
   const [measurePoints, setMeasurePoints] = useState([]);
   const [mapReady, setMapReady] = useState(false);
@@ -370,12 +371,12 @@ export default function MapView() {
 
   const handleDrawStroke = useCallback((points, done) => {
     if (done) {
-      if (points.length > 1) setDrawings((prev) => [...prev, points]);
-      setCurrentStroke([]);
+      if (points.length > 1) setDrawings((prev) => [...prev, { color: drawColor, points }]);
+      setCurrentStroke(null);
     } else {
-      setCurrentStroke(points);
+      setCurrentStroke({ color: drawColor, points });
     }
-  }, []);
+  }, [drawColor]);
 
   // Measurement handlers
   const handleToggleMeasure = useCallback(() => {
@@ -614,14 +615,16 @@ export default function MapView() {
     drawingOverlaysRef.current = [];
 
     const allStrokes = [...drawings];
-    if (currentStroke.length >= 2) allStrokes.push(currentStroke);
+    if (currentStroke && currentStroke.points && currentStroke.points.length >= 2) allStrokes.push(currentStroke);
 
     allStrokes.forEach((stroke) => {
-      if (stroke.length < 2) return;
-      const coords = stroke.map((p) => new mapkit.Coordinate(p.lat, p.lon));
+      const pts = Array.isArray(stroke) ? stroke : stroke.points;
+      if (!pts || pts.length < 2) return;
+      const coords = pts.map((p) => new mapkit.Coordinate(p.lat, p.lon));
       const isCurrent = stroke === currentStroke;
+      const color = Array.isArray(stroke) ? '#dc2626' : (stroke.color || '#dc2626');
       const style = new mapkit.Style({
-        strokeColor: isCurrent ? '#ef4444' : '#dc2626',
+        strokeColor: color,
         lineWidth: 3,
         lineJoin: 'round',
         lineCap: 'round',
@@ -911,7 +914,7 @@ export default function MapView() {
       )}
       {/* Draw mode bar */}
       {drawMode && (
-        <DrawBar onClear={handleDrawClear} strokeCount={drawings.length} />
+        <DrawBar onClear={handleDrawClear} strokeCount={drawings.length} color={drawColor} onColorChange={setDrawColor} />
       )}
       {/* Measurement bar */}
       {measurePoints.length > 0 && (
