@@ -417,6 +417,7 @@ export default function MapView() {
   }, [recenterTrigger, recenterTarget, mapReady]);
 
   const hasTrack = trackPoints.length > 0;
+  const hasPins = pins.length > 0;
 
   return (
     <div className="fixed inset-0 z-[4000] bg-background" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
@@ -458,6 +459,7 @@ export default function MapView() {
         isTracking={isTracking}
         isPaused={isPaused}
         hasTrack={hasTrack}
+        hasPins={hasPins}
         pinMode={pinMode}
         onStart={startTracking}
         onPause={pauseTracking}
