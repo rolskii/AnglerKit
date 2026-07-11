@@ -299,7 +299,7 @@ export default function Weather() {
         {/* Current Weather Card */}
         <Card className="bg-primary/10">
           <CardContent className="p-3">
-            <div className="space-y-3">
+            <div className="space-y-2">
               {/* Date and Location bar */}
               <div className="flex items-center justify-between">
                 <Popover>
@@ -335,9 +335,9 @@ export default function Weather() {
               </div>
 
               {/* Temperature hero + description */}
-              <div className="flex items-center justify-center gap-3">
+              <div className="flex items-center justify-center gap-2 py-0">
                 <p className="text-6xl font-bold text-primary leading-none">{formatTemp(current.temperature_2m, tempUnit)}°</p>
-                <WeatherGlyph code={current.weather_code} isNight={isNight()} darkOutline className="w-20 h-24 shrink-0" />
+                <WeatherGlyph code={current.weather_code} isNight={isNight()} darkOutline className="w-16 h-20 shrink-0" />
               </div>
 
               {/* EC Text Summaries */}
