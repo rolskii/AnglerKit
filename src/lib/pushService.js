@@ -62,21 +62,33 @@ export async function ensurePushSubscription() {
       console.info('New push subscription created.');
     }
 
-    // Safari sometimes returns a subscription without encryption keys.
-    // Retry up to 3 times with increasing delays — each retry does a full
-    // SW reset to force a clean subscription.
-    const hasValidKeys = (sub) => !!(sub && sub.keys && sub.keys.p256dh && sub.keys.auth);
+    // Extract encryption keys — try subscription.keys first, fall back to
+    // getKey() which is the spec'd method and sometimes works on iOS when
+    // subscription.keys comes back empty.
+    let p256dh = subscription?.keys?.p256dh;
+    let auth = subscription?.keys?.auth;
 
-    for (let attempt = 0; attempt < 3 && !hasValidKeys(subscription); attempt++) {
-      console.warn(`Subscription missing keys (attempt ${attempt + 1}/3), resetting…`);
+    if ((!p256dh || !auth) && subscription) {
+      try {
+        const p256dhBuf = subscription.getKey('p256dh');
+        const authBuf = subscription.getKey('auth');
+        if (p256dhBuf) p256dh = btoa(String.fromCharCode(...new Uint8Array(p256dhBuf)));
+        if (authBuf) auth = btoa(String.fromCharCode(...new Uint8Array(authBuf)));
+      } catch (_) {}
+    }
+
+    const hasValidKeys = !!(p256dh && auth);
+
+    // If still missing keys, do one SW reset and retry once.
+    if (!hasValidKeys) {
+      console.warn('Subscription missing keys, doing SW reset…');
       if (subscription) { try { await subscription.unsubscribe(); } catch (_) {} }
       const registrations = await navigator.serviceWorker.getRegistrations();
       for (const reg of registrations) { try { await reg.unregister(); } catch (_) {} }
-      await new Promise(r => setTimeout(r, 800 + attempt * 500));
+      await new Promise(r => setTimeout(r, 800));
       const freshReg = await navigator.serviceWorker.register('/sw.js');
-      // Wait for the new SW to be fully activated before subscribing
       if (freshReg.active) {
-        // already active — good
+        // already active
       } else if (freshReg.installing || freshReg.waiting) {
         await new Promise((resolve) => {
           const sw = freshReg.installing || freshReg.waiting;
@@ -95,22 +107,28 @@ export async function ensurePushSubscription() {
           userVisibleOnly: true,
           applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
         });
-        console.info(`Subscription after reset (attempt ${attempt + 1}):`, JSON.stringify({
-          endpoint: subscription?.endpoint,
-          hasKeys: hasValidKeys(subscription),
-        }));
+        p256dh = subscription?.keys?.p256dh;
+        auth = subscription?.keys?.auth;
+        if ((!p256dh || !auth) && subscription) {
+          try {
+            const p256dhBuf = subscription.getKey('p256dh');
+            const authBuf = subscription.getKey('auth');
+            if (p256dhBuf) p256dh = btoa(String.fromCharCode(...new Uint8Array(p256dhBuf)));
+            if (authBuf) auth = btoa(String.fromCharCode(...new Uint8Array(authBuf)));
+          } catch (_) {}
+        }
       } catch (subErr) {
-        console.error(`Subscribe attempt ${attempt + 1} failed:`, subErr);
+        console.error('Retry subscribe failed:', subErr);
       }
     }
 
-    if (!hasValidKeys(subscription)) {
+    if (!p256dh || !auth) {
       const ua = navigator.userAgent || '';
-      const isSafari = /^((?!chrome|android).)*safari/i.test(ua);
+      const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
       return {
         ok: false,
-        error: isSafari
-          ? 'Safari did not return a valid push subscription after multiple attempts. Please try: 1) Fully quit Safari (Cmd+Q), 2) Reopen and navigate to this page, 3) Click Enable again. If it still fails, use Chrome or Edge.'
+        error: isIOS
+          ? 'Your iPhone could not create a valid push subscription. Please try: 1) Remove this app from your Home Screen, 2) Go to Settings → Safari → Advanced → Website Data and clear data for this site, 3) Reopen Safari and add to Home Screen again, 4) Open from the Home Screen icon and tap Enable. If it still fails, iOS WebKit may be blocking this feature — it\'s a known iOS limitation.'
           : 'The browser returned an incomplete push subscription. Try reloading the page, or use a different browser (Chrome or Edge recommended).',
       };
     }
@@ -118,8 +136,8 @@ export async function ensurePushSubscription() {
     // Register the subscription with the backend
     const res = await base44.functions.invoke('registerPush', {
       endpoint: subscription.endpoint,
-      p256dh: subscription.keys.p256dh,
-      auth: subscription.keys.auth,
+      p256dh,
+      auth,
     });
     console.info('Push subscription registered:', res.data);
     return { ok: true };
