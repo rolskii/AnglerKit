@@ -13,11 +13,11 @@ export default function SavedRoutesDrawer({ open, onOpenChange, routes, onLoad, 
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="max-h-[70vh] flex flex-col">
         <SheetHeader>
-          <SheetTitle>Saved Routes</SheetTitle>
+          <SheetTitle>Saved Routes & Pins</SheetTitle>
         </SheetHeader>
         <div className="overflow-y-auto flex-1 mt-2 space-y-2">
           {routes.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">No saved routes yet. Record a route and save it!</p>
+            <p className="text-sm text-muted-foreground text-center py-8">No saved routes or pins yet. Drop pins on the map and save them!</p>
           ) : (
             routes.map((r) => {
                 const isPinsOnly = (!r.track || r.track.length === 0) && (r.pins?.length || 0) > 0;
