@@ -62,6 +62,19 @@ export async function ensurePushSubscription() {
       console.info('New push subscription created.');
     }
 
+    if (!subscription || !subscription.keys || !subscription.keys.p256dh || !subscription.keys.auth) {
+      const oldSub = subscription;
+      if (oldSub) { try { await oldSub.unsubscribe(); } catch (_) {} }
+      subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+      });
+    }
+
+    if (!subscription.keys || !subscription.keys.p256dh || !subscription.keys.auth) {
+      return { ok: false, error: 'The browser returned an incomplete push subscription. Try reloading the page, or use a different browser (Chrome or Edge recommended).' };
+    }
+
     // Register the subscription with the backend
     const res = await base44.functions.invoke('registerPush', {
       endpoint: subscription.endpoint,
