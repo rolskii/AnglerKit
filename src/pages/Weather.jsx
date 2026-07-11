@@ -222,8 +222,8 @@ export default function Weather() {
     const parts = [];
 
     // Humidex advisory (based on Celsius thresholds)
-    if (current.humidex != null) {
-      const h = Math.round(current.humidex);
+    if (displayHumidex != null) {
+      const h = displayHumidex;
       if (h >= 46) {
         parts.push({ icon: '🔥', text: `Humidex ${h} — dangerous heat. Avoid exertion and stay hydrated.`, tone: 'text-red-600' });
       } else if (h >= 40) {
@@ -308,6 +308,13 @@ export default function Weather() {
   const current = weather.current;
   const daily = weather.daily;
   const ecDaySummary = daily.text_summary?.[0] || null;
+  const displayHumidex = (() => {
+    if (ecDaySummary) {
+      const m = ecDaySummary.match(/humidex\s+(\d+)/i);
+      if (m) return parseInt(m[1]);
+    }
+    return current.humidex != null ? Math.round(current.humidex) : null;
+  })();
   const ecNightSummary = daily.night_text_summary?.[0] || null;
   const forecastDays = daily.time
     .slice(1, 6)
@@ -427,7 +434,7 @@ export default function Weather() {
                 </div>
                 <div className="bg-secondary p-2 rounded-lg flex flex-col items-center gap-1 overflow-hidden">
                   <Droplets className="w-8 h-10 text-primary" />
-                  <p className="text-xs font-semibold leading-tight">{current.humidex != null ? Math.round(current.humidex) : '—'}</p>
+                  <p className="text-xs font-semibold leading-tight">{displayHumidex != null ? displayHumidex : '—'}</p>
                   <span className="text-[10px] text-muted-foreground leading-tight">Humidex</span>
                 </div>
                 <div className="bg-secondary p-2 rounded-lg flex flex-col items-center gap-1 overflow-hidden">
@@ -516,7 +523,7 @@ export default function Weather() {
               `📊 Pressure: ${formatPressure(current.pressure, tempUnit)} (${current.pressure_tendency || '—'})`,
               `💧 Dew Point: ${formatTemp(current.dewpoint, tempUnit)}°`,
               `💦 Humidity: ${current.relative_humidity_2m}%`,
-              `🌡️ Humidex: ${current.humidex != null ? Math.round(current.humidex) : '—'}`,
+              `🌡️ Humidex: ${displayHumidex != null ? displayHumidex : '—'}`,
               `👁️ Visibility: ${formatVisibility(current.visibility, tempUnit)}`,
               `💨 Wind: ${formatWind(current.wind_speed_10m, tempUnit)} ${current.wind_direction || ''}`,
               `H: ${formatTemp(daily.temperature_2m_max[0], tempUnit)}°  L: ${formatTemp(daily.temperature_2m_min[0], tempUnit)}°`,
