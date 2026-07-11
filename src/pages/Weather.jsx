@@ -344,18 +344,20 @@ export default function Weather() {
 
               {/* EC Text Summaries */}
               {(ecDaySummary || ecNightSummary) ? (
-                <div className="space-y-1 pt-0.5">
+                <div className="bg-secondary/60 rounded-lg p-2.5 space-y-1">
                   {ecDaySummary && (
-                    <p className="text-sm text-foreground/80 leading-relaxed text-center">{ecDaySummary}</p>
+                    <p className="text-sm text-foreground leading-snug">{ecDaySummary}</p>
                   )}
                   {ecNightSummary && (
-                    <p className="text-sm text-foreground/80 leading-relaxed text-center">
+                    <p className="text-sm text-foreground leading-snug">
                       <span className="font-semibold">Night:</span> {ecNightSummary}
                     </p>
                   )}
                 </div>
               ) : getDailySummary() ? (
-                <p className="text-sm text-foreground/80 leading-relaxed text-center pt-0.5">{getDailySummary()}</p>
+                <div className="bg-secondary/60 rounded-lg p-2.5">
+                  <p className="text-sm text-foreground leading-snug">{getDailySummary()}</p>
+                </div>
               ) : null}
 
               {/* Conditions Grid */}
