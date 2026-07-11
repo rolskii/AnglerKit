@@ -478,6 +478,7 @@ export default function MapView() {
 
   // Save route
   const handleSaveRoute = useCallback(async (name, description) => {
+    console.log('[SaveRoute] handleSaveRoute called', { name, description, pinsCount: pins.length, pins, trackCount: trackPoints.length });
     const today = new Date();
     const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     try {
@@ -490,7 +491,7 @@ export default function MapView() {
         }, 0);
         allMeasurements.push({ points: measurePoints, distance_km: Math.round(dist * 100) / 100 });
       }
-      await base44.entities.MapCourse.create({
+      const payload = {
         name,
         description,
         track: trackPoints,
@@ -500,8 +501,12 @@ export default function MapView() {
         distance_km: Math.round(distanceKm * 100) / 100,
         duration_sec: Math.round(durationSec),
         date: dateStr,
-      });
+      };
+      console.log('[SaveRoute] Creating MapCourse with payload:', payload);
+      const created = await base44.entities.MapCourse.create(payload);
+      console.log('[SaveRoute] Create succeeded, entry:', created);
       await loadRoutes();
+      console.log('[SaveRoute] Routes reloaded');
       setTrackPoints([]);
       setPins([]);
       setDrawings([]);
@@ -519,10 +524,10 @@ export default function MapView() {
         localStorage.removeItem(DUR_KEY);
       } catch (e) {}
     } catch (e) {
-      console.error('Failed to save route:', e);
-      alert('Failed to save route. Please try again.');
+      console.error('[SaveRoute] Failed to save route:', e);
+      alert(`Failed to save: ${e?.message || e?.data?.message || 'Unknown error'}. Check console for details.`);
     }
-  }, [trackPoints, pins, drawings, distanceKm, durationSec, loadRoutes]);
+  }, [trackPoints, pins, drawings, distanceKm, durationSec, savedMeasurements, measurePoints, loadRoutes]);
 
   // Load a saved route
   const handleLoadRoute = useCallback((route) => {
