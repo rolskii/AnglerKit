@@ -242,6 +242,33 @@ function parseWeatherXml(xmlText) {
     let highTemp = null, lowTemp = null, dayIcon = 0, dayPop = 0;
     let dayTextSummary = null, nightTextSummary = null;
 
+    // If the first forecast is a night-only period ("Tonight"), record it
+    // for today without pairing it forward — prevents date shifting.
+    if (i === 0 && !f.tempHigh && f.tempLow) {
+      lowTemp = parseFloat(f.tempLow);
+      dayIcon = f.iconCode;
+      dayPop = f.pop;
+      nightTextSummary = f.textSummary;
+      dayTextSummary = f.textSummary;
+      highTemp = lowTemp; // use tonight's low as the high for today's partial entry
+
+      const date = new Date(today);
+      const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+      daily.time.push(dateStr);
+      daily.weather_code.push(ecIconToWMO[dayIcon] ?? 3);
+      daily.temperature_2m_max.push(highTemp);
+      daily.temperature_2m_min.push(lowTemp);
+      daily.precipitation_sum.push(0);
+      daily.precipitation_probability.push(dayPop);
+      daily.sunrise.push(sunrise);
+      daily.sunset.push(sunset);
+      daily.text_summary.push(dayTextSummary);
+      daily.night_text_summary.push(nightTextSummary);
+      dayOffset++;
+      i += 1;
+      continue;
+    }
+
     if (f.tempHigh) {
       // Day period
       highTemp = parseFloat(f.tempHigh);
