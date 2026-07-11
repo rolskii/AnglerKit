@@ -58,6 +58,25 @@
       "description": "Points of interest with labels",
       "default": []
     },
+    "drawings": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "lat": {
+              "type": "number"
+            },
+            "lon": {
+              "type": "number"
+            }
+          }
+        }
+      },
+      "description": "Freehand drawing strokes as arrays of coordinate points",
+      "default": []
+    },
     "distance_km": {
       "type": "number",
       "description": "Total distance travelled in kilometers",

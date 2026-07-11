@@ -407,6 +407,7 @@ export default function MapView() {
         description,
         track: trackPoints,
         pins,
+        drawings,
         distance_km: Math.round(distanceKm * 100) / 100,
         duration_sec: Math.round(durationSec),
         date: dateStr,
@@ -414,6 +415,7 @@ export default function MapView() {
       await loadRoutes();
       setTrackPoints([]);
       setPins([]);
+      setDrawings([]);
       setDistanceKm(0);
       setDurationSec(0);
       elapsedBeforePauseRef.current = 0;
@@ -428,12 +430,13 @@ export default function MapView() {
       console.error('Failed to save route:', e);
       alert('Failed to save route. Please try again.');
     }
-  }, [trackPoints, pins, distanceKm, durationSec, loadRoutes]);
+  }, [trackPoints, pins, drawings, distanceKm, durationSec, loadRoutes]);
 
   // Load a saved route
   const handleLoadRoute = useCallback((route) => {
     setTrackPoints(route.track || []);
     setPins(route.pins || []);
+    setDrawings(route.drawings || []);
     setDistanceKm(route.distance_km || 0);
     setDurationSec(route.duration_sec || 0);
     setIsTracking(false);
@@ -687,6 +690,7 @@ export default function MapView() {
 
   const hasTrack = trackPoints.length > 0;
   const hasPins = pins.length > 0;
+  const hasDrawings = drawings.length > 0;
   const measureTotalKm = measurePoints.reduce((sum, p, i) => {
     if (i === 0) return 0;
     const prev = measurePoints[i - 1];
@@ -925,6 +929,7 @@ export default function MapView() {
         isPaused={isPaused}
         hasTrack={hasTrack}
         hasPins={hasPins}
+        hasDrawings={hasDrawings}
         pinMode={pinMode}
         onStart={startTracking}
         onPause={pauseTracking}

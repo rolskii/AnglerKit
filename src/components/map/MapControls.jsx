@@ -9,6 +9,7 @@ export default function MapControls({
   isPaused,
   hasTrack,
   hasPins,
+  hasDrawings,
   pinMode,
   onStart,
   onPause,
@@ -144,7 +145,7 @@ export default function MapControls({
         </button>
 
         {/* Save */}
-        {(hasTrack || hasPins) && !isTracking && !isPaused && (
+        {(hasTrack || hasPins || hasDrawings) && !isTracking && !isPaused && (
           <button
             onClick={onSave}
             className={`${ctrlBase} ${ctrlSize} bg-primary text-primary-foreground`}
