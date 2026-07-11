@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
-import { Bell, CheckCircle2, AlertCircle, Loader2, Send, Share, Plus, ExternalLink } from 'lucide-react';
+import { Bell, CheckCircle2, AlertCircle, Loader2, Send, Share, Plus, ExternalLink, RefreshCw } from 'lucide-react';
 import { ensurePushSubscription } from '@/lib/pushService';
 
 function detectIOS() {
@@ -196,10 +196,16 @@ export default function NotificationSetup() {
       )}
 
       <div className="flex flex-wrap gap-2">
-        {permission !== 'granted' && (
+        {permission !== 'granted' && permission !== 'denied' && (
           <Button onClick={handleEnable} disabled={subscribing} className="flex items-center gap-2">
             {subscribing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Bell className="w-4 h-4" />}
             {subscribing ? 'Enabling…' : 'Enable Notifications'}
+          </Button>
+        )}
+        {permission === 'denied' && (
+          <Button onClick={() => window.location.reload()} variant="outline" className="flex items-center gap-2">
+            <RefreshCw className="w-4 h-4" />
+            Reload After Resetting
           </Button>
         )}
         {permission === 'granted' && (
