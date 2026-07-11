@@ -83,7 +83,7 @@ const items = [
   { to: "/catches", title: "Fish Log", icon: Camera, tint: "blue", key: "catch" },
   { to: "/moon", title: "Moon Phase", icon: MoonIcon, tint: "purple", key: "moon" },
   { to: "/weather", title: "Weather", icon: Cloud, tint: "teal", key: "weather" },
-  { to: "/map", title: "Map", icon: MapIcon, tint: "blue", key: "map" },
+  { to: "/map", title: "Map", icon: MapIcon, tint: "teal", key: "map" },
 ];
 
 const tintClasses = {
