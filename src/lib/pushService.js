@@ -62,15 +62,17 @@ export async function ensurePushSubscription() {
       console.info('New push subscription created.');
     }
 
-    if (!subscription || !subscription.keys || !subscription.keys.p256dh || !subscription.keys.auth) {
-      // Stale subscription without encryption keys — do a full reset:
-      // unsubscribe, unregister the service worker, re-register, wait for
-      // activation, then re-subscribe
-      console.warn('Subscription missing keys, doing full SW reset…');
+    // Safari sometimes returns a subscription without encryption keys.
+    // Retry up to 3 times with increasing delays — each retry does a full
+    // SW reset to force a clean subscription.
+    const hasValidKeys = (sub) => !!(sub && sub.keys && sub.keys.p256dh && sub.keys.auth);
+
+    for (let attempt = 0; attempt < 3 && !hasValidKeys(subscription); attempt++) {
+      console.warn(`Subscription missing keys (attempt ${attempt + 1}/3), resetting…`);
       if (subscription) { try { await subscription.unsubscribe(); } catch (_) {} }
       const registrations = await navigator.serviceWorker.getRegistrations();
       for (const reg of registrations) { try { await reg.unregister(); } catch (_) {} }
-      await new Promise(r => setTimeout(r, 500));
+      await new Promise(r => setTimeout(r, 800 + attempt * 500));
       const freshReg = await navigator.serviceWorker.register('/sw.js');
       // Wait for the new SW to be fully activated before subscribing
       if (freshReg.active) {
@@ -88,23 +90,27 @@ export async function ensurePushSubscription() {
       } else {
         await navigator.serviceWorker.ready;
       }
-      subscription = await freshReg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
-      });
-      console.info('Subscription after reset:', JSON.stringify({
-        endpoint: subscription?.endpoint,
-        hasKeys: !!(subscription?.keys?.p256dh && subscription?.keys?.auth),
-      }));
+      try {
+        subscription = await freshReg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+        });
+        console.info(`Subscription after reset (attempt ${attempt + 1}):`, JSON.stringify({
+          endpoint: subscription?.endpoint,
+          hasKeys: hasValidKeys(subscription),
+        }));
+      } catch (subErr) {
+        console.error(`Subscribe attempt ${attempt + 1} failed:`, subErr);
+      }
     }
 
-    if (!subscription || !subscription.keys || !subscription.keys.p256dh || !subscription.keys.auth) {
+    if (!hasValidKeys(subscription)) {
       const ua = navigator.userAgent || '';
       const isSafari = /^((?!chrome|android).)*safari/i.test(ua);
       return {
         ok: false,
         error: isSafari
-          ? 'Safari did not return a valid push subscription. Try: 1) Quit Safari completely, 2) Reopen and navigate to this page, 3) Click Enable again. If it still fails, try Chrome or Edge.'
+          ? 'Safari did not return a valid push subscription after multiple attempts. Please try: 1) Fully quit Safari (Cmd+Q), 2) Reopen and navigate to this page, 3) Click Enable again. If it still fails, use Chrome or Edge.'
           : 'The browser returned an incomplete push subscription. Try reloading the page, or use a different browser (Chrome or Edge recommended).',
       };
     }
