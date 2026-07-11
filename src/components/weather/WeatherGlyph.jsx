@@ -41,7 +41,7 @@ export default function WeatherGlyph({ code, isNight = false, className = 'w-7 h
   const SunShape = ({ cx = 32, cy = 28, r = 11 }) => (
     <g>
       {/* Rays — rotate when animated */}
-      <g className={anim('wx-anim-rays')} style={{ transformOrigin: `${cx}px ${cy}px` }}>
+      <g className={anim('wx-anim-rays')}>
         {Array.from({ length: 8 }).map((_, i) => {
           const angle = (i * 45) * Math.PI / 180;
           const x1 = cx + Math.cos(angle) * (r + 3);
@@ -55,14 +55,14 @@ export default function WeatherGlyph({ code, isNight = false, className = 'w-7 h
         })}
       </g>
       <circle cx={cx} cy={cy} r={r} fill={sunFill} stroke={sunStroke} strokeWidth={darkOutline ? 2.5 : 1.5}
-        className={anim('wx-anim-sun')} style={{ transformOrigin: `${cx}px ${cy}px` }} />
+        className={anim('wx-anim-sun')} />
     </g>
   );
 
   const MoonShape = ({ cx = 32, cy = 26, r = 11 }) => (
     <g>
       <circle cx={cx} cy={cy} r={r} fill={moonFill} stroke={moonStroke} strokeWidth={darkOutline ? 2 : 1}
-        className={anim('wx-anim-moon')} style={{ transformOrigin: `${cx}px ${cy}px` }} />
+        className={anim('wx-anim-moon')} />
       <circle cx={cx + r * 0.45} cy={cy - r * 0.15} r={r} fill={moonStroke} />
     </g>
   );
@@ -70,7 +70,7 @@ export default function WeatherGlyph({ code, isNight = false, className = 'w-7 h
   const CloudShape = ({ cx = 34, cy = 38, scale = 1, fill = cloudLight, stroke = cloudMid }) => {
     const s = scale;
     return (
-      <g className={anim('wx-anim-cloud')} style={{ transformOrigin: `${cx}px ${cy}px` }}>
+      <g className={anim('wx-anim-cloud')}>
         <g transform={`translate(${cx - 34 * s}, ${cy - 38 * s}) scale(${s})`}>
           <path
             d="M 22 44 Q 14 44 14 36 Q 14 28 22 28 Q 24 21 32 21 Q 40 21 43 28 Q 54 27 54 36 Q 54 44 46 44 Z"
@@ -100,7 +100,6 @@ export default function WeatherGlyph({ code, isNight = false, className = 'w-7 h
             d={`M ${p.x} ${p.y} Q ${p.x - 2} ${p.y + 5} ${p.x} ${p.y + 8} Q ${p.x + 2} ${p.y + 5} ${p.x} ${p.y} Z`}
             fill={i % 2 === 0 ? rainColor : rainLight}
             className={anim(rainAnimClasses[i])}
-            style={{ transformOrigin: `${p.x}px ${p.y + 4}px` }}
           />
         ))}
       </g>
@@ -119,8 +118,7 @@ export default function WeatherGlyph({ code, isNight = false, className = 'w-7 h
       <g>
         {positions.slice(0, count).map((p, i) => (
           <g key={i} stroke={snowColor} strokeWidth="1.8" strokeLinecap="round"
-            className={anim(snowAnimClasses[i])}
-            style={{ transformOrigin: `${p.x}px ${p.y + 3.5}px` }}>
+            className={anim(snowAnimClasses[i])}>
             <line x1={p.x} y1={p.y} x2={p.x} y2={p.y + 7} />
             <line x1={p.x - 3} y1={p.y + 3.5} x2={p.x + 3} y2={p.y + 3.5} />
             <line x1={p.x - 2.5} y1={p.y + 1} x2={p.x + 2.5} y2={p.y + 6} />
@@ -139,7 +137,6 @@ export default function WeatherGlyph({ code, isNight = false, className = 'w-7 h
       strokeWidth="1"
       strokeLinejoin="round"
       className={anim('wx-anim-lightning')}
-      style={{ transformOrigin: '35px 56px' }}
     />
   );
 
@@ -148,11 +145,11 @@ export default function WeatherGlyph({ code, isNight = false, className = 'w-7 h
   const FogLines = () => (
     <g stroke={fogColor} strokeWidth="2.5" strokeLinecap="round">
       <line x1="18" y1="50" x2="50" y2="50"
-        className={anim(fogAnimClasses[0])} style={{ transformOrigin: '34px 50px' }} />
+        className={anim(fogAnimClasses[0])} />
       <line x1="22" y1="55" x2="46" y2="55"
-        className={anim(fogAnimClasses[1])} style={{ transformOrigin: '34px 55px' }} />
+        className={anim(fogAnimClasses[1])} />
       <line x1="18" y1="60" x2="42" y2="60"
-        className={anim(fogAnimClasses[2])} style={{ transformOrigin: '30px 60px' }} />
+        className={anim(fogAnimClasses[2])} />
     </g>
   );
 
