@@ -9,6 +9,7 @@ import { ChevronLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import BottomTabBar from '@/components/BottomTabBar';
 import MapSearchBar from '@/components/map/MapSearchBar';
+import FishIcon from '@/components/FishIcon';
 
 /* global mapkit */
 
@@ -564,9 +565,7 @@ export default function MapView() {
                   boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
-                  <svg viewBox="0 0 24 24" fill="white" style={{ width: '20px', height: '20px' }}>
-                    <path d="M 2 12 Q 6 4 14 8 Q 20 10 22 12 Q 20 14 14 16 Q 6 20 2 12 Z M 14 8 L 18 4 L 17 10 M 14 16 L 18 20 L 17 14" stroke="white" strokeWidth="0.5" />
-                  </svg>
+                  <FishIcon style={{ width: '22px', height: '22px', color: 'white' }} />
                 </div>
               ) : (
                 <div style={{
