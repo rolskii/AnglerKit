@@ -3,7 +3,7 @@ import { Ruler, Undo2, Trash2, Save } from 'lucide-react';
 
 export default function MeasureBar({ totalKm, pointCount, onUndo, onClear, onSave }) {
   return (
-    <div className="absolute top-[88px] left-1/2 -translate-x-1/2 z-[500] flex items-center gap-3 px-4 py-2 rounded-full bg-yellow-500 text-white text-sm font-medium shadow-lg">
+    <div className="absolute top-[88px] left-1/2 -translate-x-1/2 z-[500] flex items-center gap-3 px-4 py-2 rounded-full bg-blue-500 text-white text-sm font-medium shadow-lg">
       <Ruler className="w-4 h-4" />
       <span>{totalKm.toFixed(2)} km</span>
       <span className="text-xs opacity-80">({pointCount} pts)</span>

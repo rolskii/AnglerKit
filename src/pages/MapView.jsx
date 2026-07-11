@@ -721,7 +721,7 @@ export default function MapView() {
     if (measurePoints.length >= 2) {
       const coords = measurePoints.map((p) => new mapkit.Coordinate(p.lat, p.lon));
       const style = new mapkit.Style({
-        strokeColor: '#eab308',
+        strokeColor: '#3b82f6',
         lineWidth: 3,
         lineJoin: 'round',
         lineCap: 'round',
@@ -745,7 +745,7 @@ export default function MapView() {
       if (!m.points || m.points.length < 2) return;
       const coords = m.points.map((p) => new mapkit.Coordinate(p.lat, p.lon));
       const style = new mapkit.Style({
-        strokeColor: '#eab308',
+        strokeColor: '#3b82f6',
         lineWidth: 3,
         lineJoin: 'round',
         lineCap: 'round',
@@ -963,7 +963,7 @@ export default function MapView() {
           if (left < -30 || left > containerRect.width + 30 || top < -30 || top > containerRect.height + 30) return null;
           return (
             <div key={`sm-${mIdx}-${idx}`} className="absolute z-[454] pointer-events-none" style={{ left, top, transform: 'translate(-50%, -50%)' }}>
-              <div style={{ width: '16px', height: '16px', background: '#eab308', border: '2px solid #ffffff', borderRadius: '50%', boxShadow: '0 1px 4px rgba(0,0,0,0.4)' }} />
+              <div style={{ width: '16px', height: '16px', background: '#3b82f6', border: '2px solid #ffffff', borderRadius: '50%', boxShadow: '0 1px 4px rgba(0,0,0,0.4)' }} />
             </div>
           );
         }))}
@@ -979,7 +979,7 @@ export default function MapView() {
           if (left < -30 || left > containerRect.width + 30 || top < -30 || top > containerRect.height + 30) return null;
           return (
             <div key={`mp-${idx}`} className="absolute z-[455] pointer-events-none" style={{ left, top, transform: 'translate(-50%, -50%)' }}>
-              <div style={{ width: '24px', height: '24px', background: '#eab308', border: '3px solid #ffffff', borderRadius: '50%', boxShadow: '0 2px 6px rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ width: '24px', height: '24px', background: '#3b82f6', border: '3px solid #ffffff', borderRadius: '50%', boxShadow: '0 2px 6px rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <span style={{ fontSize: '11px', fontWeight: 700, color: 'white' }}>{idx + 1}</span>
               </div>
             </div>
@@ -1002,7 +1002,7 @@ export default function MapView() {
           if (left < -50 || left > containerRect.width + 50 || top < -30 || top > containerRect.height + 30) return null;
           return (
             <div key={`seg-${idx}`} className="absolute z-[456] pointer-events-none" style={{ left, top, transform: 'translate(-50%, -50%)' }}>
-              <span style={{ fontSize: '11px', fontWeight: 600, background: 'rgba(234,179,8,0.9)', color: 'white', padding: '2px 6px', borderRadius: '4px', whiteSpace: 'nowrap' }}>
+              <span style={{ fontSize: '11px', fontWeight: 600, background: 'rgba(59,130,246,0.9)', color: 'white', padding: '2px 6px', borderRadius: '4px', whiteSpace: 'nowrap' }}>
                 {segDist.toFixed(2)} km
               </span>
             </div>
@@ -1065,7 +1065,7 @@ export default function MapView() {
       )}
       {/* Measure mode hint */}
       {measureMode && measurePoints.length === 0 && (
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-[500] px-4 py-2 rounded-full bg-yellow-500 text-white text-sm font-medium shadow-lg">
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-[500] px-4 py-2 rounded-full bg-blue-500 text-white text-sm font-medium shadow-lg">
           Tap the map to add measurement points
         </div>
       )}
