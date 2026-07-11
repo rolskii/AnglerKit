@@ -92,6 +92,7 @@ export default function MapView() {
   const [routesOpen, setRoutesOpen] = useState(false);
   const [savedRoutes, setSavedRoutes] = useState([]);
   const [mapReady, setMapReady] = useState(false);
+  const [mapVersion, setMapVersion] = useState(0);
 
   const watchIdRef = useRef(null);
   const startTimeRef = useRef(null);
@@ -382,6 +383,22 @@ export default function MapView() {
         });
         mapRef.current = map;
 
+        map.addEventListener('single-tap', (event) => {
+          if (!pinModeRef.current) return;
+          const pt = event.pointOnPage;
+          if (pt) {
+            const domPoint = new DOMPoint(pt.x ?? pt.clientX ?? 0, pt.y ?? pt.clientY ?? 0);
+            const coord = map.convertPointOnPageToCoordinate(domPoint);
+            if (coord) {
+              handleMapClickRef.current({ lat: coord.latitude, lon: coord.longitude });
+            }
+          }
+        });
+
+        map.addEventListener('region-change-end', () => {
+          setMapVersion((v) => v + 1);
+        });
+
         setMapReady(true);
       } catch (e) {
         console.error('MapKit init failed:', e);
@@ -494,6 +511,44 @@ export default function MapView() {
       {/* Map */}
       <div className="absolute inset-0" style={{ top: 'calc(env(safe-area-inset-top) + 48px)' }}>
         <div ref={mapContainerRef} className="w-full h-full" />
+        {/* DOM-based pin overlays (reliable fallback for MapKit annotations) */}
+        {mapReady && mapRef.current && pins.map((pin, idx) => {
+          const coord = new mapkit.Coordinate(pin.lat, pin.lon);
+          const point = mapRef.current.convertCoordinateToPointOnPage(coord);
+          if (!point) return null;
+          const containerRect = mapContainerRef.current?.getBoundingClientRect();
+          if (!containerRect) return null;
+          const left = point.x - containerRect.left;
+          const top = point.y - containerRect.top;
+          if (left < -30 || left > containerRect.width + 30 || top < -30 || top > containerRect.height + 30) return null;
+          return (
+            <div
+              key={idx}
+              onClick={() => handlePinClick(idx)}
+              className="absolute z-[450] cursor-pointer"
+              style={{ left, top, transform: 'translate(-50%, -100%)' }}
+            >
+              <div style={{
+                width: '28px', height: '28px',
+                background: '#f59e0b', border: '3px solid #ffffff',
+                borderRadius: '50% 50% 50% 0',
+                transform: 'rotate(-45deg)',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <div style={{ width: '8px', height: '8px', background: '#ffffff', borderRadius: '50%', transform: 'rotate(45deg)' }} />
+              </div>
+              <div style={{
+                position: 'absolute', top: '32px', left: '50%', transform: 'translateX(-50%)',
+                whiteSpace: 'nowrap', fontSize: '11px', fontWeight: 600,
+                background: 'rgba(0,0,0,0.7)', color: 'white', padding: '2px 6px', borderRadius: '4px',
+                pointerEvents: 'none',
+              }}>
+                {pin.label}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* Stats bar */}
