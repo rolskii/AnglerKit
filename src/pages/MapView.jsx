@@ -8,6 +8,7 @@ import SavedRoutesDrawer from '@/components/map/SavedRoutesDrawer';
 import { ChevronLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import BottomTabBar from '@/components/BottomTabBar';
+import MapSearchBar from '@/components/map/MapSearchBar';
 
 /* global mapkit */
 
@@ -503,7 +504,7 @@ export default function MapView() {
         <Link to="/" className="p-2 -ml-1 rounded-lg hover:bg-accent/10 transition-colors">
           <ChevronLeft className="w-5 h-5" />
         </Link>
-        <h1 className="text-base font-heading font-semibold flex-1">Map</h1>
+        <MapSearchBar mapRef={mapRef} mapReady={mapReady} />
       </div>
 
       {/* Map */}

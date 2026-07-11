@@ -40,7 +40,7 @@ export default function MapControls({
       </div>
 
       {/* Bottom-center: tracking + pin controls */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[500] flex items-center gap-2">
+      <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-[500] flex items-center gap-2">
         {/* Center on GPS */}
         <button
           onClick={onCenter}
