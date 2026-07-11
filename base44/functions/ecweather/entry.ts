@@ -313,8 +313,8 @@ function parseWeatherXml(xmlText, localDate, tzOffset) {
     daily.temperature_2m_min.push(lowTemp ?? (highTemp ?? 0));
     daily.precipitation_sum.push(0);
     daily.precipitation_probability.push(dayPop);
-    daily.sunrise.push(dayOffset === 0 ? sunrise : null);
-    daily.sunset.push(dayOffset === 0 ? sunset : null);
+    daily.sunrise.push(sunrise);
+    daily.sunset.push(sunset);
     daily.text_summary.push(dayTextSummary);
     daily.night_text_summary.push(nightTextSummary);
     dayOffset++;
