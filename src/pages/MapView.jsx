@@ -347,11 +347,14 @@ export default function MapView() {
         mapRef.current = map;
 
         map.addEventListener('single-tap', (event) => {
-          if (pinModeRef.current && event.coordinate) {
-            handleMapClickRef.current({
-              lat: event.coordinate.latitude,
-              lon: event.coordinate.longitude,
-            });
+          if (pinModeRef.current && event.pointOnPage) {
+            const coord = map.convertPointFromPageToCoordinate(event.pointOnPage);
+            if (coord) {
+              handleMapClickRef.current({
+                lat: coord.latitude,
+                lon: coord.longitude,
+              });
+            }
           }
         });
 
