@@ -279,7 +279,7 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md p-0 overflow-hidden gap-0 !top-4 sm:!top-6 !translate-y-0">
+      <DialogContent className="max-w-md p-0 overflow-hidden gap-0" style={{ top: '1rem', transform: 'translateX(-50%)' }}>
         <DialogHeader className="px-4 pt-4 pb-2">
           <DialogTitle>Choose Location</DialogTitle>
         </DialogHeader>
