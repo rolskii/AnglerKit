@@ -195,10 +195,10 @@ function parseWeatherXml(xmlText, localDate, tzOffset) {
     const firstForecast = fgMatch ? (fgMatch[1].match(/<forecast[^>]*>[\s\S]*?<\/forecast>/) || [])[0] : null;
     const summaryText = firstForecast ? getTagText(firstForecast, 'textSummary') : null;
     if (summaryText) {
-      const uvMatch = summaryText.match(/UV index\s+(\d+)\s+or\s+(\w+)/i);
+      const uvMatch = summaryText.match(/UV index\s+(\d+)\s+or\s+([^.]+)/i);
       if (uvMatch) {
         uvIndexFallback = parseFloat(uvMatch[1]);
-        uvCategoryFallback = uvMatch[2];
+        uvCategoryFallback = uvMatch[2].trim();
       }
     }
   }
