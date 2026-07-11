@@ -348,7 +348,7 @@ export default function MapView() {
 
         map.addEventListener('single-tap', (event) => {
           if (pinModeRef.current && event.pointOnPage) {
-            const coord = map.convertPointFromPageToCoordinate(event.pointOnPage);
+            const coord = map.convertPointOnPageToCoordinate(event.pointOnPage);
             if (coord) {
               handleMapClickRef.current({
                 lat: coord.latitude,
