@@ -288,7 +288,7 @@ export default function Home() {
       )}
 
       {/* Category grid */}
-      <div className="grid grid-cols-4 gap-2 md:gap-4">
+      <div className="grid grid-cols-5 gap-1.5 md:gap-4">
         {items.map((item) => {
           const Icon = item.icon;
           const isGear = item.to === "/gear/lines";
