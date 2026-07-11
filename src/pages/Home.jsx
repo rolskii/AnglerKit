@@ -138,7 +138,7 @@ export default function Home() {
     const tempUnit = localStorage.getItem("weatherTempUnit") || "celsius";
     await fetchWeather(coords, tempUnit);
 
-    await Promise.all([fetchGearCount(), fetchLastCatch()]);
+    await Promise.all([fetchGearCount(), fetchLastCatch(), fetchMapStats()]);
   };
 
   useEffect(() => { refreshData(); }, []);
@@ -213,6 +213,18 @@ export default function Home() {
       } else {
         setDescriptions(prev => ({ ...prev, catch: "No catches yet" }));
       }
+    } catch (e) {}
+  };
+
+  const fetchMapStats = async () => {
+    try {
+      const routes = await base44.entities.MapCourse.list("-updated_date", 500);
+      const totalPins = routes.reduce((sum, r) => sum + (r.pins?.length || 0), 0);
+      const routeCount = routes.length;
+      setDescriptions(prev => ({
+        ...prev,
+        map: `${routeCount} ${routeCount === 1 ? "route" : "routes"} · ${totalPins} ${totalPins === 1 ? "pin" : "pins"}`
+      }));
     } catch (e) {}
   };
 
