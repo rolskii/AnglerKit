@@ -242,9 +242,9 @@ function parseWeatherXml(xmlText) {
     let highTemp = null, lowTemp = null, dayIcon = 0, dayPop = 0;
     let dayTextSummary = null, nightTextSummary = null;
 
-    // If the first forecast is a night-only period ("Tonight"), record it
-    // for today without pairing it forward — prevents date shifting.
-    if (i === 0 && !f.tempHigh && f.tempLow) {
+    // If the first usable forecast is a night-only period ("Tonight"),
+    // record it for today without pairing it forward — prevents date shifting.
+    if (dayOffset === 0 && !f.tempHigh && f.tempLow) {
       lowTemp = parseFloat(f.tempLow);
       dayIcon = f.iconCode;
       dayPop = f.pop;
