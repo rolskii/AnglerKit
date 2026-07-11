@@ -223,15 +223,15 @@ export default function Weather() {
 
     // Humidex advisory (based on Celsius thresholds)
     if (current.humidex != null) {
-      const h = current.humidex;
+      const h = Math.round(current.humidex);
       if (h >= 46) {
-        parts.push({ icon: '🔥', text: `Humidex ${formatTemp(h, tempUnit)}° — dangerous heat. Avoid exertion and stay hydrated.`, tone: 'text-red-600' });
+        parts.push({ icon: '🔥', text: `Humidex ${h} — dangerous heat. Avoid exertion and stay hydrated.`, tone: 'text-red-600' });
       } else if (h >= 40) {
-        parts.push({ icon: '⚠️', text: `Humidex ${formatTemp(h, tempUnit)}° — great discomfort. Avoid strenuous outdoor activity.`, tone: 'text-orange-600' });
+        parts.push({ icon: '⚠️', text: `Humidex ${h} — great discomfort. Avoid strenuous outdoor activity.`, tone: 'text-orange-600' });
       } else if (h >= 30) {
-        parts.push({ icon: '💧', text: `Humidex ${formatTemp(h, tempUnit)}° — some discomfort from humidity.`, tone: 'text-amber-600' });
+        parts.push({ icon: '💧', text: `Humidex ${h} — some discomfort from humidity.`, tone: 'text-amber-600' });
       } else {
-        parts.push({ icon: '✅', text: `Humidex ${formatTemp(h, tempUnit)}° — comfortable.`, tone: 'text-green-600' });
+        parts.push({ icon: '✅', text: `Humidex ${h} — comfortable.`, tone: 'text-green-600' });
       }
     }
 
@@ -427,7 +427,7 @@ export default function Weather() {
                 </div>
                 <div className="bg-secondary p-2 rounded-lg flex flex-col items-center gap-1 overflow-hidden">
                   <Droplets className="w-8 h-10 text-primary" />
-                  <p className="text-xs font-semibold leading-tight">{current.humidex != null ? `${formatTemp(current.humidex, tempUnit)}°` : '—'}</p>
+                  <p className="text-xs font-semibold leading-tight">{current.humidex != null ? Math.round(current.humidex) : '—'}</p>
                   <span className="text-[10px] text-muted-foreground leading-tight">Humidex</span>
                 </div>
                 <div className="bg-secondary p-2 rounded-lg flex flex-col items-center gap-1 overflow-hidden">
@@ -516,7 +516,7 @@ export default function Weather() {
               `📊 Pressure: ${formatPressure(current.pressure, tempUnit)} (${current.pressure_tendency || '—'})`,
               `💧 Dew Point: ${formatTemp(current.dewpoint, tempUnit)}°`,
               `💦 Humidity: ${current.relative_humidity_2m}%`,
-              `🌡️ Humidex: ${current.humidex != null ? formatTemp(current.humidex, tempUnit) : '—'}`,
+              `🌡️ Humidex: ${current.humidex != null ? Math.round(current.humidex) : '—'}`,
               `👁️ Visibility: ${formatVisibility(current.visibility, tempUnit)}`,
               `💨 Wind: ${formatWind(current.wind_speed_10m, tempUnit)} ${current.wind_direction || ''}`,
               `H: ${formatTemp(daily.temperature_2m_max[0], tempUnit)}°  L: ${formatTemp(daily.temperature_2m_min[0], tempUnit)}°`,
