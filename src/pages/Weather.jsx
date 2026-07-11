@@ -273,9 +273,8 @@ export default function Weather() {
 
   const current = weather.current;
   const daily = weather.daily;
-  const dayIdx = daily.time.indexOf(selectedDate);
-  const ecDaySummary = dayIdx !== -1 ? daily.text_summary?.[dayIdx] : null;
-  const ecNightSummary = dayIdx !== -1 ? daily.night_text_summary?.[dayIdx] : null;
+  const ecDaySummary = daily.text_summary?.[0] || null;
+  const ecNightSummary = daily.night_text_summary?.[0] || null;
   const forecastDays = daily.time
     .slice(1, 6)
     .map((date, idx) => ({ date, idx: idx + 1 }));
@@ -335,30 +334,28 @@ export default function Weather() {
                 </button>
               </div>
 
-              {/* Temperature hero */}
-              <div className="flex items-center justify-center gap-3">
-                <p className="text-6xl font-bold text-primary leading-none">{formatTemp(current.temperature_2m, tempUnit)}°</p>
-                <WeatherGlyph code={current.weather_code} isNight={isNight()} darkOutline className="w-20 h-24 shrink-0" />
+              {/* Temperature hero + description */}
+              <div className="flex flex-col items-center gap-0">
+                <div className="flex items-center justify-center gap-3">
+                  <p className="text-6xl font-bold text-primary leading-none">{formatTemp(current.temperature_2m, tempUnit)}°</p>
+                  <WeatherGlyph code={current.weather_code} isNight={isNight()} darkOutline className="w-20 h-24 shrink-0" />
+                </div>
+                <p className="text-sm font-medium text-muted-foreground mt-1">{current.condition || getWeatherDescription(current.weather_code)}</p>
               </div>
-              <p className="text-center text-sm font-medium text-muted-foreground -mt-1">{current.condition || getWeatherDescription(current.weather_code)}</p>
 
               {/* EC Text Summaries */}
-              {(ecDaySummary || ecNightSummary) ? (
-                <div className="bg-secondary/60 rounded-lg p-2.5 space-y-1">
-                  {ecDaySummary && (
-                    <p className="text-sm text-foreground leading-snug">{ecDaySummary}</p>
-                  )}
-                  {ecNightSummary && (
-                    <p className="text-sm text-foreground leading-snug">
-                      <span className="font-semibold">Night:</span> {ecNightSummary}
-                    </p>
-                  )}
-                </div>
-              ) : getDailySummary() ? (
-                <div className="bg-secondary/60 rounded-lg p-2.5">
+              <div className="bg-secondary/60 rounded-lg p-2.5 space-y-1">
+                {ecDaySummary ? (
+                  <p className="text-sm text-foreground leading-snug">{ecDaySummary}</p>
+                ) : getDailySummary() ? (
                   <p className="text-sm text-foreground leading-snug">{getDailySummary()}</p>
-                </div>
-              ) : null}
+                ) : null}
+                {ecNightSummary && (
+                  <p className="text-sm text-foreground leading-snug">
+                    <span className="font-semibold">Night:</span> {ecNightSummary}
+                  </p>
+                )}
+              </div>
 
               {/* Conditions Grid */}
               <div className="grid grid-cols-3 gap-2">
