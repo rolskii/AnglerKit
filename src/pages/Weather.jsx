@@ -273,6 +273,9 @@ export default function Weather() {
 
   const current = weather.current;
   const daily = weather.daily;
+  const dayIdx = daily.time.indexOf(selectedDate);
+  const ecDaySummary = dayIdx !== -1 ? daily.text_summary?.[dayIdx] : null;
+  const ecNightSummary = dayIdx !== -1 ? daily.night_text_summary?.[dayIdx] : null;
   const forecastDays = daily.time
     .slice(1, 6)
     .map((date, idx) => ({ date, idx: idx + 1 }));
@@ -388,10 +391,21 @@ export default function Weather() {
                 </div>
               </div>
 
-              {/* Daily Summary */}
-              {getDailySummary() && (
+              {/* EC Text Summaries / Daily Summary */}
+              {(ecDaySummary || ecNightSummary) ? (
+                <div className="space-y-1.5 pt-1">
+                  {ecDaySummary && (
+                    <p className="text-xs text-muted-foreground leading-relaxed">{ecDaySummary}</p>
+                  )}
+                  {ecNightSummary && (
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      <span className="font-semibold">Night:</span> {ecNightSummary}
+                    </p>
+                  )}
+                </div>
+              ) : getDailySummary() ? (
                 <p className="text-xs text-muted-foreground leading-relaxed pt-1">{getDailySummary()}</p>
-              )}
+              ) : null}
             </div>
           </CardContent>
         </Card>

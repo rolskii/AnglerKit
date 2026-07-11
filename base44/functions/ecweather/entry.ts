@@ -212,7 +212,8 @@ function parseWeatherXml(xmlText) {
     const tempLow = getForecastTemp(f, 'low');
     const ic = parseInt(getForecastIconCode(f)) || 0;
     const pop = parseInt(getForecastPop(f)) || 0;
-    return { period, tempHigh, tempLow, iconCode: ic, pop };
+    const textSummary = getTagText(f, 'textSummary');
+    return { period, textSummary, tempHigh, tempLow, iconCode: ic, pop };
   });
 
   // --- Sunrise / sunset (today only) ---
@@ -229,6 +230,8 @@ function parseWeatherXml(xmlText) {
     precipitation_probability: [],
     sunrise: [],
     sunset: [],
+    text_summary: [],
+    night_text_summary: [],
   };
 
   const today = new Date();
@@ -237,14 +240,17 @@ function parseWeatherXml(xmlText) {
   while (i < forecasts.length) {
     const f = forecasts[i];
     let highTemp = null, lowTemp = null, dayIcon = 0, dayPop = 0;
+    let dayTextSummary = null, nightTextSummary = null;
 
     if (f.tempHigh) {
       // Day period
       highTemp = parseFloat(f.tempHigh);
       dayIcon = f.iconCode;
       dayPop = f.pop;
+      dayTextSummary = f.textSummary;
       if (i + 1 < forecasts.length && forecasts[i + 1].tempLow) {
         lowTemp = parseFloat(forecasts[i + 1].tempLow);
+        nightTextSummary = forecasts[i + 1].textSummary;
         i += 2;
       } else {
         i += 1;
@@ -254,10 +260,12 @@ function parseWeatherXml(xmlText) {
       lowTemp = parseFloat(f.tempLow);
       dayIcon = f.iconCode;
       dayPop = f.pop;
+      nightTextSummary = f.textSummary;
       if (i + 1 < forecasts.length && forecasts[i + 1].tempHigh) {
         highTemp = parseFloat(forecasts[i + 1].tempHigh);
         dayIcon = forecasts[i + 1].iconCode;
         dayPop = Math.max(dayPop, forecasts[i + 1].pop);
+        dayTextSummary = forecasts[i + 1].textSummary;
         i += 2;
       } else {
         i += 1;
@@ -279,6 +287,8 @@ function parseWeatherXml(xmlText) {
     daily.precipitation_probability.push(dayPop);
     daily.sunrise.push(dayOffset === 0 ? sunrise : null);
     daily.sunset.push(dayOffset === 0 ? sunset : null);
+    daily.text_summary.push(dayTextSummary);
+    daily.night_text_summary.push(nightTextSummary);
     dayOffset++;
   }
 
