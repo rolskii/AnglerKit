@@ -1,8 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Bell, BellOff, CheckCircle2, AlertCircle, Loader2, Send } from 'lucide-react';
+import { Bell, CheckCircle2, AlertCircle, Loader2, Send, Share, Plus } from 'lucide-react';
 import { ensurePushSubscription } from '@/lib/pushService';
 import { toast } from 'sonner';
+
+function detectIOS() {
+  if (typeof navigator === 'undefined') return false;
+  const ua = navigator.userAgent || '';
+  const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  return isIOS;
+}
+
+function isStandaloneMode() {
+  return (
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true
+  );
+}
 
 export default function NotificationSetup() {
   const [permission, setPermission] = useState(
@@ -10,22 +24,32 @@ export default function NotificationSetup() {
   );
   const [subscribing, setSubscribing] = useState(false);
   const [testing, setTesting] = useState(false);
-  const [supported, setSupported] = useState(true);
+  const [ios] = useState(detectIOS());
+  const [standalone] = useState(isStandaloneMode());
+
+  const pushSupported = typeof window !== 'undefined' &&
+    'serviceWorker' in navigator &&
+    'PushManager' in window;
+
+  const notificationSupported = typeof Notification !== 'undefined';
+
+  // On iOS Safari (not installed as PWA), neither Notification nor PushManager exist
+  const iosNeedsInstall = ios && !standalone;
 
   useEffect(() => {
-    if (typeof Notification === 'undefined' || !('serviceWorker' in navigator) || !('PushManager' in window)) {
-      setSupported(false);
-    }
+    if (!notificationSupported || !pushSupported) return;
   }, []);
 
   const handleEnable = async () => {
     setSubscribing(true);
     const ok = await ensurePushSubscription();
     setSubscribing(false);
-    setPermission(Notification.permission);
+    if (typeof Notification !== 'undefined') {
+      setPermission(Notification.permission);
+    }
     if (ok) {
       toast.success('Push notifications enabled! Alarms will fire even when the app is closed.');
-    } else if (Notification.permission === 'denied') {
+    } else if (typeof Notification !== 'undefined' && Notification.permission === 'denied') {
       toast.error('Notifications were blocked. Please enable them in your browser/site settings.');
     } else {
       toast.error('Could not enable notifications. Make sure you allow the permission prompt.');
@@ -35,7 +59,6 @@ export default function NotificationSetup() {
   const handleTest = async () => {
     setTesting(true);
     try {
-      // Send a test notification immediately via the service worker
       const reg = await navigator.serviceWorker.ready;
       reg.showNotification('🎣 Test Notification', {
         body: 'If you can see this, push notifications are working!',
@@ -52,7 +75,40 @@ export default function NotificationSetup() {
     }
   };
 
-  if (!supported) {
+  // ── iOS: not installed as PWA ──
+  if (iosNeedsInstall) {
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center gap-2 text-amber-600">
+          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+          <p className="text-sm font-medium">Install to Home Screen required</p>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          iOS only allows push notifications from apps installed on your Home Screen. Follow these steps:
+        </p>
+        <ol className="space-y-2 text-xs text-muted-foreground list-decimal list-inside">
+          <li>
+            Tap the <strong>Share</strong> button
+            <Share className="inline w-3 h-3 mx-1" />
+            in Safari's bottom toolbar
+          </li>
+          <li>
+            Scroll down and tap <strong>Add to Home Screen</strong>
+            <Plus className="inline w-3 h-3 mx-1" />
+          </li>
+          <li>Tap <strong>Add</strong> — the app appears as an icon on your Home Screen</li>
+          <li>Open the app <strong>from that Home Screen icon</strong> (not Safari)</li>
+          <li>Come back to Settings → Enable Notifications</li>
+        </ol>
+        <p className="text-xs text-muted-foreground">
+          Requires iOS 16.4 or later.
+        </p>
+      </div>
+    );
+  }
+
+  // ── Not supported (non-iOS) ──
+  if (!pushSupported || !notificationSupported) {
     return (
       <div className="space-y-2">
         <div className="flex items-center gap-2 text-amber-600">
@@ -60,12 +116,13 @@ export default function NotificationSetup() {
           <p className="text-sm font-medium">Push notifications not supported</p>
         </div>
         <p className="text-xs text-muted-foreground">
-          Your browser or device doesn't support push notifications. On iOS, you need to add the app to your Home Screen first.
+          Your browser or device doesn't support push notifications. Try updating your browser or using a different device.
         </p>
       </div>
     );
   }
 
+  // ── Supported & ready ──
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2">

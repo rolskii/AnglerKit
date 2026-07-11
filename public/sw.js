@@ -51,17 +51,12 @@ self.addEventListener('notificationclick', (event) => {
 });
 
 // Re-subscribe if the push subscription expires or changes
+// Note: The actual re-registration with the backend happens on next app open
+// via ensurePushSubscription() in pushService.js — this just re-subscribes locally.
 self.addEventListener('pushsubscriptionchange', (event) => {
   event.waitUntil(
     self.registration.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: event.oldSubscription ? event.oldSubscription.options.applicationServerKey : undefined,
-    }).then((subscription) => {
-      return fetch('/api/registerPush', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(subscription),
-      });
     })
   );
 });

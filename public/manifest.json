@@ -3,9 +3,10 @@
   "short_name": "Angler's Log",
   "description": "Your ultimate fishing gear manager with catch logging abilities",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#hsl(210 16% 88%)",
-  "theme_color": "#hsl(210 70% 28%)",
+  "background_color": "#dfe5ea",
+  "theme_color": "#1e3a5f",
   "orientation": "portrait",
   "icons": [
     {
