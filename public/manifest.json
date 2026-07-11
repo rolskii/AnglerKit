@@ -1,0 +1,18 @@
+{
+  "name": "Angler's Log",
+  "short_name": "Angler's Log",
+  "description": "Your ultimate fishing gear manager with catch logging abilities",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#hsl(210 16% 88%)",
+  "theme_color": "#hsl(210 70% 28%)",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://base44.com/logo_v2.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

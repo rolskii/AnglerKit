@@ -363,8 +363,12 @@ export default function Moon() {
     ensurePushSubscription();
     syncAlarmToServer(selectedDate, pendingTime, pendingOffset, location);
 
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission();
+    if ('Notification' in window && Notification.permission !== 'granted') {
+      import('sonner').then(({ toast }) => {
+        toast.warning('Enable notifications in Settings so this alarm fires when the app is closed.', {
+          duration: 6000,
+        });
+      });
     }
 
     setPendingTime(null);

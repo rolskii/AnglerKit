@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, ArrowLeftRight, Trash2, BellOff } from "lucide-react";
 import ImportExportSection from "@/components/settings/ImportExportSection";
 import AlarmSoundPicker from "@/components/settings/AlarmSoundPicker";
+import NotificationSetup from "@/components/settings/NotificationSetup";
 import { clearFiredAlarms } from "@/lib/alarmService";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -80,6 +81,14 @@ export default function Settings() {
         </div>
 
         <div className="space-y-2">
+          <div>
+            <p className="text-sm font-medium">Push Notifications</p>
+            <p className="text-xs text-muted-foreground">Required for alarms to fire when the app is closed. Tap "Enable" and allow the permission prompt.</p>
+          </div>
+          <NotificationSetup />
+        </div>
+
+        <div className="space-y-2 pt-4 border-t border-border">
           <div>
             <p className="text-sm font-medium">Alarm Sound</p>
             <p className="text-xs text-muted-foreground">Choose the sound played when a feeding-time alarm triggers.</p>
