@@ -38,7 +38,11 @@ export default function WeatherGlyph({ code, isNight = false, className = 'w-7 h
   const SunShape = ({ cx = 32, cy = 28, r = 11 }) => (
     <g>
       {/* Rays — rotate when animated */}
-      <g style={animated ? { transformOrigin: `${cx}px ${cy}px`, animation: 'weather-ray-rotate 20s linear infinite' } : undefined}>
+      <g>
+        {animated && (
+          <animateTransform attributeName="transform" type="rotate"
+            from={`0 ${cx} ${cy}`} to={`360 ${cx} ${cy}`} dur="20s" repeatCount="indefinite" />
+        )}
         {Array.from({ length: 8 }).map((_, i) => {
           const angle = (i * 45) * Math.PI / 180;
           const x1 = cx + Math.cos(angle) * (r + 3);
@@ -51,16 +55,22 @@ export default function WeatherGlyph({ code, isNight = false, className = 'w-7 h
           );
         })}
       </g>
-      <circle cx={cx} cy={cy} r={r} fill={sunFill} stroke={sunStroke} strokeWidth={darkOutline ? 2.5 : 1.5}
-        style={animated ? { animation: 'weather-sun-glow 3s ease-in-out infinite' } : undefined} />
+      <circle cx={cx} cy={cy} r={r} fill={sunFill} stroke={sunStroke} strokeWidth={darkOutline ? 2.5 : 1.5}>
+        {animated && (
+          <animate attributeName="opacity" values="1;0.85;1" dur="3s" repeatCount="indefinite" />
+        )}
+      </circle>
     </g>
   );
 
   const MoonShape = ({ cx = 32, cy = 26, r = 11 }) => (
     <g>
       {/* Full light circle (the lit moon) */}
-      <circle cx={cx} cy={cy} r={r} fill={moonFill} stroke={moonStroke} strokeWidth={darkOutline ? 2 : 1}
-        style={animated ? { animation: 'weather-sun-glow 4s ease-in-out infinite' } : undefined} />
+      <circle cx={cx} cy={cy} r={r} fill={moonFill} stroke={moonStroke} strokeWidth={darkOutline ? 2 : 1}>
+        {animated && (
+          <animate attributeName="opacity" values="1;0.85;1" dur="4s" repeatCount="indefinite" />
+        )}
+      </circle>
       {/* Offset dark circle on top creates the crescent cutout */}
       <circle cx={cx + r * 0.45} cy={cy - r * 0.15} r={r} fill={moonStroke} />
     </g>
@@ -69,7 +79,11 @@ export default function WeatherGlyph({ code, isNight = false, className = 'w-7 h
   const CloudShape = ({ cx = 34, cy = 38, scale = 1, fill = cloudLight, stroke = cloudMid }) => {
     const s = scale;
     return (
-      <g style={animated ? { animation: 'weather-cloud-drift 4s ease-in-out infinite' } : undefined}>
+      <g>
+        {animated && (
+          <animateTransform attributeName="transform" type="translate"
+            values="0 0; 2 0; 0 0" dur="4s" repeatCount="indefinite" />
+        )}
         <g transform={`translate(${cx - 34 * s}, ${cy - 38 * s}) scale(${s})`}>
           <path
             d="M 22 44 Q 14 44 14 36 Q 14 28 22 28 Q 24 21 32 21 Q 40 21 43 28 Q 54 27 54 36 Q 54 44 46 44 Z"
@@ -92,12 +106,19 @@ export default function WeatherGlyph({ code, isNight = false, className = 'w-7 h
     return (
       <g>
         {positions.slice(0, count).map((p, i) => (
-          <path
-            key={i}
-            d={`M ${p.x} ${p.y} Q ${p.x - 2} ${p.y + 5} ${p.x} ${p.y + 8} Q ${p.x + 2} ${p.y + 5} ${p.x} ${p.y} Z`}
-            fill={i % 2 === 0 ? rainColor : rainLight}
-            style={animated ? { animation: `weather-rain-fall 1.2s ease-in infinite`, animationDelay: `${i * 0.4}s` } : undefined}
-          />
+          <g key={i}>
+            {animated && (
+              <>
+                <animateTransform attributeName="transform" type="translate"
+                  values={`0 -2; 0 8`} dur="1.2s" begin={`${i * 0.4}s`} repeatCount="indefinite" />
+                <animate attributeName="opacity" values="0;1;1;0" dur="1.2s" begin={`${i * 0.4}s`} repeatCount="indefinite" />
+              </>
+            )}
+            <path
+              d={`M ${p.x} ${p.y} Q ${p.x - 2} ${p.y + 5} ${p.x} ${p.y + 8} Q ${p.x + 2} ${p.y + 5} ${p.x} ${p.y} Z`}
+              fill={i % 2 === 0 ? rainColor : rainLight}
+            />
+          </g>
         ))}
       </g>
     );
@@ -112,12 +133,20 @@ export default function WeatherGlyph({ code, isNight = false, className = 'w-7 h
     return (
       <g>
         {positions.slice(0, count).map((p, i) => (
-          <g key={i} stroke={snowColor} strokeWidth="1.8" strokeLinecap="round"
-            style={animated ? { animation: `weather-snow-fall 1.8s ease-in-out infinite`, animationDelay: `${i * 0.5}s` } : undefined}>
-            <line x1={p.x} y1={p.y} x2={p.x} y2={p.y + 7} />
-            <line x1={p.x - 3} y1={p.y + 3.5} x2={p.x + 3} y2={p.y + 3.5} />
-            <line x1={p.x - 2.5} y1={p.y + 1} x2={p.x + 2.5} y2={p.y + 6} />
-            <line x1={p.x + 2.5} y1={p.y + 1} x2={p.x - 2.5} y2={p.y + 6} />
+          <g key={i}>
+            {animated && (
+              <>
+                <animateTransform attributeName="transform" type="translate"
+                  values="0 -2; 3 8; 0 -2" dur="1.8s" begin={`${i * 0.5}s`} repeatCount="indefinite" />
+                <animate attributeName="opacity" values="0;1;1;0" dur="1.8s" begin={`${i * 0.5}s`} repeatCount="indefinite" />
+              </>
+            )}
+            <g stroke={snowColor} strokeWidth="1.8" strokeLinecap="round">
+              <line x1={p.x} y1={p.y} x2={p.x} y2={p.y + 7} />
+              <line x1={p.x - 3} y1={p.y + 3.5} x2={p.x + 3} y2={p.y + 3.5} />
+              <line x1={p.x - 2.5} y1={p.y + 1} x2={p.x + 2.5} y2={p.y + 6} />
+              <line x1={p.x + 2.5} y1={p.y + 1} x2={p.x - 2.5} y2={p.y + 6} />
+            </g>
           </g>
         ))}
       </g>
@@ -131,15 +160,35 @@ export default function WeatherGlyph({ code, isNight = false, className = 'w-7 h
       stroke="#EAB308"
       strokeWidth="1"
       strokeLinejoin="round"
-      style={animated ? { animation: 'weather-lightning-flash 3s ease-in-out infinite' } : undefined}
-    />
+    >
+      {animated && (
+        <animate attributeName="opacity"
+          values="1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;0.2;0.9;0.1;0.1;1;1;1;1;1;1;1;1;1"
+          dur="3s" repeatCount="indefinite" />
+      )}
+    </path>
   );
 
   const FogLines = () => (
     <g stroke={fogColor} strokeWidth="2.5" strokeLinecap="round">
-      <line x1="18" y1="50" x2="50" y2="50" style={animated ? { animation: 'weather-fog-shift 3s ease-in-out infinite' } : undefined} />
-      <line x1="22" y1="55" x2="46" y2="55" style={animated ? { animation: 'weather-fog-shift 3s ease-in-out infinite', animationDelay: '0.5s' } : undefined} />
-      <line x1="18" y1="60" x2="42" y2="60" style={animated ? { animation: 'weather-fog-shift 3s ease-in-out infinite', animationDelay: '1s' } : undefined} />
+      <line x1="18" y1="50" x2="50" y2="50">
+        {animated && (
+          <animateTransform attributeName="transform" type="translate"
+            values="0 0; 5 0; 0 0" dur="3s" repeatCount="indefinite" />
+        )}
+      </line>
+      <line x1="22" y1="55" x2="46" y2="55">
+        {animated && (
+          <animateTransform attributeName="transform" type="translate"
+            values="0 0; 5 0; 0 0" dur="3s" begin="0.5s" repeatCount="indefinite" />
+        )}
+      </line>
+      <line x1="18" y1="60" x2="42" y2="60">
+        {animated && (
+          <animateTransform attributeName="transform" type="translate"
+            values="0 0; 5 0; 0 0" dur="3s" begin="1s" repeatCount="indefinite" />
+        )}
+      </line>
     </g>
   );
 
