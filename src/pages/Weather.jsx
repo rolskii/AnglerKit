@@ -42,7 +42,7 @@ export default function Weather() {
 
   const formatDate = (dateStr) => {
     const d = new Date(dateStr + 'T00:00:00');
-    return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    return d.toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric' });
   };
 
   const handleMapSelect = (name, lat, lon) => {
