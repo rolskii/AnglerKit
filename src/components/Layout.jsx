@@ -19,7 +19,7 @@ const navItems = [
   { to: "/catches", label: "Fish Log", icon: Camera, matchPrefix: "/catches" },
   { to: "/moon", label: "Moon Phase", icon: MoonIcon },
   { to: "/weather", label: "Weather", icon: Cloud },
-  { to: "/map", label: "Topo Map", icon: MapIcon },
+  { to: "/map", label: "Maps", icon: MapIcon },
   { to: "/settings", label: "Settings", icon: SettingsIcon },
   { to: "/about", label: "About", icon: Info },
 ];
