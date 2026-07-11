@@ -114,6 +114,7 @@ export default function MapView() {
   const [savedMeasurements, setSavedMeasurements] = useState([]);
   const [mapReady, setMapReady] = useState(false);
   const [mapVersion, setMapVersion] = useState(0);
+  const [loadedRouteId, setLoadedRouteId] = useState(null);
 
   // Persist pins to localStorage so they survive page navigation
   const PINS_KEY = 'mapview_pins';
@@ -506,6 +507,7 @@ export default function MapView() {
       setDrawings([]);
       setSavedMeasurements([]);
       setMeasurePoints([]);
+      setLoadedRouteId(null);
       setDistanceKm(0);
       setDurationSec(0);
       elapsedBeforePauseRef.current = 0;
@@ -534,6 +536,7 @@ export default function MapView() {
     setIsTracking(false);
     setIsPaused(false);
     setRoutesOpen(false);
+    setLoadedRouteId(route.id);
     if (route.track && route.track.length > 0) {
       const first = route.track[0];
       setRecenterTarget([first.lat, first.lon]);
@@ -547,7 +550,23 @@ export default function MapView() {
 
   const handleRouteDeleted = useCallback((id) => {
     setSavedRoutes((prev) => prev.filter((r) => r.id !== id));
-  }, []);
+    if (id === loadedRouteId) {
+      setTrackPoints([]);
+      setPins([]);
+      setDrawings([]);
+      setSavedMeasurements([]);
+      setMeasurePoints([]);
+      setDistanceKm(0);
+      setDurationSec(0);
+      setLoadedRouteId(null);
+      try {
+        localStorage.removeItem(PINS_KEY);
+        localStorage.removeItem(TRACK_KEY);
+        localStorage.removeItem(DIST_KEY);
+        localStorage.removeItem(DUR_KEY);
+      } catch (e) {}
+    }
+  }, [loadedRouteId]);
 
   const handleSaveRouteName = useCallback(async (name) => {
     if (!selectedRoute) return;
