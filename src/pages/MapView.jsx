@@ -96,6 +96,12 @@ export default function MapView() {
   const [mapReady, setMapReady] = useState(false);
   const [mapVersion, setMapVersion] = useState(0);
 
+  // Persist pins to localStorage so they survive page navigation
+  const PINS_KEY = 'mapview_pins';
+  const TRACK_KEY = 'mapview_track';
+  const DIST_KEY = 'mapview_distance';
+  const DUR_KEY = 'mapview_duration';
+
   const watchIdRef = useRef(null);
   const startTimeRef = useRef(null);
   const elapsedBeforePauseRef = useRef(0);
@@ -166,7 +172,36 @@ export default function MapView() {
 
   useEffect(() => {
     loadRoutes();
+    // Restore unsaved pins/track from previous session
+    try {
+      const savedPins = localStorage.getItem(PINS_KEY);
+      if (savedPins) setPins(JSON.parse(savedPins));
+      const savedTrack = localStorage.getItem(TRACK_KEY);
+      if (savedTrack) setTrackPoints(JSON.parse(savedTrack));
+      const savedDist = localStorage.getItem(DIST_KEY);
+      if (savedDist) setDistanceKm(parseFloat(savedDist) || 0);
+      const savedDur = localStorage.getItem(DUR_KEY);
+      if (savedDur) setDurationSec(parseFloat(savedDur) || 0);
+    } catch (e) {}
   }, [loadRoutes]);
+
+  // Save pins to localStorage whenever they change
+  useEffect(() => {
+    try { localStorage.setItem(PINS_KEY, JSON.stringify(pins)); } catch (e) {}
+  }, [pins]);
+
+  // Save track data to localStorage whenever it changes
+  useEffect(() => {
+    try { localStorage.setItem(TRACK_KEY, JSON.stringify(trackPoints)); } catch (e) {}
+  }, [trackPoints]);
+
+  useEffect(() => {
+    try { localStorage.setItem(DIST_KEY, String(distanceKm)); } catch (e) {}
+  }, [distanceKm]);
+
+  useEffect(() => {
+    try { localStorage.setItem(DUR_KEY, String(durationSec)); } catch (e) {}
+  }, [durationSec]);
 
   // Duration timer
   useEffect(() => {
@@ -316,6 +351,13 @@ export default function MapView() {
       setDistanceKm(0);
       setDurationSec(0);
       elapsedBeforePauseRef.current = 0;
+      // Clear localStorage draft since route is now saved
+      try {
+        localStorage.removeItem(PINS_KEY);
+        localStorage.removeItem(TRACK_KEY);
+        localStorage.removeItem(DIST_KEY);
+        localStorage.removeItem(DUR_KEY);
+      } catch (e) {}
     } catch (e) {
       console.error('Failed to save route:', e);
       alert('Failed to save route. Please try again.');
