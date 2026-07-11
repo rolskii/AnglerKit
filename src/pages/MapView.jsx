@@ -6,6 +6,9 @@ import PinDialog from '@/components/map/PinDialog';
 import SaveRouteDialog from '@/components/map/SaveRouteDialog';
 import RouteInfoDialog from '@/components/map/RouteInfoDialog';
 import SavedRoutesDrawer from '@/components/map/SavedRoutesDrawer';
+import DrawLayer from '@/components/map/DrawLayer';
+import DrawBar from '@/components/map/DrawBar';
+import MeasureBar from '@/components/map/MeasureBar';
 import { ChevronLeft, Route } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import BottomTabBar from '@/components/BottomTabBar';
@@ -98,6 +101,11 @@ export default function MapView() {
   const [showAllRoutes, setShowAllRoutes] = useState(false);
   const [selectedRoute, setSelectedRoute] = useState(null);
   const [routeInfoOpen, setRouteInfoOpen] = useState(false);
+  const [drawMode, setDrawMode] = useState(false);
+  const [drawings, setDrawings] = useState([]);
+  const [currentStroke, setCurrentStroke] = useState([]);
+  const [measureMode, setMeasureMode] = useState(false);
+  const [measurePoints, setMeasurePoints] = useState([]);
   const [mapReady, setMapReady] = useState(false);
   const [mapVersion, setMapVersion] = useState(0);
 
@@ -119,8 +127,13 @@ export default function MapView() {
   const pinModeRef = useRef(false);
   const handleMapClickRef = useRef(() => {});
   const allRoutesOverlaysRef = useRef([]);
+  const measureModeRef = useRef(false);
+  const handleMeasureClickRef = useRef(() => {});
+  const drawingOverlaysRef = useRef([]);
+  const measureOverlayRef = useRef(null);
 
   useEffect(() => { pinModeRef.current = pinMode; }, [pinMode]);
+  useEffect(() => { measureModeRef.current = measureMode; }, [measureMode]);
 
   // Native pointer-based tap detection on the map container (replaces MapKit single-tap)
   useEffect(() => {
@@ -141,12 +154,16 @@ export default function MapView() {
       const dx = e.clientX - downX;
       const dy = e.clientY - downY;
       if (Math.sqrt(dx * dx + dy * dy) > 10) return; // ignore drags
-      if (!pinModeRef.current) return;
+      if (!pinModeRef.current && !measureModeRef.current) return;
       const map = mapRef.current;
       if (!map) return;
       const coord = map.convertPointOnPageToCoordinate(new DOMPoint(e.pageX, e.pageY));
       if (coord) {
-        handleMapClickRef.current({ lat: coord.latitude, lon: coord.longitude });
+        if (pinModeRef.current) {
+          handleMapClickRef.current({ lat: coord.latitude, lon: coord.longitude });
+        } else if (measureModeRef.current) {
+          handleMeasureClickRef.current({ lat: coord.latitude, lon: coord.longitude });
+        }
       }
     };
 
@@ -312,6 +329,8 @@ export default function MapView() {
   // Pin handling
   const handleAddPin = useCallback(() => {
     setPinMode((v) => !v);
+    setDrawMode(false);
+    setMeasureMode(false);
   }, []);
 
   const handlePinSave = useCallback((label, marker) => {
@@ -335,6 +354,47 @@ export default function MapView() {
   const handlePinClick = useCallback((idx) => {
     setEditingPinIdx(idx);
     setPinDialogOpen(true);
+  }, []);
+
+  // Drawing handlers
+  const handleToggleDraw = useCallback(() => {
+    setDrawMode((v) => !v);
+    setPinMode(false);
+    setMeasureMode(false);
+  }, []);
+
+  const handleDrawClear = useCallback(() => {
+    setDrawings([]);
+    setCurrentStroke([]);
+  }, []);
+
+  const handleDrawStroke = useCallback((points, done) => {
+    if (done) {
+      if (points.length > 1) setDrawings((prev) => [...prev, points]);
+      setCurrentStroke([]);
+    } else {
+      setCurrentStroke(points);
+    }
+  }, []);
+
+  // Measurement handlers
+  const handleToggleMeasure = useCallback(() => {
+    setMeasureMode((v) => !v);
+    setPinMode(false);
+    setDrawMode(false);
+  }, []);
+
+  const handleMeasureClick = useCallback((latlng) => {
+    setMeasurePoints((prev) => [...prev, latlng]);
+  }, []);
+  useEffect(() => { handleMeasureClickRef.current = handleMeasureClick; }, [handleMeasureClick]);
+
+  const handleMeasureUndo = useCallback(() => {
+    setMeasurePoints((prev) => prev.slice(0, -1));
+  }, []);
+
+  const handleMeasureClear = useCallback(() => {
+    setMeasurePoints([]);
   }, []);
 
   // Save route
@@ -542,6 +602,58 @@ export default function MapView() {
     };
   }, [showAllRoutes, savedRoutes, mapReady]);
 
+  // Render drawings as polyline overlays
+  useEffect(() => {
+    if (!mapReady || !mapRef.current) return;
+    const map = mapRef.current;
+
+    drawingOverlaysRef.current.forEach((o) => { try { map.removeOverlay(o); } catch (e) {} });
+    drawingOverlaysRef.current = [];
+
+    const allStrokes = [...drawings];
+    if (currentStroke.length >= 2) allStrokes.push(currentStroke);
+
+    allStrokes.forEach((stroke) => {
+      if (stroke.length < 2) return;
+      const coords = stroke.map((p) => new mapkit.Coordinate(p.lat, p.lon));
+      const isCurrent = stroke === currentStroke;
+      const style = new mapkit.Style({
+        strokeColor: isCurrent ? '#ef4444' : '#dc2626',
+        lineWidth: 3,
+        lineJoin: 'round',
+        lineCap: 'round',
+      });
+      const overlay = new mapkit.PolylineOverlay(coords, { style });
+      map.addOverlay(overlay);
+      drawingOverlaysRef.current.push(overlay);
+    });
+  }, [drawings, currentStroke, mapReady]);
+
+  // Render measurement polyline overlay
+  useEffect(() => {
+    if (!mapReady || !mapRef.current) return;
+    const map = mapRef.current;
+
+    if (measureOverlayRef.current) {
+      try { map.removeOverlay(measureOverlayRef.current); } catch (e) {}
+      measureOverlayRef.current = null;
+    }
+
+    if (measurePoints.length >= 2) {
+      const coords = measurePoints.map((p) => new mapkit.Coordinate(p.lat, p.lon));
+      const style = new mapkit.Style({
+        strokeColor: '#2563eb',
+        lineWidth: 3,
+        lineJoin: 'round',
+        lineCap: 'round',
+        lineDash: [6, 6],
+      });
+      const overlay = new mapkit.PolylineOverlay(coords, { style });
+      map.addOverlay(overlay);
+      measureOverlayRef.current = overlay;
+    }
+  }, [measurePoints, mapReady]);
+
   // Update GPS annotation
   useEffect(() => {
     if (!mapReady || !mapRef.current) return;
@@ -575,6 +687,11 @@ export default function MapView() {
 
   const hasTrack = trackPoints.length > 0;
   const hasPins = pins.length > 0;
+  const measureTotalKm = measurePoints.reduce((sum, p, i) => {
+    if (i === 0) return 0;
+    const prev = measurePoints[i - 1];
+    return sum + haversine(prev.lat, prev.lon, p.lat, p.lon);
+  }, 0);
 
   return (
     <div className="fixed inset-0 z-[4000] bg-background" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
@@ -683,6 +800,50 @@ export default function MapView() {
             </div>
           );
         })}
+        {/* Drawing capture layer */}
+        <DrawLayer active={drawMode} mapRef={mapRef} onStroke={handleDrawStroke} />
+
+        {/* Measurement point markers */}
+        {mapReady && mapRef.current && measurePoints.map((pt, idx) => {
+          const coord = new mapkit.Coordinate(pt.lat, pt.lon);
+          const point = mapRef.current.convertCoordinateToPointOnPage(coord);
+          if (!point) return null;
+          const containerRect = mapContainerRef.current?.getBoundingClientRect();
+          if (!containerRect) return null;
+          const left = point.x - containerRect.left;
+          const top = point.y - containerRect.top;
+          if (left < -30 || left > containerRect.width + 30 || top < -30 || top > containerRect.height + 30) return null;
+          return (
+            <div key={`mp-${idx}`} className="absolute z-[455] pointer-events-none" style={{ left, top, transform: 'translate(-50%, -50%)' }}>
+              <div style={{ width: '24px', height: '24px', background: '#2563eb', border: '3px solid #ffffff', borderRadius: '50%', boxShadow: '0 2px 6px rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: 'white' }}>{idx + 1}</span>
+              </div>
+            </div>
+          );
+        })}
+        {/* Measurement segment distance labels */}
+        {mapReady && mapRef.current && measurePoints.map((pt, idx) => {
+          if (idx === 0) return null;
+          const prev = measurePoints[idx - 1];
+          const midLat = (prev.lat + pt.lat) / 2;
+          const midLon = (prev.lon + pt.lon) / 2;
+          const segDist = haversine(prev.lat, prev.lon, pt.lat, pt.lon);
+          const coord = new mapkit.Coordinate(midLat, midLon);
+          const point = mapRef.current.convertCoordinateToPointOnPage(coord);
+          if (!point) return null;
+          const containerRect = mapContainerRef.current?.getBoundingClientRect();
+          if (!containerRect) return null;
+          const left = point.x - containerRect.left;
+          const top = point.y - containerRect.top;
+          if (left < -50 || left > containerRect.width + 50 || top < -30 || top > containerRect.height + 30) return null;
+          return (
+            <div key={`seg-${idx}`} className="absolute z-[456] pointer-events-none" style={{ left, top, transform: 'translate(-50%, -50%)' }}>
+              <span style={{ fontSize: '11px', fontWeight: 600, background: 'rgba(37,99,235,0.9)', color: 'white', padding: '2px 6px', borderRadius: '4px', whiteSpace: 'nowrap' }}>
+                {segDist.toFixed(2)} km
+              </span>
+            </div>
+          );
+        })}
         {/* Preview pin while dialog is open — shows immediately at tapped location */}
         {mapReady && mapRef.current && pendingPin && pinDialogOpen && editingPinIdx === null && (() => {
           const coord = new mapkit.Coordinate(pendingPin.lat, pendingPin.lon);
@@ -738,6 +899,25 @@ export default function MapView() {
           Tap the map to drop a pin
         </div>
       )}
+      {/* Measure mode hint */}
+      {measureMode && measurePoints.length === 0 && (
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-[500] px-4 py-2 rounded-full bg-blue-500 text-white text-sm font-medium shadow-lg">
+          Tap the map to add measurement points
+        </div>
+      )}
+      {/* Draw mode bar */}
+      {drawMode && (
+        <DrawBar onClear={handleDrawClear} strokeCount={drawings.length} />
+      )}
+      {/* Measurement bar */}
+      {measurePoints.length > 0 && (
+        <MeasureBar
+          totalKm={measureTotalKm}
+          pointCount={measurePoints.length}
+          onUndo={handleMeasureUndo}
+          onClear={handleMeasureClear}
+        />
+      )}
 
       {/* Controls */}
       <MapControls
@@ -756,6 +936,10 @@ export default function MapView() {
         onOpenRoutes={() => { loadRoutes(); setRoutesOpen(true); }}
         showAllRoutes={showAllRoutes}
         onToggleAllRoutes={() => { loadRoutes(); setShowAllRoutes((v) => !v); }}
+        drawMode={drawMode}
+        measureMode={measureMode}
+        onToggleDraw={handleToggleDraw}
+        onToggleMeasure={handleToggleMeasure}
       />
 
       {/* Dialogs */}

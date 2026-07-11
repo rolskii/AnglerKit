@@ -1,5 +1,5 @@
 import React from 'react';
-import { Play, Pause, Square, MapPin, Save, Crosshair, Layers, FolderOpen, Circle, Route } from 'lucide-react';
+import { Play, Pause, Square, MapPin, Save, Crosshair, Layers, FolderOpen, Circle, Route, Pencil, Ruler } from 'lucide-react';
 
 const ctrlBase = "flex items-center justify-center rounded-full shadow-lg backdrop-blur-xl transition-all active:scale-90";
 const ctrlSize = "w-12 h-12";
@@ -20,6 +20,10 @@ export default function MapControls({
   onOpenRoutes,
   showAllRoutes,
   onToggleAllRoutes,
+  drawMode,
+  measureMode,
+  onToggleDraw,
+  onToggleMeasure,
 }) {
   return (
     <>
@@ -49,6 +53,28 @@ export default function MapControls({
           title="Show all routes on map"
         >
           <Route className="w-5 h-5" />
+        </button>
+        <button
+          onClick={onToggleDraw}
+          className={`${ctrlBase} ${ctrlSize} border ${
+            drawMode
+              ? 'bg-red-500 text-white border-red-500'
+              : 'bg-background/90 text-foreground border-border'
+          }`}
+          title="Draw on map"
+        >
+          <Pencil className="w-5 h-5" />
+        </button>
+        <button
+          onClick={onToggleMeasure}
+          className={`${ctrlBase} ${ctrlSize} border ${
+            measureMode
+              ? 'bg-blue-500 text-white border-blue-500'
+              : 'bg-background/90 text-foreground border-border'
+          }`}
+          title="Measure distance"
+        >
+          <Ruler className="w-5 h-5" />
         </button>
       </div>
 
