@@ -83,7 +83,7 @@ const items = [
   { to: "/catches", title: "Fish Log", icon: Camera, tint: "blue", key: "catch" },
   { to: "/moon", title: "Moon Phase", icon: MoonIcon, tint: "purple", key: "moon" },
   { to: "/weather", title: "Weather", icon: Cloud, tint: "teal", key: "weather" },
-  { to: "/map", title: "Map", icon: MapIcon, tint: "teal", key: "map" },
+  { to: "/map", title: "Map", icon: MapIcon, tint: "green", key: "map" },
 ];
 
 const tintClasses = {
@@ -91,6 +91,7 @@ const tintClasses = {
   blue: "bg-tint-blue-bg text-tint-blue",
   purple: "bg-tint-purple-bg text-tint-purple",
   teal: "bg-tint-teal-bg text-tint-teal",
+  green: "bg-green-100 text-green-600",
 };
 
 export default function Home() {
