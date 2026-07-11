@@ -236,7 +236,7 @@ export default function Home() {
 
       setDescriptions(prev => ({
         ...prev,
-        map: `${routeCount} ${routeCount === 1 ? "route" : "routes"} · ${totalPins} ${totalPins === 1 ? "pin" : "pins"} · ${totalDrawings} ${totalDrawings === 1 ? "drawing" : "drawings"} · ${totalMeasurements} meas.`
+        map: `${routeCount} ${routeCount === 1 ? "route" : "routes"} · ${totalPins} ${totalPins === 1 ? "pin" : "pins"} · ${totalDrawings} dwg. · ${totalMeasurements} meas.`
       }));
     } catch (e) {}
   };
