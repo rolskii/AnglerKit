@@ -236,7 +236,12 @@ export default function Home() {
 
       setDescriptions(prev => ({
         ...prev,
-        map: `${routeCount} ${routeCount === 1 ? "route" : "routes"} · ${totalPins} ${totalPins === 1 ? "pin" : "pins"} · ${totalDrawings} dwg. · ${totalMeasurements} meas.`
+        map: [
+          `${routeCount} ${routeCount === 1 ? "route" : "routes"}`,
+          `${totalPins} ${totalPins === 1 ? "pin" : "pins"}`,
+          `${totalDrawings} dwg.`,
+          `${totalMeasurements} meas.`
+        ]
       }));
     } catch (e) {}
   };
@@ -332,6 +337,12 @@ export default function Home() {
                       <p className="text-[10px] md:text-sm text-muted-foreground leading-tight">{weatherInfo.temp} · {weatherInfo.windLabel} · {weatherInfo.desc}</p>
                     ) : item.key === "moon" && moonPhase ? (
                       <p className="text-[10px] md:text-sm text-muted-foreground leading-tight">{moonPhase.name} · {moonPhase.illumination}% lit</p>
+                    ) : item.key === "map" && Array.isArray(desc) ? (
+                      <div className="space-y-0.5">
+                        {desc.map((line, i) => (
+                          <p key={i} className="text-[10px] md:text-sm text-muted-foreground leading-tight">{line}</p>
+                        ))}
+                      </div>
                     ) : desc ? (
                       <p className="text-[10px] md:text-sm text-muted-foreground leading-tight">{desc}</p>
                     ) : (
