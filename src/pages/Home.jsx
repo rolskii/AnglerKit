@@ -154,27 +154,32 @@ export default function Home() {
   }, []);
 
   const fetchWeather = async (coords, tempUnit) => {
-    try {
-      const res = await base44.functions.invoke('weatherkit', { lat: coords.lat, lon: coords.lon, unit: tempUnit });
-      const data = res.data;
-      const temp = Math.round(data.current.temperature_2m);
-      const desc = getWeatherDescription(data.current.weather_code);
-      const wind = data.current.wind_speed_10m;
-      const windLabel = wind < 8 ? "Light wind" : wind < 15 ? "Breezy" : "Windy";
-      const tempSymbol = tempUnit === "fahrenheit" ? "°F" : "°C";
-      const code = data.current.weather_code;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const res = await base44.functions.invoke('weatherkit', { lat: coords.lat, lon: coords.lon, unit: tempUnit });
+        const data = res.data;
+        const temp = Math.round(data.current.temperature_2m);
+        const desc = getWeatherDescription(data.current.weather_code);
+        const wind = data.current.wind_speed_10m;
+        const windLabel = wind < 8 ? "Light wind" : wind < 15 ? "Breezy" : "Windy";
+        const tempSymbol = tempUnit === "fahrenheit" ? "°F" : "°C";
+        const code = data.current.weather_code;
 
-      const now = new Date();
-      let isNight = false;
-      if (data.daily?.sunrise?.[0] && data.daily?.sunset?.[0]) {
-        const sunrise = new Date(data.daily.sunrise[0]);
-        const sunset = new Date(data.daily.sunset[0]);
-        isNight = now < sunrise || now >= sunset;
+        const now = new Date();
+        let isNight = false;
+        if (data.daily?.sunrise?.[0] && data.daily?.sunset?.[0]) {
+          const sunrise = new Date(data.daily.sunrise[0]);
+          const sunset = new Date(data.daily.sunset[0]);
+          isNight = now < sunrise || now >= sunset;
+        }
+
+        setWeatherInfo({ temp: `${temp}${tempSymbol}`, windLabel, desc, code, isNight });
+        setDescriptions(prev => ({ ...prev, weather: desc }));
+        return;
+      } catch (e) {
+        if (attempt < 2) await new Promise(r => setTimeout(r, 1500));
       }
-
-      setWeatherInfo({ temp: `${temp}${tempSymbol}`, windLabel, desc, code, isNight });
-      setDescriptions(prev => ({ ...prev, weather: desc }));
-    } catch (e) {}
+    }
   };
 
   const selectLocationFromMap = async (name, lat, lon) => {
