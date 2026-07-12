@@ -397,10 +397,8 @@ export default function MapView() {
         setLoadedRouteId(newRecord.id);
       }
       await loadRoutes();
-      toast({ title: 'Pin saved', description: `"${label}" has been saved.` });
     } catch (e) {
       console.error('Failed to persist pin:', e);
-      toast({ title: 'Failed to save pin', description: e?.message || 'Unknown error', variant: 'destructive' });
     }
   }, [pendingPin, editingPinIdx, pins, loadedRouteId, isTracking, isPaused, loadRoutes, toast]);
 
