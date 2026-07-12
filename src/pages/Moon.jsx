@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { getMoonTimes } from '@/lib/moonTimes';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Sun, Waves, MapPin, Bell, BellOff, Save, Star } from 'lucide-react';
+import { Sun, Waves, MapPin, Bell, BellOff, Save, Star, Calendar as CalendarIcon } from 'lucide-react';
 import FishIcon from '@/components/FishIcon';
 import { searchLocations, geocodeLocation } from '@/lib/geocode';
 import { Input } from '@/components/ui/input';
@@ -485,8 +485,9 @@ export default function Moon() {
                 <div className="flex flex-col items-start gap-1.5 mt-2">
                   <Popover>
                     <PopoverTrigger asChild>
-                      <button className="text-xs text-primary/70 hover:text-primary transition-colors bg-primary/10 hover:bg-primary/20 px-2 py-0.5 rounded-full border border-primary/20 font-medium">
-                        For: {moonData.date}
+                      <button className="flex h-9 w-full rounded-md border border-input bg-muted px-3 text-sm text-foreground shadow-sm transition-colors hover:bg-accent/50 items-center gap-2">
+                        <CalendarIcon className="w-4 h-4 text-muted-foreground" />
+                        {moonData.date}
                       </button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
