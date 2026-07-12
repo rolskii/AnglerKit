@@ -32,9 +32,9 @@ export default function SavedRoutesDrawer({ open, onOpenChange, routes, onLoad, 
                   onClick={() => onLoad(r)}
                   className="flex-1 flex items-center gap-3 text-left min-w-0"
                 >
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${isPinsOnly ? (r.pins?.some(p => p.marker === 'fish') ? 'bg-emerald-500/10' : 'bg-amber-500/10') : 'bg-primary/10'}`}>
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${isPinsOnly ? (r.pins?.every(p => p.marker === 'fish') ? 'bg-emerald-500/10' : 'bg-amber-500/10') : 'bg-primary/10'}`}>
                     {isPinsOnly
-                      ? (r.pins?.some(p => p.marker === 'fish')
+                      ? (r.pins?.every(p => p.marker === 'fish')
                         ? <FishIcon className="w-5 h-5 text-emerald-500" />
                         : <MapPin className="w-5 h-5 text-amber-500" />)
                       : <Route className="w-5 h-5 text-primary" />}
