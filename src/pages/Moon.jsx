@@ -488,7 +488,7 @@ export default function Moon() {
                         For: {moonData.date}
                       </button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 max-w-[calc(100vw-2rem)]" align="start">
+                    <PopoverContent className="w-[340px] p-0 max-w-[calc(100vw-1rem)]" align="start">
                       <Calendar
                         mode="single"
                         selected={new Date(selectedDate + 'T00:00:00')}
@@ -503,10 +503,10 @@ export default function Moon() {
                         className="p-4"
                         classNames={{
                           caption_label: "text-base font-semibold",
-                          nav_button: "h-10 w-10",
-                          head_cell: "w-11 text-sm font-semibold",
+                          nav_button: "h-9 w-9",
+                          head_cell: "w-10 text-sm font-semibold",
                           row: "w-full mt-1",
-                          cell: "p-1",
+                          cell: "p-0",
                           day: "h-10 w-10 text-base",
                         }}
                         modifiers={{
