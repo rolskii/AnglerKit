@@ -230,15 +230,6 @@ export default function Home() {
       let totalPins = routes.reduce((sum, r) => sum + (r.pins?.length || 0), 0);
       const routeCount = routes.length;
 
-      // Include unsaved pins persisted in localStorage from the Maps page
-      try {
-        const draftPins = localStorage.getItem('mapview_pins');
-        if (draftPins) {
-          const parsed = JSON.parse(draftPins);
-          if (Array.isArray(parsed)) totalPins += parsed.length;
-        }
-      } catch {}
-
       let totalDrawings = routes.reduce((sum, r) => sum + (r.drawings?.length || 0), 0);
       let totalMeasurements = routes.reduce((sum, r) => sum + (r.measurements?.length || 0), 0);
 
