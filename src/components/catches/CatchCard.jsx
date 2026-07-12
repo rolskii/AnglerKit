@@ -80,20 +80,22 @@ export default function CatchCard({ catchItem, onEdit, onDelete, lines = [] }) {
       )}
 
       <div className="space-y-1.5 text-sm">
-        <Detail label="Length" value={catchItem.length ? `${catchItem.length} in` : null} />
-        <Detail label="Girth" value={catchItem.girth ? `${catchItem.girth} in` : null} />
-        {estWeight != null ? (
-          <div className="flex justify-between gap-2 items-center">
-            <button onClick={() => setShowFormula(v => !v)} className="text-muted-foreground whitespace-normal text-left leading-snug" aria-label="Show formula">
-              Estimated Weight<span className="text-xl font-bold text-amber-500 align-middle">*</span>
-            </button>
-            <span className="font-medium text-right whitespace-nowrap">{estWeight.toFixed(2)} lb</span>
-          </div>
-        ) : (
-          <Detail label="Weight" value={catchItem.weight ? `${catchItem.weight} lb` : null} />
-        )}
+        <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+          <Detail label="Length" value={catchItem.length ? `${catchItem.length} in` : null} />
+          <Detail label="Girth" value={catchItem.girth ? `${catchItem.girth} in` : null} />
+          {estWeight != null ? (
+            <div className="flex justify-between gap-2 items-center">
+              <button onClick={() => setShowFormula(v => !v)} className="text-muted-foreground whitespace-normal text-left leading-snug" aria-label="Show formula">
+                Est. Weight<span className="text-xl font-bold text-amber-500 align-middle">*</span>
+              </button>
+              <span className="font-medium text-right whitespace-nowrap">{estWeight.toFixed(2)} lb</span>
+            </div>
+          ) : (
+            <Detail label="Weight" value={catchItem.weight ? `${catchItem.weight} lb` : null} />
+          )}
+          <Detail label="Water Temp" value={catchItem.water_temp != null ? `${catchItem.water_temp}°` : null} />
+        </div>
         <Detail label="Fly or Lure Used" value={catchItem.fly_used} />
-        <Detail label="Water Temp" value={catchItem.water_temp != null ? `${catchItem.water_temp}°` : null} />
         <Detail label="Rod" value={catchItem.rod} />
         <Detail label="Reel" value={catchItem.reel} />
         <Detail label="Line" value={catchItem.line} />
