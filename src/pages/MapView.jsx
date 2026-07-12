@@ -522,11 +522,13 @@ export default function MapView() {
         localStorage.removeItem(DUR_KEY);
       } catch (e) {}
     } catch (e) {
-      const errMsg = e?.response?.data?.detail || e?.response?.data?.message || e?.message || e?.data?.message || 'Unknown error';
+      console.error('[MapView] Save failed — full error:', e);
       const errStatus = e?.response?.status || e?.status;
+      const errMsg = e?.response?.data?.detail || e?.response?.data?.message || e?.message || e?.data?.message || 'Unknown error';
+      const errStr = errStatus ? `${errStatus}: ${errMsg}` : errMsg;
       toast({
         title: 'Failed to save',
-        description: errStatus ? `${errStatus}: ${errMsg}` : errMsg,
+        description: errStr,
         variant: 'destructive',
       });
     }
