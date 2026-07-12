@@ -485,11 +485,9 @@ export default function Moon() {
                 <div className="flex flex-col items-start gap-1.5 mt-2">
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Input
-                        className="bg-muted cursor-pointer"
-                        value={moonData.date}
-                        readOnly
-                      />
+                      <button className="bg-muted h-8 text-xs px-3 rounded-md border border-input">
+                        {moonData.date}
+                      </button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
