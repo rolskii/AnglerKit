@@ -198,8 +198,16 @@ export default function Home() {
         base44.entities.Lure.list("-created_date", 500),
         base44.entities.MiscItem.list("-created_date", 500),
       ]);
-      const total = lines.length + reels.length + rods.length + lures.length + misc.length;
-      setDescriptions(prev => ({ ...prev, gear: `${total} ${total === 1 ? "item" : "items"}` }));
+      const tackleCount = lures.length + misc.length;
+      setDescriptions(prev => ({
+        ...prev,
+        gear: [
+          `${lines.length} ${lines.length === 1 ? "line" : "lines"}`,
+          `${reels.length} ${reels.length === 1 ? "reel" : "reels"}`,
+          `${rods.length} ${rods.length === 1 ? "rod" : "rods"}`,
+          `${tackleCount} ${tackleCount === 1 ? "tackle" : "tackle"}`,
+        ]
+      }));
     } catch (e) {}
   };
 
@@ -337,7 +345,7 @@ export default function Home() {
                       <p className="text-[10px] md:text-sm text-muted-foreground leading-tight">{weatherInfo.temp} · {weatherInfo.windLabel} · {weatherInfo.desc}</p>
                     ) : item.key === "moon" && moonPhase ? (
                       <p className="text-[10px] md:text-sm text-muted-foreground leading-tight">{moonPhase.name} · {moonPhase.illumination}% lit</p>
-                    ) : item.key === "map" && Array.isArray(desc) ? (
+                    ) : Array.isArray(desc) ? (
                       <div className="space-y-0.5">
                         {desc.map((line, i) => (
                           <p key={i} className="text-[10px] md:text-sm text-muted-foreground leading-tight">{line}</p>
