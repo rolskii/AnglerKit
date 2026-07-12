@@ -26,62 +26,66 @@ export default function SavedRoutesDrawer({ open, onOpenChange, routes, onLoad, 
           ) : (
             routes.map((r) => {
                 const isPinsOnly = (!r.track || r.track.length === 0) && (r.pins?.length || 0) > 0;
+                const fishCount = r.pins?.filter(p => p.marker === 'fish').length || 0;
+                const pinCount = (r.pins?.length || 0) - fishCount;
                 return (
-              <div key={r.id} className="rounded-xl border border-border hover:bg-accent/10 transition-colors overflow-hidden">
-                <div className="flex items-center gap-3 p-3">
-                  <button
-                    onClick={() => onLoad(r)}
-                    className="flex-1 flex items-center gap-3 text-left min-w-0"
-                  >
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${isPinsOnly ? (r.pins?.every(p => p.marker === 'fish') ? 'bg-emerald-500/10' : 'bg-amber-500/10') : 'bg-primary/10'}`}>
-                      {isPinsOnly
-                        ? (r.pins?.every(p => p.marker === 'fish')
-                          ? <FishIcon className="w-5 h-5 text-emerald-500" />
-                          : <MapPin className="w-5 h-5 text-amber-500" />)
-                        : <Route className="w-5 h-5 text-primary" />}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium truncate">{r.name}</p>
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                        {r.date && (
-                          <span className="flex items-center gap-0.5">
-                            <Calendar className="w-3 h-3" />
-                            {new Date(r.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                          </span>
-                        )}
-                        {r.distance_km != null && r.distance_km > 0 && <span>{r.distance_km.toFixed(2)} km</span>}
-                        {(r.pins?.length || 0) > 0 && (
-                          <span className="flex items-center gap-0.5">
-                            <MapPin className="w-3 h-3" />
-                            {r.pins?.length || 0}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </button>
-                  <button
-                    onClick={() => handleDelete(r.id)}
-                    className="p-2 text-muted-foreground hover:text-destructive transition-colors shrink-0"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-                {isPinsOnly && r.pins?.length > 1 && (
-                  <div className="border-t border-border divide-y divide-border">
-                    {r.pins.map((pin, pIdx) => (
-                      <button
-                        key={pIdx}
-                        onClick={() => onLoad(r)}
-                        className="flex items-center gap-2 w-full px-3 py-2 text-left hover:bg-accent/5 transition-colors"
-                      >
-                        {pin.marker === 'fish'
-                          ? <FishIcon className="w-4 h-4 text-emerald-500 shrink-0" />
-                          : <MapPin className="w-4 h-4 text-amber-500 shrink-0" />}
-                        <span className="text-xs text-muted-foreground truncate">{pin.label || 'Unnamed'}</span>
-                      </button>
-                    ))}
+              <div key={r.id} className="flex items-center gap-3 p-3 rounded-xl border border-border hover:bg-accent/10 transition-colors">
+                <button
+                  onClick={() => onLoad(r)}
+                  className="flex-1 flex items-center gap-3 text-left min-w-0"
+                >
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${isPinsOnly ? (fishCount > 0 ? 'bg-emerald-500/10' : 'bg-amber-500/10') : 'bg-primary/10'}`}>
+                    {isPinsOnly
+                      ? (fishCount > 0
+                        ? <FishIcon className="w-5 h-5 text-emerald-500" />
+                        : <MapPin className="w-5 h-5 text-amber-500" />)
+                      : <Route className="w-5 h-5 text-primary" />}
                   </div>
-                )}
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{r.name}</p>
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                      {r.date && (
+                        <span className="flex items-center gap-0.5">
+                          <Calendar className="w-3 h-3" />
+                          {new Date(r.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        </span>
+                      )}
+                      {r.distance_km != null && r.distance_km > 0 && <span>{r.distance_km.toFixed(2)} km</span>}
+                      {isPinsOnly && fishCount > 0 && pinCount > 0 && (
+                        <span className="flex items-center gap-1">
+                          <FishIcon className="w-3 h-3 text-emerald-500" />
+                          {fishCount}
+                          <MapPin className="w-3 h-3 text-amber-500 ml-1" />
+                          {pinCount}
+                        </span>
+                      )}
+                      {isPinsOnly && fishCount > 0 && pinCount === 0 && (
+                        <span className="flex items-center gap-0.5">
+                          <FishIcon className="w-3 h-3 text-emerald-500" />
+                          {fishCount} fish spot{fishCount !== 1 ? 's' : ''}
+                        </span>
+                      )}
+                      {isPinsOnly && fishCount === 0 && pinCount > 0 && (
+                        <span className="flex items-center gap-0.5">
+                          <MapPin className="w-3 h-3" />
+                          {pinCount}
+                        </span>
+                      )}
+                      {!isPinsOnly && (r.pins?.length || 0) > 0 && (
+                        <span className="flex items-center gap-0.5">
+                          <MapPin className="w-3 h-3" />
+                          {r.pins?.length || 0}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </button>
+                <button
+                  onClick={() => handleDelete(r.id)}
+                  className="p-2 text-muted-foreground hover:text-destructive transition-colors shrink-0"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
               </div>
                 );
               })
