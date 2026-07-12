@@ -35,7 +35,7 @@ export default function SavedRoutesDrawer({ open, onOpenChange, routes, onLoad, 
         <SheetHeader>
           <SheetTitle>Saved Routes & Pins</SheetTitle>
         </SheetHeader>
-        <div className="overflow-y-auto flex-1 mt-2 space-y-2">
+        <div className="overflow-y-auto flex-1 mt-2 space-y-0.5">
           {routes.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-8">No saved routes or pins yet. Drop pins on the map and save them!</p>
           ) : (
@@ -44,7 +44,7 @@ export default function SavedRoutesDrawer({ open, onOpenChange, routes, onLoad, 
 
                 if (isPinsOnly) {
                   return r.pins.map((pin, pIdx) => (
-                    <div key={`${r.id}-${pIdx}`} className="flex items-center gap-3 p-3 rounded-xl border border-border hover:bg-accent/10 transition-colors">
+                    <div key={`${r.id}-${pIdx}`} className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/10 transition-colors">
                       <button onClick={() => onLoad(r)} className="flex-1 flex items-center gap-3 text-left min-w-0">
                         <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${pin.marker === 'fish' ? 'bg-emerald-500/10' : 'bg-amber-500/10'}`}>
                           {pin.marker === 'fish'
@@ -74,7 +74,7 @@ export default function SavedRoutesDrawer({ open, onOpenChange, routes, onLoad, 
                 }
 
                 return (
-                  <div key={r.id} className="flex items-center gap-3 p-3 rounded-xl border border-border hover:bg-accent/10 transition-colors">
+                  <div key={r.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/10 transition-colors">
                     <button onClick={() => onLoad(r)} className="flex-1 flex items-center gap-3 text-left min-w-0">
                       <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-primary/10">
                         <Route className="w-5 h-5 text-primary" />
