@@ -365,23 +365,65 @@ export default function MapView() {
     setMeasureMode(false);
   }, []);
 
-  const handlePinSave = useCallback((label, marker) => {
+  const handlePinSave = useCallback(async (label, marker) => {
+    let updatedPins;
     if (editingPinIdx !== null) {
-      setPins((prev) => prev.map((p, i) => (i === editingPinIdx ? { ...p, label, marker: marker || 'pin' } : p)));
+      updatedPins = pins.map((p, i) => (i === editingPinIdx ? { ...p, label, marker: marker || 'pin' } : p));
+      setPins(updatedPins);
     } else if (pendingPin) {
-      setPins((prev) => [...prev, { ...pendingPin, label, marker: marker || 'pin' }]);
+      updatedPins = [...pins, { ...pendingPin, label, marker: marker || 'pin' }];
+      setPins(updatedPins);
+    } else {
+      return;
     }
-    setPendingPin(null);
-    setEditingPinIdx(null);
-  }, [pendingPin, editingPinIdx]);
 
-  const handlePinDelete = useCallback(() => {
+    setPendingPin(null);
+    setEditingPinIdx(null);
+
+    // During active tracking, pins are saved with the route via the disk icon
+    if (isTracking || isPaused) return;
+
+    try {
+      if (loadedRouteId) {
+        await base44.entities.MapCourse.update(loadedRouteId, { pins: updatedPins });
+      } else {
+        const today = new Date();
+        const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        const newRecord = await base44.entities.MapCourse.create({
+          name: label,
+          pins: updatedPins,
+          date: dateStr,
+        });
+        setLoadedRouteId(newRecord.id);
+      }
+      await loadRoutes();
+      toast({ title: 'Pin saved', description: `"${label}" has been saved.` });
+    } catch (e) {
+      console.error('Failed to persist pin:', e);
+      toast({ title: 'Failed to save pin', description: e?.message || 'Unknown error', variant: 'destructive' });
+    }
+  }, [pendingPin, editingPinIdx, pins, loadedRouteId, isTracking, isPaused, loadRoutes, toast]);
+
+  const handlePinDelete = useCallback(async () => {
+    let updatedPins = pins;
     if (editingPinIdx !== null) {
-      setPins((prev) => prev.filter((_, i) => i !== editingPinIdx));
+      updatedPins = pins.filter((_, i) => i !== editingPinIdx);
+      setPins(updatedPins);
     }
     setPendingPin(null);
     setEditingPinIdx(null);
-  }, [editingPinIdx]);
+
+    if (isTracking || isPaused || !loadedRouteId || updatedPins === pins) return;
+
+    try {
+      await base44.entities.MapCourse.update(loadedRouteId, { pins: updatedPins });
+      await loadRoutes();
+      toast({ title: 'Pin deleted' });
+    } catch (e) {
+      console.error('Failed to persist pin deletion:', e);
+      toast({ title: 'Failed to update', description: e?.message, variant: 'destructive' });
+    }
+  }, [editingPinIdx, pins, loadedRouteId, isTracking, isPaused, loadRoutes, toast]);
 
   const handlePinClick = useCallback((idx) => {
     setEditingPinIdx(idx);
@@ -504,7 +546,11 @@ export default function MapView() {
         duration_sec: Math.round(durationSec),
         date: dateStr,
       };
-      await base44.entities.MapCourse.create(payload);
+      if (loadedRouteId) {
+        await base44.entities.MapCourse.update(loadedRouteId, payload);
+      } else {
+        await base44.entities.MapCourse.create(payload);
+      }
       await loadRoutes();
       toast({ title: 'Saved successfully', description: `${name} has been saved.` });
       setTrackPoints([]);
@@ -530,7 +576,7 @@ export default function MapView() {
         variant: 'destructive',
       });
     }
-  }, [trackPoints, pins, drawings, distanceKm, durationSec, savedMeasurements, measurePoints, loadRoutes, toast]);
+  }, [trackPoints, pins, drawings, distanceKm, durationSec, savedMeasurements, measurePoints, loadRoutes, toast, loadedRouteId]);
 
   // Load a saved route
   const handleLoadRoute = useCallback((route) => {
