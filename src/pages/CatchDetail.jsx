@@ -98,6 +98,7 @@ export default function CatchDetail() {
       <CatchCard
         catchItem={catchItem}
         lines={lines}
+        rods={rods}
         onEdit={(c) => { setEditing(c); setFormOpen(true); }}
         onDelete={(c) => setDeleteTarget(c)}
       />

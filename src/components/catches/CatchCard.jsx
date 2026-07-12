@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Pencil, Trash2, MapPin, Calendar, Fish, Star, Info } from "lucide-react";
 import ImageGallery, { getItemImages } from "@/components/ImageGallery";
 
-export default function CatchCard({ catchItem, onEdit, onDelete, lines = [] }) {
+export default function CatchCard({ catchItem, onEdit, onDelete, lines = [], rods = [] }) {
   const cardRef = useRef(null);
   const [showFormula, setShowFormula] = useState(false);
   const fmtDate = (d) => {
@@ -19,6 +19,10 @@ export default function CatchCard({ catchItem, onEdit, onDelete, lines = [] }) {
     : null;
   const matchedLine = lines.find((l) => `${l.brand} ${l.model}`.trim() === catchItem.line);
   const grainWeight = matchedLine?.grain_weight;
+  const matchedRod = rods.find((r) => r.name === catchItem.rod);
+  const rodDetails = matchedRod
+    ? [matchedRod.length, matchedRod.line_weight && `${matchedRod.line_weight} wt`].filter(Boolean).join(" · ")
+    : null;
   const card = {
     title: catchItem.species || "Catch",
     subtitle: [fmtDate(catchItem.date), catchItem.location].filter(Boolean).join(" · "),
@@ -96,7 +100,7 @@ export default function CatchCard({ catchItem, onEdit, onDelete, lines = [] }) {
           <Detail label="Water Temp" value={catchItem.water_temp != null ? `${catchItem.water_temp}°` : null} />
         </div>
         <Detail label="Fly or Lure Used" value={catchItem.fly_used} />
-        <Detail label="Rod" value={catchItem.rod} />
+        <Detail label="Rod" value={catchItem.rod} subValue={rodDetails} />
         <Detail label="Reel" value={catchItem.reel} />
         <Detail label="Line" value={catchItem.line} />
         {catchItem.line && grainWeight != null && (
@@ -133,11 +137,14 @@ export default function CatchCard({ catchItem, onEdit, onDelete, lines = [] }) {
   );
 }
 
-function Detail({ label, value }) {
+function Detail({ label, value, subValue }) {
   return (
     <div className="flex justify-between gap-2">
       <span className="text-muted-foreground shrink-0">{label}</span>
-      <span className="font-medium text-right break-words whitespace-normal">{value || "—"}</span>
+      <span className="font-medium text-right break-words whitespace-normal">
+        {value || "—"}
+        {subValue && <span className="text-muted-foreground font-normal"> ({subValue})</span>}
+      </span>
     </div>
   );
 }
