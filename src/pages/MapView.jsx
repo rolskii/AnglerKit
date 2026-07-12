@@ -199,8 +199,8 @@ export default function MapView() {
   // Load saved routes
   const loadRoutes = useCallback(async () => {
     try {
-      const routes = await base44.entities.MapCourse.list('-updated_date', 50);
-      setSavedRoutes(routes || []);
+      const res = await base44.functions.invoke('listMapCourses', {});
+      setSavedRoutes(res.data?.routes || []);
     } catch (e) {
       console.error('Failed to load routes:', e);
     }
@@ -480,8 +480,6 @@ export default function MapView() {
 
   // Save route
   const handleSaveRoute = useCallback(async (name, description) => {
-    console.log('[MapView] handleSaveRoute CALLED', { name, description });
-    alert(`handleSaveRoute called!\nname: ${name}\npins: ${pins.length}\ntrack: ${trackPoints.length}`);
     const today = new Date();
     const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     try {
@@ -505,11 +503,9 @@ export default function MapView() {
         duration_sec: Math.round(durationSec),
         date: dateStr,
       };
-      console.log('[MapView] Creating MapCourse with payload:', JSON.stringify(payload).slice(0, 500));
-      const created = await base44.entities.MapCourse.create(payload);
-      console.log('[MapView] Create returned:', created);
+      const res = await base44.functions.invoke('saveMapCourse', payload);
+      if (!res.data?.success) throw new Error(res.data?.error || 'Save failed');
       await loadRoutes();
-      alert(`SAVE SUCCESS!\nid: ${created?.id}\nRoutes loaded: ${savedRoutes.length + 1}`);
       toast({ title: 'Saved successfully', description: `${name} has been saved.` });
       setTrackPoints([]);
       setPins([]);
@@ -527,14 +523,10 @@ export default function MapView() {
         localStorage.removeItem(DUR_KEY);
       } catch (e) {}
     } catch (e) {
-      console.error('[MapView] Save failed — full error:', e);
-      const errStatus = e?.response?.status || e?.status;
-      const errMsg = e?.response?.data?.detail || e?.response?.data?.message || e?.message || e?.data?.message || 'Unknown error';
-      const errStr = errStatus ? `${errStatus}: ${errMsg}` : errMsg;
-      alert(`SAVE FAILED:\n${errStr}\n\nCheck console for full details.`);
+      console.error('Save failed:', e);
       toast({
         title: 'Failed to save',
-        description: errStr,
+        description: e?.message || 'Unknown error',
         variant: 'destructive',
       });
     }
@@ -587,13 +579,13 @@ export default function MapView() {
   const handleSaveRouteName = useCallback(async (name) => {
     if (!selectedRoute) return;
     try {
-      await base44.entities.MapCourse.update(selectedRoute.id, { name });
+      await base44.functions.invoke('saveMapCourse', { id: selectedRoute.id, name });
       await loadRoutes();
     } catch (e) {
       console.error('Failed to update route name:', e);
-      alert('Failed to save name.');
+      toast({ title: 'Failed to rename', description: e?.message || 'Unknown error', variant: 'destructive' });
     }
-  }, [selectedRoute, loadRoutes]);
+  }, [selectedRoute, loadRoutes, toast]);
 
   const handleLoadRouteFromInfo = useCallback((route) => {
     handleLoadRoute(route);

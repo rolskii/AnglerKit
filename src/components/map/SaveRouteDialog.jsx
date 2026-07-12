@@ -18,7 +18,6 @@ export default function SaveRouteDialog({ open, onOpenChange, onSave, hasTrack }
 
   const handleSave = () => {
     const finalName = name.trim() || (hasTrack ? 'Untitled Route' : 'Untitled Pins');
-    console.log('[SaveRouteDialog] Save clicked', { finalName, hasTrack });
     onSave(finalName, description.trim());
     onOpenChange(false);
   };
