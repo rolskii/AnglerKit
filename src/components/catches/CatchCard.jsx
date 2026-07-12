@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Pencil, Trash2, MapPin, Calendar, Fish, Star, Info } from "lucide-react";
 import ImageGallery, { getItemImages } from "@/components/ImageGallery";
 
-export default function CatchCard({ catchItem, onEdit, onDelete }) {
+export default function CatchCard({ catchItem, onEdit, onDelete, lines = [] }) {
   const cardRef = useRef(null);
   const [showFormula, setShowFormula] = useState(false);
   const fmtDate = (d) => {
@@ -17,6 +17,8 @@ export default function CatchCard({ catchItem, onEdit, onDelete }) {
   const estWeight = (catchItem.length && catchItem.girth)
     ? (catchItem.length * catchItem.girth * catchItem.girth / 800)
     : null;
+  const matchedLine = lines.find((l) => `${l.brand} ${l.model}`.trim() === catchItem.line);
+  const grainWeight = matchedLine?.grain_weight;
   const card = {
     title: catchItem.species || "Catch",
     subtitle: [fmtDate(catchItem.date), catchItem.location].filter(Boolean).join(" · "),
@@ -30,6 +32,7 @@ export default function CatchCard({ catchItem, onEdit, onDelete }) {
       { label: "Rod", value: catchItem.rod },
       { label: "Reel", value: catchItem.reel },
       { label: "Line", value: catchItem.line },
+      { label: "Grain Weight", value: catchItem.line && grainWeight != null ? `${grainWeight} gr` : null },
       { label: "Conditions", value: catchItem.conditions },
     ],
     sections: [],
@@ -76,7 +79,7 @@ export default function CatchCard({ catchItem, onEdit, onDelete }) {
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
+      <div className="space-y-1.5 text-sm">
         <Detail label="Length" value={catchItem.length ? `${catchItem.length} in` : null} />
         <Detail label="Girth" value={catchItem.girth ? `${catchItem.girth} in` : null} />
         {estWeight != null ? (
@@ -89,11 +92,14 @@ export default function CatchCard({ catchItem, onEdit, onDelete }) {
         ) : (
           <Detail label="Weight" value={catchItem.weight ? `${catchItem.weight} lb` : null} />
         )}
-        <Detail label="Fly" value={catchItem.fly_used} />
+        <Detail label="Fly or Lure Used" value={catchItem.fly_used} />
         <Detail label="Water Temp" value={catchItem.water_temp != null ? `${catchItem.water_temp}°` : null} />
         <Detail label="Rod" value={catchItem.rod} />
         <Detail label="Reel" value={catchItem.reel} />
         <Detail label="Line" value={catchItem.line} />
+        {catchItem.line && grainWeight != null && (
+          <Detail label="Grain Weight" value={`${grainWeight} gr`} />
+        )}
         <Detail label="Conditions" value={catchItem.conditions} />
       </div>
 
