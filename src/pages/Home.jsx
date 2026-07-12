@@ -273,7 +273,7 @@ export default function Home() {
             </div>
             <div className="text-right shrink-0">
               <p className="text-xs font-semibold text-foreground">
-                {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                {new Date().toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' })}
               </p>
               <div className="mt-1 relative z-20 flex justify-end">
                 <button
