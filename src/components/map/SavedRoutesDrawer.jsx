@@ -2,6 +2,7 @@ import React from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { MapPin, Route, Trash2, Calendar } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import FishIcon from '@/components/FishIcon';
 
 export default function SavedRoutesDrawer({ open, onOpenChange, routes, onLoad, onDeleted }) {
   const handleDelete = async (id) => {
@@ -31,8 +32,12 @@ export default function SavedRoutesDrawer({ open, onOpenChange, routes, onLoad, 
                   onClick={() => onLoad(r)}
                   className="flex-1 flex items-center gap-3 text-left min-w-0"
                 >
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${isPinsOnly ? 'bg-amber-500/10' : 'bg-primary/10'}`}>
-                    {isPinsOnly ? <MapPin className="w-5 h-5 text-amber-500" /> : <Route className="w-5 h-5 text-primary" />}
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${isPinsOnly ? (r.pins?.some(p => p.marker === 'fish') ? 'bg-emerald-500/10' : 'bg-amber-500/10') : 'bg-primary/10'}`}>
+                    {isPinsOnly
+                      ? (r.pins?.some(p => p.marker === 'fish')
+                        ? <FishIcon className="w-5 h-5 text-emerald-500" />
+                        : <MapPin className="w-5 h-5 text-amber-500" />)
+                      : <Route className="w-5 h-5 text-primary" />}
                   </div>
                   <div className="min-w-0">
                     <p className="text-sm font-medium truncate">{r.name}</p>
