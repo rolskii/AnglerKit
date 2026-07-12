@@ -503,7 +503,9 @@ export default function MapView() {
         duration_sec: Math.round(durationSec),
         date: dateStr,
       };
-      await base44.entities.MapCourse.create(payload);
+      console.log('[MapView] Creating MapCourse with payload:', JSON.stringify(payload).slice(0, 500));
+      const created = await base44.entities.MapCourse.create(payload);
+      console.log('[MapView] Create returned:', created);
       await loadRoutes();
       toast({ title: 'Saved successfully', description: `${name} has been saved.` });
       setTrackPoints([]);
@@ -526,6 +528,7 @@ export default function MapView() {
       const errStatus = e?.response?.status || e?.status;
       const errMsg = e?.response?.data?.detail || e?.response?.data?.message || e?.message || e?.data?.message || 'Unknown error';
       const errStr = errStatus ? `${errStatus}: ${errMsg}` : errMsg;
+      alert(`SAVE FAILED:\n${errStr}\n\nCheck console for full details.`);
       toast({
         title: 'Failed to save',
         description: errStr,
