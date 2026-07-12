@@ -10,7 +10,7 @@ Deno.serve(async (req) => {
     const { id } = body;
     if (!id) return Response.json({ error: 'ID is required' }, { status: 400 });
 
-    await base44.asServiceRole.entities.MapCourse.delete(id);
+    await base44.entities.MapCourse.delete(id);
     return Response.json({ success: true });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

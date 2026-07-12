@@ -6,7 +6,7 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const routes = await base44.asServiceRole.entities.MapCourse.list('-updated_date', 50);
+    const routes = await base44.entities.MapCourse.list('-updated_date', 50);
     return Response.json({ success: true, routes });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
