@@ -488,7 +488,7 @@ export default function Moon() {
                         For: {moonData.date}
                       </button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 scale-110 origin-top-left" align="start">
+                    <PopoverContent className="w-auto p-0 scale-[1.8] origin-top-left" align="start">
                       <Calendar
                         mode="single"
                         selected={new Date(selectedDate + 'T00:00:00')}
