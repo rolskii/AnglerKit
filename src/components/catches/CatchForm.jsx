@@ -12,6 +12,8 @@ import ImageUpload from "@/components/ImageUpload";
 import VideoUpload from "@/components/catches/VideoUpload";
 import AudioRecorder from "@/components/catches/AudioRecorder";
 import LineSelect from "@/components/catches/LineSelect";
+import RodSelect from "@/components/catches/RodSelect";
+import ReelSelect from "@/components/catches/ReelSelect";
 
 
 const SPECIES_OPTIONS = [
@@ -169,29 +171,19 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label>Rod</Label>
-              <select
+              <RodSelect
+                rods={sortedRods}
                 value={form.rod ? (rodIdByName[form.rod] || "") : ""}
-                onChange={(e) => set("rod", e.target.value === "" ? "" : (rodById[e.target.value] || ""))}
-                className="flex h-9 w-full items-center rounded-md border border-input bg-muted px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
-              >
-                <option value="">{sortedRods.length ? "Select a rod (optional)" : "No rods added yet"}</option>
-                {sortedRods.map((r) => (
-                  <option key={r.id} value={r.id}>{r.name}</option>
-                ))}
-              </select>
+                onChange={(id) => set("rod", id === "" ? "" : (rodById[id] || ""))}
+              />
             </div>
             <div className="space-y-1.5">
               <Label>Reel</Label>
-              <select
+              <ReelSelect
+                reels={sortedReels}
                 value={form.reel ? (reelIdByName[form.reel] || "") : ""}
-                onChange={(e) => set("reel", e.target.value === "" ? "" : (reelById[e.target.value] || ""))}
-                className="flex h-9 w-full items-center rounded-md border border-input bg-muted px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
-              >
-                <option value="">{sortedReels.length ? "Select a reel (optional)" : "No reels added yet"}</option>
-                {sortedReels.map((r) => (
-                  <option key={r.id} value={r.id}>{r.name}</option>
-                ))}
-              </select>
+                onChange={(id) => set("reel", id === "" ? "" : (reelById[id] || ""))}
+              />
             </div>
           </div>
 
