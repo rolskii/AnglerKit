@@ -504,10 +504,10 @@ export default function Moon() {
                         classNames={{
                           caption_label: "text-base font-semibold",
                           nav_button: "h-9 w-9",
-                          head_cell: "w-10 text-sm font-semibold",
-                          row: "w-full mt-1",
-                          cell: "p-0",
-                          day: "h-10 w-10 text-base",
+                          head_cell: "flex-1 text-center text-sm font-semibold",
+                          row: "flex w-full mt-1",
+                          cell: "flex-1 p-0 text-center",
+                          day: "h-10 w-full text-base",
                         }}
                         modifiers={{
                           goodFishing: (date) => {
