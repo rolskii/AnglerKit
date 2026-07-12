@@ -227,9 +227,9 @@ export default function Home() {
   const fetchMapStats = async () => {
     try {
       const routes = await base44.entities.MapCourse.list("-updated_date", 500);
+      const routesWithTrack = routes.filter(r => r.track && r.track.length > 0);
+      const routeCount = routesWithTrack.length;
       let totalPins = routes.reduce((sum, r) => sum + (r.pins?.length || 0), 0);
-      const routeCount = routes.length;
-
       let totalDrawings = routes.reduce((sum, r) => sum + (r.drawings?.length || 0), 0);
       let totalMeasurements = routes.reduce((sum, r) => sum + (r.measurements?.length || 0), 0);
 
