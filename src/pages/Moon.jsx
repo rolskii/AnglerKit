@@ -5,8 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Sun, Waves, MapPin, Bell, BellOff, Save, Star } from 'lucide-react';
 import FishIcon from '@/components/FishIcon';
 import { searchLocations, geocodeLocation } from '@/lib/geocode';
-import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
+import { Input } from '@/components/ui/input';
 import LocationMapPicker from '@/components/moon/LocationMapPicker';
 import DayRatingRing from '@/components/moon/DayRatingRing';
 import ActivityChart from '@/components/moon/ActivityChart';
@@ -482,48 +481,12 @@ export default function Moon() {
                   ))}
                 </div>
                 <div className="flex flex-col items-start gap-1.5 mt-2">
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <button className="text-xs text-primary/70 hover:text-primary transition-colors bg-primary/10 hover:bg-primary/20 px-2 py-0.5 rounded-full border border-primary/20 font-medium">
-                        For: {moonData.date}
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[340px] p-0 max-w-[calc(100vw-1rem)]" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={new Date(selectedDate + 'T00:00:00')}
-                        onSelect={(date) => {
-                          if (date) {
-                            const y = date.getFullYear();
-                            const m = String(date.getMonth() + 1).padStart(2, '0');
-                            const d = String(date.getDate()).padStart(2, '0');
-                            setSelectedDate(`${y}-${m}-${d}`);
-                          }
-                        }}
-                        className="p-4"
-                        classNames={{
-                          caption_label: "text-base font-semibold",
-                          nav_button: "h-9 w-9",
-                          head_cell: "flex-1 text-center text-sm font-semibold",
-                          row: "flex w-full mt-1",
-                          cell: "flex-1 p-0 text-center",
-                          day: "h-10 w-full text-base",
-                        }}
-                        modifiers={{
-                          goodFishing: (date) => {
-                            const phase = calculateMoonPhase(date);
-                            return calculateFishingRating(phase.daysInCycle) >= 5;
-                          },
-                        }}
-                        modifiersStyles={{
-                          goodFishing: {
-                            border: '2px solid #16a34a',
-                            borderRadius: '50%',
-                          },
-                        }}
-                      />
-                    </PopoverContent>
-                  </Popover>
+                  <Input
+                    type="date"
+                    className="bg-muted h-8 text-xs w-auto"
+                    value={selectedDate}
+                    onChange={(e) => { if (e.target.value) setSelectedDate(e.target.value); }}
+                  />
                   <div className="relative flex items-center gap-1">
                     <div className="flex items-center gap-1 bg-muted/50 rounded-full px-2 py-0.5 border border-border">
                       <MapPin className="w-3 h-3 text-muted-foreground shrink-0" />
