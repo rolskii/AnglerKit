@@ -489,7 +489,7 @@ export default function Moon() {
                         For: {moonData.date}
                       </button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
+                    <PopoverContent className="w-auto p-4" align="start">
                       <Calendar
                         mode="single"
                         selected={new Date(selectedDate + 'T00:00:00')}
@@ -502,6 +502,13 @@ export default function Moon() {
                           }
                         }}
                         className="p-3"
+                        classNames={{
+                          head_cell: "text-muted-foreground rounded-md w-12 font-normal text-sm",
+                          cell: "relative p-0 text-center text-sm focus-within:relative focus-within:z-20",
+                          day: "h-11 w-11 p-0 font-normal text-sm aria-selected:opacity-100",
+                          nav_button: "h-9 w-9 bg-transparent p-0 opacity-50 hover:opacity-100",
+                          caption_label: "text-base font-medium",
+                        }}
                         modifiers={{
                           goodFishing: (date) => {
                             const phase = calculateMoonPhase(date);
