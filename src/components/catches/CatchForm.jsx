@@ -159,7 +159,7 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
           </div>
 
           <div className="space-y-1.5">
-            <Label>Fly Used</Label>
+            <Label>Fly or Lure Used</Label>
             <Input
               className="bg-muted"
               value={form.fly_used || ""}
