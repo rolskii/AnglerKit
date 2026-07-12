@@ -1308,6 +1308,7 @@ export default function MapView() {
         routes={savedRoutes}
         onLoad={handleLoadRoute}
         onDeleted={handleRouteDeleted}
+        onRouteUpdated={loadRoutes}
       />
 
       <BottomTabBar />
