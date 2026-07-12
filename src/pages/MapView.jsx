@@ -203,8 +203,9 @@ export default function MapView() {
       setSavedRoutes(routes || []);
     } catch (e) {
       console.error('Failed to load routes:', e);
+      toast({ title: 'Failed to load routes', description: e?.message || 'Unknown error', variant: 'destructive' });
     }
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
     loadRoutes();
