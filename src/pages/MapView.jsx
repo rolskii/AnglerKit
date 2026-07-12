@@ -199,8 +199,8 @@ export default function MapView() {
   // Load saved routes
   const loadRoutes = useCallback(async () => {
     try {
-      const res = await base44.functions.invoke('listMapCourses', {});
-      setSavedRoutes(res.data?.routes || []);
+      const routes = await base44.entities.MapCourse.list('-updated_date', 50);
+      setSavedRoutes(routes || []);
     } catch (e) {
       console.error('Failed to load routes:', e);
     }
@@ -503,8 +503,7 @@ export default function MapView() {
         duration_sec: Math.round(durationSec),
         date: dateStr,
       };
-      const res = await base44.functions.invoke('saveMapCourse', payload);
-      if (!res.data?.success) throw new Error(res.data?.error || 'Save failed');
+      await base44.entities.MapCourse.create(payload);
       await loadRoutes();
       toast({ title: 'Saved successfully', description: `${name} has been saved.` });
       setTrackPoints([]);
@@ -579,7 +578,7 @@ export default function MapView() {
   const handleSaveRouteName = useCallback(async (name) => {
     if (!selectedRoute) return;
     try {
-      await base44.functions.invoke('saveMapCourse', { id: selectedRoute.id, name });
+      await base44.entities.MapCourse.update(selectedRoute.id, { name });
       await loadRoutes();
     } catch (e) {
       console.error('Failed to update route name:', e);

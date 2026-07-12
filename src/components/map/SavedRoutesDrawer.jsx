@@ -6,7 +6,7 @@ import { base44 } from '@/api/base44Client';
 export default function SavedRoutesDrawer({ open, onOpenChange, routes, onLoad, onDeleted }) {
   const handleDelete = async (id) => {
     try {
-      await base44.functions.invoke('deleteMapCourse', { id });
+      await base44.entities.MapCourse.delete(id);
       onDeleted(id);
     } catch (e) {
       console.error('Failed to delete:', e);
