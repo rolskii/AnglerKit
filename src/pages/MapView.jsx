@@ -480,6 +480,8 @@ export default function MapView() {
 
   // Save route
   const handleSaveRoute = useCallback(async (name, description) => {
+    console.log('[MapView] handleSaveRoute CALLED', { name, description });
+    alert(`handleSaveRoute called!\nname: ${name}\npins: ${pins.length}\ntrack: ${trackPoints.length}`);
     const today = new Date();
     const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     try {
@@ -507,6 +509,7 @@ export default function MapView() {
       const created = await base44.entities.MapCourse.create(payload);
       console.log('[MapView] Create returned:', created);
       await loadRoutes();
+      alert(`SAVE SUCCESS!\nid: ${created?.id}\nRoutes loaded: ${savedRoutes.length + 1}`);
       toast({ title: 'Saved successfully', description: `${name} has been saved.` });
       setTrackPoints([]);
       setPins([]);
