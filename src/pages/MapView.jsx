@@ -783,7 +783,7 @@ export default function MapView() {
 
     if (canadianBathymetry) {
       const overlay = new mapkit.TileOverlay(
-        "https://nonna-geoserver.data.chs-shc.ca/geoserver/gwc/service/wmts?service=WMTS&request=GetTile&version=1.0.0&layer=nonna%3ANONNA%2010&style=&tilematrixset=EPSG3857&tilematrix=EPSG3857%3A{z}&tilerow={y}&tilecol={x}&format=image/png",
+        (x, y, z) => `https://nonna-geoserver.data.chs-shc.ca/geoserver/gwc/service/wmts/rest/nonna%3ANONNA%2010/raster/EPSG3857/EPSG3857%3A${z}/${y}/${x}?format=image/png`,
         { minimumZ: 8, maximumZ: 18, opacity: 0.7 }
       );
       map.addOverlay(overlay);
