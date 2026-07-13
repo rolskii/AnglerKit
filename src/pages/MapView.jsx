@@ -765,13 +765,13 @@ export default function MapView() {
         "https://gis.charttools.noaa.gov/arcgis/rest/services/MarineChart_Services/NOAACharts/MapServer/tile/{z}/{y}/{x}",
         { minimumZ: 2, maximumZ: 18, opacity: 0.85 }
       );
-      map.addOverlay(overlay);
+      map.addTileOverlay(overlay);
       nauticalOverlayRef.current = overlay;
     }
 
     return () => {
       if (nauticalOverlayRef.current) {
-        try { map.removeOverlay(nauticalOverlayRef.current); } catch (e) {}
+        try { map.removeTileOverlay(nauticalOverlayRef.current); } catch (e) {}
         nauticalOverlayRef.current = null;
       }
     };
@@ -788,13 +788,13 @@ export default function MapView() {
         tileProxyUrl,
         { minimumZ: 8, maximumZ: 18, opacity: 0.7 }
       );
-      map.addOverlay(overlay);
+      map.addTileOverlay(overlay);
       canadianBathymetryRef.current = overlay;
     }
 
     return () => {
       if (canadianBathymetryRef.current) {
-        try { map.removeOverlay(canadianBathymetryRef.current); } catch (e) {}
+        try { map.removeTileOverlay(canadianBathymetryRef.current); } catch (e) {}
         canadianBathymetryRef.current = null;
       }
     };
