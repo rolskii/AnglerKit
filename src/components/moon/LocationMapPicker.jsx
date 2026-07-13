@@ -1,7 +1,7 @@
 /* global mapkit */
 import React, { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Search, MapPin, Check, Star } from 'lucide-react';
+import { Search, MapPin, Check, Star, LocateFixed } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
 // Reverse geocode using BigDataCloud free API
@@ -267,6 +267,31 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
     window.dispatchEvent(new Event('moonSavedLocationsChanged'));
   };
 
+  const [locating, setLocating] = useState(false);
+
+  const handleUseCurrentLocation = () => {
+    if (!navigator.geolocation) return;
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+        skipReverseGeocodeRef.current = true;
+        setMarkerPos([lat, lon]);
+        const name = await reverseGeocode(lat, lon);
+        const finalName = name || `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
+        setPlaceName(finalName);
+        setSearchValue(finalName);
+        if (mapRef.current) {
+          mapRef.current.setCenterAnimated(new mapkit.Coordinate(lat, lon));
+        }
+        setLocating(false);
+      },
+      () => { setLocating(false); },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
+
   const handleSelectSaved = (loc) => {
     skipReverseGeocodeRef.current = true;
     setMarkerPos([loc.lat, loc.lon]);
@@ -298,6 +323,17 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
               <MapPin className="w-8 h-8" fill="currentColor" />
             </div>
           </div>
+          {/* Use current location */}
+          <button
+            onClick={handleUseCurrentLocation}
+            disabled={locating}
+            className="absolute top-2 right-2 w-9 h-9 rounded-full bg-white/90 shadow-lg flex items-center justify-center text-primary hover:bg-white transition-colors disabled:opacity-50"
+            title="Use my current location"
+          >
+            {locating
+              ? <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              : <LocateFixed className="w-4.5 h-4.5" />}
+          </button>
           {/* Hint */}
           <div className="absolute bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-black/60 text-white text-[10px] whitespace-nowrap">
             Drag map to set location
