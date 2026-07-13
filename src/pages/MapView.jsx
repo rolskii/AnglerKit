@@ -782,10 +782,9 @@ export default function MapView() {
     const map = mapRef.current;
 
     if (canadianBathymetry) {
-      const overlay = new mapkit.TileOverlay(
-        "https://nonna-geoserver.data.chs-shc.ca/geoserver/gwc/service/wmts/rest/nonna:NONNA%2010/raster/EPSG3857/EPSG3857:{z}/{y}/{x}?format=image/png",
-        { minimumZ: 8, maximumZ: 18, opacity: 0.7 }
-      );
+      const overlay = new mapkit.TileOverlay((coord) => {
+        return `https://nonna-geoserver.data.chs-shc.ca/geoserver/gwc/service/wmts/rest/nonna:NONNA%2010/raster/EPSG3857/EPSG3857:${coord.z}/${coord.y}/${coord.x}?format=image/png`;
+      }, { minimumZ: 8, maximumZ: 18, opacity: 0.7 });
       map.addOverlay(overlay);
       canadianBathymetryRef.current = overlay;
     }
