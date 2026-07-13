@@ -550,7 +550,6 @@ export default function MapView() {
         await base44.entities.MapCourse.create(payload);
       }
       await loadRoutes();
-      toast({ title: 'Saved successfully', description: `${name} has been saved.` });
       setTrackPoints([]);
       setPins([]);
       setDrawings([]);
