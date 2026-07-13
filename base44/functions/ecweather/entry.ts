@@ -385,10 +385,24 @@ function parseWeatherXml(xmlText, localDate, tzOffset) {
   return { current, daily, hourly };
 }
 
+function convertSummaryToImperial(text) {
+  if (!text) return text;
+  let result = text;
+  // Convert wind: "X km/h" → mph
+  result = result.replace(/(\d+(?:\.\d+)?)\s*km\/h/gi, (_m, num) => {
+    return `${Math.round(parseFloat(num) / 1.60934)} mph`;
+  });
+  // Convert temperatures after High/Low/Temperature keywords
+  result = result.replace(/(High|Low|Temperature)\s+(\d+)/gi, (_m, kw, num) => {
+    return `${kw} ${Math.round(parseFloat(num) * 9 / 5 + 32)}`;
+  });
+  return result;
+}
+
 Deno.serve(async (req) => {
   try {
     const body = await req.json();
-    const { lat, lon, localDate, tzOffset } = body;
+    const { lat, lon, localDate, tzOffset, unit } = body;
     if (!lat || !lon) {
       return Response.json({ error: 'Missing lat/lon parameters' }, { status: 400 });
     }
@@ -407,6 +421,11 @@ Deno.serve(async (req) => {
 
     const xml = await fetchWeatherXml(site.province, site.code);
     const weatherData = parseWeatherXml(xml, localDate, tzOffset);
+
+    if (unit === 'fahrenheit') {
+      weatherData.daily.text_summary = weatherData.daily.text_summary.map(convertSummaryToImperial);
+      weatherData.daily.night_text_summary = weatherData.daily.night_text_summary.map(convertSummaryToImperial);
+    }
 
     return Response.json(weatherData);
   } catch (error) {
