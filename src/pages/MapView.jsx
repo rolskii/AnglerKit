@@ -577,7 +577,7 @@ export default function MapView() {
   }, [trackPoints, pins, drawings, distanceKm, durationSec, savedMeasurements, measurePoints, loadRoutes, toast, loadedRouteId]);
 
   // Load a saved route
-  const handleLoadRoute = useCallback((route) => {
+  const handleLoadRoute = useCallback((route, targetCoords) => {
     setTrackPoints(route.track || []);
     setPins(route.pins || []);
     setDrawings(route.drawings || []);
@@ -589,13 +589,11 @@ export default function MapView() {
     setIsPaused(false);
     setRoutesOpen(false);
     setLoadedRouteId(route.id);
-    if (route.track && route.track.length > 0) {
-      const first = route.track[0];
-      setRecenterTarget([first.lat, first.lon]);
-      setRecenterTrigger((t) => t + 1);
-    } else if (route.pins && route.pins.length > 0) {
-      const first = route.pins[0];
-      setRecenterTarget([first.lat, first.lon]);
+    const target = targetCoords ||
+      (route.track && route.track.length > 0 ? [route.track[0].lat, route.track[0].lon] : null) ||
+      (route.pins && route.pins.length > 0 ? [route.pins[0].lat, route.pins[0].lon] : null);
+    if (target) {
+      setRecenterTarget(target);
       setRecenterTrigger((t) => t + 1);
     }
   }, []);

@@ -45,7 +45,7 @@ export default function SavedRoutesDrawer({ open, onOpenChange, routes, onLoad, 
                 if (isPinsOnly) {
                   return r.pins.map((pin, pIdx) => (
                     <div key={`${r.id}-${pIdx}`} className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/10 transition-colors">
-                      <button onClick={() => onLoad(r)} className="flex-1 flex items-center gap-3 text-left min-w-0">
+                      <button onClick={() => onLoad(r, [pin.lat, pin.lon])} className="flex-1 flex items-center gap-3 text-left min-w-0">
                         <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${pin.marker === 'fish' ? 'bg-emerald-500/10' : 'bg-amber-500/10'}`}>
                           {pin.marker === 'fish'
                             ? <FishIcon className="w-5 h-5 text-emerald-500" />
