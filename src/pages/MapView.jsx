@@ -117,6 +117,7 @@ export default function MapView() {
   const [mapReady, setMapReady] = useState(false);
   const [mapVersion, setMapVersion] = useState(0);
   const [loadedRouteId, setLoadedRouteId] = useState(null);
+  const [nauticalChart, setNauticalChart] = useState(false);
 
   // Persist pins to localStorage so they survive page navigation
   const PINS_KEY = 'mapview_pins';
@@ -142,6 +143,7 @@ export default function MapView() {
   const measureOverlayRef = useRef(null);
   const savedMeasureOverlaysRef = useRef([]);
   const redrawingIdxRef = useRef(null);
+  const nauticalOverlayRef = useRef(null);
 
   useEffect(() => { pinModeRef.current = pinMode; }, [pinMode]);
   useEffect(() => { measureModeRef.current = measureMode; }, [measureMode]);
@@ -634,6 +636,11 @@ export default function MapView() {
     setShowAllRoutes(false);
   }, [handleLoadRoute]);
 
+  // Toggle NOAA nautical chart overlay
+  const handleToggleNautical = useCallback(() => {
+    setNauticalChart((v) => !v);
+  }, []);
+
   // Map type toggle (Hybrid → Satellite → Standard → Hybrid)
   const handleToggleLayer = useCallback(() => {
     if (!mapRef.current) return;
@@ -739,6 +746,28 @@ export default function MapView() {
       trackOverlayRef.current = overlay;
     }
   }, [trackPoints, mapReady]);
+
+  // NOAA nautical chart tile overlay
+  useEffect(() => {
+    if (!mapReady || !mapRef.current) return;
+    const map = mapRef.current;
+
+    if (nauticalChart) {
+      const overlay = new mapkit.TileOverlay(
+        "https://gis.charttools.noaa.gov/arcgis/rest/services/MarineChart_Services/NOAACharts/MapServer/tile/{z}/{y}/{x}",
+        { minimumZ: 2, maximumZ: 18, opacity: 0.85 }
+      );
+      map.addOverlay(overlay);
+      nauticalOverlayRef.current = overlay;
+    }
+
+    return () => {
+      if (nauticalOverlayRef.current) {
+        try { map.removeOverlay(nauticalOverlayRef.current); } catch (e) {}
+        nauticalOverlayRef.current = null;
+      }
+    };
+  }, [nauticalChart, mapReady]);
 
   // Render all saved routes as polyline overlays
   useEffect(() => {
@@ -1248,6 +1277,8 @@ export default function MapView() {
         onSave={() => setSaveDialogOpen(true)}
         onCenter={centerOnGPS}
         onToggleLayer={handleToggleLayer}
+        nauticalChart={nauticalChart}
+        onToggleNautical={handleToggleNautical}
         onOpenRoutes={() => { loadRoutes(); setRoutesOpen(true); }}
         showAllRoutes={showAllRoutes}
         onToggleAllRoutes={() => { loadRoutes(); setShowAllRoutes((v) => !v); }}
