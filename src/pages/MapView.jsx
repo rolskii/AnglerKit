@@ -118,6 +118,7 @@ export default function MapView() {
   const [mapVersion, setMapVersion] = useState(0);
   const [loadedRouteId, setLoadedRouteId] = useState(null);
   const [nauticalChart, setNauticalChart] = useState(false);
+  const [canadianBathymetry, setCanadianBathymetry] = useState(false);
 
   // Persist pins to localStorage so they survive page navigation
   const PINS_KEY = 'mapview_pins';
@@ -144,6 +145,7 @@ export default function MapView() {
   const savedMeasureOverlaysRef = useRef([]);
   const redrawingIdxRef = useRef(null);
   const nauticalOverlayRef = useRef(null);
+  const canadianBathymetryRef = useRef(null);
 
   useEffect(() => { pinModeRef.current = pinMode; }, [pinMode]);
   useEffect(() => { measureModeRef.current = measureMode; }, [measureMode]);
@@ -641,6 +643,11 @@ export default function MapView() {
     setNauticalChart((v) => !v);
   }, []);
 
+  // Toggle Canadian CHS NONNA bathymetry overlay
+  const handleToggleCanadian = useCallback(() => {
+    setCanadianBathymetry((v) => !v);
+  }, []);
+
   // Map type toggle (Hybrid → Satellite → Standard → Hybrid)
   const handleToggleLayer = useCallback(() => {
     if (!mapRef.current) return;
@@ -768,6 +775,28 @@ export default function MapView() {
       }
     };
   }, [nauticalChart, mapReady]);
+
+  // Canadian CHS NONNA bathymetry tile overlay
+  useEffect(() => {
+    if (!mapReady || !mapRef.current) return;
+    const map = mapRef.current;
+
+    if (canadianBathymetry) {
+      const overlay = new mapkit.TileOverlay(
+        "https://nonna-geoserver.data.chs-shc.ca/geoserver/gwc/service/wmts/rest/nonna:NONNA%2010/raster/EPSG3857/EPSG3857:{z}/{y}/{x}?format=image/png",
+        { minimumZ: 8, maximumZ: 18, opacity: 0.7 }
+      );
+      map.addOverlay(overlay);
+      canadianBathymetryRef.current = overlay;
+    }
+
+    return () => {
+      if (canadianBathymetryRef.current) {
+        try { map.removeOverlay(canadianBathymetryRef.current); } catch (e) {}
+        canadianBathymetryRef.current = null;
+      }
+    };
+  }, [canadianBathymetry, mapReady]);
 
   // Render all saved routes as polyline overlays
   useEffect(() => {
@@ -1279,6 +1308,8 @@ export default function MapView() {
         onToggleLayer={handleToggleLayer}
         nauticalChart={nauticalChart}
         onToggleNautical={handleToggleNautical}
+        canadianBathymetry={canadianBathymetry}
+        onToggleCanadian={handleToggleCanadian}
         onOpenRoutes={() => { loadRoutes(); setRoutesOpen(true); }}
         showAllRoutes={showAllRoutes}
         onToggleAllRoutes={() => { loadRoutes(); setShowAllRoutes((v) => !v); }}

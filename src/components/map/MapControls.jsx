@@ -1,5 +1,5 @@
 import React from 'react';
-import { Play, Pause, Square, MapPin, Save, Crosshair, Layers, FolderOpen, Circle, Route, Pencil, Ruler, Anchor } from 'lucide-react';
+import { Play, Pause, Square, MapPin, Save, Crosshair, Layers, FolderOpen, Circle, Route, Pencil, Ruler, Anchor, Waves } from 'lucide-react';
 
 const ctrlBase = "flex items-center justify-center rounded-full shadow-lg backdrop-blur-xl transition-all active:scale-90";
 const ctrlSize = "w-12 h-12";
@@ -20,6 +20,8 @@ export default function MapControls({
   onToggleLayer,
   nauticalChart,
   onToggleNautical,
+  canadianBathymetry,
+  onToggleCanadian,
   onOpenRoutes,
   showAllRoutes,
   onToggleAllRoutes,
@@ -49,6 +51,17 @@ export default function MapControls({
           title="NOAA nautical chart overlay"
         >
           <Anchor className="w-5 h-5" />
+        </button>
+        <button
+          onClick={onToggleCanadian}
+          className={`${ctrlBase} ${ctrlSize} border ${
+            canadianBathymetry
+              ? 'bg-teal-600 text-white border-teal-600'
+              : 'bg-background/90 text-foreground border-border'
+          }`}
+          title="Canadian bathymetry overlay (CHS NONNA)"
+        >
+          <Waves className="w-5 h-5" />
         </button>
         <button
           onClick={onOpenRoutes}
