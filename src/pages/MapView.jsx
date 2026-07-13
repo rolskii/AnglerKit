@@ -12,6 +12,7 @@ import DrawingDialog from '@/components/map/DrawingDialog';
 import MeasureBar from '@/components/map/MeasureBar';
 import { ChevronLeft, Route, Pencil } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { appParams } from '@/lib/app-params';
 import BottomTabBar from '@/components/BottomTabBar';
 import MapSearchBar from '@/components/map/MapSearchBar';
 import FishIcon from '@/components/FishIcon';
@@ -782,8 +783,9 @@ export default function MapView() {
     const map = mapRef.current;
 
     if (canadianBathymetry) {
+      const tileProxyUrl = `${appParams.appBaseUrl || window.location.origin}/functions/nonnaTileProxy?z={z}&x={x}&y={y}`;
       const overlay = new mapkit.TileOverlay(
-        (x, y, z) => `https://nonna-geoserver.data.chs-shc.ca/geoserver/gwc/service/wmts/rest/nonna%3ANONNA%2010/raster/EPSG3857/EPSG3857%3A${z}/${y}/${x}?format=image/png`,
+        tileProxyUrl,
         { minimumZ: 8, maximumZ: 18, opacity: 0.7 }
       );
       map.addOverlay(overlay);
