@@ -369,11 +369,11 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
         </div>
 
         {/* Confirm button + Save */}
-        <div className="px-4 py-3 flex items-center justify-between gap-2 border-t border-border">
-          <p className="text-xs text-muted-foreground truncate flex-1">
+        <div className="px-4 py-3 flex flex-col gap-2 border-t border-border">
+          <p className="text-xs text-muted-foreground truncate w-full">
             {placeName || 'Drag the map to pick a spot'}
           </p>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 w-full">
             <button
               onClick={toggleSaveCurrent}
               disabled={!placeName}
@@ -389,7 +389,7 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
             </button>
             <button
               onClick={handleConfirm}
-              className="px-4 py-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-1.5 transition-colors"
+              className="flex-1 px-4 py-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center gap-1.5 transition-colors"
             >
               <Check className="w-4 h-4" /> Use
             </button>
