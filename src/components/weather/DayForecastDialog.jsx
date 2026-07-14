@@ -105,7 +105,7 @@ export default function DayForecastDialog({ open, onOpenChange, dayData, hourly,
             </div>
 
             {/* Daily Summary */}
-            <p className="text-sm text-muted-foreground leading-relaxed pt-1">{getDailySummary()}</p>
+            <p className="text-sm text-muted-foreground leading-relaxed pt-1 break-words pr-2">{getDailySummary()}</p>
           </div>
 
           {/* Sun times */}
