@@ -16,8 +16,8 @@ export function computeSphericalArea(points) {
 }
 
 export function formatArea(m2) {
-  if (m2 < 10000) return `${Math.round(m2)} m²`;
+  if (m2 < 10000) return `${Math.round(m2).toLocaleString()} m²`;
   const ha = m2 / 10000;
-  if (ha < 100) return `${ha.toFixed(2)} ha`;
-  return `${(m2 / 1000000).toFixed(3)} km²`;
+  if (ha < 100) return `${ha.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ha`;
+  return `${(m2 / 1000000).toLocaleString(undefined, { minimumFractionDigits: 3, maximumFractionDigits: 3 })} km²`;
 }
