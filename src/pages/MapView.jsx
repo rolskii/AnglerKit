@@ -665,21 +665,21 @@ export default function MapView() {
     if (!map) return;
     if (topoActive) {
       if (topoOverlayRef.current) { try { map.removeOverlay(topoOverlayRef.current); } catch (e) {} topoOverlayRef.current = null; }
-      if (prevMapTypeRef.current) map.mapType = prevMapTypeRef.current;
-      prevMapTypeRef.current = null;
       setTopoActive(false);
     } else {
-      prevMapTypeRef.current = map.mapType;
-      map.mapType = mapkit.Map.MapTypes.MutedStandard;
-      const overlay = new mapkit.TileOverlay(
-        "https://ws.lioservices.lrc.gov.on.ca/arcgis1061a/rest/services/LIO_Cartographic/LIO_Topographic/MapServer/tile/{z}/{y}/{x}",
-        { minimumZ: 0, maximumZ: 19 }
-      );
-      map.addOverlay(overlay);
-      topoOverlayRef.current = overlay;
-      setTopoActive(true);
+      try {
+        const overlay = new mapkit.TileOverlay(
+          "https://ws.lioservices.lrc.gov.on.ca/arcgis1061a/rest/services/LIO_Cartographic/LIO_Topographic/MapServer/tile/{z}/{y}/{x}",
+          { minimumZ: 0, maximumZ: 19 }
+        );
+        map.addOverlay(overlay);
+        topoOverlayRef.current = overlay;
+        setTopoActive(true);
+      } catch (err) {
+        toast({ title: 'Topo layer error', description: String(err?.message || err), variant: 'destructive' });
+      }
     }
-  }, [topoActive]);
+  }, [topoActive, toast]);
 
   // CHS NONNA-10 bathymetric depth overlay toggle (Canadian waters)
   const handleToggleNonna = useCallback(() => {
@@ -689,15 +689,19 @@ export default function MapView() {
       if (nonnaOverlayRef.current) { try { map.removeOverlay(nonnaOverlayRef.current); } catch (e) {} nonnaOverlayRef.current = null; }
       setNonnaActive(false);
     } else {
-      const overlay = new mapkit.TileOverlay(
-        "https://nonna-geoserver.data.chs-shc.ca/geoserver/gwc/service/wmts?layer=nonna:NONNA%2010&style=raster&tilematrixset=EPSG3857&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/png&TileMatrix=EPSG3857:{z}&TileCol={x}&TileRow={y}",
-        { minimumZ: 0, maximumZ: 18 }
-      );
-      map.addOverlay(overlay);
-      nonnaOverlayRef.current = overlay;
-      setNonnaActive(true);
+      try {
+        const overlay = new mapkit.TileOverlay(
+          "https://nonna-geoserver.data.chs-shc.ca/geoserver/gwc/service/wmts?layer=nonna:NONNA%2010&style=raster&tilematrixset=EPSG3857&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/png&TileMatrix=EPSG3857:{z}&TileCol={x}&TileRow={y}",
+          { minimumZ: 0, maximumZ: 18 }
+        );
+        map.addOverlay(overlay);
+        nonnaOverlayRef.current = overlay;
+        setNonnaActive(true);
+      } catch (err) {
+        toast({ title: 'Bathymetry layer error', description: String(err?.message || err), variant: 'destructive' });
+      }
     }
-  }, [nonnaActive]);
+  }, [nonnaActive, toast]);
 
   // Initialize map
   useEffect(() => {
