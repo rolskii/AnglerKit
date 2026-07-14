@@ -38,7 +38,7 @@ export default function WeatherGlyph({ code, isNight = false, className = 'w-7 h
   const anim = (cls) => (animated ? cls : '');
 
   // Reusable SVG sub-shapes
-  const SunShape = ({ cx = 32, cy = 28, r = 11 }) => (
+  const SunShape = ({ cx = 32, cy = 28, r = 13 }) => (
     <g>
       {/* Rays — rotate when animated */}
       <g className={anim('wx-anim-rays')}>
