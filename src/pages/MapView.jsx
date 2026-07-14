@@ -117,6 +117,7 @@ export default function MapView() {
   const [mapReady, setMapReady] = useState(false);
   const [mapVersion, setMapVersion] = useState(0);
   const [loadedRouteId, setLoadedRouteId] = useState(null);
+  const [topoActive, setTopoActive] = useState(false);
 
   // Persist pins to localStorage so they survive page navigation
   const PINS_KEY = 'mapview_pins';
@@ -142,6 +143,8 @@ export default function MapView() {
   const measureOverlayRef = useRef(null);
   const savedMeasureOverlaysRef = useRef([]);
   const redrawingIdxRef = useRef(null);
+  const topoOverlayRef = useRef(null);
+  const prevMapTypeRef = useRef(null);
 
   useEffect(() => { pinModeRef.current = pinMode; }, [pinMode]);
   useEffect(() => { measureModeRef.current = measureMode; }, [measureMode]);
@@ -637,6 +640,13 @@ export default function MapView() {
   // Map type toggle (Hybrid → Satellite → Standard → Hybrid)
   const handleToggleLayer = useCallback(() => {
     if (!mapRef.current) return;
+    // Exit topo overlay mode when cycling base map types
+    if (topoActive) {
+      if (topoOverlayRef.current) { try { mapRef.current.removeOverlay(topoOverlayRef.current); } catch (e) {} topoOverlayRef.current = null; }
+      prevMapTypeRef.current = null;
+      setTopoActive(false);
+      return;
+    }
     const types = [
       mapkit.Map.MapTypes.Hybrid,
       mapkit.Map.MapTypes.Satellite,
@@ -645,7 +655,29 @@ export default function MapView() {
     const currentIdx = types.indexOf(mapRef.current.mapType);
     const nextIdx = (currentIdx + 1) % types.length;
     mapRef.current.mapType = types[nextIdx];
-  }, []);
+  }, [topoActive]);
+
+  // Ontario MNR topographic map overlay toggle (LIO Topographic Data Cache)
+  const handleToggleTopo = useCallback(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    if (topoActive) {
+      if (topoOverlayRef.current) { try { map.removeOverlay(topoOverlayRef.current); } catch (e) {} topoOverlayRef.current = null; }
+      if (prevMapTypeRef.current) map.mapType = prevMapTypeRef.current;
+      prevMapTypeRef.current = null;
+      setTopoActive(false);
+    } else {
+      prevMapTypeRef.current = map.mapType;
+      map.mapType = mapkit.Map.MapTypes.MutedStandard;
+      const overlay = new mapkit.TileOverlay(
+        "https://ws.lioservices.lrc.gov.on.ca/arcgis1061a/rest/services/LIO_Cartographic/LIO_Topographic/MapServer/tile/{z}/{y}/{x}",
+        { minimumZ: 0, maximumZ: 19 }
+      );
+      map.addOverlay(overlay);
+      topoOverlayRef.current = overlay;
+      setTopoActive(true);
+    }
+  }, [topoActive]);
 
   // Initialize map
   useEffect(() => {
@@ -695,6 +727,8 @@ export default function MapView() {
         try { mapRef.current.destroy(); } catch (e) {}
         mapRef.current = null;
       }
+      topoOverlayRef.current = null;
+      prevMapTypeRef.current = null;
       setMapReady(false);
     };
   }, []);
@@ -1248,6 +1282,8 @@ export default function MapView() {
         onSave={() => setSaveDialogOpen(true)}
         onCenter={centerOnGPS}
         onToggleLayer={handleToggleLayer}
+        topoActive={topoActive}
+        onToggleTopo={handleToggleTopo}
         onOpenRoutes={() => { loadRoutes(); setRoutesOpen(true); }}
         showAllRoutes={showAllRoutes}
         onToggleAllRoutes={() => { loadRoutes(); setShowAllRoutes((v) => !v); }}
