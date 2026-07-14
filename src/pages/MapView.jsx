@@ -11,7 +11,7 @@ import DrawBar from '@/components/map/DrawBar';
 import DrawingDialog from '@/components/map/DrawingDialog';
 import MeasureBar from '@/components/map/MeasureBar';
 import AreaBar from '@/components/map/AreaBar';
-import { computeSphericalArea, formatArea } from '@/lib/sphericalArea';
+import { computeSphericalArea, formatArea, formatDistance, isImperial } from '@/lib/sphericalArea';
 import { ChevronLeft, Route, Pencil } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import BottomTabBar from '@/components/BottomTabBar';
@@ -122,6 +122,7 @@ export default function MapView() {
   const [mapReady, setMapReady] = useState(false);
   const [mapVersion, setMapVersion] = useState(0);
   const [loadedRouteId, setLoadedRouteId] = useState(null);
+  const [imperial, setImperial] = useState(() => isImperial());
 
 
   // Persist pins to localStorage so they survive page navigation
@@ -159,6 +160,17 @@ export default function MapView() {
   useEffect(() => { areaModeRef.current = areaMode; }, [areaMode]);
   useEffect(() => { redrawingIdxRef.current = redrawingIdx; }, [redrawingIdx]);
   useEffect(() => { if (!drawMode && redrawingIdx !== null) setRedrawingIdx(null); }, [drawMode, redrawingIdx]);
+
+  // Sync imperial unit preference with weather page toggle
+  useEffect(() => {
+    const handler = () => setImperial(isImperial());
+    window.addEventListener('storage', handler);
+    window.addEventListener('weatherTempUnitChanged', handler);
+    return () => {
+      window.removeEventListener('storage', handler);
+      window.removeEventListener('weatherTempUnitChanged', handler);
+    };
+  }, []);
 
   // Native pointer-based tap detection on the map container (replaces MapKit single-tap)
   useEffect(() => {
@@ -1252,7 +1264,7 @@ export default function MapView() {
           return (
             <div key={`seg-${idx}`} className="absolute z-[456] pointer-events-none" style={{ left, top, transform: 'translate(-50%, -50%)' }}>
               <span style={{ fontSize: '11px', fontWeight: 600, background: 'rgba(59,130,246,0.9)', color: 'white', padding: '2px 6px', borderRadius: '4px', whiteSpace: 'nowrap' }}>
-                {segDist < 1 ? `${Math.round(segDist * 1000)} m` : `${segDist.toFixed(2)} km`}
+                {formatDistance(segDist, imperial)}
               </span>
             </div>
           );
@@ -1290,7 +1302,7 @@ export default function MapView() {
           return (
             <div className="absolute z-[456] pointer-events-none" style={{ left, top, transform: 'translate(-50%, -50%)' }}>
               <span style={{ fontSize: '12px', fontWeight: 700, background: 'rgba(16,185,129,0.9)', color: 'white', padding: '3px 8px', borderRadius: '6px', whiteSpace: 'nowrap' }}>
-                {formatArea(areaM2)}
+                {formatArea(areaM2, imperial)}
               </span>
             </div>
           );
@@ -1311,7 +1323,7 @@ export default function MapView() {
           return (
             <div key={`sa-${aIdx}`} className="absolute z-[456] pointer-events-none" style={{ left, top, transform: 'translate(-50%, -50%)' }}>
               <span style={{ fontSize: '11px', fontWeight: 600, background: 'rgba(16,185,129,0.8)', color: 'white', padding: '2px 6px', borderRadius: '4px', whiteSpace: 'nowrap' }}>
-                {formatArea(a.area_m2)}
+                {formatArea(a.area_m2, imperial)}
               </span>
             </div>
           );
@@ -1401,7 +1413,7 @@ export default function MapView() {
       {/* Measurement bar */}
       {measurePoints.length > 0 && (
         <MeasureBar
-          totalKm={measureTotalKm}
+          distanceLabel={formatDistance(measureTotalKm, imperial)}
           pointCount={measurePoints.length}
           onUndo={handleMeasureUndo}
           onClear={handleMeasureClear}
@@ -1411,7 +1423,7 @@ export default function MapView() {
       {/* Area bar */}
       {areaPoints.length > 0 && (
         <AreaBar
-          areaLabel={formatArea(areaM2)}
+          areaLabel={formatArea(areaM2, imperial)}
           pointCount={areaPoints.length}
           onUndo={handleAreaUndo}
           onClear={handleAreaClear}

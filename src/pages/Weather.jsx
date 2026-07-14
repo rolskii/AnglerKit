@@ -141,6 +141,7 @@ export default function Weather() {
     const next = tempUnit === 'fahrenheit' ? 'celsius' : 'fahrenheit';
     setTempUnit(next);
     localStorage.setItem('weatherTempUnit', next);
+    window.dispatchEvent(new Event('weatherTempUnitChanged'));
     if (lastCoords) {
       fetchWeatherByCoords(lastCoords.lat, lastCoords.lon, lastCoords.name, next);
     }

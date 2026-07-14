@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Route, MapPin, Calendar, Clock, Navigation, Trash2, Footprints } from 'lucide-react';
+import { formatDistance, isImperial } from '@/lib/sphericalArea';
 
 const formatDuration = (sec) => {
   const h = Math.floor(sec / 3600);
@@ -62,8 +63,8 @@ export default function RouteInfoDialog({ open, onOpenChange, route, onSaveName,
           <div className="grid grid-cols-2 gap-2">
             <div className="flex flex-col items-center p-2 rounded-lg bg-muted">
               <Navigation className="w-4 h-4 text-muted-foreground mb-1" />
-              <span className="text-sm font-semibold">{(route.distance_km || 0).toFixed(2)}</span>
-              <span className="text-xs text-muted-foreground">km</span>
+              <span className="text-sm font-semibold">{formatDistance(route.distance_km || 0, isImperial())}</span>
+              <span className="text-xs text-muted-foreground">distance</span>
             </div>
             <div className="flex flex-col items-center p-2 rounded-lg bg-muted">
               <Clock className="w-4 h-4 text-muted-foreground mb-1" />

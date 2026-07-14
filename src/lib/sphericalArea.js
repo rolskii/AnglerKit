@@ -15,7 +15,32 @@ export function computeSphericalArea(points) {
   return Math.abs((total * R * R) / 2);
 }
 
-export function formatArea(m2) {
+export function isImperial() {
+  try {
+    return localStorage.getItem('weatherTempUnit') === 'fahrenheit';
+  } catch {
+    return false;
+  }
+}
+
+export function formatDistance(km, imperial = false) {
+  if (imperial) {
+    const miles = km * 0.621371;
+    if (miles < 1) return `${Math.round(miles * 5280).toLocaleString()} ft`;
+    return `${miles.toFixed(2)} mi`;
+  }
+  if (km < 1) return `${Math.round(km * 1000)} m`;
+  return `${km.toFixed(2)} km`;
+}
+
+export function formatArea(m2, imperial = false) {
+  if (imperial) {
+    const sqft = m2 * 10.7639;
+    if (sqft < 43560) return `${Math.round(sqft).toLocaleString()} ft²`;
+    const acres = sqft / 43560;
+    if (acres < 100) return `${acres.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ac`;
+    return `${(sqft / 27878400).toLocaleString(undefined, { minimumFractionDigits: 3, maximumFractionDigits: 3 })} mi²`;
+  }
   if (m2 < 10000) return `${Math.round(m2).toLocaleString()} m²`;
   const ha = m2 / 10000;
   if (ha < 100) return `${ha.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ha`;

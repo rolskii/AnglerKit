@@ -3,6 +3,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { MapPin, Route, Trash2, Calendar } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import FishIcon from '@/components/FishIcon';
+import { formatDistance, isImperial } from '@/lib/sphericalArea';
 
 export default function SavedRoutesDrawer({ open, onOpenChange, routes, onLoad, onDeleted, onRouteUpdated }) {
   const handleDelete = async (id) => {
@@ -88,7 +89,7 @@ export default function SavedRoutesDrawer({ open, onOpenChange, routes, onLoad, 
                               {new Date(r.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                             </span>
                           )}
-                          {r.distance_km != null && r.distance_km > 0 && <span>{r.distance_km.toFixed(2)} km</span>}
+                          {r.distance_km != null && r.distance_km > 0 && <span>{formatDistance(r.distance_km, isImperial())}</span>}
                           {(r.pins?.length || 0) > 0 && (
                             <span className="flex items-center gap-0.5">
                               <MapPin className="w-3 h-3" />

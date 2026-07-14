@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatDistance, isImperial } from '@/lib/sphericalArea';
 
 export default function RouteStatsBar({ isTracking, isPaused, trackPoints, distanceKm, durationSec }) {
   if (!isTracking && !isPaused && trackPoints.length === 0) return null;
@@ -20,7 +21,7 @@ export default function RouteStatsBar({ isTracking, isPaused, trackPoints, dista
           )}
           <div className="flex flex-col gap-0.5">
             <div className="flex items-center gap-3 text-xs">
-              <span className="font-semibold text-foreground">{distanceKm.toFixed(2)} km</span>
+              <span className="font-semibold text-foreground">{formatDistance(distanceKm, isImperial())}</span>
               <span className="text-muted-foreground">{formatDuration(durationSec)}</span>
             </div>
             <span className="text-[10px] text-muted-foreground">{trackPoints.length} points</span>
