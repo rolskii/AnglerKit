@@ -83,24 +83,24 @@ export default function DayForecastDialog({ open, onOpenChange, dayData, hourly,
             {/* Conditions List */}
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2 py-1">
-                <WeatherGlyph code={51} className="w-6 h-7 shrink-0" />
-                <span className="text-xs text-muted-foreground">Humidity</span>
-                <p className="text-sm font-semibold">{midHumidity != null ? midHumidity + '%' : '—'}</p>
+                <WeatherGlyph code={51} className="w-7 h-8 shrink-0" />
+                <span className="text-sm text-muted-foreground">Humidity</span>
+                <p className="text-base font-semibold">{midHumidity != null ? midHumidity + '%' : '—'}</p>
               </div>
               <div className="flex items-center gap-2 py-1">
-                <WeatherGlyph code={45} className="w-6 h-7 shrink-0" />
-                <span className="text-xs text-muted-foreground">Wind</span>
-                <p className="text-sm font-semibold">{formatWind(daily.wind_speed_10m_max?.[idx] ?? 0, tempUnit)}</p>
+                <WeatherGlyph code={45} className="w-7 h-8 shrink-0" />
+                <span className="text-sm text-muted-foreground">Wind</span>
+                <p className="text-base font-semibold">{formatWind(daily.wind_speed_10m_max?.[idx] ?? 0, tempUnit)}</p>
               </div>
               <div className="flex items-center gap-2 py-1">
-                <WeatherGlyph code={63} className="w-6 h-7 shrink-0" />
-                <span className="text-xs text-muted-foreground">Precip</span>
-                <p className="text-sm font-semibold">{formatPrecip(daily.precipitation_sum?.[idx] ?? 0, tempUnit)}</p>
+                <WeatherGlyph code={63} className="w-7 h-8 shrink-0" />
+                <span className="text-sm text-muted-foreground">Precip</span>
+                <p className="text-base font-semibold">{formatPrecip(daily.precipitation_sum?.[idx] ?? 0, tempUnit)}</p>
               </div>
               <div className="flex items-center gap-2 py-1">
-                <WeatherGlyph code={3} className="w-6 h-7 shrink-0" />
-                <span className="text-xs text-muted-foreground">Pressure</span>
-                <p className="text-sm font-semibold">{midPressure != null ? formatPressure(midPressure, tempUnit) : '—'}</p>
+                <WeatherGlyph code={3} className="w-7 h-8 shrink-0" />
+                <span className="text-sm text-muted-foreground">Pressure</span>
+                <p className="text-base font-semibold">{midPressure != null ? formatPressure(midPressure, tempUnit) : '—'}</p>
               </div>
             </div>
 
