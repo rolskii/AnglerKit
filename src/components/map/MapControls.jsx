@@ -1,5 +1,5 @@
 import React from 'react';
-import { Play, Pause, Square, MapPin, Save, Crosshair, Layers, FolderOpen, Circle, Route, Pencil, Ruler } from 'lucide-react';
+import { Play, Pause, Square, MapPin, Save, Crosshair, Layers, FolderOpen, Circle, Route, Pencil, Ruler, Waves } from 'lucide-react';
 import OntarioTrilliumIcon from '@/components/OntarioTrilliumIcon';
 
 const ctrlBase = "flex items-center justify-center rounded-full shadow-lg backdrop-blur-xl transition-all active:scale-90";
@@ -21,6 +21,8 @@ export default function MapControls({
   onToggleLayer,
   onToggleTopo,
   topoActive,
+  onToggleNonna,
+  nonnaActive,
   onOpenRoutes,
   showAllRoutes,
   onToggleAllRoutes,
@@ -50,6 +52,17 @@ export default function MapControls({
           title="Ontario topographic map"
         >
           <OntarioTrilliumIcon className="w-5 h-5" />
+        </button>
+        <button
+          onClick={onToggleNonna}
+          className={`${ctrlBase} ${ctrlSize} border ${
+            nonnaActive
+              ? 'bg-primary text-primary-foreground border-primary'
+              : 'bg-background/90 text-foreground border-border'
+          }`}
+          title="CHS NONNA-10 bathymetry"
+        >
+          <Waves className="w-5 h-5" />
         </button>
         <button
           onClick={onOpenRoutes}
