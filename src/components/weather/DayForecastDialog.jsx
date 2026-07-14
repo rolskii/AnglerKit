@@ -130,7 +130,7 @@ export default function DayForecastDialog({ open, onOpenChange, dayData, hourly,
           {dayHours.length > 0 && (
             <div>
               <p className="text-xs font-semibold text-muted-foreground mb-2">Hourly Breakdown</p>
-              <div className="overflow-x-auto scrollbar-hide -mx-1 px-1">
+              <div className="overflow-x-auto scrollbar-hide-desktop -mx-1 px-1">
                 <div className="flex gap-2 min-w-max pb-1">
                   {dayHours.map(({ hTime, hIdx }) => {
                     const hourDate = new Date(hTime);
