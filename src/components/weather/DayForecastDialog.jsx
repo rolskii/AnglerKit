@@ -28,7 +28,11 @@ export default function DayForecastDialog({ open, onOpenChange, dayData, hourly,
   const dayHours = hourly
     ? hourly.time
         .map((hTime, hIdx) => ({ hTime, hIdx }))
-        .filter(({ hTime }) => hTime.startsWith(date))
+        .filter(({ hTime }) => {
+          const d = new Date(hTime);
+          const localDateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+          return localDateStr === date;
+        })
     : [];
 
   // Find midday hour for representative conditions (humidity, pressure, apparent temp)
