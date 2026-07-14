@@ -433,7 +433,7 @@ export default function Weather() {
               {/* Conditions Grid */}
               <div className="grid grid-cols-3 gap-2">
                 <div className="bg-secondary rounded-lg flex flex-col items-center gap-1 overflow-hidden">
-                  <WeatherGlyph code={current.weather_code} isNight={isNight()} darkOutline animated className="w-12 h-14 text-primary -mb-2" />
+                  <WeatherGlyph code={current.weather_code} isNight={isNight()} darkOutline animated className="w-14 h-16 text-primary -my-3 -mx-1" />
                   <p className="text-xs font-semibold leading-tight text-center truncate w-full">{current.condition || getWeatherDescription(current.weather_code)}</p>
                   <span className="text-[10px] text-muted-foreground leading-tight">Condition</span>
                 </div>
