@@ -57,7 +57,7 @@ export default function DayForecastDialog({ open, onOpenChange, dayData, hourly,
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md p-0 overflow-y-auto overflow-x-hidden gap-0 max-h-[85vh]">
+      <DialogContent className="max-w-md w-[calc(100vw-2rem)] p-0 overflow-y-auto gap-0 max-h-[85vh]">
         <DialogHeader className="px-4 pt-4 pb-2">
           <DialogTitle>{dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</DialogTitle>
         </DialogHeader>
@@ -105,7 +105,7 @@ export default function DayForecastDialog({ open, onOpenChange, dayData, hourly,
             </div>
 
             {/* Daily Summary */}
-            <p className="text-sm text-muted-foreground leading-relaxed pt-1 break-words pr-2">{getDailySummary()}</p>
+            <p className="text-sm text-muted-foreground leading-relaxed pt-1 break-words w-full min-w-0">{getDailySummary()}</p>
           </div>
 
           {/* Sun times */}
