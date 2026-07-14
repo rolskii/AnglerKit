@@ -122,6 +122,34 @@
       "description": "Saved distance measurements",
       "default": []
     },
+    "areas": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "points": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "lat": {
+                  "type": "number"
+                },
+                "lon": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "area_m2": {
+            "type": "number",
+            "description": "Area in square metres"
+          }
+        }
+      },
+      "description": "Saved area boundaries with calculated area",
+      "default": []
+    },
     "distance_km": {
       "type": "number",
       "description": "Total distance travelled in kilometers",

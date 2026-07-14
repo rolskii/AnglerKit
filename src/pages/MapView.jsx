@@ -10,6 +10,8 @@ import DrawLayer from '@/components/map/DrawLayer';
 import DrawBar from '@/components/map/DrawBar';
 import DrawingDialog from '@/components/map/DrawingDialog';
 import MeasureBar from '@/components/map/MeasureBar';
+import AreaBar from '@/components/map/AreaBar';
+import { computeSphericalArea, formatArea } from '@/lib/sphericalArea';
 import { ChevronLeft, Route, Pencil } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import BottomTabBar from '@/components/BottomTabBar';
@@ -114,6 +116,9 @@ export default function MapView() {
   const [measureMode, setMeasureMode] = useState(false);
   const [measurePoints, setMeasurePoints] = useState([]);
   const [savedMeasurements, setSavedMeasurements] = useState([]);
+  const [areaMode, setAreaMode] = useState(false);
+  const [areaPoints, setAreaPoints] = useState([]);
+  const [savedAreas, setSavedAreas] = useState([]);
   const [mapReady, setMapReady] = useState(false);
   const [mapVersion, setMapVersion] = useState(0);
   const [loadedRouteId, setLoadedRouteId] = useState(null);
@@ -143,10 +148,15 @@ export default function MapView() {
   const measureOverlayRef = useRef(null);
   const savedMeasureOverlaysRef = useRef([]);
   const redrawingIdxRef = useRef(null);
+  const areaModeRef = useRef(false);
+  const handleAreaClickRef = useRef(() => {});
+  const areaOverlayRef = useRef(null);
+  const savedAreaOverlaysRef = useRef([]);
 
 
   useEffect(() => { pinModeRef.current = pinMode; }, [pinMode]);
   useEffect(() => { measureModeRef.current = measureMode; }, [measureMode]);
+  useEffect(() => { areaModeRef.current = areaMode; }, [areaMode]);
   useEffect(() => { redrawingIdxRef.current = redrawingIdx; }, [redrawingIdx]);
   useEffect(() => { if (!drawMode && redrawingIdx !== null) setRedrawingIdx(null); }, [drawMode, redrawingIdx]);
 
@@ -169,7 +179,7 @@ export default function MapView() {
       const dx = e.clientX - downX;
       const dy = e.clientY - downY;
       if (Math.sqrt(dx * dx + dy * dy) > 10) return; // ignore drags
-      if (!pinModeRef.current && !measureModeRef.current) return;
+      if (!pinModeRef.current && !measureModeRef.current && !areaModeRef.current) return;
       const map = mapRef.current;
       if (!map) return;
       const coord = map.convertPointOnPageToCoordinate(new DOMPoint(e.pageX, e.pageY));
@@ -178,6 +188,8 @@ export default function MapView() {
           handleMapClickRef.current({ lat: coord.latitude, lon: coord.longitude });
         } else if (measureModeRef.current) {
           handleMeasureClickRef.current({ lat: coord.latitude, lon: coord.longitude });
+        } else if (areaModeRef.current) {
+          handleAreaClickRef.current({ lat: coord.latitude, lon: coord.longitude });
         }
       }
     };
@@ -365,6 +377,7 @@ export default function MapView() {
     setPinMode((v) => !v);
     setDrawMode(false);
     setMeasureMode(false);
+    setAreaMode(false);
   }, []);
 
   const handlePinSave = useCallback(async (label, marker) => {
@@ -435,6 +448,7 @@ export default function MapView() {
     setDrawMode((v) => !v);
     setPinMode(false);
     setMeasureMode(false);
+    setAreaMode(false);
   }, []);
 
   const handleDrawClear = useCallback(() => {
@@ -463,6 +477,7 @@ export default function MapView() {
     setMeasureMode((v) => !v);
     setPinMode(false);
     setDrawMode(false);
+    setAreaMode(false);
   }, []);
 
   const handleMeasureClick = useCallback((latlng) => {
@@ -488,6 +503,34 @@ export default function MapView() {
     setSavedMeasurements((prev) => [...prev, { points: measurePoints, distance_km: Math.round(dist * 100) / 100 }]);
     setMeasurePoints([]);
   }, [measurePoints]);
+
+  // Area handlers
+  const handleToggleArea = useCallback(() => {
+    setAreaMode((v) => !v);
+    setPinMode(false);
+    setDrawMode(false);
+    setMeasureMode(false);
+  }, []);
+
+  const handleAreaClick = useCallback((latlng) => {
+    setAreaPoints((prev) => [...prev, latlng]);
+  }, []);
+  useEffect(() => { handleAreaClickRef.current = handleAreaClick; }, [handleAreaClick]);
+
+  const handleAreaUndo = useCallback(() => {
+    setAreaPoints((prev) => prev.slice(0, -1));
+  }, []);
+
+  const handleAreaClear = useCallback(() => {
+    setAreaPoints([]);
+  }, []);
+
+  const handleAreaSave = useCallback(() => {
+    if (areaPoints.length < 3) return;
+    const areaM2 = computeSphericalArea(areaPoints);
+    setSavedAreas((prev) => [...prev, { points: areaPoints, area_m2: Math.round(areaM2) }]);
+    setAreaPoints([]);
+  }, [areaPoints]);
 
   // Drawing label/description handlers
   const handleDrawingClick = useCallback((idx) => {
@@ -519,6 +562,7 @@ export default function MapView() {
     setDrawMode(true);
     setPinMode(false);
     setMeasureMode(false);
+    setAreaMode(false);
   }, [editingDrawingIdx, drawings]);
 
   // Save route
@@ -535,6 +579,10 @@ export default function MapView() {
         }, 0);
         allMeasurements.push({ points: measurePoints, distance_km: Math.round(dist * 100) / 100 });
       }
+      const allAreas = [...savedAreas];
+      if (areaPoints.length >= 3) {
+        allAreas.push({ points: areaPoints, area_m2: Math.round(computeSphericalArea(areaPoints)) });
+      }
       const payload = {
         name,
         description,
@@ -542,6 +590,7 @@ export default function MapView() {
         pins,
         drawings,
         measurements: allMeasurements,
+        areas: allAreas,
         distance_km: Math.round(distanceKm * 100) / 100,
         duration_sec: Math.round(durationSec),
         date: dateStr,
@@ -558,6 +607,8 @@ export default function MapView() {
       setDrawings([]);
       setSavedMeasurements([]);
       setMeasurePoints([]);
+      setSavedAreas([]);
+      setAreaPoints([]);
       setLoadedRouteId(null);
       setDistanceKm(0);
       setDurationSec(0);
@@ -584,7 +635,9 @@ export default function MapView() {
     setPins(route.pins || []);
     setDrawings(route.drawings || []);
     setSavedMeasurements(route.measurements || []);
+    setSavedAreas(route.areas || []);
     setMeasurePoints([]);
+    setAreaPoints([]);
     setDistanceKm(route.distance_km || 0);
     setDurationSec(route.duration_sec || 0);
     setIsTracking(false);
@@ -608,6 +661,8 @@ export default function MapView() {
       setDrawings([]);
       setSavedMeasurements([]);
       setMeasurePoints([]);
+      setSavedAreas([]);
+      setAreaPoints([]);
       setDistanceKm(0);
       setDurationSec(0);
       setLoadedRouteId(null);
@@ -849,6 +904,53 @@ export default function MapView() {
     });
   }, [savedMeasurements, mapReady]);
 
+  // Render active area polygon overlay
+  useEffect(() => {
+    if (!mapReady || !mapRef.current) return;
+    const map = mapRef.current;
+
+    if (areaOverlayRef.current) {
+      try { map.removeOverlay(areaOverlayRef.current); } catch (e) {}
+      areaOverlayRef.current = null;
+    }
+
+    if (areaPoints.length >= 3) {
+      const coords = areaPoints.map((p) => new mapkit.Coordinate(p.lat, p.lon));
+      const style = new mapkit.Style({
+        strokeColor: '#10b981',
+        fillColor: 'rgba(16,185,129,0.2)',
+        lineWidth: 3,
+        lineJoin: 'round',
+      });
+      const overlay = new mapkit.PolygonOverlay(coords, { style });
+      map.addOverlay(overlay);
+      areaOverlayRef.current = overlay;
+    }
+  }, [areaPoints, mapReady]);
+
+  // Render saved area polygon overlays
+  useEffect(() => {
+    if (!mapReady || !mapRef.current) return;
+    const map = mapRef.current;
+
+    savedAreaOverlaysRef.current.forEach((o) => { try { map.removeOverlay(o); } catch (e) {} });
+    savedAreaOverlaysRef.current = [];
+
+    savedAreas.forEach((a) => {
+      if (!a.points || a.points.length < 3) return;
+      const coords = a.points.map((p) => new mapkit.Coordinate(p.lat, p.lon));
+      const style = new mapkit.Style({
+        strokeColor: '#10b981',
+        fillColor: 'rgba(16,185,129,0.15)',
+        lineWidth: 2,
+        lineJoin: 'round',
+      });
+      const overlay = new mapkit.PolygonOverlay(coords, { style });
+      map.addOverlay(overlay);
+      savedAreaOverlaysRef.current.push(overlay);
+    });
+  }, [savedAreas, mapReady]);
+
   // Update GPS annotation
   useEffect(() => {
     if (!mapReady || !mapRef.current) return;
@@ -883,11 +985,13 @@ export default function MapView() {
   const hasTrack = trackPoints.length > 0;
   const hasPins = pins.length > 0;
   const hasDrawings = drawings.length > 0;
+  const hasAreas = savedAreas.length > 0 || areaPoints.length > 0;
   const measureTotalKm = measurePoints.reduce((sum, p, i) => {
     if (i === 0) return 0;
     const prev = measurePoints[i - 1];
     return sum + haversine(prev.lat, prev.lon, p.lat, p.lon);
   }, 0);
+  const areaM2 = computeSphericalArea(areaPoints);
 
   return (
     <div className="fixed inset-0 z-[4000] bg-background" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
@@ -1153,6 +1257,65 @@ export default function MapView() {
             </div>
           );
         })}
+        {/* Area point markers */}
+        {mapReady && mapRef.current && areaPoints.map((pt, idx) => {
+          const coord = new mapkit.Coordinate(pt.lat, pt.lon);
+          const point = mapRef.current.convertCoordinateToPointOnPage(coord);
+          if (!point) return null;
+          const containerRect = mapContainerRef.current?.getBoundingClientRect();
+          if (!containerRect) return null;
+          const left = point.x - containerRect.left;
+          const top = point.y - containerRect.top;
+          if (left < -30 || left > containerRect.width + 30 || top < -30 || top > containerRect.height + 30) return null;
+          return (
+            <div key={`ap-${idx}`} className="absolute z-[455] pointer-events-none" style={{ left, top, transform: 'translate(-50%, -50%)' }}>
+              <div style={{ width: '24px', height: '24px', background: '#10b981', border: '3px solid #ffffff', borderRadius: '50%', boxShadow: '0 2px 6px rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: 'white' }}>{idx + 1}</span>
+              </div>
+            </div>
+          );
+        })}
+        {/* Active area centroid label */}
+        {mapReady && mapRef.current && areaPoints.length >= 3 && (() => {
+          const lat = areaPoints.reduce((s, p) => s + p.lat, 0) / areaPoints.length;
+          const lon = areaPoints.reduce((s, p) => s + p.lon, 0) / areaPoints.length;
+          const coord = new mapkit.Coordinate(lat, lon);
+          const point = mapRef.current.convertCoordinateToPointOnPage(coord);
+          if (!point) return null;
+          const containerRect = mapContainerRef.current?.getBoundingClientRect();
+          if (!containerRect) return null;
+          const left = point.x - containerRect.left;
+          const top = point.y - containerRect.top;
+          if (left < -60 || left > containerRect.width + 60 || top < -30 || top > containerRect.height + 30) return null;
+          return (
+            <div className="absolute z-[456] pointer-events-none" style={{ left, top, transform: 'translate(-50%, -50%)' }}>
+              <span style={{ fontSize: '12px', fontWeight: 700, background: 'rgba(16,185,129,0.9)', color: 'white', padding: '3px 8px', borderRadius: '6px', whiteSpace: 'nowrap' }}>
+                {formatArea(areaM2)}
+              </span>
+            </div>
+          );
+        })()}
+        {/* Saved area centroid labels */}
+        {mapReady && mapRef.current && savedAreas.map((a, aIdx) => {
+          if (!a.points || a.points.length < 3) return null;
+          const lat = a.points.reduce((s, p) => s + p.lat, 0) / a.points.length;
+          const lon = a.points.reduce((s, p) => s + p.lon, 0) / a.points.length;
+          const coord = new mapkit.Coordinate(lat, lon);
+          const point = mapRef.current.convertCoordinateToPointOnPage(coord);
+          if (!point) return null;
+          const containerRect = mapContainerRef.current?.getBoundingClientRect();
+          if (!containerRect) return null;
+          const left = point.x - containerRect.left;
+          const top = point.y - containerRect.top;
+          if (left < -60 || left > containerRect.width + 60 || top < -30 || top > containerRect.height + 30) return null;
+          return (
+            <div key={`sa-${aIdx}`} className="absolute z-[456] pointer-events-none" style={{ left, top, transform: 'translate(-50%, -50%)' }}>
+              <span style={{ fontSize: '11px', fontWeight: 600, background: 'rgba(16,185,129,0.8)', color: 'white', padding: '2px 6px', borderRadius: '4px', whiteSpace: 'nowrap' }}>
+                {formatArea(a.area_m2)}
+              </span>
+            </div>
+          );
+        })}
         {/* Preview pin while dialog is open — shows immediately at tapped location */}
         {mapReady && mapRef.current && pendingPin && pinDialogOpen && editingPinIdx === null && (() => {
           const coord = new mapkit.Coordinate(pendingPin.lat, pendingPin.lon);
@@ -1214,6 +1377,17 @@ export default function MapView() {
           Tap the map to add measurement points
         </div>
       )}
+      {/* Area mode hint */}
+      {areaMode && areaPoints.length === 0 && (
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-[500] px-4 py-2 rounded-full bg-emerald-500 text-white text-sm font-medium shadow-lg">
+          Tap the map to define a boundary
+        </div>
+      )}
+      {areaMode && areaPoints.length > 0 && areaPoints.length < 3 && (
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-[500] px-4 py-2 rounded-full bg-emerald-500 text-white text-sm font-medium shadow-lg">
+          {3 - areaPoints.length} more {3 - areaPoints.length === 1 ? 'point' : 'points'} to close the boundary
+        </div>
+      )}
       {/* Redraw hint */}
       {redrawingIdx !== null && (
         <div className="absolute top-20 left-1/2 -translate-x-1/2 z-[500] px-4 py-2 rounded-full bg-purple-500 text-white text-sm font-medium shadow-lg">
@@ -1234,6 +1408,16 @@ export default function MapView() {
           onSave={handleMeasureSave}
         />
       )}
+      {/* Area bar */}
+      {areaPoints.length > 0 && (
+        <AreaBar
+          areaLabel={formatArea(areaM2)}
+          pointCount={areaPoints.length}
+          onUndo={handleAreaUndo}
+          onClear={handleAreaClear}
+          onSave={handleAreaSave}
+        />
+      )}
 
       {/* Controls */}
       <MapControls
@@ -1242,6 +1426,7 @@ export default function MapView() {
         hasTrack={hasTrack}
         hasPins={hasPins}
         hasDrawings={hasDrawings}
+        hasAreas={hasAreas}
         pinMode={pinMode}
         onStart={startTracking}
         onPause={pauseTracking}
@@ -1255,8 +1440,10 @@ export default function MapView() {
         onToggleAllRoutes={() => { loadRoutes(); setShowAllRoutes((v) => !v); }}
         drawMode={drawMode}
         measureMode={measureMode}
+        areaMode={areaMode}
         onToggleDraw={handleToggleDraw}
         onToggleMeasure={handleToggleMeasure}
+        onToggleArea={handleToggleArea}
       />
 
       {/* Dialogs */}

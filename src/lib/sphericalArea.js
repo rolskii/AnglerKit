@@ -1,0 +1,23 @@
+// Spherical polygon area calculation (Chamberlain & Duquette algorithm).
+// Returns area in square metres for an array of { lat, lon } points.
+
+export function computeSphericalArea(points) {
+  const R = 6378137; // WGS84 Earth radius in metres
+  const toRad = (deg) => (deg * Math.PI) / 180;
+  const n = points.length;
+  if (n < 3) return 0;
+  let total = 0;
+  for (let i = 0; i < n; i++) {
+    const p1 = points[i];
+    const p2 = points[(i + 1) % n];
+    total += toRad(p2.lon - p1.lon) * (2 + Math.sin(toRad(p1.lat)) + Math.sin(toRad(p2.lat)));
+  }
+  return Math.abs((total * R * R) / 2);
+}
+
+export function formatArea(m2) {
+  if (m2 < 10000) return `${Math.round(m2)} m²`;
+  const ha = m2 / 10000;
+  if (ha < 100) return `${ha.toFixed(2)} ha`;
+  return `${(m2 / 1000000).toFixed(3)} km²`;
+}

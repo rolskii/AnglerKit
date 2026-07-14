@@ -1,5 +1,5 @@
 import React from 'react';
-import { Play, Pause, Square, MapPin, Save, Crosshair, Layers, FolderOpen, Circle, Route, Pencil, Ruler } from 'lucide-react';
+import { Play, Pause, Square, MapPin, Save, Crosshair, Layers, FolderOpen, Circle, Route, Pencil, Ruler, Hexagon } from 'lucide-react';
 
 const ctrlBase = "flex items-center justify-center rounded-full shadow-lg backdrop-blur-xl transition-all active:scale-90";
 const ctrlSize = "w-12 h-12";
@@ -10,6 +10,7 @@ export default function MapControls({
   hasTrack,
   hasPins,
   hasDrawings,
+  hasAreas,
   pinMode,
   onStart,
   onPause,
@@ -23,8 +24,10 @@ export default function MapControls({
   onToggleAllRoutes,
   drawMode,
   measureMode,
+  areaMode,
   onToggleDraw,
   onToggleMeasure,
+  onToggleArea,
 }) {
   return (
     <>
@@ -76,6 +79,17 @@ export default function MapControls({
           title="Measure distance"
         >
           <Ruler className="w-5 h-5" />
+        </button>
+        <button
+          onClick={onToggleArea}
+          className={`${ctrlBase} ${ctrlSize} border ${
+            areaMode
+              ? 'bg-emerald-500 text-white border-emerald-500'
+              : 'bg-background/90 text-foreground border-border'
+          }`}
+          title="Measure area"
+        >
+          <Hexagon className="w-5 h-5" />
         </button>
       </div>
 
@@ -145,7 +159,7 @@ export default function MapControls({
         </button>
 
         {/* Save */}
-        {(hasTrack || hasPins || hasDrawings) && !isTracking && !isPaused && (
+        {(hasTrack || hasPins || hasDrawings || hasAreas) && !isTracking && !isPaused && (
           <button
             onClick={onSave}
             className={`${ctrlBase} ${ctrlSize} bg-primary text-primary-foreground`}
