@@ -1252,7 +1252,7 @@ export default function MapView() {
           return (
             <div key={`seg-${idx}`} className="absolute z-[456] pointer-events-none" style={{ left, top, transform: 'translate(-50%, -50%)' }}>
               <span style={{ fontSize: '11px', fontWeight: 600, background: 'rgba(59,130,246,0.9)', color: 'white', padding: '2px 6px', borderRadius: '4px', whiteSpace: 'nowrap' }}>
-                {segDist.toFixed(2)} km
+                {segDist < 1 ? `${Math.round(segDist * 1000)} m` : `${segDist.toFixed(2)} km`}
               </span>
             </div>
           );
