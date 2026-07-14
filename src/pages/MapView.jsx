@@ -118,7 +118,6 @@ export default function MapView() {
   const [mapVersion, setMapVersion] = useState(0);
   const [loadedRouteId, setLoadedRouteId] = useState(null);
   const [topoActive, setTopoActive] = useState(false);
-  const [nonnaActive, setNonnaActive] = useState(false);
 
   // Persist pins to localStorage so they survive page navigation
   const PINS_KEY = 'mapview_pins';
@@ -146,7 +145,6 @@ export default function MapView() {
   const redrawingIdxRef = useRef(null);
   const topoOverlayRef = useRef(null);
   const prevMapTypeRef = useRef(null);
-  const nonnaOverlayRef = useRef(null);
 
   useEffect(() => { pinModeRef.current = pinMode; }, [pinMode]);
   useEffect(() => { measureModeRef.current = measureMode; }, [measureMode]);
@@ -681,28 +679,6 @@ export default function MapView() {
     }
   }, [topoActive, toast]);
 
-  // CHS NONNA-10 bathymetric depth overlay toggle (Canadian waters)
-  const handleToggleNonna = useCallback(() => {
-    const map = mapRef.current;
-    if (!map) return;
-    if (nonnaActive) {
-      if (nonnaOverlayRef.current) { try { map.removeOverlay(nonnaOverlayRef.current); } catch (e) {} nonnaOverlayRef.current = null; }
-      setNonnaActive(false);
-    } else {
-      try {
-        const overlay = new mapkit.TileOverlay(
-          "https://nonna-geoserver.data.chs-shc.ca/geoserver/gwc/service/wmts?layer=nonna:NONNA%2010&style=raster&tilematrixset=EPSG3857&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/png&TileMatrix=EPSG3857:{z}&TileCol={x}&TileRow={y}",
-          { minimumZ: 0, maximumZ: 18 }
-        );
-        map.addOverlay(overlay);
-        nonnaOverlayRef.current = overlay;
-        setNonnaActive(true);
-      } catch (err) {
-        toast({ title: 'Bathymetry layer error', description: String(err?.message || err), variant: 'destructive' });
-      }
-    }
-  }, [nonnaActive, toast]);
-
   // Initialize map
   useEffect(() => {
     let cancelled = false;
@@ -753,7 +729,6 @@ export default function MapView() {
       }
       topoOverlayRef.current = null;
       prevMapTypeRef.current = null;
-      nonnaOverlayRef.current = null;
       setMapReady(false);
     };
   }, []);
@@ -1309,8 +1284,6 @@ export default function MapView() {
         onToggleLayer={handleToggleLayer}
         topoActive={topoActive}
         onToggleTopo={handleToggleTopo}
-        nonnaActive={nonnaActive}
-        onToggleNonna={handleToggleNonna}
         onOpenRoutes={() => { loadRoutes(); setRoutesOpen(true); }}
         showAllRoutes={showAllRoutes}
         onToggleAllRoutes={() => { loadRoutes(); setShowAllRoutes((v) => !v); }}
