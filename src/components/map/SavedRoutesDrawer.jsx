@@ -1,6 +1,6 @@
 import React from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { MapPin, Route, Trash2, Calendar } from 'lucide-react';
+import { MapPin, Route, Trash2, Calendar, Navigation } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import FishIcon from '@/components/FishIcon';
 import { formatDistance, isImperial } from '@/lib/sphericalArea';
@@ -64,6 +64,15 @@ export default function SavedRoutesDrawer({ open, onOpenChange, routes, onLoad, 
                           </div>
                         </div>
                       </button>
+                      <a
+                        href={`https://maps.apple.com/?daddr=${pin.lat},${pin.lon}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors shrink-0"
+                        title="Navigate to this location"
+                      >
+                        <Navigation className="w-4 h-4" />
+                      </a>
                       <button
                         onClick={() => handleDeletePin(r, pIdx)}
                         className="p-2 text-muted-foreground hover:text-destructive transition-colors shrink-0"
