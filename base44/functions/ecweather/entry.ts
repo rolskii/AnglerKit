@@ -403,6 +403,65 @@ function parseWeatherXml(xmlText, localDate, tzOffset) {
   return { current, daily, hourly, alerts };
 }
 
+// --- Air Quality Health Index (AQHI) ---
+
+let aqhiSiteCache = null;
+let aqhiSiteCacheTime = 0;
+const AQHI_COMMUNITY_URL = 'https://collaboration.cmc.ec.gc.ca/cmc/cmos/public_doc/msc-data/aqhi/aqhi_community.geojson';
+
+const provinceToAqhiRegion = {
+  'NL': 'atl', 'PE': 'atl', 'NS': 'atl', 'NB': 'atl',
+  'ON': 'ont',
+  'MB': 'pnr', 'SK': 'pnr', 'AB': 'pnr', 'NT': 'pnr', 'NU': 'pnr', 'YT': 'pnr',
+  'BC': 'pyr',
+  'QC': 'que',
+};
+
+async function getAqhiCommunities() {
+  const now = Date.now();
+  if (aqhiSiteCache && (now - aqhiSiteCacheTime) < 86400000) {
+    return aqhiSiteCache;
+  }
+  const res = await fetch(AQHI_COMMUNITY_URL);
+  const geojson = await res.json();
+  const communities = (geojson.features || []).map(f => ({
+    code: f.properties.cgndb_key,
+    name: f.properties.region_name_en,
+    lat: parseFloat(f.properties.Latitude),
+    lon: parseFloat(f.properties.Longitude),
+  })).filter(c => c.code && !isNaN(c.lat) && !isNaN(c.lon));
+  aqhiSiteCache = communities;
+  aqhiSiteCacheTime = now;
+  return communities;
+}
+
+async function fetchAqhi(province, lat, lon) {
+  const region = provinceToAqhiRegion[province];
+  if (!region || region === 'que') return null;
+
+  const communities = await getAqhiCommunities();
+  let closest = null;
+  let minDist = Infinity;
+  for (const c of communities) {
+    const dist = haversine(lat, lon, c.lat, c.lon);
+    if (dist < minDist) {
+      minDist = dist;
+      closest = c;
+    }
+  }
+  if (!closest || minDist > 200) return null;
+
+  const url = `https://dd.weather.gc.ca/today/air_quality/aqhi/${region}/observation/realtime/xml/AQ_OBS_${closest.code}_CURRENT.xml`;
+  const res = await fetch(url);
+  if (!res.ok) return null;
+  const xml = await res.text();
+  const match = xml.match(/<airqualityhealthindex>(.*?)<\/airqualityhealthindex>/);
+  if (!match) return null;
+  const value = parseFloat(match[1]);
+  if (isNaN(value)) return null;
+  return { value, name: closest.name };
+}
+
 function convertSummaryToImperial(text) {
   if (!text) return text;
   let result = text;
@@ -439,6 +498,13 @@ Deno.serve(async (req) => {
 
     const xml = await fetchWeatherXml(site.province, site.code);
     const weatherData = parseWeatherXml(xml, localDate, tzOffset);
+
+    try {
+      const aqhi = await fetchAqhi(site.province, lat, lon);
+      if (aqhi) weatherData.air_quality = aqhi;
+    } catch (e) {
+      // AQHI is optional — don't fail the whole request
+    }
 
     if (unit === 'fahrenheit') {
       weatherData.daily.text_summary = weatherData.daily.text_summary.map(convertSummaryToImperial);

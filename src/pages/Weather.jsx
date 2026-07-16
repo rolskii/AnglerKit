@@ -11,6 +11,7 @@ import DayForecastDialog from '@/components/weather/DayForecastDialog';
 import WeatherGlyph from '@/components/weather/WeatherGlyph';
 import ShareStatusButton from '@/components/ShareStatusButton';
 import AlertColorSymbols from '@/components/weather/AlertColorSymbols';
+import AirQualityCard from '@/components/weather/AirQualityCard';
 import { formatTemp, formatWind, formatPrecip, formatPressure, formatVisibility } from '@/lib/weatherUnits';
 
 export default function Weather() {
@@ -92,7 +93,7 @@ export default function Weather() {
       setLocation(locationName);
       setEditingLocation(locationName);
       setShowSuggestions(false);
-      setWeather({ current: data.current, daily: data.daily, hourly: data.hourly, alerts: data.alerts || [] });
+      setWeather({ current: data.current, daily: data.daily, hourly: data.hourly, alerts: data.alerts || [], air_quality: data.air_quality || null });
       setLoading(false);
     } catch (err) {
       setError('Failed to fetch weather for that location.');
@@ -446,6 +447,11 @@ export default function Weather() {
               {/* Weather Alerts */}
               {weather.alerts && weather.alerts.length > 0 && (
                 <AlertColorSymbols alerts={weather.alerts} />
+              )}
+
+              {/* Air Quality */}
+              {weather.air_quality && (
+                <AirQualityCard airQuality={weather.air_quality} />
               )}
 
               {/* Conditions Grid */}
