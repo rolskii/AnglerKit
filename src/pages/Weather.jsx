@@ -449,7 +449,7 @@ export default function Weather() {
                 <div className="bg-secondary rounded-xl flex items-center gap-2 p-2 overflow-hidden">
                   {current.pressure_tendency === 'rising' ? <TrendingUp className="w-7 h-7 shrink-0 text-primary" /> : current.pressure_tendency === 'falling' ? <TrendingDown className="w-7 h-7 shrink-0 text-primary" /> : <Minus className="w-7 h-7 shrink-0 text-primary" />}
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold leading-tight capitalize">{current.pressure_tendency || '—'}</p>
+                    <p className="text-sm font-semibold leading-tight capitalize">{current.pressure_tendency || '—'}</p>
                     <span className="text-xs text-muted-foreground leading-tight">Tendency</span>
                   </div>
                 </div>
