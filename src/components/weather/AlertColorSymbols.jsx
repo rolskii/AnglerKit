@@ -29,9 +29,9 @@ function AlertIcon({ color, className = 'w-5 h-5' }) {
 }
 
 const COLOR_STYLES = {
-  red: { bg: 'bg-red-50', border: 'border-red-300', text: 'text-red-900' },
-  orange: { bg: 'bg-orange-50', border: 'border-orange-300', text: 'text-orange-900' },
-  yellow: { bg: 'bg-yellow-50', border: 'border-yellow-300', text: 'text-yellow-900' },
+  red: { bg: 'bg-red-50', border: 'border-red-300', text: 'text-red-900', info: 'Very dangerous and possibly life-threatening weather will cause extreme damage and disruption' },
+  orange: { bg: 'bg-orange-50', border: 'border-orange-300', text: 'text-orange-900', info: 'Severe weather is likely to cause significant damage, disruption, or health impacts' },
+  yellow: { bg: 'bg-yellow-50', border: 'border-yellow-300', text: 'text-yellow-900', info: 'Hazardous weather may cause damage, disruption, or health impacts' },
 };
 
 export default function AlertColorSymbols({ alerts }) {
@@ -45,11 +45,16 @@ export default function AlertColorSymbols({ alerts }) {
           /^(YELLOW|ORANGE|RED)\s+(WARNING|WATCH|ADVISORY|STATEMENT)\s*-\s*/i, ''
         );
         return (
-          <div key={i} className={`flex items-center gap-2 p-2 rounded-lg border ${style.bg} ${style.border}`}>
-            <AlertIcon color={alert.color} className="w-5 h-5 shrink-0" />
-            <span className={`text-xs font-semibold leading-tight ${style.text}`}>
-              {cleanDesc || alert.description}
-            </span>
+          <div key={i} className={`flex items-start gap-2 p-2 rounded-lg border ${style.bg} ${style.border}`}>
+            <AlertIcon color={alert.color} className="w-5 h-5 shrink-0 mt-0.5" />
+            <div className="min-w-0">
+              <span className={`text-xs font-semibold leading-tight ${style.text} block`}>
+                {cleanDesc || alert.description}
+              </span>
+              <span className="text-xs leading-tight text-foreground/70 mt-1 block">
+                {style.info}
+              </span>
+            </div>
           </div>
         );
       })}
