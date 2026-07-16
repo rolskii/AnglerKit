@@ -536,7 +536,7 @@ export default function Weather() {
                       setSelectedDay({ date, idx, daily });
                       setDayDialogOpen(true);
                     }}
-                    className="flex items-center gap-3 p-2 rounded-xl hover:bg-secondary/60 transition-colors cursor-pointer"
+                    className="flex items-center gap-3 p-1 rounded-xl hover:bg-secondary/60 transition-colors cursor-pointer"
                   >
                     <div className="w-14 shrink-0">
                       <p className="text-sm font-medium text-foreground">
