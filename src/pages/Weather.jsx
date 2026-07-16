@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Droplets, MapPin, ChevronDown, Thermometer, Eye, Wind, Gauge, TrendingUp, TrendingDown, Minus, Sunrise, Sunset } from 'lucide-react';
+import { Droplets, MapPin, ChevronDown, Thermometer, Eye, Wind, Gauge, TrendingUp, TrendingDown, Minus, Sunrise, Sunset, Sun, Moon, CloudSun, CloudMoon, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, CloudLightning } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { searchLocations, geocodeLocation } from '@/lib/geocode';
 import LocationMapPicker from '@/components/moon/LocationMapPicker';
@@ -194,6 +194,18 @@ export default function Weather() {
       fetchUserLocation();
     }
   }, []);
+
+  const getConditionIcon = (code, isNight) => {
+    if (code === 0 || code === 1) return isNight ? Moon : Sun;
+    if (code === 2) return isNight ? CloudMoon : CloudSun;
+    if (code === 3) return Cloud;
+    if (code === 45 || code === 48) return CloudFog;
+    if (code >= 51 && code <= 55) return CloudDrizzle;
+    if (code === 61 || code === 63 || code === 65 || code === 80 || code === 81 || code === 82) return CloudRain;
+    if (code === 71 || code === 73 || code === 75 || code === 85 || code === 86) return CloudSnow;
+    if (code >= 95 && code <= 99) return CloudLightning;
+    return Cloud;
+  };
 
   const getWeatherDescription = (code) => {
     const codes = {
@@ -433,7 +445,7 @@ export default function Weather() {
               {/* Conditions Grid */}
               <div className="grid grid-cols-3 gap-2">
                 <div className="bg-secondary rounded-xl flex items-center gap-2 p-2 overflow-hidden">
-                  <WeatherGlyph code={current.weather_code} isNight={isNight()} darkOutline animated className="w-9 h-9 shrink-0 text-primary -m-1.5" />
+                  {(() => { const Icon = getConditionIcon(current.weather_code, isNight()); return <Icon className="w-7 h-7 shrink-0 text-primary" />; })()}
                   <div className="min-w-0">
                     <p className="text-sm font-semibold leading-tight truncate">{current.condition || getWeatherDescription(current.weather_code)}</p>
                     <span className="text-xs text-muted-foreground leading-tight">Condition</span>
