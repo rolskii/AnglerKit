@@ -382,7 +382,25 @@ function parseWeatherXml(xmlText, localDate, tzOffset) {
     hourly.wind_speed_10m.push(windSpeed);
   }
 
-  return { current, daily, hourly };
+  // --- Weather alerts/warnings ---
+  const warningsMatch = xmlText.match(/<warnings>([\s\S]*?)<\/warnings>/);
+  const wn = warningsMatch ? warningsMatch[1] : '';
+  const alertEventRe = /<event([^>]*)>/g;
+  const alerts = [];
+  let alertMatch;
+  while ((alertMatch = alertEventRe.exec(wn)) !== null) {
+    const attrs = alertMatch[1];
+    const type = (attrs.match(/type="([^"]*)"/) || [])[1] || '';
+    const alertColourLevel = (attrs.match(/alertColourLevel="([^"]*)"/) || [])[1] || 'yellow';
+    const description = (attrs.match(/description="([^"]*)"/) || [])[1] || '';
+    const expiryTime = (attrs.match(/expiryTime="([^"]*)"/) || [])[1] || '';
+    const url = (attrs.match(/url="([^"]*)"/) || [])[1] || '';
+    if (description) {
+      alerts.push({ type, color: alertColourLevel, description, expiryTime, url });
+    }
+  }
+
+  return { current, daily, hourly, alerts };
 }
 
 function convertSummaryToImperial(text) {

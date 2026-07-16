@@ -10,6 +10,7 @@ import HourlyConditionsCard from '@/components/weather/HourlyConditionsCard';
 import DayForecastDialog from '@/components/weather/DayForecastDialog';
 import WeatherGlyph from '@/components/weather/WeatherGlyph';
 import ShareStatusButton from '@/components/ShareStatusButton';
+import AlertColorSymbols from '@/components/weather/AlertColorSymbols';
 import { formatTemp, formatWind, formatPrecip, formatPressure, formatVisibility } from '@/lib/weatherUnits';
 
 export default function Weather() {
@@ -91,7 +92,7 @@ export default function Weather() {
       setLocation(locationName);
       setEditingLocation(locationName);
       setShowSuggestions(false);
-      setWeather({ current: data.current, daily: data.daily, hourly: data.hourly });
+      setWeather({ current: data.current, daily: data.daily, hourly: data.hourly, alerts: data.alerts || [] });
       setLoading(false);
     } catch (err) {
       setError('Failed to fetch weather for that location.');
@@ -441,6 +442,11 @@ export default function Weather() {
                   </div>
                 )}
               </div>
+
+              {/* Weather Alerts */}
+              {weather.alerts && weather.alerts.length > 0 && (
+                <AlertColorSymbols alerts={weather.alerts} />
+              )}
 
               {/* Conditions Grid */}
               <div className="grid grid-cols-3 gap-2">
