@@ -50,7 +50,7 @@ export default function FeaturedImage() {
   };
 
   const fetchAllGearImages = async () => {
-    const entityTypes = ["FlyLine", "Reel", "Rod", "Lure", "MiscItem"];
+    const entityTypes = ["Reel", "Rod", "Lure", "MiscItem"];
     const allImages = [];
     for (const type of entityTypes) {
       try {
