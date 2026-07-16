@@ -12,7 +12,7 @@ const entityRoutes = {
 };
 
 const entityLabels = {
-  FlyLine: "Line",
+  FlyLine: "Lines",
   Reel: "Reel",
   Rod: "Rod",
   Lure: "Lure",

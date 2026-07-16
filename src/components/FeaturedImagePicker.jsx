@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { base44 } from "@/api/base44Client";
 
 const entityConfigs = [
-  { entity: "FlyLine", label: "Line", nameField: (item) => `${item.brand || ""} ${item.model || ""}`.trim() || "Line" },
+  { entity: "FlyLine", label: "Lines", nameField: (item) => `${item.brand || ""} ${item.model || ""}`.trim() || "Lines" },
   { entity: "Reel", label: "Reel", nameField: (item) => item.name || "Reel" },
   { entity: "Rod", label: "Rod", nameField: (item) => item.name || "Rod" },
   { entity: "Lure", label: "Lure", nameField: (item) => item.name || "Lure" },
