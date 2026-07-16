@@ -26,7 +26,7 @@ const navItems = [
 
 export default function Layout() {
   const [open, setOpen] = useState(false);
-  const appName = "Angler's Log";
+  const appName = "AnglerKit";
   const navigate = useNavigate();
   const location = useLocation();
 

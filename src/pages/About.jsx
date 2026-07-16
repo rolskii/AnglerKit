@@ -13,14 +13,14 @@ export default function About() {
           <TroutIcon className="w-10 h-10 text-primary-foreground" />
         </div>
         <div>
-          <h1 className="font-heading text-2xl font-bold">About Angler's Log</h1>
+          <h1 className="font-heading text-2xl font-bold">About AnglerKit</h1>
           <p className="text-muted-foreground text-sm">Inventory Manager</p>
         </div>
       </div>
 
       <div className="prose prose-sm max-w-none text-foreground/90 space-y-4">
         <p>
-          Angler's Log is a purpose-built companion for the discerning angler — one place to manage every piece of equipment, record every catch and time every trip around the natural rhythms that move fish.
+          AnglerKit is a purpose-built companion for the discerning angler — one place to manage every piece of equipment, record every catch and time every trip around the natural rhythms that move fish.
         </p>
         <p>
           Maintain a detailed inventory of lines, rods, reels, lures, flies, and miscellaneous gear, each captured with specifications, condition, photographs, and value. Connect lines to the rods and reels they're paired with, track what's spooled and what's on a spare, and always know precisely what you own and what it's worth.
