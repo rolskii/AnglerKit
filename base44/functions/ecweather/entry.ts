@@ -455,7 +455,7 @@ async function fetchAqhi(province, lat, lon) {
   const res = await fetch(url);
   if (!res.ok) return null;
   const xml = await res.text();
-  const match = xml.match(/<airqualityhealthindex>(.*?)<\/airqualityhealthindex>/);
+  const match = xml.match(/<airQualityHealthIndex>(.*?)<\/airQualityHealthIndex>/);
   if (!match) return null;
   const value = parseFloat(match[1]);
   if (isNaN(value)) return null;
