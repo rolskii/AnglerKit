@@ -70,26 +70,37 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
   const searchRef = useRef(null);
   const lastAutocompleteResultsRef = useRef([]);
 
-  useEffect(() => {
-    const syncSaved = () => {
-      const stored = localStorage.getItem('moonSavedLocations');
-      setLocalSavedLocations(stored ? JSON.parse(stored) : []);
-    };
-    window.addEventListener('moonSavedLocationsChanged', syncSaved);
-    return () => window.removeEventListener('moonSavedLocationsChanged', syncSaved);
-  }, []);
+  const loadSavedLocations = async () => {
+    try {
+      const locs = await base44.entities.SavedLocation.list('-created_date', 200);
+      // One-time migration from localStorage to entity
+      if (locs.length === 0) {
+        const stored = localStorage.getItem('moonSavedLocations');
+        if (stored) {
+          const old = JSON.parse(stored);
+          if (Array.isArray(old) && old.length > 0) {
+            await base44.entities.SavedLocation.bulkCreate(
+              old.map(l => ({ name: l.name, lat: l.lat, lon: l.lon }))
+            );
+            localStorage.removeItem('moonSavedLocations');
+            const migrated = await base44.entities.SavedLocation.list('-created_date', 200);
+            const mapped = migrated.map(l => ({ id: l.id, name: l.name, lat: l.lat, lon: l.lon }));
+            setLocalSavedLocations(mapped);
+            return mapped;
+          }
+        }
+      }
+      const mapped = locs.map(l => ({ id: l.id, name: l.name, lat: l.lat, lon: l.lon }));
+      setLocalSavedLocations(mapped);
+      return mapped;
+    } catch (e) {
+      return [];
+    }
+  };
 
   useEffect(() => {
-    if (open) {
-      setMarkerPos(initialCoords ? [initialCoords.lat, initialCoords.lon] : [43.6532, -79.3832]);
-      setPlaceName(initialCoords?.name || '');
-      setSearchValue('');
-      setSuggestions([]);
-      setShowSuggestions(false);
-      const stored = localStorage.getItem('moonSavedLocations');
-      setLocalSavedLocations(stored ? JSON.parse(stored) : []);
-    }
-  }, [open, initialCoords]);
+    loadSavedLocations();
+  }, []);
 
   // Initialize MapKit JS map when dialog opens
   useEffect(() => {
@@ -131,9 +142,8 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
           }
         }
 
-        // Add saved location markers (star annotations) — read fresh from localStorage
-        const storedLocs = localStorage.getItem('moonSavedLocations');
-        const freshSaved = storedLocs ? JSON.parse(storedLocs) : [];
+        // Add saved location markers (star annotations) — read fresh from entity
+        const freshSaved = await loadSavedLocations();
         if (freshSaved && freshSaved.length > 0) {
           const annotations = freshSaved.map((loc) => {
             const coord = new mapkit.Coordinate(loc.lat, loc.lon);
@@ -249,22 +259,18 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
     );
   };
 
-  const toggleSaveCurrent = () => {
+  const toggleSaveCurrent = async () => {
     if (!placeName) return;
-    const stored = localStorage.getItem('moonSavedLocations');
-    const current = stored ? JSON.parse(stored) : [];
-    let updated;
     const isMatch = (loc) =>
       loc.name === placeName ||
       (Math.abs(loc.lat - markerPos[0]) < 0.001 && Math.abs(loc.lon - markerPos[1]) < 0.001);
-    if (current.some(isMatch)) {
-      updated = current.filter(loc => !isMatch(loc));
+    const existing = localSavedLocations.find(isMatch);
+    if (existing) {
+      if (existing.id) await base44.entities.SavedLocation.delete(existing.id);
     } else {
-      updated = [...current, { name: placeName, lat: markerPos[0], lon: markerPos[1] }];
+      await base44.entities.SavedLocation.create({ name: placeName, lat: markerPos[0], lon: markerPos[1] });
     }
-    localStorage.setItem('moonSavedLocations', JSON.stringify(updated));
-    setLocalSavedLocations(updated);
-    window.dispatchEvent(new Event('moonSavedLocationsChanged'));
+    await loadSavedLocations();
   };
 
   const [locating, setLocating] = useState(false);
