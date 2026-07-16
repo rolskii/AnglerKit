@@ -456,14 +456,14 @@ export default function Weather() {
                 <div className="bg-secondary rounded-xl flex items-center gap-2 p-2 overflow-hidden">
                   <Thermometer className="w-7 h-7 shrink-0 text-primary" />
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold leading-tight">{formatTemp(current.temperature_2m, tempUnit)}°</p>
+                    <p className="text-sm font-semibold leading-tight">{formatTemp(current.temperature_2m, tempUnit)}°{tempUnit === 'fahrenheit' ? 'F' : 'C'}</p>
                     <span className="text-xs text-muted-foreground leading-tight">Temp.</span>
                   </div>
                 </div>
                 <div className="bg-secondary rounded-xl flex items-center gap-2 p-2 overflow-hidden">
                   <Thermometer className="w-7 h-7 shrink-0 text-primary" />
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold leading-tight">{formatTemp(current.dewpoint, tempUnit)}°</p>
+                    <p className="text-sm font-semibold leading-tight">{formatTemp(current.dewpoint, tempUnit)}°{tempUnit === 'fahrenheit' ? 'F' : 'C'}</p>
                     <span className="text-xs text-muted-foreground leading-tight">Dew Point</span>
                   </div>
                 </div>
