@@ -435,64 +435,64 @@ export default function Weather() {
                 <div className="bg-secondary rounded-xl flex items-center gap-2 p-2 overflow-hidden">
                   <WeatherGlyph code={current.weather_code} isNight={isNight()} darkOutline animated className="w-7 h-8 shrink-0 text-primary" />
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold leading-tight truncate">{current.condition || getWeatherDescription(current.weather_code)}</p>
-                    <span className="text-[10px] text-muted-foreground leading-tight">Condition</span>
+                    <p className="text-sm font-semibold leading-tight truncate">{current.condition || getWeatherDescription(current.weather_code)}</p>
+                    <span className="text-xs text-muted-foreground leading-tight">Condition</span>
                   </div>
                 </div>
                 <div className="bg-secondary rounded-xl flex items-center gap-2 p-2 overflow-hidden">
                   <Gauge className="w-5 h-5 shrink-0 text-primary" />
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold leading-tight">{formatPressure(current.pressure, tempUnit)}</p>
-                    <span className="text-[10px] text-muted-foreground leading-tight">Pressure</span>
+                    <p className="text-sm font-semibold leading-tight">{formatPressure(current.pressure, tempUnit)}</p>
+                    <span className="text-xs text-muted-foreground leading-tight">Pressure</span>
                   </div>
                 </div>
                 <div className="bg-secondary rounded-xl flex items-center gap-2 p-2 overflow-hidden">
                   {current.pressure_tendency === 'rising' ? <TrendingUp className="w-5 h-5 shrink-0 text-primary" /> : current.pressure_tendency === 'falling' ? <TrendingDown className="w-5 h-5 shrink-0 text-primary" /> : <Minus className="w-5 h-5 shrink-0 text-primary" />}
                   <div className="min-w-0">
                     <p className="text-xs font-semibold leading-tight capitalize">{current.pressure_tendency || '—'}</p>
-                    <span className="text-[10px] text-muted-foreground leading-tight">Tendency</span>
+                    <span className="text-xs text-muted-foreground leading-tight">Tendency</span>
                   </div>
                 </div>
                 <div className="bg-secondary rounded-xl flex items-center gap-2 p-2 overflow-hidden">
                   <Thermometer className="w-5 h-5 shrink-0 text-primary" />
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold leading-tight">{formatTemp(current.temperature_2m, tempUnit)}°</p>
-                    <span className="text-[10px] text-muted-foreground leading-tight">Temperature</span>
+                    <p className="text-sm font-semibold leading-tight">{formatTemp(current.temperature_2m, tempUnit)}°</p>
+                    <span className="text-xs text-muted-foreground leading-tight">Temperature</span>
                   </div>
                 </div>
                 <div className="bg-secondary rounded-xl flex items-center gap-2 p-2 overflow-hidden">
                   <Thermometer className="w-5 h-5 shrink-0 text-primary" />
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold leading-tight">{formatTemp(current.dewpoint, tempUnit)}°</p>
-                    <span className="text-[10px] text-muted-foreground leading-tight">Dew Point</span>
+                    <p className="text-sm font-semibold leading-tight">{formatTemp(current.dewpoint, tempUnit)}°</p>
+                    <span className="text-xs text-muted-foreground leading-tight">Dew Point</span>
                   </div>
                 </div>
                 <div className="bg-secondary rounded-xl flex items-center gap-2 p-2 overflow-hidden">
                   <Droplets className="w-5 h-5 shrink-0 text-primary" />
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold leading-tight">{current.relative_humidity_2m}%</p>
-                    <span className="text-[10px] text-muted-foreground leading-tight">Humidity</span>
+                    <p className="text-sm font-semibold leading-tight">{current.relative_humidity_2m}%</p>
+                    <span className="text-xs text-muted-foreground leading-tight">Humidity</span>
                   </div>
                 </div>
                 <div className="bg-secondary rounded-xl flex items-center gap-2 p-2 overflow-hidden">
                   <Droplets className="w-5 h-5 shrink-0 text-primary" />
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold leading-tight">{displayHumidex != null ? displayHumidex : '—'}</p>
-                    <span className="text-[10px] text-muted-foreground leading-tight">Humidex</span>
+                    <p className="text-sm font-semibold leading-tight">{displayHumidex != null ? displayHumidex : '—'}</p>
+                    <span className="text-xs text-muted-foreground leading-tight">Humidex</span>
                   </div>
                 </div>
                 <div className="bg-secondary rounded-xl flex items-center gap-2 p-2 overflow-hidden">
                   <Eye className="w-5 h-5 shrink-0 text-primary" />
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold leading-tight">{formatVisibility(current.visibility, tempUnit)}</p>
-                    <span className="text-[10px] text-muted-foreground leading-tight">Visibility</span>
+                    <p className="text-sm font-semibold leading-tight">{formatVisibility(current.visibility, tempUnit)}</p>
+                    <span className="text-xs text-muted-foreground leading-tight">Visibility</span>
                   </div>
                 </div>
                 <div className="bg-secondary rounded-xl flex items-center gap-2 p-2 overflow-hidden">
                   <Wind className="w-5 h-5 shrink-0 text-primary" />
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold leading-tight">{formatWind(current.wind_speed_10m, tempUnit)}</p>
-                    <span className="text-[10px] text-muted-foreground leading-tight">{current.wind_direction || 'Wind'}</span>
+                    <p className="text-sm font-semibold leading-tight">{formatWind(current.wind_speed_10m, tempUnit)}</p>
+                    <span className="text-xs text-muted-foreground leading-tight">{current.wind_direction || 'Wind'}</span>
                   </div>
                 </div>
               </div>
