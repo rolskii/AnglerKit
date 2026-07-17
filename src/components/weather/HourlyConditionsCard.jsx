@@ -118,15 +118,10 @@ export default function HourlyConditionsCard({ hourly, selectedDate, daily, temp
                     <p className="text-xs text-muted-foreground">{hourLabel}</p>
                     <WeatherGlyph code={hourly.weather_code[hIdx]} isNight={isNight} className="w-12 h-12 -mb-2" />
                     <p className="text-base font-semibold">{formatTemp(hourly.temperature_2m[hIdx], tempUnit)}°</p>
-                    {precipMm > 0 ? (
+                    {hasRain ? (
                       <p className="text-xs text-primary flex items-center gap-0.5">
                         <Droplets className="w-3 h-3" />
-                        {precipMm}mm
-                      </p>
-                    ) : precip > 0 ? (
-                      <p className="text-xs text-primary flex items-center gap-0.5">
-                        <Droplets className="w-3 h-3" />
-                        {precip}%
+                        {precipMm}mm {precip}%
                       </p>
                     ) : (
                       <p className="text-xs text-muted-foreground flex items-center gap-0.5">
