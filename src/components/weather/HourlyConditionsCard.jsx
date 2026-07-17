@@ -93,23 +93,32 @@ export default function HourlyConditionsCard({ hourly, selectedDate, daily, temp
               const { sunrise, sunset } = getSunriseSunset(hTime);
               const isNight = sunrise && sunset ? (hourDate < sunrise || hourDate > sunset) : false;
               const hourLabel = hourDate.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true });
+              const precip = hourly.precipitation_probability?.[hIdx] ?? 0;
               return (
                 <div
                   key={hIdx}
-                  className="flex flex-col items-center gap-0.5 w-16 p-2 shrink-0 border-r border-border last:border-r-0"
+                  className="relative flex flex-col items-center gap-0.5 w-16 p-2 shrink-0 border-r border-border last:border-r-0 overflow-hidden"
                   style={{ scrollSnapAlign: 'start' }}
                 >
-                  <p className="text-xs text-muted-foreground">{hourLabel}</p>
-                  <WeatherGlyph code={hourly.weather_code[hIdx]} isNight={isNight} className="w-12 h-12 -mb-2" />
-                  <p className="text-base font-semibold">{formatTemp(hourly.temperature_2m[hIdx], tempUnit)}°</p>
-                  <p className="text-xs text-primary flex items-center gap-0.5">
-                    <Droplets className="w-3 h-3" />
-                    {hourly.precipitation_probability?.[hIdx] ?? 0}%
-                  </p>
-                  <p className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-                    <Wind className="w-2.5 h-2.5" />
-                    {formatWind(hourly.wind_speed_10m?.[hIdx], tempUnit)}
-                  </p>
+                  {precip > 0 && (
+                    <div
+                      className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-blue-400/60 to-blue-300/20"
+                      style={{ height: `${precip}%` }}
+                    />
+                  )}
+                  <div className="relative z-10 flex flex-col items-center gap-0.5">
+                    <p className="text-xs text-muted-foreground">{hourLabel}</p>
+                    <WeatherGlyph code={hourly.weather_code[hIdx]} isNight={isNight} className="w-12 h-12 -mb-2" />
+                    <p className="text-base font-semibold">{formatTemp(hourly.temperature_2m[hIdx], tempUnit)}°</p>
+                    <p className="text-xs text-primary flex items-center gap-0.5">
+                      <Droplets className="w-3 h-3" />
+                      {precip}%
+                    </p>
+                    <p className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                      <Wind className="w-2.5 h-2.5" />
+                      {formatWind(hourly.wind_speed_10m?.[hIdx], tempUnit)}
+                    </p>
+                  </div>
                 </div>
               );
             })}
