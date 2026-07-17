@@ -74,7 +74,7 @@ export default function Layout() {
       {/* Desktop sidebar */}
       <aside className="hidden md:flex fixed inset-y-0 left-0 w-64 flex-col border-r border-border/60 bg-sidebar/80 backdrop-blur-xl p-4">
         <Link to="/" className="flex items-center gap-3 px-2 py-3 mb-5">
-           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#2D3E40] text-white shadow-sm">
+           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#1a3a52] text-white shadow-sm">
              <TroutIcon className="w-7 h-7 text-white" />
            </div>
           <div>
@@ -98,7 +98,7 @@ export default function Layout() {
       {/* Mobile header */}
       <header className="md:hidden sticky top-0 z-30 flex items-center justify-between border-b border-border/60 bg-background/80 backdrop-blur-xl px-4 py-3">
         <Link to="/" className="flex items-center gap-2.5">
-           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#2D3E40] text-white shadow-sm">
+           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#1a3a52] text-white shadow-sm">
              <TroutIcon className="w-6 h-6 text-white" />
            </div>
           <span className="font-heading font-semibold tracking-tight">{appName}</span>
