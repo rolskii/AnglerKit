@@ -17,6 +17,7 @@ import { Link } from 'react-router-dom';
 import BottomTabBar from '@/components/BottomTabBar';
 import MapSearchBar from '@/components/map/MapSearchBar';
 import FishIcon from '@/components/FishIcon';
+import AppLogo from '@/components/AppLogo';
 import { useToast } from '@/components/ui/use-toast';
 
 /* global mapkit */
@@ -1011,8 +1012,9 @@ export default function MapView() {
       <div className="absolute top-0 left-0 right-0 z-[600] flex items-center gap-2 px-2 py-2 bg-background/80 backdrop-blur-xl border-b border-border"
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 8px)' }}
       >
-        <Link to="/" className="p-2 -ml-1 rounded-lg hover:bg-accent/10 transition-colors">
-          <ChevronLeft className="w-5 h-5" />
+        <Link to="/" className="flex items-center gap-2 pl-1 pr-2 rounded-lg hover:bg-accent/10 transition-colors shrink-0">
+          <AppLogo className="w-7 h-7" />
+          <span className="font-heading font-semibold tracking-tight text-sm hidden sm:inline">AnglerKit</span>
         </Link>
         <MapSearchBar mapRef={mapRef} mapReady={mapReady} />
       </div>
