@@ -136,15 +136,36 @@ export default function DayForecastDialog({ open, onOpenChange, dayData, hourly,
                     const hourDate = new Date(hTime);
                     const isNight = sunrise && sunset ? (hourDate < sunrise || hourDate > sunset) : false;
                     const hourLabel = hourDate.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true });
+                    const precip = hourly.precipitation_probability?.[hIdx] ?? 0;
+                    const precipMm = hourly.precipitation_mm?.[hIdx] ?? 0;
+                    const hasRain = precipMm > 0 || precip > 0;
+                    const fillHeight = precipMm > 0
+                      ? Math.max(15, Math.min(100, (precipMm / 500) * 100))
+                      : 0;
                     return (
-                      <div key={hIdx} className="flex flex-col items-center gap-1 w-14 p-1.5 rounded-lg bg-secondary/40 shrink-0">
-                        <p className="text-[10px] text-muted-foreground">{hourLabel}</p>
-                        <WeatherGlyph code={hourly.weather_code[hIdx]} isNight={isNight} className="w-5 h-6" />
-                        <p className="text-xs font-semibold">{formatTemp(hourly.temperature_2m[hIdx], tempUnit)}°</p>
-                        <p className="text-[10px] text-primary flex items-center gap-0.5">
-                          <Droplets className="w-2.5 h-2.5" />
-                          {hourly.precipitation_probability?.[hIdx] ?? 0}%
-                        </p>
+                      <div key={hIdx} className="relative flex flex-col items-center gap-1 w-14 p-1.5 rounded-lg bg-secondary/40 shrink-0 overflow-hidden">
+                        {hasRain && fillHeight > 0 && (
+                          <div
+                            className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-blue-400/60 to-blue-300/20"
+                            style={{ height: `${fillHeight}%` }}
+                          />
+                        )}
+                        <div className="relative z-10 flex flex-col items-center gap-1">
+                          <p className="text-[10px] text-muted-foreground">{hourLabel}</p>
+                          <WeatherGlyph code={hourly.weather_code[hIdx]} isNight={isNight} className="w-5 h-6" />
+                          <p className="text-xs font-semibold">{formatTemp(hourly.temperature_2m[hIdx], tempUnit)}°</p>
+                          {hasRain ? (
+                            <p className="text-[10px] text-primary flex items-center gap-0.5">
+                              <Droplets className="w-2.5 h-2.5" />
+                              {precipMm}mm {precip}%
+                            </p>
+                          ) : (
+                            <p className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                              <Droplets className="w-2.5 h-2.5" />
+                              0%
+                            </p>
+                          )}
+                        </div>
                       </div>
                     );
                   })}
