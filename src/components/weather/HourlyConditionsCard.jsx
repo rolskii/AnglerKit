@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Cloud, CloudRain, Sun, Moon, Droplets, Wind } from 'lucide-react';
 import WeatherGlyph from '@/components/weather/WeatherGlyph';
-import { formatTemp, formatWind } from '@/lib/weatherUnits';
+import { formatTemp, formatWind, formatPrecip } from '@/lib/weatherUnits';
 
 const getWeatherDescription = (code) => {
   const codes = {
@@ -119,7 +119,7 @@ export default function HourlyConditionsCard({ hourly, selectedDate, daily, temp
                     {hasRain ? (
                       <p className="text-xs text-primary flex items-center gap-0.5">
                         <Droplets className="w-3 h-3" />
-                        {precipMm}mm {precip}%
+                        {formatPrecip(precipMm, tempUnit)} {precip}%
                       </p>
                     ) : (
                       <p className="text-xs text-muted-foreground flex items-center gap-0.5">

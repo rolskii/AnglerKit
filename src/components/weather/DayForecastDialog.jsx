@@ -157,7 +157,7 @@ export default function DayForecastDialog({ open, onOpenChange, dayData, hourly,
                           {hasRain ? (
                             <p className="text-[10px] text-primary flex items-center gap-0.5">
                               <Droplets className="w-2.5 h-2.5" />
-                              {precipMm}mm {precip}%
+                              {formatPrecip(precipMm, tempUnit)} {precip}%
                             </p>
                           ) : (
                             <p className="text-[10px] text-muted-foreground flex items-center gap-0.5">
