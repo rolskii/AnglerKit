@@ -97,9 +97,9 @@ export default function HourlyConditionsCard({ hourly, selectedDate, daily, temp
               const precip = hourly.precipitation_probability?.[hIdx] ?? 0;
               const precipMm = hourly.precipitation_mm?.[hIdx] ?? 0;
               const hasRain = precipMm > 0 || precip > 0;
-              const fillHeight = precipMm > 0
-                ? Math.max(15, Math.min(100, (precipMm / 500) * 100))
-                : 0;
+              const mmFill = precipMm >= 0.5 ? Math.max(15, Math.min(100, (precipMm / 500) * 100)) : 0;
+              const probFill = precip > 0 ? Math.min(25, precip * 0.3) : 0;
+              const fillHeight = Math.max(mmFill, probFill);
               return (
                 <div
                   key={hIdx}
