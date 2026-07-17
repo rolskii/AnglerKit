@@ -207,7 +207,7 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Water Temp (°)</Label>
+              <Label>Water Temp ({localStorage.getItem('weatherTempUnit') === 'fahrenheit' ? '°F' : '°C'})</Label>
               <Input
                 className="bg-muted"
                 type="number"
