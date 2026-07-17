@@ -1,3 +1,5 @@
+import { SignJWT } from 'npm:jose@5.9.6';
+
 // Cache for site list (24h TTL)
 let siteListCache = null;
 let siteListCacheTime = 0;
@@ -346,6 +348,7 @@ function parseWeatherXml(xmlText, localDate, tzOffset) {
     temperature_2m: [],
     weather_code: [],
     precipitation_probability: [],
+    precipitation_mm: [],
     wind_speed_10m: [],
   };
 
@@ -379,6 +382,7 @@ function parseWeatherXml(xmlText, localDate, tzOffset) {
     hourly.temperature_2m.push(Math.round(temp * 10) / 10);
     hourly.weather_code.push(dayCode);
     hourly.precipitation_probability.push(dayPop);
+    hourly.precipitation_mm.push(0);
     hourly.wind_speed_10m.push(windSpeed);
   }
 
@@ -476,6 +480,48 @@ function convertSummaryToImperial(text) {
   return result;
 }
 
+async function fetchWeatherKitPrecipitation(lat, lon) {
+  const teamId = Deno.env.get('WEATHERKIT_TEAM_ID');
+  const serviceId = Deno.env.get('WEATHERKIT_SERVICE_ID');
+  const keyId = Deno.env.get('WEATHERKIT_KEY_ID');
+  const privateKeyPem = Deno.env.get('WEATHERKIT_PRIVATE_KEY');
+  if (!teamId || !serviceId || !keyId || !privateKeyPem) return null;
+
+  const pemContents = privateKeyPem
+    .replace('-----BEGIN PRIVATE KEY-----', '')
+    .replace('-----END PRIVATE KEY-----', '')
+    .replace(/\s/g, '');
+  const binaryDer = Uint8Array.from(atob(pemContents), (c) => c.charCodeAt(0));
+  const key = await crypto.subtle.importKey(
+    'pkcs8',
+    binaryDer.buffer,
+    { name: 'ECDSA', namedCurve: 'P-256' },
+    false,
+    ['sign']
+  );
+  const now = Math.floor(Date.now() / 1000);
+  const token = await new SignJWT({})
+    .setProtectedHeader({ alg: 'ES256', kid: keyId, typ: 'JWT', id: `${teamId}.${serviceId}` })
+    .setIssuer(teamId)
+    .setIssuedAt(now)
+    .setExpirationTime(now + 3600)
+    .setSubject(serviceId)
+    .sign(key);
+
+  const apiUrl = `https://weatherkit.apple.com/api/v1/weather/en/${lat}/${lon}?dataSets=forecastHourly&unit=m`;
+  const res = await fetch(apiUrl, { headers: { Authorization: `Bearer ${token}` } });
+  if (!res.ok) return null;
+  const wk = await res.json();
+  const hours = wk.forecastHourly?.hours || [];
+  const result = {};
+  for (const h of hours) {
+    if (h.forecastStart) {
+      result[new Date(h.forecastStart).getTime()] = h.precipitationAmount ?? 0;
+    }
+  }
+  return result;
+}
+
 Deno.serve(async (req) => {
   try {
     const body = await req.json();
@@ -504,6 +550,27 @@ Deno.serve(async (req) => {
       if (aqhi) weatherData.air_quality = aqhi;
     } catch (e) {
       // AQHI is optional — don't fail the whole request
+    }
+
+    try {
+      const wkPrecip = await fetchWeatherKitPrecipitation(lat, lon);
+      if (wkPrecip) {
+        weatherData.hourly.precipitation_mm = weatherData.hourly.time.map(t => {
+          const ts = new Date(t).getTime();
+          let bestMatch = 0;
+          let minDiff = Infinity;
+          for (const [mapTs, val] of Object.entries(wkPrecip)) {
+            const diff = Math.abs(Number(mapTs) - ts);
+            if (diff < minDiff) {
+              minDiff = diff;
+              bestMatch = val;
+            }
+          }
+          return minDiff < 3600000 ? Math.round(bestMatch * 10) / 10 : 0;
+        });
+      }
+    } catch (e) {
+      // WeatherKit precipitation is optional
     }
 
     if (unit === 'fahrenheit') {
