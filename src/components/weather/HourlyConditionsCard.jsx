@@ -98,16 +98,22 @@ export default function HourlyConditionsCard({ hourly, selectedDate, daily, temp
               const hourLabel = hourDate.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true });
               const precip = hourly.precipitation_probability?.[hIdx] ?? 0;
               const precipMm = hourly.precipitation_mm?.[hIdx] ?? 0;
+              const hasRain = precipMm > 0 || precip > 0;
+              const fillHeight = precipMm > 0 && maxPrecipMm > 0
+                ? Math.max(15, (precipMm / maxPrecipMm) * 100)
+                : precip > 0
+                  ? Math.max(10, precip * 0.5)
+                  : 0;
               return (
                 <div
                   key={hIdx}
                   className="relative flex flex-col items-center gap-0.5 w-16 p-2 shrink-0 border-r border-border last:border-r-0 overflow-hidden"
                   style={{ scrollSnapAlign: 'start' }}
                 >
-                  {precipMm > 0 && maxPrecipMm > 0 && (
+                  {hasRain && fillHeight > 0 && (
                     <div
                       className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-blue-400/60 to-blue-300/20"
-                      style={{ height: `${Math.max(15, (precipMm / maxPrecipMm) * 100)}%` }}
+                      style={{ height: `${fillHeight}%` }}
                     />
                   )}
                   <div className="relative z-10 flex flex-col items-center gap-0.5">
@@ -119,10 +125,15 @@ export default function HourlyConditionsCard({ hourly, selectedDate, daily, temp
                         <Droplets className="w-3 h-3" />
                         {precipMm}mm
                       </p>
+                    ) : precip > 0 ? (
+                      <p className="text-xs text-primary flex items-center gap-0.5">
+                        <Droplets className="w-3 h-3" />
+                        {precip}%
+                      </p>
                     ) : (
                       <p className="text-xs text-muted-foreground flex items-center gap-0.5">
                         <Droplets className="w-3 h-3" />
-                        {precip}%
+                        0%
                       </p>
                     )}
                     <p className="text-[10px] text-muted-foreground flex items-center gap-0.5">
