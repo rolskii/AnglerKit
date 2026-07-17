@@ -3,7 +3,7 @@ import { Search, MapPin, X } from 'lucide-react';
 
 /* global mapkit */
 
-export default function MapSearchBar({ mapRef, mapReady }) {
+export default function MapSearchBar({ mapRef, mapReady, onSelect }) {
   const [searchValue, setSearchValue] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -58,6 +58,9 @@ export default function MapSearchBar({ mapRef, mapReady }) {
       if (!place.coordinate) return;
       if (mapRef.current) {
         mapRef.current.setCenterAnimated(place.coordinate);
+      }
+      if (onSelect) {
+        onSelect(s.name, place.coordinate.latitude, place.coordinate.longitude);
       }
     });
   };

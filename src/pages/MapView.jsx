@@ -13,6 +13,7 @@ import MeasureBar from '@/components/map/MeasureBar';
 import AreaBar from '@/components/map/AreaBar';
 import { computeSphericalArea, formatArea, formatDistance, isImperial } from '@/lib/sphericalArea';
 import { ChevronLeft, Route, Pencil } from 'lucide-react';
+import { getSharedLocation, setSharedLocation } from '@/lib/sharedLocation';
 import { Link } from 'react-router-dom';
 import BottomTabBar from '@/components/BottomTabBar';
 import MapSearchBar from '@/components/map/MapSearchBar';
@@ -728,7 +729,8 @@ export default function MapView() {
         await new Promise((r) => requestAnimationFrame(r));
         if (cancelled || !mapContainerRef.current) return;
 
-        const center = new mapkit.Coordinate(43.6532, -79.3832);
+        const sharedLoc = getSharedLocation();
+        const center = new mapkit.Coordinate(sharedLoc.coords.lat, sharedLoc.coords.lon);
         const map = new mapkit.Map(mapContainerRef.current, {
           center,
           cameraDistance: 300,
@@ -1016,7 +1018,7 @@ export default function MapView() {
           <AppLogo className="w-7 h-7" />
           <span className="font-heading font-semibold tracking-tight text-sm hidden sm:inline">AnglerKit</span>
         </Link>
-        <MapSearchBar mapRef={mapRef} mapReady={mapReady} />
+        <MapSearchBar mapRef={mapRef} mapReady={mapReady} onSelect={(name, lat, lon) => setSharedLocation(name, lat, lon)} />
       </div>
 
       {/* Map */}

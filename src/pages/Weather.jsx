@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Droplets, MapPin, ChevronDown, Thermometer, Eye, Wind, Gauge, TrendingUp, TrendingDown, Minus, Sunrise, Sunset, Sun, Moon, CloudSun, CloudMoon, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, CloudLightning } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { searchLocations, geocodeLocation } from '@/lib/geocode';
+import { getSharedLocation, setSharedLocation } from '@/lib/sharedLocation';
 import LocationMapPicker from '@/components/moon/LocationMapPicker';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
@@ -15,17 +16,16 @@ import AirQualityCard from '@/components/weather/AirQualityCard';
 import { formatTemp, formatWind, formatPrecip, formatPressure, formatVisibility } from '@/lib/weatherUnits';
 
 export default function Weather() {
-  const savedLocation = localStorage.getItem('weatherLocation');
-  const savedCoords = localStorage.getItem('weatherCoords');
+  const sharedInit = getSharedLocation();
   const [weather, setWeather] = useState(null);
-  const [location, setLocation] = useState(savedLocation || 'Toronto, ON');
-  const [editingLocation, setEditingLocation] = useState(savedLocation || 'Toronto, ON');
+  const [location, setLocation] = useState(sharedInit.name);
+  const [editingLocation, setEditingLocation] = useState(sharedInit.name);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [tempUnit, setTempUnit] = useState(() => localStorage.getItem('weatherTempUnit') || 'celsius');
-  const [lastCoords, setLastCoords] = useState(savedCoords ? JSON.parse(savedCoords) : null);
+  const [lastCoords, setLastCoords] = useState(sharedInit.coords);
   const [userCoords, setUserCoords] = useState(null);
   const [selectedDay, setSelectedDay] = useState(null);
   const [dayDialogOpen, setDayDialogOpen] = useState(false);
@@ -89,7 +89,7 @@ export default function Weather() {
       const data = res.data;
       const coords = { lat, lon, name: locationName };
       setLastCoords(coords);
-      saveLocation(coords, locationName);
+      setSharedLocation(locationName, lat, lon);
       setLocation(locationName);
       setEditingLocation(locationName);
       setShowSuggestions(false);

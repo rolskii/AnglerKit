@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Sun, Waves, MapPin, Bell, BellOff, Save, Star } from 'lucide-react';
 import FishIcon from '@/components/FishIcon';
 import { searchLocations, geocodeLocation } from '@/lib/geocode';
+import { getSharedLocation, setSharedLocation } from '@/lib/sharedLocation';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
@@ -130,13 +131,10 @@ const buildSolunarTimes = (moonTimes, sunData) => {
 
 export default function Moon() {
   const [moonData, setMoonData] = useState(null);
-  const savedLocation = localStorage.getItem('moonLocation');
-  const [location, setLocation] = useState(savedLocation || 'Toronto, ON');
-  const [editingLocation, setEditingLocation] = useState(savedLocation || 'Toronto, ON');
-  const [coords, setCoords] = useState(() => {
-    const stored = localStorage.getItem('moonCoords');
-    return stored ? JSON.parse(stored) : { lat: 43.6532, lon: -79.3832, name: 'Toronto, ON' };
-  });
+  const sharedInit = getSharedLocation();
+  const [location, setLocation] = useState(sharedInit.name);
+  const [editingLocation, setEditingLocation] = useState(sharedInit.name);
+  const [coords, setCoords] = useState(sharedInit.coords);
   const [sunDataByDate, setSunDataByDate] = useState({});
   const [selectedDate, setSelectedDate] = useState(todayStr());
   const [alarmsByDate, setAlarmsByDate] = useState(() => {
@@ -280,23 +278,20 @@ export default function Moon() {
     const locationToUse = (typeof selectedLocation === 'string' && selectedLocation) || editingLocation;
     if (!locationToUse || !locationToUse.trim()) return;
 
-    localStorage.setItem('moonLocation', locationToUse);
     setEditingLocation(locationToUse);
     setLocation(locationToUse);
     setPendingTime(null);
     setShowSuggestions(false);
 
     if (lat !== undefined && lon !== undefined) {
-      const newCoords = { lat, lon, name: locationToUse };
-      localStorage.setItem('moonCoords', JSON.stringify(newCoords));
-      setCoords(newCoords);
+      setSharedLocation(locationToUse, lat, lon);
+      setCoords({ lat, lon, name: locationToUse });
     } else {
       try {
         const result = await geocodeLocation(locationToUse);
         if (result) {
-          const newCoords = { lat: result.lat, lon: result.lon, name: locationToUse };
-          localStorage.setItem('moonCoords', JSON.stringify(newCoords));
-          setCoords(newCoords);
+          setSharedLocation(locationToUse, result.lat, result.lon);
+          setCoords({ lat: result.lat, lon: result.lon, name: locationToUse });
         }
       } catch (e) {}
     }

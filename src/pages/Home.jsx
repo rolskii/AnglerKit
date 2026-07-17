@@ -10,6 +10,7 @@ import { base44 } from "@/api/base44Client";
 import PullToRefresh from "@/components/PullToRefresh";
 import FeaturedImage from "@/components/FeaturedImage";
 import LocationMapPicker from "@/components/moon/LocationMapPicker";
+import { getSharedLocation, setSharedLocation } from "@/lib/sharedLocation";
 
 const calculateMoonPhase = (date) => {
   const knownNewMoon = new Date(2000, 0, 6);
@@ -100,12 +101,10 @@ export default function Home() {
   const [descriptions, setDescriptions] = useState({});
   const [biteWindow, setBiteWindow] = useState(null);
   const [alarmTick, setAlarmTick] = useState(0);
-  const [location, setLocation] = useState(() => localStorage.getItem('moonLocation') || 'Toronto, ON');
+  const shared = getSharedLocation();
+  const [location, setLocation] = useState(shared.name);
   const [locationDialogOpen, setLocationDialogOpen] = useState(false);
-  const [coords, setCoords] = useState(() => {
-    const stored = localStorage.getItem('moonCoords') || localStorage.getItem('weatherCoords');
-    return stored ? JSON.parse(stored) : { lat: 43.6532, lon: -79.3832, name: 'Toronto, ON' };
-  });
+  const [coords, setCoords] = useState(shared.coords);
 
   const todayStr = () => {
     const now = new Date();
@@ -130,11 +129,13 @@ export default function Home() {
     const phase = calculateMoonPhase(midnight);
     setMoonPhase(phase);
     setBiteWindow(getNextBiteWindow());
-    setLocation(localStorage.getItem('moonLocation') || 'Toronto, ON');
+    const sharedLoc = getSharedLocation();
+    setLocation(sharedLoc.name);
+    setCoords(sharedLoc.coords);
     setDescriptions(prev => ({ ...prev, moon: `${phase.illumination}% illuminated` }));
     setAlarmTick(t => t + 1);
 
-    const coords = JSON.parse(localStorage.getItem("weatherCoords") || "null") || { lat: 43.6532, lon: -79.3832, name: "Toronto, ON" };
+    const coords = sharedLoc.coords;
     const tempUnit = localStorage.getItem("weatherTempUnit") || "celsius";
     await fetchWeather(coords, tempUnit);
 
@@ -183,10 +184,8 @@ export default function Home() {
   };
 
   const selectLocationFromMap = async (name, lat, lon) => {
+    setSharedLocation(name, lat, lon);
     const newCoords = { lat, lon, name };
-    localStorage.setItem('moonLocation', name);
-    localStorage.setItem('moonCoords', JSON.stringify(newCoords));
-    localStorage.setItem('weatherCoords', JSON.stringify(newCoords));
     setLocation(name);
     setCoords(newCoords);
     setLocationDialogOpen(false);
