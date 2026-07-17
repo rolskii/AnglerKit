@@ -601,6 +601,32 @@ Deno.serve(async (req) => {
       // WeatherKit hourly data is optional
     }
 
+    // Override hourly weather codes for thunderstorm risk mentioned in EC night text summaries.
+    // EC's night text for day D describes the overnight leading into D (evening of D-1 to morning of D).
+    // WeatherKit often doesn't reflect thunderstorm risk that EC mentions in text, so we detect
+    // "thunderstorm" in the night text and apply code 95 to overnight hours.
+    const tzOffsetHours = tzOffset != null ? -tzOffset / 60 : 0;
+    weatherData.hourly.time.forEach((t, idx) => {
+      const hourDate = new Date(t);
+      const localTime = new Date(hourDate.getTime() + tzOffsetHours * 3600000);
+      const localHour = localTime.getHours();
+      if (localHour < 8 || localHour >= 20) {
+        // Overnight window: 8pm–8am. Find the day this night leads into.
+        const nightDate = new Date(localTime);
+        if (localHour >= 20) {
+          nightDate.setDate(nightDate.getDate() + 1);
+        }
+        const nightDateStr = `${nightDate.getFullYear()}-${String(nightDate.getMonth() + 1).padStart(2, '0')}-${String(nightDate.getDate()).padStart(2, '0')}`;
+        const nightIdx = weatherData.daily.time.indexOf(nightDateStr);
+        if (nightIdx !== -1) {
+          const nightText = (weatherData.daily.night_text_summary?.[nightIdx] || '').toLowerCase();
+          if (nightText.includes('thunderstorm')) {
+            weatherData.hourly.weather_code[idx] = 95;
+          }
+        }
+      }
+    });
+
     if (unit === 'fahrenheit') {
       weatherData.daily.text_summary = weatherData.daily.text_summary.map(convertSummaryToImperial);
       weatherData.daily.night_text_summary = weatherData.daily.night_text_summary.map(convertSummaryToImperial);
