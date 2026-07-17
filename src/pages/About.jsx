@@ -1,6 +1,6 @@
 import React from "react";
 import { Camera, Download, Upload, HardDrive } from "lucide-react";
-import TroutIcon from "@/components/TroutIcon";
+import AppLogo from "@/components/AppLogo";
 import { LinesIcon as HorizontalLinesIcon, ReelIcon as ReelDiscIcon, RodIcon as VerticalLinesIcon } from "@/components/GearIcons";
 import BugWingsIcon from "@/components/BugWingsIcon";
 import { Package } from "lucide-react";
@@ -9,9 +9,7 @@ export default function About() {
   return (
     <div className="space-y-6 md:space-y-8 -mt-4 md:-mt-8 max-w-3xl">
       <div className="flex items-center gap-4">
-        <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-          <TroutIcon className="w-10 h-10 text-primary-foreground" />
-        </div>
+        <AppLogo className="w-14 h-14" />
         <div>
           <h1 className="font-heading text-2xl font-bold">About AnglerKit</h1>
           <p className="text-muted-foreground text-sm">Inventory Manager</p>
