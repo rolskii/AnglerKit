@@ -480,7 +480,25 @@ function convertSummaryToImperial(text) {
   return result;
 }
 
-async function fetchWeatherKitPrecipitation(lat, lon) {
+const wkConditionToWMO = {
+  'Clear': 0, 'MostlyClear': 1, 'PartlyCloudy': 2, 'MostlyCloudy': 2,
+  'Cloudy': 3, 'Foggy': 45, 'Haze': 45,
+  'LightDrizzle': 51, 'Drizzle': 53, 'HeavyDrizzle': 55,
+  'LightRain': 61, 'Rain': 63, 'HeavyRain': 65,
+  'ScatteredRain': 80, 'ScatteredShowers': 80, 'IsolatedShowers': 80,
+  'MostlyCloudyShowers': 80, 'PartlyCloudyShowers': 80,
+  'LightSnow': 71, 'Snow': 73, 'HeavySnow': 75,
+  'ScatteredSnow': 85, 'LightFlurries': 85, 'ScatteredFlurries': 85,
+  'Flurries': 85, 'HeavyFlurries': 86,
+  'LightFreezingRain': 66, 'FreezingRain': 66, 'HeavyFreezingRain': 66,
+  'LightFreezingDrizzle': 56, 'FreezingDrizzle': 56, 'HeavyFreezingDrizzle': 57,
+  'Thunderstorms': 95, 'ScatteredThunderstorms': 95, 'IsolatedThunderstorms': 95,
+  'StrongStorms': 99, 'MostlyCloudyThunderstorms': 95, 'PartlyCloudyThunderstorms': 95,
+  'Hail': 95, 'LightHail': 95, 'HeavyHail': 99,
+  'LightSleet': 73, 'Sleet': 75, 'HeavySleet': 75,
+};
+
+async function fetchWeatherKitHourly(lat, lon) {
   const teamId = Deno.env.get('WEATHERKIT_TEAM_ID');
   const serviceId = Deno.env.get('WEATHERKIT_SERVICE_ID');
   const keyId = Deno.env.get('WEATHERKIT_KEY_ID');
@@ -516,7 +534,11 @@ async function fetchWeatherKitPrecipitation(lat, lon) {
   const result = {};
   for (const h of hours) {
     if (h.forecastStart) {
-      result[new Date(h.forecastStart).getTime()] = h.precipitationAmount ?? 0;
+      result[new Date(h.forecastStart).getTime()] = {
+        precipitationAmount: h.precipitationAmount ?? 0,
+        precipitationChance: h.precipitationChance ?? 0,
+        conditionCode: h.conditionCode ?? null,
+      };
     }
   }
   return result;
@@ -553,24 +575,30 @@ Deno.serve(async (req) => {
     }
 
     try {
-      const wkPrecip = await fetchWeatherKitPrecipitation(lat, lon);
-      if (wkPrecip) {
-        weatherData.hourly.precipitation_mm = weatherData.hourly.time.map(t => {
+      const wkHourly = await fetchWeatherKitHourly(lat, lon);
+      if (wkHourly) {
+        weatherData.hourly.time.forEach((t, idx) => {
           const ts = new Date(t).getTime();
-          let bestMatch = 0;
+          let bestMatch = null;
           let minDiff = Infinity;
-          for (const [mapTs, val] of Object.entries(wkPrecip)) {
+          for (const [mapTs, val] of Object.entries(wkHourly)) {
             const diff = Math.abs(Number(mapTs) - ts);
             if (diff < minDiff) {
               minDiff = diff;
               bestMatch = val;
             }
           }
-          return minDiff < 3600000 ? Math.round(bestMatch * 10) / 10 : 0;
+          if (bestMatch && minDiff < 3600000) {
+            weatherData.hourly.precipitation_mm[idx] = Math.round(bestMatch.precipitationAmount * 10) / 10;
+            weatherData.hourly.precipitation_probability[idx] = Math.round(bestMatch.precipitationChance * 100);
+            if (bestMatch.conditionCode && wkConditionToWMO[bestMatch.conditionCode] != null) {
+              weatherData.hourly.weather_code[idx] = wkConditionToWMO[bestMatch.conditionCode];
+            }
+          }
         });
       }
     } catch (e) {
-      // WeatherKit precipitation is optional
+      // WeatherKit hourly data is optional
     }
 
     if (unit === 'fahrenheit') {
