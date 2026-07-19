@@ -116,8 +116,10 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
 
         ensureMapKitInit();
 
-        // Wait a frame for the dialog container to be laid out
+        // Wait for the dialog enter animation (zoom/slide) to finish so the
+        // container has its final layout before MapKit measures it.
         await new Promise((r) => requestAnimationFrame(r));
+        await new Promise((r) => setTimeout(r, 250));
         if (cancelled || !mapContainerRef.current) return;
 
         const center = new mapkit.Coordinate(markerPos[0], markerPos[1]);
@@ -128,6 +130,15 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
         });
 
         mapRef.current = map;
+
+        // Force MapKit to recompute its layout now that the container is stable.
+        requestAnimationFrame(() => {
+          if (cancelled || !mapRef.current) return;
+          try {
+            mapRef.current.setCenterAnimated(mapRef.current.center, false);
+            if (typeof mapRef.current.resize === 'function') mapRef.current.resize();
+          } catch (e) {}
+        });
 
         // Create MapKit JS search instance for location-biased autocomplete
         searchRef.current = new mapkit.Search({ region: map.region });
@@ -191,8 +202,7 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
       }
     };
 
-    // Small delay to ensure dialog portal DOM is ready
-    const timer = setTimeout(initMap, 100);
+    const timer = setTimeout(initMap, 50);
 
     return () => {
       cancelled = true;
