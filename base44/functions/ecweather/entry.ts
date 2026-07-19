@@ -736,128 +736,80 @@ Deno.serve(async (req) => {
     // Non-Canada (USA, rest of world): use WeatherKit as the primary source.
     const isCanada = site && distance <= 200;
 
-    let weatherData;
+    // --- WeatherKit as primary data source for ALL locations ---
+    const wkData = await fetchWeatherKitData(lat, lon);
+    if (!wkData) {
+      return Response.json({ error: 'Weather data unavailable for this location.' }, { status: 404 });
+    }
 
+    const weatherData = {
+      current: wkData.current,
+      daily: wkData.daily,
+      hourly: wkData.hourly,
+      alerts: [],
+    };
+
+    // --- For Canadian locations, supplement with EC alerts, text summaries, AQHI ---
     if (isCanada) {
-      // --- Canada: Environment Canada as primary data source ---
-      const xml = await fetchWeatherXml(site.province, site.code);
-      weatherData = parseWeatherXml(xml, localDate, tzOffset);
+      try {
+        const xml = await fetchWeatherXml(site.province, site.code);
+        const ecData = parseWeatherXml(xml, localDate, tzOffset);
 
-      // Override hourly with EC's real hourly forecasts (replaces cosine interpolation).
-      // These come from the same station as the current conditions, so temperatures
-      // are smooth and consistent hour-to-hour.
-      const ecHourly = parseECHourlyForecasts(xml);
-      if (ecHourly.length > 0) {
-        let firstECIdx = -1;
-        weatherData.hourly.time.forEach((t, idx) => {
-          const ts = new Date(t).getTime();
-          let bestMatch = null;
-          let minDiff = Infinity;
-          for (const ec of ecHourly) {
-            const diff = Math.abs(ec.timestamp - ts);
-            if (diff < minDiff) {
-              minDiff = diff;
-              bestMatch = ec;
+        // Use EC weather alerts (official Environment Canada warnings)
+        weatherData.alerts = ecData.alerts || [];
+
+        // Replace WeatherKit's condition-code text summaries with EC's detailed narratives
+        ecData.daily.time.forEach((date, ecIdx) => {
+          const wkIdx = weatherData.daily.time.indexOf(date);
+          if (wkIdx !== -1) {
+            if (ecData.daily.text_summary?.[ecIdx]) {
+              weatherData.daily.text_summary[wkIdx] = ecData.daily.text_summary[ecIdx];
             }
-          }
-          if (bestMatch && minDiff < 3600000) {
-            if (bestMatch.temperature != null) {
-              weatherData.hourly.temperature_2m[idx] = Math.round(bestMatch.temperature * 10) / 10;
+            if (ecData.daily.night_text_summary?.[ecIdx]) {
+              weatherData.daily.night_text_summary[wkIdx] = ecData.daily.night_text_summary[ecIdx];
             }
-            weatherData.hourly.weather_code[idx] = ecIconToWMO[bestMatch.iconCode] ?? weatherData.hourly.weather_code[idx];
-            weatherData.hourly.precipitation_probability[idx] = bestMatch.lop;
-            weatherData.hourly.wind_speed_10m[idx] = bestMatch.windSpeed;
-            if (firstECIdx === -1) firstECIdx = idx;
           }
         });
 
-        // Smooth the transition from observed current temperature to EC hourly forecasts.
-        // EC doesn't publish an hourly forecast for the current hour, so h=0 uses the
-        // observed temperature while the first EC entry (typically h=1) can be several
-        // degrees different, creating a jarring jump. Blend the first EC entry with the
-        // observed temperature and interpolate any gap hours to create a smooth ramp.
-        if (firstECIdx > 0) {
-          const observedTemp = weatherData.current.temperature_2m;
-          const firstECTemp = weatherData.hourly.temperature_2m[firstECIdx];
-          // Interpolate hours between h=0 (observed) and firstECIdx from observed → firstEC
-          for (let h = 1; h < firstECIdx; h++) {
-            const fraction = h / firstECIdx;
-            weatherData.hourly.temperature_2m[h] =
-              Math.round((observedTemp + (firstECTemp - observedTemp) * fraction) * 10) / 10;
-          }
-          // Blend the first EC entry halfway with the observed temp to ease the transition
-          weatherData.hourly.temperature_2m[firstECIdx] =
-            Math.round((firstECTemp + observedTemp) / 2 * 10) / 10;
-        }
-      }
+        // Use EC humidex and pressure tendency (WeatherKit doesn't provide these)
+        if (ecData.current.humidex != null) weatherData.current.humidex = ecData.current.humidex;
+        if (ecData.current.pressure_tendency) weatherData.current.pressure_tendency = ecData.current.pressure_tendency;
+        if (ecData.current.uv_category) weatherData.current.uv_category = ecData.current.uv_category;
 
-      // AQHI for Ontario only
-      try {
-        if (site.province === 'ON') {
-          const aqhi = await fetchAqhi(site.province, lat, lon);
-          if (aqhi) weatherData.air_quality = aqhi;
-        }
-      } catch (e) {
-        // AQHI is optional
-      }
-
-      // Supplement precipitation mm amounts from WeatherKit (EC hourly only has LOP %, not mm)
-      try {
-        const wkData = await fetchWeatherKitData(lat, lon);
-        if (wkData) {
-          weatherData.hourly.time.forEach((t, idx) => {
-            const ts = new Date(t).getTime();
-            let bestMatch = null;
-            let minDiff = Infinity;
-            for (const [mapTs, val] of Object.entries(wkData.hourlyMap)) {
-              const diff = Math.abs(Number(mapTs) - ts);
-              if (diff < minDiff) {
-                minDiff = diff;
-                bestMatch = val;
+        // Override hourly weather codes for thunderstorm risk mentioned in EC night text summaries
+        const tzOffsetHours = tzOffset != null ? -tzOffset / 60 : 0;
+        weatherData.hourly.time.forEach((t, idx) => {
+          const hourDate = new Date(t);
+          const localTime = new Date(hourDate.getTime() + tzOffsetHours * 3600000);
+          const localHour = localTime.getHours();
+          if (localHour < 8 || localHour >= 20) {
+            const nightDate = new Date(localTime);
+            if (localHour >= 20) {
+              nightDate.setDate(nightDate.getDate() + 1);
+            }
+            const nightDateStr = `${nightDate.getFullYear()}-${String(nightDate.getMonth() + 1).padStart(2, '0')}-${String(nightDate.getDate()).padStart(2, '0')}`;
+            const nightIdx = weatherData.daily.time.indexOf(nightDateStr);
+            if (nightIdx !== -1) {
+              const nightText = (weatherData.daily.night_text_summary?.[nightIdx] || '').toLowerCase();
+              if (nightText.includes('thunderstorm')) {
+                weatherData.hourly.weather_code[idx] = 95;
               }
             }
-            if (bestMatch && minDiff < 3600000) {
-              weatherData.hourly.precipitation_mm[idx] = Math.round(bestMatch.precipitationAmount * 10) / 10;
-            }
-          });
+          }
+        });
+
+        // AQHI for Ontario only
+        if (site.province === 'ON') {
+          try {
+            const aqhi = await fetchAqhi(site.province, lat, lon);
+            if (aqhi) weatherData.air_quality = aqhi;
+          } catch (e) {
+            // AQHI is optional
+          }
         }
       } catch (e) {
-        // WeatherKit precipitation supplement is optional
+        // EC supplements are optional — WeatherKit data is still valid
       }
-
-      // Override hourly weather codes for thunderstorm risk mentioned in EC night text summaries.
-      const tzOffsetHours = tzOffset != null ? -tzOffset / 60 : 0;
-      weatherData.hourly.time.forEach((t, idx) => {
-        const hourDate = new Date(t);
-        const localTime = new Date(hourDate.getTime() + tzOffsetHours * 3600000);
-        const localHour = localTime.getHours();
-        if (localHour < 8 || localHour >= 20) {
-          const nightDate = new Date(localTime);
-          if (localHour >= 20) {
-            nightDate.setDate(nightDate.getDate() + 1);
-          }
-          const nightDateStr = `${nightDate.getFullYear()}-${String(nightDate.getMonth() + 1).padStart(2, '0')}-${String(nightDate.getDate()).padStart(2, '0')}`;
-          const nightIdx = weatherData.daily.time.indexOf(nightDateStr);
-          if (nightIdx !== -1) {
-            const nightText = (weatherData.daily.night_text_summary?.[nightIdx] || '').toLowerCase();
-            if (nightText.includes('thunderstorm')) {
-              weatherData.hourly.weather_code[idx] = 95;
-            }
-          }
-        }
-      });
-    } else {
-      // --- Non-Canada: WeatherKit as primary data source (USA, rest of world) ---
-      const wkData = await fetchWeatherKitData(lat, lon);
-      if (!wkData) {
-        return Response.json({ error: 'Weather data unavailable for this location.' }, { status: 404 });
-      }
-      weatherData = {
-        current: wkData.current,
-        daily: wkData.daily,
-        hourly: wkData.hourly,
-        alerts: wkData.alerts,
-      };
     }
 
     if (unit === 'fahrenheit') {
