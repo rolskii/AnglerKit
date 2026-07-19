@@ -275,7 +275,7 @@ function parseWeatherXml(xmlText, localDate, tzOffset) {
       dayIcon = f.iconCode;
       dayPop = f.pop;
       nightTextSummary = f.textSummary;
-      dayTextSummary = f.textSummary;
+      dayTextSummary = null; // don't use night text as day summary — frontend will generate one
       highTemp = lowTemp; // use tonight's low as the high for today's partial entry
 
       const date = new Date(today);
@@ -828,12 +828,8 @@ Deno.serve(async (req) => {
         ecData.daily.time.forEach((date, ecIdx) => {
           const wkIdx = weatherData.daily.time.indexOf(date);
           if (wkIdx !== -1) {
-            if (ecData.daily.text_summary?.[ecIdx]) {
-              weatherData.daily.text_summary[wkIdx] = ecData.daily.text_summary[ecIdx];
-            }
-            if (ecData.daily.night_text_summary?.[ecIdx]) {
-              weatherData.daily.night_text_summary[wkIdx] = ecData.daily.night_text_summary[ecIdx];
-            }
+            weatherData.daily.text_summary[wkIdx] = ecData.daily.text_summary?.[ecIdx] || null;
+            weatherData.daily.night_text_summary[wkIdx] = ecData.daily.night_text_summary?.[ecIdx] || null;
           }
         });
 
