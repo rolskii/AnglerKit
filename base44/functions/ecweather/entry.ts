@@ -759,11 +759,11 @@ Deno.serve(async (req) => {
         const xml = await fetchWeatherXml(site.province, site.code);
         const ecData = parseWeatherXml(xml, localDate, tzOffset);
 
-        // Use EC current temperature (same source as the hourly curve) so the
-        // big temperature matches the first hourly card.
+        // Use EC current conditions (temperature, dewpoint, humidity, wind,
+        // visibility, pressure, etc.) as the primary source — same feed as the
+        // hourly curve, so the big temperature matches the first hourly card.
         if (ecData.current.condition != null) {
-          weatherData.current.temperature_2m = ecData.current.temperature_2m;
-          weatherData.current.apparent_temperature = ecData.current.apparent_temperature;
+          weatherData.current = ecData.current;
         }
 
         // --- Replace WeatherKit hourly with EC's real hourly forecasts ---
