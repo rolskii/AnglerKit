@@ -111,7 +111,9 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
 
         ensureMapKitInit();
 
-        // Wait a frame for the dialog container to be laid out
+        // Wait for the dialog entry animation (zoom/fade, ~200ms) to complete
+        // so the container has its final dimensions before MapKit renders
+        await new Promise((r) => setTimeout(r, 300));
         await new Promise((r) => requestAnimationFrame(r));
         if (cancelled || !mapContainerRef.current) return;
 
@@ -121,6 +123,9 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
           cameraDistance: 80000,
           mapType: mapkit.Map.MapTypes.Hybrid,
         });
+
+        // Force MapKit to recompute its layout after the animation
+        map.setCenterAnimated(center);
 
         mapRef.current = map;
 
@@ -186,7 +191,7 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
       }
     };
 
-    const timer = setTimeout(initMap, 100);
+    const timer = setTimeout(initMap, 50);
 
     return () => {
       cancelled = true;
