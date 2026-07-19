@@ -704,11 +704,11 @@ async function fetchWeatherKitData(lat, lon) {
     }
 
     if (bestMatch && minDiff < 3600000) {
-      hourly.temperature_2m.push(bestMatch.temperature != null ? Math.round(bestMatch.temperature * 10) / 10 : 0);
+      hourly.temperature_2m.push(bestMatch.temperature ?? 0);
       hourly.weather_code.push(wkConditionToWMO[bestMatch.conditionCode] ?? 3);
       hourly.precipitation_probability.push(Math.round(bestMatch.precipitationChance * 100));
-      hourly.precipitation_mm.push(Math.round(bestMatch.precipitationAmount * 10) / 10);
-      hourly.wind_speed_10m.push(bestMatch.windSpeed != null ? Math.round(bestMatch.windSpeed * 10) / 10 : 0);
+      hourly.precipitation_mm.push(bestMatch.precipitationAmount ?? 0);
+      hourly.wind_speed_10m.push(bestMatch.windSpeed ?? 0);
     } else {
       hourly.temperature_2m.push(0);
       hourly.weather_code.push(3);
