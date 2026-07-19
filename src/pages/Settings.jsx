@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeftRight, Trash2, BellOff } from "lucide-react";
+import { Loader2, ArrowLeftRight, Trash2, BellOff, SunMoon } from "lucide-react";
 import ImportExportSection from "@/components/settings/ImportExportSection";
 import AlarmSoundPicker from "@/components/settings/AlarmSoundPicker";
 import NotificationSetup from "@/components/settings/NotificationSetup";
+import ThemeToggle from "@/components/settings/ThemeToggle";
 import { clearFiredAlarms } from "@/lib/alarmService";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -64,6 +65,14 @@ export default function Settings() {
       <div>
         <h1 className="font-heading text-2xl font-bold">Settings</h1>
         <p className="text-muted-foreground text-sm mt-1">Manage your import/export and appearance.</p>
+      </div>
+
+      <div className="rounded-lg border border-border bg-card p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <SunMoon className="w-5 h-5 text-primary" />
+          <h2 className="font-heading text-lg font-semibold">Appearance</h2>
+        </div>
+        <ThemeToggle />
       </div>
 
       <div>
