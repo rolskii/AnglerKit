@@ -18,29 +18,24 @@ const reverseGeocode = async (lat, lon) => {
   }
 };
 
-// Load MapKit JS script once
-let mapkitLoaded = false;
-let mapkitLoadPromise = null;
-
+// Load MapKit JS script once (window-level flags survive Vite HMR resets)
 function loadMapKit() {
-  if (mapkitLoaded) return Promise.resolve();
-  if (mapkitLoadPromise) return mapkitLoadPromise;
+  if (window.mapkit) return Promise.resolve();
+  if (window._mapkitLoadPromise) return window._mapkitLoadPromise;
 
-  mapkitLoadPromise = new Promise((resolve, reject) => {
+  window._mapkitLoadPromise = new Promise((resolve, reject) => {
     const script = document.createElement('script');
     script.src = 'https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.js';
-    script.onload = () => { mapkitLoaded = true; resolve(); };
+    script.onload = () => resolve();
     script.onerror = () => reject(new Error('Failed to load MapKit JS'));
     document.head.appendChild(script);
   });
-  return mapkitLoadPromise;
+  return window._mapkitLoadPromise;
 }
 
-// Track mapkit.init — should only be called once
-let mapkitInitialized = false;
-
+// Track mapkit.init — should only be called once per page load
 function ensureMapKitInit() {
-  if (mapkitInitialized) return;
+  if (window._mapkitInitialized) return;
   mapkit.init({
     authorizationCallback: (done) => {
       const origin = window.location.hostname || '*';
@@ -49,7 +44,7 @@ function ensureMapKitInit() {
         .catch((err) => console.error('MapKit token fetch failed:', err));
     },
   });
-  mapkitInitialized = true;
+  window._mapkitInitialized = true;
 }
 
 export default function LocationMapPicker({ open, onOpenChange, initialCoords, savedLocations = [], onSelect }) {
@@ -116,10 +111,8 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
 
         ensureMapKitInit();
 
-        // Wait for the dialog enter animation (zoom/slide) to finish so the
-        // container has its final layout before MapKit measures it.
+        // Wait a frame for the dialog container to be laid out
         await new Promise((r) => requestAnimationFrame(r));
-        await new Promise((r) => setTimeout(r, 250));
         if (cancelled || !mapContainerRef.current) return;
 
         const center = new mapkit.Coordinate(markerPos[0], markerPos[1]);
@@ -130,15 +123,6 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
         });
 
         mapRef.current = map;
-
-        // Force MapKit to recompute its layout now that the container is stable.
-        requestAnimationFrame(() => {
-          if (cancelled || !mapRef.current) return;
-          try {
-            mapRef.current.setCenterAnimated(mapRef.current.center, false);
-            if (typeof mapRef.current.resize === 'function') mapRef.current.resize();
-          } catch (e) {}
-        });
 
         // Create MapKit JS search instance for location-biased autocomplete
         searchRef.current = new mapkit.Search({ region: map.region });
@@ -202,7 +186,7 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
       }
     };
 
-    const timer = setTimeout(initMap, 50);
+    const timer = setTimeout(initMap, 100);
 
     return () => {
       cancelled = true;

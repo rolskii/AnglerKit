@@ -23,26 +23,22 @@ import { useToast } from '@/components/ui/use-toast';
 
 /* global mapkit */
 
-// Load MapKit JS script once
-let mapkitLoaded = false;
-let mapkitLoadPromise = null;
-
+// Load MapKit JS script once (window-level flags survive Vite HMR resets)
 function loadMapKit() {
-  if (mapkitLoaded) return Promise.resolve();
-  if (mapkitLoadPromise) return mapkitLoadPromise;
-  mapkitLoadPromise = new Promise((resolve, reject) => {
+  if (window.mapkit) return Promise.resolve();
+  if (window._mapkitLoadPromise) return window._mapkitLoadPromise;
+  window._mapkitLoadPromise = new Promise((resolve, reject) => {
     const script = document.createElement('script');
     script.src = 'https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.js';
-    script.onload = () => { mapkitLoaded = true; resolve(); };
+    script.onload = () => resolve();
     script.onerror = () => reject(new Error('Failed to load MapKit JS'));
     document.head.appendChild(script);
   });
-  return mapkitLoadPromise;
+  return window._mapkitLoadPromise;
 }
 
-let mapkitInitialized = false;
 function ensureMapKitInit() {
-  if (mapkitInitialized) return;
+  if (window._mapkitInitialized) return;
   mapkit.init({
     authorizationCallback: (done) => {
       const origin = window.location.hostname || '*';
@@ -51,7 +47,7 @@ function ensureMapKitInit() {
         .catch((err) => console.error('MapKit token fetch failed:', err));
     },
   });
-  mapkitInitialized = true;
+  window._mapkitInitialized = true;
 }
 
 // Haversine distance in km
