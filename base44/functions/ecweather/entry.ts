@@ -578,6 +578,7 @@ async function fetchWeatherKitHourly(lat, lon) {
         precipitationAmount: h.precipitationAmount ?? 0,
         precipitationChance: h.precipitationChance ?? 0,
         conditionCode: h.conditionCode ?? null,
+        temperature: h.temperature ?? null,
       };
     }
   }
@@ -635,6 +636,9 @@ Deno.serve(async (req) => {
             weatherData.hourly.precipitation_probability[idx] = Math.round(bestMatch.precipitationChance * 100);
             if (bestMatch.conditionCode && wkConditionToWMO[bestMatch.conditionCode] != null) {
               weatherData.hourly.weather_code[idx] = wkConditionToWMO[bestMatch.conditionCode];
+            }
+            if (bestMatch.temperature != null) {
+              weatherData.hourly.temperature_2m[idx] = Math.round(bestMatch.temperature * 10) / 10;
             }
           }
         });
