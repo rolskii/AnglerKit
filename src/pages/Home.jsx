@@ -157,9 +157,10 @@ export default function Home() {
   const fetchWeather = async (coords, tempUnit) => {
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
-        const res = await base44.functions.invoke('weatherkit', { lat: coords.lat, lon: coords.lon, unit: tempUnit });
+        const res = await base44.functions.invoke('ecweather', { lat: coords.lat, lon: coords.lon, unit: tempUnit, localDate: todayStr(), tzOffset: new Date().getTimezoneOffset() });
         const data = res.data;
-        const temp = Math.round(data.current.temperature_2m);
+        const tempC = data.current.temperature_2m;
+        const temp = tempUnit === "fahrenheit" ? Math.round(tempC * 9 / 5 + 32) : Math.round(tempC);
         const desc = getWeatherDescription(data.current.weather_code);
         const wind = data.current.wind_speed_10m;
         const windLabel = wind < 8 ? "Light wind" : wind < 15 ? "Breezy" : "Windy";
