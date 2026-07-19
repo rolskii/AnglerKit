@@ -759,6 +759,61 @@ Deno.serve(async (req) => {
         const xml = await fetchWeatherXml(site.province, site.code);
         const ecData = parseWeatherXml(xml, localDate, tzOffset);
 
+        // --- Replace WeatherKit hourly with EC's real hourly forecasts ---
+        // EC and The Weather Network share the same model data source, so using
+        // EC's <hourlyForecastGroup> aligns the hourly curve with TWN's numbers.
+        const ecHourlyForecasts = parseECHourlyForecasts(xml);
+        if (ecHourlyForecasts.length > 0) {
+          const findNearest = (arr, ts) => {
+            let best = null, minDiff = Infinity;
+            for (const item of arr) {
+              const diff = Math.abs(item.timestamp - ts);
+              if (diff < minDiff) { minDiff = diff; best = item; }
+            }
+            return (best && minDiff < 3600000) ? best : null;
+          };
+
+          const wkHourlyArr = Object.entries(wkData.hourlyMap || {}).map(
+            ([ts, val]) => ({ timestamp: Number(ts), ...val })
+          );
+
+          const newHourly = {
+            time: [], temperature_2m: [], weather_code: [],
+            precipitation_probability: [], precipitation_mm: [], wind_speed_10m: [],
+          };
+          const nowHour = new Date();
+          nowHour.setMinutes(0, 0, 0);
+
+          for (let h = 0; h < 48; h++) {
+            const hourTime = new Date(nowHour.getTime() + h * 3600000);
+            const ts = hourTime.getTime();
+            newHourly.time.push(hourTime.toISOString());
+
+            const ecMatch = findNearest(ecHourlyForecasts, ts);
+            const wkMatch = findNearest(wkHourlyArr, ts);
+
+            if (ecMatch) {
+              newHourly.temperature_2m.push(
+                h === 0 ? weatherData.current.temperature_2m : (ecMatch.temperature ?? weatherData.current.temperature_2m)
+              );
+              newHourly.weather_code.push(ecIconToWMO[ecMatch.iconCode] ?? 3);
+              newHourly.precipitation_probability.push(ecMatch.lop ?? 0);
+              newHourly.precipitation_mm.push(wkMatch?.precipitationAmount ?? 0);
+              newHourly.wind_speed_10m.push(ecMatch.windSpeed ?? 0);
+            } else {
+              // Beyond EC's ~24h range — fall back to WeatherKit
+              newHourly.temperature_2m.push(
+                h === 0 ? weatherData.current.temperature_2m : (wkMatch?.temperature ?? weatherData.current.temperature_2m)
+              );
+              newHourly.weather_code.push(wkMatch ? (wkConditionToWMO[wkMatch.conditionCode] ?? 3) : 3);
+              newHourly.precipitation_probability.push(wkMatch ? Math.round(wkMatch.precipitationChance * 100) : 0);
+              newHourly.precipitation_mm.push(wkMatch?.precipitationAmount ?? 0);
+              newHourly.wind_speed_10m.push(wkMatch?.windSpeed ?? 0);
+            }
+          }
+          weatherData.hourly = newHourly;
+        }
+
         // Use EC weather alerts (official Environment Canada warnings)
         weatherData.alerts = ecData.alerts || [];
 
