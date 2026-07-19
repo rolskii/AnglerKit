@@ -718,6 +718,10 @@ async function fetchWeatherKitData(lat, lon) {
     }
   }
 
+  // Align the first hourly entry with the actual observed current temperature
+  // so the hourly card matches the main temperature display.
+  hourly.temperature_2m[0] = current.temperature_2m;
+
   return { current, daily, hourly, alerts: [], hourlyMap };
 }
 
