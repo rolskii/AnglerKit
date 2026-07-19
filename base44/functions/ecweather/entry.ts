@@ -409,55 +409,98 @@ function parseWeatherXml(xmlText, localDate, tzOffset) {
 
 // --- Air Quality Health Index (AQHI) ---
 
-// --- Air Quality Health Index (AQHI) via ECCC OGC API ---
-// The legacy XML endpoint (dd.weather.gc.ca/.../AQ_OBS_*_CURRENT.xml) was
-// decommissioned. The replacement is the pygeoapi OGC Features endpoint.
+// --- Air Quality Health Index (AQHI) via Air Quality Ontario ---
+// Source: https://www.airqualityontario.com Atom XML feed
+// Ontario's 38-station network; coordinates hardcoded by site ID.
 
-let aqhiCache = null;
-let aqhiCacheTime = 0;
-const AQHI_API_URL = 'https://api.weather.gc.ca/collections/aqhi-observations-realtime/items';
+const AQO_FEED_URL = 'https://www.airqualityontario.com/press/xml_summary.php';
+let aqoCache = null;
+let aqoCacheTime = 0;
+
+const AQO_STATIONS = {
+  '47045': { name: 'Barrie', lat: 44.3894, lon: -79.6903 },
+  '54012': { name: 'Belleville', lat: 44.1628, lon: -77.3832 },
+  '46090': { name: 'Brampton', lat: 43.6867, lon: -79.7599 },
+  '21005': { name: 'Brantford', lat: 43.1394, lon: -80.2644 },
+  '44008': { name: 'Burlington', lat: 43.3255, lon: -79.7990 },
+  '13001': { name: 'Chatham', lat: 42.4042, lon: -82.1855 },
+  '56051': { name: 'Cornwall', lat: 45.0185, lon: -74.7282 },
+  '49010': { name: 'Dorset', lat: 45.2218, lon: -78.8934 },
+  '15020': { name: 'Grand Bend', lat: 43.3117, lon: -81.7759 },
+  '28028': { name: 'Guelph', lat: 43.5468, lon: -80.2482 },
+  '29000': { name: 'Hamilton Downtown', lat: 43.2557, lon: -79.8711 },
+  '29214': { name: 'Hamilton Mountain', lat: 43.2175, lon: -79.8896 },
+  '29118': { name: 'Hamilton West', lat: 43.2635, lon: -79.8919 },
+  '52023': { name: 'Kingston', lat: 44.2312, lon: -76.4860 },
+  '26060': { name: 'Kitchener', lat: 43.4516, lon: -80.4925 },
+  '15026': { name: 'London', lat: 42.9849, lon: -81.2453 },
+  '44029': { name: 'Milton', lat: 43.5183, lon: -79.8808 },
+  '46108': { name: 'Mississauga', lat: 43.5890, lon: -79.6441 },
+  '48006': { name: 'Newmarket', lat: 44.0592, lon: -79.4613 },
+  '75010': { name: 'North Bay', lat: 46.3017, lon: -79.4608 },
+  '44017': { name: 'Oakville', lat: 43.4675, lon: -79.6877 },
+  '45027': { name: 'Oshawa', lat: 43.8971, lon: -78.8658 },
+  '51001': { name: 'Ottawa Downtown', lat: 45.4215, lon: -75.6972 },
+  '49005': { name: 'Parry Sound', lat: 45.3432, lon: -80.0323 },
+  '59006': { name: 'Peterborough', lat: 44.3091, lon: -78.3197 },
+  '16015': { name: 'Port Stanley', lat: 42.6276, lon: -81.2025 },
+  '14111': { name: 'Sarnia', lat: 42.9745, lon: -82.4097 },
+  '71078': { name: 'Sault Ste. Marie', lat: 46.5135, lon: -84.3336 },
+  '27067': { name: 'St. Catharines', lat: 43.1594, lon: -79.2469 },
+  '77233': { name: 'Sudbury', lat: 46.4917, lon: -81.0034 },
+  '63200': { name: 'Thunder Bay', lat: 48.3809, lon: -89.2477 },
+  '18007': { name: 'Tiverton', lat: 44.3044, lon: -81.5566 },
+  '31129': { name: 'Toronto Downtown', lat: 43.6532, lon: -79.3832 },
+  '33003': { name: 'Toronto East', lat: 43.6863, lon: -79.3389 },
+  '34021': { name: 'Toronto North', lat: 43.7806, lon: -79.4392 },
+  '35125': { name: 'Toronto West', lat: 43.6462, lon: -79.4856 },
+  '12008': { name: 'Windsor Downtown', lat: 42.3175, lon: -83.0370 },
+  '12016': { name: 'Windsor West', lat: 42.3145, lon: -83.0608 },
+};
 
 async function fetchAqhi(_province, lat, lon) {
   const now = Date.now();
-  if (!aqhiCache || (now - aqhiCacheTime) > 600000) {
-    // Fetch all current observations (cached for 10 min)
-    const res = await fetch(`${AQHI_API_URL}?lang=en&limit=1000`);
+  if (!aqoCache || (now - aqoCacheTime) > 600000) {
+    const res = await fetch(AQO_FEED_URL);
     if (!res.ok) return null;
-    const data = await res.json();
-    const features = data.features || [];
-    if (features.length === 0) return null;
+    const xml = await res.text();
 
-    // Group by station, keeping the most recent observation per station
-    const stations = new Map();
-    for (const f of features) {
-      const coords = f.geometry?.coordinates;
-      if (!coords) continue;
-      const name = f.properties.location_name_en;
-      const ts = new Date(f.properties.observation_datetime).getTime();
-      const aqhi = parseFloat(f.properties.aqhi);
-      if (isNaN(aqhi)) continue;
-      const existing = stations.get(name);
-      if (!existing || ts > existing.ts) {
-        stations.set(name, { name, lat: coords[1], lon: coords[0], ts, aqhi });
-      }
+    // Parse <entry> blocks with "Current Observation" in the title
+    const entryRegex = /<entry>\s*<title><!\[CDATA\[(.+?): Current Observation\]\]><\/title>\s*<summary><!\[CDATA\[(.+?)\]\]><\/summary>[\s\S]*?sites=(\d+)/g;
+    const stations = [];
+    let match;
+    while ((match = entryRegex.exec(xml)) !== null) {
+      const name = match[1].trim();
+      const summary = match[2].trim();
+      const siteId = match[3];
+      // Summary like "4 - Moderate Risk" or "10+ - Very High Risk"
+      const valueMatch = summary.match(/^(\d+)(\+)?/);
+      if (!valueMatch) continue;
+      let value = parseInt(valueMatch[1]);
+      if (valueMatch[2] === '+') value = 11; // 10+ maps to 11
+      stations.push({ name, value, siteId });
     }
-    aqhiCache = Array.from(stations.values());
-    aqhiCacheTime = now;
+    aqoCache = stations;
+    aqoCacheTime = now;
   }
+
+  if (!aqoCache || aqoCache.length === 0) return null;
 
   // Find closest station within 200 km
   let closest = null;
   let minDist = Infinity;
-  for (const s of aqhiCache) {
-    const dist = haversine(lat, lon, s.lat, s.lon);
+  for (const s of aqoCache) {
+    const coords = AQO_STATIONS[s.siteId];
+    if (!coords) continue;
+    const dist = haversine(lat, lon, coords.lat, coords.lon);
     if (dist < minDist) {
       minDist = dist;
-      closest = s;
+      closest = { ...s, ...coords };
     }
   }
   if (!closest || minDist > 200) return null;
 
-  return { value: closest.aqhi, name: closest.name };
+  return { value: closest.value, name: closest.name };
 }
 
 function convertSummaryToImperial(text) {
