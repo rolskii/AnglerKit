@@ -9,6 +9,11 @@ let mapkitLoadPromise = null;
 let mapkitInitialized = false;
 
 export function loadMapKit() {
+  // If mapkit is already available (loaded via index.html script tag), resolve immediately
+  if (typeof mapkit !== 'undefined') {
+    mapkitLoaded = true;
+    return Promise.resolve();
+  }
   if (mapkitLoaded) return Promise.resolve();
   if (mapkitLoadPromise) return mapkitLoadPromise;
 
@@ -16,6 +21,11 @@ export function loadMapKit() {
     const script = document.createElement('script');
     script.src = 'https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.js';
     script.onload = () => {
+      if (typeof mapkit === 'undefined') {
+        mapkitLoadPromise = null;
+        reject(new Error('MapKit JS script loaded but mapkit global is not defined'));
+        return;
+      }
       mapkitLoaded = true;
       resolve();
     };
