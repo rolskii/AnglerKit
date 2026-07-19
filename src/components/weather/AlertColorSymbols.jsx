@@ -37,9 +37,13 @@ const COLOR_STYLES = {
 export default function AlertColorSymbols({ alerts }) {
   if (!alerts || alerts.length === 0) return null;
 
+  // Filter out persistent Air Quality statements — they linger regardless of actual conditions
+  const filtered = alerts.filter(a => !/air\s*quality/i.test(a.description || ''));
+  if (filtered.length === 0) return null;
+
   return (
     <div className="flex flex-col gap-1.5">
-      {alerts.map((alert, i) => {
+      {filtered.map((alert, i) => {
         const style = COLOR_STYLES[alert.color] || COLOR_STYLES.yellow;
         const cleanDesc = (alert.description || '').replace(
           /^(YELLOW|ORANGE|RED)\s+(WARNING|WATCH|ADVISORY|STATEMENT)\s*-\s*/i, ''
