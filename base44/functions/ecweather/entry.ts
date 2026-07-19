@@ -605,8 +605,10 @@ Deno.serve(async (req) => {
     const weatherData = parseWeatherXml(xml, localDate, tzOffset);
 
     try {
-      const aqhi = await fetchAqhi(site.province, lat, lon);
-      if (aqhi) weatherData.air_quality = aqhi;
+      if (site.province === 'ON') {
+        const aqhi = await fetchAqhi(site.province, lat, lon);
+        if (aqhi) weatherData.air_quality = aqhi;
+      }
     } catch (e) {
       // AQHI is optional — don't fail the whole request
     }
