@@ -84,13 +84,13 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
             );
             localStorage.removeItem('moonSavedLocations');
             const migrated = await base44.entities.SavedLocation.list('-created_date', 200);
-            const mapped = migrated.map(l => ({ id: l.id, name: l.name, lat: l.lat, lon: l.lon }));
+            const mapped = migrated.map(l => ({ id: l.id, name: l.name, lat: l.lat, lon: l.lon })).sort((a, b) => a.name.localeCompare(b.name));
             setLocalSavedLocations(mapped);
             return mapped;
           }
         }
       }
-      const mapped = locs.map(l => ({ id: l.id, name: l.name, lat: l.lat, lon: l.lon }));
+      const mapped = locs.map(l => ({ id: l.id, name: l.name, lat: l.lat, lon: l.lon })).sort((a, b) => a.name.localeCompare(b.name));
       setLocalSavedLocations(mapped);
       return mapped;
     } catch (e) {
