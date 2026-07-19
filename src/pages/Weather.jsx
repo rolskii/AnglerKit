@@ -370,9 +370,12 @@ export default function Weather() {
               {/* Temperature hero (left) + Date/Location (right, stacked) */}
               <div className="flex items-center justify-between gap-2 py-0">
                 <div className="flex items-center gap-2">
-                  <p className="text-6xl font-bold text-primary leading-none">{formatTemp(current.temperature_2m, tempUnit)}°</p>
-                  <WeatherGlyph code={current.weather_code} isNight={isNight()} darkOutline animated className="w-16 h-20 shrink-0" />
-                </div>
+                   <div>
+                     <p className="text-6xl font-bold text-primary leading-none">{formatTemp(current.temperature_2m, tempUnit)}°</p>
+                     <p className="text-sm font-medium text-muted-foreground mt-0.5">{current.condition || getWeatherDescription(current.weather_code)}{current.apparent_temperature != null && Math.round(current.apparent_temperature) !== Math.round(current.temperature_2m) ? ` · Feels ${formatTemp(current.apparent_temperature, tempUnit)}°` : ''}</p>
+                   </div>
+                   <WeatherGlyph code={current.weather_code} isNight={isNight()} darkOutline animated className="w-16 h-20 shrink-0" />
+                 </div>
                 <div className="flex flex-col items-end gap-1 shrink-0">
                   <Popover>
                     <PopoverTrigger asChild>
