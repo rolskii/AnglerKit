@@ -376,7 +376,10 @@ function parseWeatherXml(xmlText, localDate, tzOffset) {
 
     // Cosine interpolation: min at 5am, max at 5pm (12h apart, 24h cycle)
     const hourAngle = ((hour - 5 + 24) % 24) * Math.PI / 12;
-    const temp = lowT + (highT - lowT) * (1 - Math.cos(hourAngle)) / 2;
+    let temp = lowT + (highT - lowT) * (1 - Math.cos(hourAngle)) / 2;
+    // Use the actual observed current temperature for the first (current) hour
+    // so the hourly card matches the main temperature display.
+    if (h === 0) temp = temperature;
 
     hourly.time.push(hourTime.toISOString());
     hourly.temperature_2m.push(Math.round(temp * 10) / 10);
