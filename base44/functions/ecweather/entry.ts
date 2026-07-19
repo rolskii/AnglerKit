@@ -410,6 +410,44 @@ function parseWeatherXml(xmlText, localDate, tzOffset) {
   return { current, daily, hourly, alerts };
 }
 
+// --- Parse EC hourly forecasts from <hourlyForecastGroup> ---
+// These are real hourly temperature/condition/wind forecasts from the same
+// station as the current conditions, providing a smooth, consistent curve.
+function parseECHourlyForecasts(xmlText) {
+  const hfgMatch = xmlText.match(/<hourlyForecastGroup>([\s\S]*?)<\/hourlyForecastGroup>/);
+  if (!hfgMatch) return [];
+
+  const hfg = hfgMatch[1];
+  const hourlyRe = /<hourlyForecast[^>]*dateTimeUTC="([^"]*)"[^>]*>([\s\S]*?)<\/hourlyForecast>/g;
+  const results = [];
+  let match;
+  while ((match = hourlyRe.exec(hfg)) !== null) {
+    const ts = match[1];
+    const block = match[2];
+    const tempStr = getTagText(block, 'temperature');
+    const iconStr = getTagText(block, 'iconCode');
+    const lopStr = getTagText(block, 'lop');
+    const condStr = getTagText(block, 'condition');
+
+    // Wind speed is nested inside <wind><speed>...</speed></wind>
+    const windMatch = block.match(/<wind[^>]*>[\s\S]*?<speed[^>]*>([^<]*)<\/speed>/);
+    const windSpeed = windMatch ? (parseFloat(windMatch[1]) || 0) : 0;
+
+    const timestamp = parseECTimestamp(ts);
+    if (!timestamp) continue;
+
+    results.push({
+      timestamp: new Date(timestamp).getTime(),
+      temperature: tempStr !== null ? parseFloat(tempStr) : null,
+      iconCode: iconStr ? parseInt(iconStr) : 0,
+      lop: lopStr ? parseInt(lopStr) : 0,
+      condition: condStr,
+      windSpeed,
+    });
+  }
+  return results;
+}
+
 // --- Air Quality Health Index (AQHI) ---
 
 // --- Air Quality Health Index (AQHI) via Air Quality Ontario ---
@@ -538,7 +576,7 @@ const wkConditionToWMO = {
   'LightSleet': 73, 'Sleet': 75, 'HeavySleet': 75,
 };
 
-async function fetchWeatherKitHourly(lat, lon) {
+async function fetchWeatherKitData(lat, lon) {
   const teamId = Deno.env.get('WEATHERKIT_TEAM_ID');
   const serviceId = Deno.env.get('WEATHERKIT_SERVICE_ID');
   const keyId = Deno.env.get('WEATHERKIT_KEY_ID');
@@ -566,23 +604,118 @@ async function fetchWeatherKitHourly(lat, lon) {
     .setSubject(serviceId)
     .sign(key);
 
-  const apiUrl = `https://weatherkit.apple.com/api/v1/weather/en/${lat}/${lon}?dataSets=forecastHourly&unit=m`;
+  const apiUrl = `https://weatherkit.apple.com/api/v1/weather/en/${lat}/${lon}?dataSets=currentWeather,forecastHourly,forecastDaily&unit=m`;
   const res = await fetch(apiUrl, { headers: { Authorization: `Bearer ${token}` } });
   if (!res.ok) return null;
   const wk = await res.json();
+
+  // Build hourly timestamp map (used to supplement EC precipitation for Canada,
+  // and as the primary hourly source for non-Canada)
+  const hourlyMap = {};
   const hours = wk.forecastHourly?.hours || [];
-  const result = {};
   for (const h of hours) {
     if (h.forecastStart) {
-      result[new Date(h.forecastStart).getTime()] = {
+      hourlyMap[new Date(h.forecastStart).getTime()] = {
         precipitationAmount: h.precipitationAmount ?? 0,
         precipitationChance: h.precipitationChance ?? 0,
         conditionCode: h.conditionCode ?? null,
         temperature: h.temperature ?? null,
+        windSpeed: h.windSpeed ?? null,
       };
     }
   }
-  return result;
+
+  // Build current conditions from WeatherKit (for non-Canada)
+  const cw = wk.currentWeather;
+  const current = {
+    temperature_2m: cw?.temperature ?? 0,
+    dewpoint: cw?.dewPoint ?? 0,
+    relative_humidity_2m: cw?.humidityPercent ?? 0,
+    apparent_temperature: cw?.feelsLikeTemp ?? cw?.temperature ?? 0,
+    humidex: null,
+    precipitation: 0,
+    weather_code: wkConditionToWMO[cw?.conditionCode] ?? 3,
+    condition: cw?.conditionCode ?? '',
+    wind_speed_10m: cw?.windSpeed ?? 0,
+    wind_direction: '',
+    visibility: cw?.visibility != null ? cw.visibility / 1000 : 0,
+    pressure: cw?.pressure ?? 0,
+    pressure_tendency: cw?.pressureTrend ?? '',
+    uv_index: cw?.uvIndex ?? null,
+    uv_category: null,
+  };
+
+  // Build daily from WeatherKit forecastDaily (for non-Canada)
+  const daily = {
+    time: [],
+    weather_code: [],
+    temperature_2m_max: [],
+    temperature_2m_min: [],
+    precipitation_sum: [],
+    precipitation_probability: [],
+    sunrise: [],
+    sunset: [],
+    text_summary: [],
+    night_text_summary: [],
+  };
+  const days = wk.forecastDaily?.days || [];
+  for (const d of days.slice(0, 6)) {
+    const date = d.forecastStart ? new Date(d.forecastStart) : new Date();
+    const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    daily.time.push(dateStr);
+    daily.weather_code.push(wkConditionToWMO[d.conditionCode] ?? 3);
+    daily.temperature_2m_max.push(d.temperatureMax ?? 0);
+    daily.temperature_2m_min.push(d.temperatureMin ?? 0);
+    daily.precipitation_sum.push(d.precipitationAmount ?? 0);
+    daily.precipitation_probability.push(Math.round((d.precipitationChance ?? 0) * 100));
+    daily.sunrise.push(d.sunrise ?? null);
+    daily.sunset.push(d.sunset ?? null);
+    daily.text_summary.push(d.conditionCode ?? '');
+    daily.night_text_summary.push(null);
+  }
+
+  // Build hourly from WeatherKit forecastHourly (for non-Canada)
+  const hourly = {
+    time: [],
+    temperature_2m: [],
+    weather_code: [],
+    precipitation_probability: [],
+    precipitation_mm: [],
+    wind_speed_10m: [],
+  };
+  const nowHour = new Date();
+  nowHour.setMinutes(0, 0, 0);
+  for (let h = 0; h < 48; h++) {
+    const hourTime = new Date(nowHour.getTime() + h * 3600000);
+    const ts = hourTime.getTime();
+    hourly.time.push(hourTime.toISOString());
+
+    let bestMatch = null;
+    let minDiff = Infinity;
+    for (const [mapTs, val] of Object.entries(hourlyMap)) {
+      const diff = Math.abs(Number(mapTs) - ts);
+      if (diff < minDiff) {
+        minDiff = diff;
+        bestMatch = val;
+      }
+    }
+
+    if (bestMatch && minDiff < 3600000) {
+      hourly.temperature_2m.push(bestMatch.temperature != null ? Math.round(bestMatch.temperature * 10) / 10 : 0);
+      hourly.weather_code.push(wkConditionToWMO[bestMatch.conditionCode] ?? 3);
+      hourly.precipitation_probability.push(Math.round(bestMatch.precipitationChance * 100));
+      hourly.precipitation_mm.push(Math.round(bestMatch.precipitationAmount * 10) / 10);
+      hourly.wind_speed_10m.push(bestMatch.windSpeed != null ? Math.round(bestMatch.windSpeed * 10) / 10 : 0);
+    } else {
+      hourly.temperature_2m.push(0);
+      hourly.weather_code.push(3);
+      hourly.precipitation_probability.push(0);
+      hourly.precipitation_mm.push(0);
+      hourly.wind_speed_10m.push(0);
+    }
+  }
+
+  return { current, daily, hourly, alerts: [], hourlyMap };
 }
 
 Deno.serve(async (req) => {
@@ -595,83 +728,113 @@ Deno.serve(async (req) => {
 
     const sites = await getSiteList();
     const { site, distance } = findClosestSite(sites, lat, lon);
-    if (!site) {
-      return Response.json({ error: 'No weather station found' }, { status: 404 });
-    }
 
-    if (distance > 200) {
-      return Response.json({
-        error: 'Location appears to be outside Canada. Environment Canada data is only available for Canadian locations.'
-      }, { status: 404 });
-    }
+    // Canada: within 200km of an Environment Canada station → use EC as primary source.
+    // Non-Canada (USA, rest of world): use WeatherKit as the primary source.
+    const isCanada = site && distance <= 200;
 
-    const xml = await fetchWeatherXml(site.province, site.code);
-    const weatherData = parseWeatherXml(xml, localDate, tzOffset);
+    let weatherData;
 
-    try {
-      if (site.province === 'ON') {
-        const aqhi = await fetchAqhi(site.province, lat, lon);
-        if (aqhi) weatherData.air_quality = aqhi;
-      }
-    } catch (e) {
-      // AQHI is optional — don't fail the whole request
-    }
+    if (isCanada) {
+      // --- Canada: Environment Canada as primary data source ---
+      const xml = await fetchWeatherXml(site.province, site.code);
+      weatherData = parseWeatherXml(xml, localDate, tzOffset);
 
-    try {
-      const wkHourly = await fetchWeatherKitHourly(lat, lon);
-      if (wkHourly) {
+      // Override hourly with EC's real hourly forecasts (replaces cosine interpolation).
+      // These come from the same station as the current conditions, so temperatures
+      // are smooth and consistent hour-to-hour.
+      const ecHourly = parseECHourlyForecasts(xml);
+      if (ecHourly.length > 0) {
         weatherData.hourly.time.forEach((t, idx) => {
           const ts = new Date(t).getTime();
           let bestMatch = null;
           let minDiff = Infinity;
-          for (const [mapTs, val] of Object.entries(wkHourly)) {
-            const diff = Math.abs(Number(mapTs) - ts);
+          for (const ec of ecHourly) {
+            const diff = Math.abs(ec.timestamp - ts);
             if (diff < minDiff) {
               minDiff = diff;
-              bestMatch = val;
+              bestMatch = ec;
             }
           }
           if (bestMatch && minDiff < 3600000) {
-            weatherData.hourly.precipitation_mm[idx] = Math.round(bestMatch.precipitationAmount * 10) / 10;
-            weatherData.hourly.precipitation_probability[idx] = Math.round(bestMatch.precipitationChance * 100);
-            if (bestMatch.conditionCode && wkConditionToWMO[bestMatch.conditionCode] != null) {
-              weatherData.hourly.weather_code[idx] = wkConditionToWMO[bestMatch.conditionCode];
-            }
             if (bestMatch.temperature != null) {
               weatherData.hourly.temperature_2m[idx] = Math.round(bestMatch.temperature * 10) / 10;
             }
+            weatherData.hourly.weather_code[idx] = ecIconToWMO[bestMatch.iconCode] ?? weatherData.hourly.weather_code[idx];
+            weatherData.hourly.precipitation_probability[idx] = bestMatch.lop;
+            weatherData.hourly.wind_speed_10m[idx] = bestMatch.windSpeed;
           }
         });
       }
-    } catch (e) {
-      // WeatherKit hourly data is optional
-    }
 
-    // Override hourly weather codes for thunderstorm risk mentioned in EC night text summaries.
-    // EC's night text for day D describes the overnight leading into D (evening of D-1 to morning of D).
-    // WeatherKit often doesn't reflect thunderstorm risk that EC mentions in text, so we detect
-    // "thunderstorm" in the night text and apply code 95 to overnight hours.
-    const tzOffsetHours = tzOffset != null ? -tzOffset / 60 : 0;
-    weatherData.hourly.time.forEach((t, idx) => {
-      const hourDate = new Date(t);
-      const localTime = new Date(hourDate.getTime() + tzOffsetHours * 3600000);
-      const localHour = localTime.getHours();
-      if (localHour < 8 || localHour >= 20) {
-        // Overnight window: 8pm–8am. Find the day this night leads into.
-        const nightDate = new Date(localTime);
-        if (localHour >= 20) {
-          nightDate.setDate(nightDate.getDate() + 1);
+      // AQHI for Ontario only
+      try {
+        if (site.province === 'ON') {
+          const aqhi = await fetchAqhi(site.province, lat, lon);
+          if (aqhi) weatherData.air_quality = aqhi;
         }
-        const nightDateStr = `${nightDate.getFullYear()}-${String(nightDate.getMonth() + 1).padStart(2, '0')}-${String(nightDate.getDate()).padStart(2, '0')}`;
-        const nightIdx = weatherData.daily.time.indexOf(nightDateStr);
-        if (nightIdx !== -1) {
-          const nightText = (weatherData.daily.night_text_summary?.[nightIdx] || '').toLowerCase();
-          if (nightText.includes('thunderstorm')) {
-            weatherData.hourly.weather_code[idx] = 95;
+      } catch (e) {
+        // AQHI is optional
+      }
+
+      // Supplement precipitation mm amounts from WeatherKit (EC hourly only has LOP %, not mm)
+      try {
+        const wkData = await fetchWeatherKitData(lat, lon);
+        if (wkData) {
+          weatherData.hourly.time.forEach((t, idx) => {
+            const ts = new Date(t).getTime();
+            let bestMatch = null;
+            let minDiff = Infinity;
+            for (const [mapTs, val] of Object.entries(wkData.hourlyMap)) {
+              const diff = Math.abs(Number(mapTs) - ts);
+              if (diff < minDiff) {
+                minDiff = diff;
+                bestMatch = val;
+              }
+            }
+            if (bestMatch && minDiff < 3600000) {
+              weatherData.hourly.precipitation_mm[idx] = Math.round(bestMatch.precipitationAmount * 10) / 10;
+            }
+          });
+        }
+      } catch (e) {
+        // WeatherKit precipitation supplement is optional
+      }
+
+      // Override hourly weather codes for thunderstorm risk mentioned in EC night text summaries.
+      const tzOffsetHours = tzOffset != null ? -tzOffset / 60 : 0;
+      weatherData.hourly.time.forEach((t, idx) => {
+        const hourDate = new Date(t);
+        const localTime = new Date(hourDate.getTime() + tzOffsetHours * 3600000);
+        const localHour = localTime.getHours();
+        if (localHour < 8 || localHour >= 20) {
+          const nightDate = new Date(localTime);
+          if (localHour >= 20) {
+            nightDate.setDate(nightDate.getDate() + 1);
+          }
+          const nightDateStr = `${nightDate.getFullYear()}-${String(nightDate.getMonth() + 1).padStart(2, '0')}-${String(nightDate.getDate()).padStart(2, '0')}`;
+          const nightIdx = weatherData.daily.time.indexOf(nightDateStr);
+          if (nightIdx !== -1) {
+            const nightText = (weatherData.daily.night_text_summary?.[nightIdx] || '').toLowerCase();
+            if (nightText.includes('thunderstorm')) {
+              weatherData.hourly.weather_code[idx] = 95;
+            }
           }
         }
+      });
+    } else {
+      // --- Non-Canada: WeatherKit as primary data source (USA, rest of world) ---
+      const wkData = await fetchWeatherKitData(lat, lon);
+      if (!wkData) {
+        return Response.json({ error: 'Weather data unavailable for this location.' }, { status: 404 });
       }
-    });
+      weatherData = {
+        current: wkData.current,
+        daily: wkData.daily,
+        hourly: wkData.hourly,
+        alerts: wkData.alerts,
+      };
+    }
 
     if (unit === 'fahrenheit') {
       weatherData.daily.text_summary = weatherData.daily.text_summary.map(convertSummaryToImperial);
