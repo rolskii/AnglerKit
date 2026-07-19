@@ -19,7 +19,7 @@ export function loadMapKit() {
 
   mapkitLoadPromise = new Promise((resolve, reject) => {
     const script = document.createElement('script');
-    script.src = 'https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.js';
+    script.src = '/functions/mapkitjs';
     script.onload = () => {
       if (typeof mapkit === 'undefined') {
         mapkitLoadPromise = null;
