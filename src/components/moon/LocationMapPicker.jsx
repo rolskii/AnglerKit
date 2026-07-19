@@ -376,7 +376,7 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
         {localSavedLocations.length > 0 && (
           <div className="px-4 pb-3 border-t border-border pt-2">
             <p className="text-[10px] font-bold text-muted-foreground tracking-wide mb-1.5">SAVED LOCATIONS</p>
-            <div className="flex gap-1.5 flex-wrap max-h-24 overflow-y-auto">
+            <div className="flex gap-1.5 flex-wrap max-h-48 overflow-y-auto">
               {localSavedLocations.map((loc) => (
                 <button
                   key={loc.name}
