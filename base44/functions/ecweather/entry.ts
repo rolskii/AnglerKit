@@ -116,8 +116,11 @@ function parseECTimestamp(ts) {
   if (!m) {
     m = ts.match(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})$/);
   }
-  if (!m) return null;
-  return `${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}Z`;
+  if (m) return `${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}Z`;
+  // EC hourly forecast timestamps: YYYYMMDDHHmm (12 digits, no seconds)
+  m = ts.match(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})$/);
+  if (m) return `${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:00Z`;
+  return null;
 }
 
 function getForecastTemp(forecastXml, tempClass) {
@@ -745,6 +748,7 @@ Deno.serve(async (req) => {
       // are smooth and consistent hour-to-hour.
       const ecHourly = parseECHourlyForecasts(xml);
       if (ecHourly.length > 0) {
+        let firstECIdx = -1;
         weatherData.hourly.time.forEach((t, idx) => {
           const ts = new Date(t).getTime();
           let bestMatch = null;
@@ -763,8 +767,28 @@ Deno.serve(async (req) => {
             weatherData.hourly.weather_code[idx] = ecIconToWMO[bestMatch.iconCode] ?? weatherData.hourly.weather_code[idx];
             weatherData.hourly.precipitation_probability[idx] = bestMatch.lop;
             weatherData.hourly.wind_speed_10m[idx] = bestMatch.windSpeed;
+            if (firstECIdx === -1) firstECIdx = idx;
           }
         });
+
+        // Smooth the transition from observed current temperature to EC hourly forecasts.
+        // EC doesn't publish an hourly forecast for the current hour, so h=0 uses the
+        // observed temperature while the first EC entry (typically h=1) can be several
+        // degrees different, creating a jarring jump. Blend the first EC entry with the
+        // observed temperature and interpolate any gap hours to create a smooth ramp.
+        if (firstECIdx > 0) {
+          const observedTemp = weatherData.current.temperature_2m;
+          const firstECTemp = weatherData.hourly.temperature_2m[firstECIdx];
+          // Interpolate hours between h=0 (observed) and firstECIdx from observed → firstEC
+          for (let h = 1; h < firstECIdx; h++) {
+            const fraction = h / firstECIdx;
+            weatherData.hourly.temperature_2m[h] =
+              Math.round((observedTemp + (firstECTemp - observedTemp) * fraction) * 10) / 10;
+          }
+          // Blend the first EC entry halfway with the observed temp to ease the transition
+          weatherData.hourly.temperature_2m[firstECIdx] =
+            Math.round((firstECTemp + observedTemp) / 2 * 10) / 10;
+        }
       }
 
       // AQHI for Ontario only
