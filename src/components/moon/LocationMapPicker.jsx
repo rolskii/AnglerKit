@@ -18,24 +18,29 @@ const reverseGeocode = async (lat, lon) => {
   }
 };
 
-// Load MapKit JS script once (window-level flags survive Vite HMR resets)
-function loadMapKit() {
-  if (window.mapkit) return Promise.resolve();
-  if (window._mapkitLoadPromise) return window._mapkitLoadPromise;
+// Load MapKit JS script once
+let mapkitLoaded = false;
+let mapkitLoadPromise = null;
 
-  window._mapkitLoadPromise = new Promise((resolve, reject) => {
+function loadMapKit() {
+  if (mapkitLoaded) return Promise.resolve();
+  if (mapkitLoadPromise) return mapkitLoadPromise;
+
+  mapkitLoadPromise = new Promise((resolve, reject) => {
     const script = document.createElement('script');
     script.src = 'https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.js';
-    script.onload = () => resolve();
+    script.onload = () => { mapkitLoaded = true; resolve(); };
     script.onerror = () => reject(new Error('Failed to load MapKit JS'));
     document.head.appendChild(script);
   });
-  return window._mapkitLoadPromise;
+  return mapkitLoadPromise;
 }
 
-// Track mapkit.init — should only be called once per page load
+// Track mapkit.init — should only be called once
+let mapkitInitialized = false;
+
 function ensureMapKitInit() {
-  if (window._mapkitInitialized) return;
+  if (mapkitInitialized) return;
   mapkit.init({
     authorizationCallback: (done) => {
       const origin = window.location.hostname || '*';
@@ -44,7 +49,7 @@ function ensureMapKitInit() {
         .catch((err) => console.error('MapKit token fetch failed:', err));
     },
   });
-  window._mapkitInitialized = true;
+  mapkitInitialized = true;
 }
 
 export default function LocationMapPicker({ open, onOpenChange, initialCoords, savedLocations = [], onSelect }) {
@@ -111,9 +116,7 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
 
         ensureMapKitInit();
 
-        // Wait for the dialog entry animation (zoom/fade, ~200ms) to complete
-        // so the container has its final dimensions before MapKit renders
-        await new Promise((r) => setTimeout(r, 300));
+        // Wait a frame for the dialog container to be laid out
         await new Promise((r) => requestAnimationFrame(r));
         if (cancelled || !mapContainerRef.current) return;
 
@@ -123,9 +126,6 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
           cameraDistance: 80000,
           mapType: mapkit.Map.MapTypes.Hybrid,
         });
-
-        // Force MapKit to recompute its layout after the animation
-        map.setCenterAnimated(center);
 
         mapRef.current = map;
 
@@ -191,7 +191,8 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
       }
     };
 
-    const timer = setTimeout(initMap, 50);
+    // Small delay to ensure dialog portal DOM is ready
+    const timer = setTimeout(initMap, 100);
 
     return () => {
       cancelled = true;
@@ -309,13 +310,13 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg p-0 overflow-hidden gap-0 top-4 translate-y-0 data-[state=closed]:slide-out-to-top-[2%] data-[state=open]:slide-in-from-top-[2%]">
+      <DialogContent className="max-w-md p-0 overflow-hidden gap-0 top-4 translate-y-0 data-[state=closed]:slide-out-to-top-[2%] data-[state=open]:slide-in-from-top-[2%]">
         <DialogHeader className="px-4 pt-4 pb-2">
           <DialogTitle>Choose Location</DialogTitle>
         </DialogHeader>
 
         {/* Map */}
-        <div className="relative h-[400px] w-full bg-muted">
+        <div className="relative h-[300px] w-full bg-muted">
           <div ref={mapContainerRef} className="h-full w-full" />
           {mapLoading && (
             <div className="absolute inset-0 flex items-center justify-center">
@@ -405,7 +406,7 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
         {localSavedLocations.length > 0 && (
           <div className="px-4 pb-3 border-t border-border pt-2">
             <p className="text-[10px] font-bold text-muted-foreground tracking-wide mb-1.5">SAVED LOCATIONS</p>
-            <div className="flex gap-1.5 flex-wrap max-h-48 overflow-y-auto">
+            <div className="flex gap-1.5 flex-wrap max-h-24 overflow-y-auto">
               {localSavedLocations.map((loc) => (
                 <button
                   key={loc.name}
