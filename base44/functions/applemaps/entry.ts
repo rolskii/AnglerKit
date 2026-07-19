@@ -59,18 +59,20 @@ async function getMapsAccessToken() {
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
-
     const body = await req.json();
     const { query, mode, origin } = body;
 
-    // MapKit JS token — return signed JWT directly (no token exchange)
+    // MapKit JS token — return signed JWT directly (no token exchange).
+    // No user auth required: the token is origin-scoped and meant for the browser.
     if (mode === 'mapkit_token') {
       const token = await generateMapsJWT('mapkit_js', origin || '*');
       return Response.json({ token });
     }
+
+    // All other modes (geocode, search) require an authenticated user
+    const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me();
+    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     if (!query) {
       return Response.json({ error: 'Missing query parameter' }, { status: 400 });
