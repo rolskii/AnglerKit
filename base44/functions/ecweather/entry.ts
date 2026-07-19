@@ -409,61 +409,55 @@ function parseWeatherXml(xmlText, localDate, tzOffset) {
 
 // --- Air Quality Health Index (AQHI) ---
 
-let aqhiSiteCache = null;
-let aqhiSiteCacheTime = 0;
-const AQHI_COMMUNITY_URL = 'https://collaboration.cmc.ec.gc.ca/cmc/cmos/public_doc/msc-data/aqhi/aqhi_community.geojson';
+// --- Air Quality Health Index (AQHI) via ECCC OGC API ---
+// The legacy XML endpoint (dd.weather.gc.ca/.../AQ_OBS_*_CURRENT.xml) was
+// decommissioned. The replacement is the pygeoapi OGC Features endpoint.
 
-const provinceToAqhiRegion = {
-  'NL': 'atl', 'PE': 'atl', 'NS': 'atl', 'NB': 'atl',
-  'ON': 'ont',
-  'MB': 'pnr', 'SK': 'pnr', 'AB': 'pnr', 'NT': 'pnr', 'NU': 'pnr', 'YT': 'pnr',
-  'BC': 'pyr',
-  'QC': 'que',
-};
+let aqhiCache = null;
+let aqhiCacheTime = 0;
+const AQHI_API_URL = 'https://api.weather.gc.ca/collections/aqhi-observations-realtime/items';
 
-async function getAqhiCommunities() {
+async function fetchAqhi(_province, lat, lon) {
   const now = Date.now();
-  if (aqhiSiteCache && (now - aqhiSiteCacheTime) < 86400000) {
-    return aqhiSiteCache;
+  if (!aqhiCache || (now - aqhiCacheTime) > 600000) {
+    // Fetch all current observations (cached for 10 min)
+    const res = await fetch(`${AQHI_API_URL}?lang=en&limit=1000`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const features = data.features || [];
+    if (features.length === 0) return null;
+
+    // Group by station, keeping the most recent observation per station
+    const stations = new Map();
+    for (const f of features) {
+      const coords = f.geometry?.coordinates;
+      if (!coords) continue;
+      const name = f.properties.location_name_en;
+      const ts = new Date(f.properties.observation_datetime).getTime();
+      const aqhi = parseFloat(f.properties.aqhi);
+      if (isNaN(aqhi)) continue;
+      const existing = stations.get(name);
+      if (!existing || ts > existing.ts) {
+        stations.set(name, { name, lat: coords[1], lon: coords[0], ts, aqhi });
+      }
+    }
+    aqhiCache = Array.from(stations.values());
+    aqhiCacheTime = now;
   }
-  const res = await fetch(AQHI_COMMUNITY_URL);
-  const geojson = await res.json();
-  const communities = (geojson.features || []).map(f => ({
-    code: f.properties.cgndb_key,
-    name: f.properties.region_name_en,
-    lat: parseFloat(f.properties.Latitude),
-    lon: parseFloat(f.properties.Longitude),
-  })).filter(c => c.code && !isNaN(c.lat) && !isNaN(c.lon));
-  aqhiSiteCache = communities;
-  aqhiSiteCacheTime = now;
-  return communities;
-}
 
-async function fetchAqhi(province, lat, lon) {
-  const region = provinceToAqhiRegion[province];
-  if (!region || region === 'que') return null;
-
-  const communities = await getAqhiCommunities();
+  // Find closest station within 200 km
   let closest = null;
   let minDist = Infinity;
-  for (const c of communities) {
-    const dist = haversine(lat, lon, c.lat, c.lon);
+  for (const s of aqhiCache) {
+    const dist = haversine(lat, lon, s.lat, s.lon);
     if (dist < minDist) {
       minDist = dist;
-      closest = c;
+      closest = s;
     }
   }
   if (!closest || minDist > 200) return null;
 
-  const url = `https://dd.weather.gc.ca/today/air_quality/aqhi/${region}/observation/realtime/xml/AQ_OBS_${closest.code}_CURRENT.xml`;
-  const res = await fetch(url);
-  if (!res.ok) return null;
-  const xml = await res.text();
-  const match = xml.match(/<airQualityHealthIndex>(.*?)<\/airQualityHealthIndex>/);
-  if (!match) return null;
-  const value = parseFloat(match[1]);
-  if (isNaN(value)) return null;
-  return { value, name: closest.name };
+  return { value: closest.aqhi, name: closest.name };
 }
 
 function convertSummaryToImperial(text) {
