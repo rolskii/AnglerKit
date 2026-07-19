@@ -759,6 +759,13 @@ Deno.serve(async (req) => {
         const xml = await fetchWeatherXml(site.province, site.code);
         const ecData = parseWeatherXml(xml, localDate, tzOffset);
 
+        // Use EC current temperature (same source as the hourly curve) so the
+        // big temperature matches the first hourly card.
+        if (ecData.current.condition != null) {
+          weatherData.current.temperature_2m = ecData.current.temperature_2m;
+          weatherData.current.apparent_temperature = ecData.current.apparent_temperature;
+        }
+
         // --- Replace WeatherKit hourly with EC's real hourly forecasts ---
         // EC and The Weather Network share the same model data source, so using
         // EC's <hourlyForecastGroup> aligns the hourly curve with TWN's numbers.
@@ -829,13 +836,6 @@ Deno.serve(async (req) => {
             }
           }
         });
-
-        // Use EC current temperature (same source as the hourly curve) so the
-        // big temperature matches the first hourly card.
-        if (ecData.current.condition != null) {
-          weatherData.current.temperature_2m = ecData.current.temperature_2m;
-          weatherData.current.apparent_temperature = ecData.current.apparent_temperature;
-        }
 
         // Use EC humidex and pressure tendency (WeatherKit doesn't provide these)
         if (ecData.current.humidex != null) weatherData.current.humidex = ecData.current.humidex;
