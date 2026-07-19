@@ -20,39 +20,9 @@ import MapSearchBar from '@/components/map/MapSearchBar';
 import FishIcon from '@/components/FishIcon';
 import AppLogo from '@/components/AppLogo';
 import { useToast } from '@/components/ui/use-toast';
+import { prepareMapKit } from '@/lib/mapkitLoader';
 
 /* global mapkit */
-
-// Load MapKit JS script once
-let mapkitLoaded = false;
-let mapkitLoadPromise = null;
-
-function loadMapKit() {
-  if (mapkitLoaded) return Promise.resolve();
-  if (mapkitLoadPromise) return mapkitLoadPromise;
-  mapkitLoadPromise = new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = 'https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.js';
-    script.onload = () => { mapkitLoaded = true; resolve(); };
-    script.onerror = () => reject(new Error('Failed to load MapKit JS'));
-    document.head.appendChild(script);
-  });
-  return mapkitLoadPromise;
-}
-
-let mapkitInitialized = false;
-function ensureMapKitInit() {
-  if (mapkitInitialized) return;
-  mapkit.init({
-    authorizationCallback: (done) => {
-      const origin = window.location.hostname || '*';
-      base44.functions.invoke('applemaps', { mode: 'mapkit_token', origin })
-        .then((res) => done(res.data.token))
-        .catch((err) => console.error('MapKit token fetch failed:', err));
-    },
-  });
-  mapkitInitialized = true;
-}
 
 // Haversine distance in km
 const haversine = (lat1, lon1, lat2, lon2) => {
@@ -122,6 +92,7 @@ export default function MapView() {
   const [areaPoints, setAreaPoints] = useState([]);
   const [savedAreas, setSavedAreas] = useState([]);
   const [mapReady, setMapReady] = useState(false);
+  const [mapError, setMapError] = useState(null);
   const [mapVersion, setMapVersion] = useState(0);
   const [loadedRouteId, setLoadedRouteId] = useState(null);
   const [imperial, setImperial] = useState(() => isImperial());
@@ -721,12 +692,10 @@ export default function MapView() {
   // Initialize map
   useEffect(() => {
     let cancelled = false;
+    setMapError(null);
     const initMap = async () => {
       try {
-        await loadMapKit();
-        if (cancelled) return;
-        ensureMapKitInit();
-        await new Promise((r) => requestAnimationFrame(r));
+        await prepareMapKit();
         if (cancelled || !mapContainerRef.current) return;
 
         const sharedLoc = getSharedLocation();
@@ -757,6 +726,7 @@ export default function MapView() {
         setMapReady(true);
       } catch (e) {
         console.error('MapKit init failed:', e);
+        setMapError(e?.message || 'Map failed to load');
       }
     };
     const timer = setTimeout(initMap, 100);
@@ -1024,6 +994,12 @@ export default function MapView() {
       {/* Map */}
       <div className="absolute inset-0" style={{ top: 'calc(env(safe-area-inset-top) + 48px)' }}>
         <div ref={mapContainerRef} className="w-full h-full" />
+        {mapError && !mapReady && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center pointer-events-none">
+            <p className="text-sm text-muted-foreground mb-1">Map unavailable</p>
+            <p className="text-xs text-muted-foreground/60">{mapError}</p>
+          </div>
+        )}
         {/* DOM-based pin overlays (reliable fallback for MapKit annotations) */}
         {mapReady && mapRef.current && pins.map((pin, idx) => {
           const coord = new mapkit.Coordinate(pin.lat, pin.lon);

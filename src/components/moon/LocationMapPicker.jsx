@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Search, MapPin, Check, Star, LocateFixed } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { prepareMapKit } from '@/lib/mapkitLoader';
 
 // Reverse geocode using BigDataCloud free API
 const reverseGeocode = async (lat, lon) => {
@@ -18,40 +19,6 @@ const reverseGeocode = async (lat, lon) => {
   }
 };
 
-// Load MapKit JS script once
-let mapkitLoaded = false;
-let mapkitLoadPromise = null;
-
-function loadMapKit() {
-  if (mapkitLoaded) return Promise.resolve();
-  if (mapkitLoadPromise) return mapkitLoadPromise;
-
-  mapkitLoadPromise = new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = 'https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.js';
-    script.onload = () => { mapkitLoaded = true; resolve(); };
-    script.onerror = () => reject(new Error('Failed to load MapKit JS'));
-    document.head.appendChild(script);
-  });
-  return mapkitLoadPromise;
-}
-
-// Track mapkit.init — should only be called once
-let mapkitInitialized = false;
-
-function ensureMapKitInit() {
-  if (mapkitInitialized) return;
-  mapkit.init({
-    authorizationCallback: (done) => {
-      const origin = window.location.hostname || '*';
-      base44.functions.invoke('applemaps', { mode: 'mapkit_token', origin })
-        .then((res) => done(res.data.token))
-        .catch((err) => console.error('MapKit token fetch failed:', err));
-    },
-  });
-  mapkitInitialized = true;
-}
-
 export default function LocationMapPicker({ open, onOpenChange, initialCoords, savedLocations = [], onSelect }) {
   const [searchValue, setSearchValue] = useState('');
   const [suggestions, setSuggestions] = useState([]);
@@ -61,6 +28,7 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
   );
   const [placeName, setPlaceName] = useState(initialCoords?.name || '');
   const [mapLoading, setMapLoading] = useState(false);
+  const [mapError, setMapError] = useState(null);
   const [localSavedLocations, setLocalSavedLocations] = useState(savedLocations);
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
@@ -108,16 +76,11 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
 
     let cancelled = false;
     setMapLoading(true);
+    setMapError(null);
 
     const initMap = async () => {
       try {
-        await loadMapKit();
-        if (cancelled) return;
-
-        ensureMapKitInit();
-
-        // Wait a frame for the dialog container to be laid out
-        await new Promise((r) => requestAnimationFrame(r));
+        await prepareMapKit();
         if (cancelled || !mapContainerRef.current) return;
 
         const center = new mapkit.Coordinate(markerPos[0], markerPos[1]);
@@ -187,6 +150,7 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
         setMapLoading(false);
       } catch (e) {
         console.error('MapKit init failed:', e);
+        setMapError(e?.message || 'Map failed to load');
         setMapLoading(false);
       }
     };
@@ -321,6 +285,12 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
           {mapLoading && (
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
+            </div>
+          )}
+          {mapError && !mapLoading && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
+              <p className="text-xs text-muted-foreground mb-2">Map unavailable</p>
+              <p className="text-[10px] text-muted-foreground/60">{mapError}</p>
             </div>
           )}
           {/* Center pin overlay */}
