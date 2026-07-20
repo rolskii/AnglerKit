@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Download, Upload, Loader2, FileJson, CheckCircle2, AlertCircle, Database, Archive, RotateCcw, HardDrive } from "lucide-react";
+import { Download, Upload, Loader2, FileJson, CheckCircle2, AlertCircle, RotateCcw, HardDrive } from "lucide-react";
 import { toast } from "sonner";
 
 const ENTITIES = [
@@ -187,8 +187,8 @@ export default function ImportExportSection() {
         }));
       }
       const date = new Date().toISOString().slice(0, 10);
-      const payload = { app: "AnglerKit", version: 2, exported_at: new Date().toISOString(), data };
-      downloadFile(`anglerkit-backup-${date}.json`, JSON.stringify(payload, null, 2), "application/json");
+      const payload = { app: "AnglersLog", version: 2, exported_at: new Date().toISOString(), data };
+      downloadFile(`anglerslog-backup-${date}.json`, JSON.stringify(payload, null, 2), "application/json");
       toast.success("Backup downloaded");
     } catch (e) {
       toast.error("Backup failed");

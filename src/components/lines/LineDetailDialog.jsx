@@ -3,7 +3,6 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2 } from "lucide-react";
 import LineCard from "@/components/lines/LineCard";
 
 export default function LineDetailDialog({ open, onOpenChange, line, onEdit, onDelete }) {

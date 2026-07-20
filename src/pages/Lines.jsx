@@ -3,7 +3,6 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Search, Loader2, Waves, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
-import LineCard from "@/components/lines/LineCard";
 import LineDetailDialog from "@/components/lines/LineDetailDialog";
 import LineForm from "@/components/lines/LineForm";
 import {
@@ -91,39 +90,32 @@ export default function Lines() {
 
   const handleSave = async (payload) => {
     setSaving(true);
-    setFormOpen(false);
-    const wasEditing = editing;
-    setEditing(null);
     try {
-      if (wasEditing) {
-        setLines(prev => prev.map(l => l.id === wasEditing.id ? { ...l, ...payload } : l));
-        await base44.entities.FlyLine.update(wasEditing.id, payload);
+      if (editing) {
+        await base44.entities.FlyLine.update(editing.id, payload);
         toast.success("Line updated");
       } else {
-        const tempId = `temp_${Date.now()}`;
-        setLines(prev => [{ ...payload, id: tempId }, ...prev]);
-        const created = await base44.entities.FlyLine.create(payload);
-        setLines(prev => prev.map(l => l.id === tempId ? created : l));
+        await base44.entities.FlyLine.create(payload);
         toast.success("Line added");
       }
+      setFormOpen(false);
+      setEditing(null);
+      await load();
     } catch (e) {
       toast.error(e.message || "Failed to save");
-      await load();
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async () => {
-    const target = deleteTarget;
-    setDeleteTarget(null);
-    setLines(prev => prev.filter(l => l.id !== target.id));
     try {
-      await base44.entities.FlyLine.delete(target.id);
+      await base44.entities.FlyLine.delete(deleteTarget.id);
       toast.success("Line deleted");
+      setDeleteTarget(null);
+      await load();
     } catch (e) {
       toast.error("Failed to delete");
-      setLines(prev => [...prev, target]);
     }
   };
 

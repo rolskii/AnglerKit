@@ -64,8 +64,13 @@ Deno.serve(async (req) => {
 
     // MapKit JS token — return signed JWT directly (no token exchange).
     // No user auth required: the token is origin-scoped and meant for the browser.
+    // An explicit origin is required so the resulting token can't be minted
+    // wildcard-scoped (and therefore replayed from any site) by an anonymous caller.
     if (mode === 'mapkit_token') {
-      const token = await generateMapsJWT('mapkit_js', origin || '*');
+      if (!origin) {
+        return Response.json({ error: 'Missing origin parameter' }, { status: 400 });
+      }
+      const token = await generateMapsJWT('mapkit_js', origin);
       return Response.json({ token });
     }
 

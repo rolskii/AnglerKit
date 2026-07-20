@@ -1,7 +1,6 @@
 import React, { useRef } from "react";
 import ShareButton from "@/components/ShareButton";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
 import ImageGallery, { getItemImages } from "@/components/ImageGallery";
@@ -21,7 +20,6 @@ export default function ReelCard({ reel, lineCount, spooledLines, onEdit, onDele
     subtitle: [reel.brand, reel.model, reel.size].filter(Boolean).join(" · ") || "—",
     badge: reel.condition,
     details: [
-      { label: "Species", value: reel.species },
       { label: "Brand", value: reel.brand },
       { label: "Model", value: reel.model },
       { label: "Size", value: reel.size },
@@ -49,7 +47,7 @@ export default function ReelCard({ reel, lineCount, spooledLines, onEdit, onDele
   };
   return (
     <Card ref={cardRef} className="p-4 flex flex-col gap-3">
-      <ImageGallery images={getItemImages(reel)} featuredLabel={reel.name} featuredSubtitle="Reel" featuredLink="/gear/reels" />
+      <ImageGallery images={getItemImages(reel)} />
       <div className="flex items-start justify-between gap-2">
         <div>
           <h3 className="font-heading font-semibold">{reel.name}</h3>
@@ -65,7 +63,6 @@ export default function ReelCard({ reel, lineCount, spooledLines, onEdit, onDele
       </div>
 
       <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
-         <Detail label="Species" value={reel.species} />
          <Detail label="Brand" value={reel.brand} />
          <Detail label="Model" value={reel.model} />
          <Detail label="Size" value={reel.size} />
@@ -106,12 +103,11 @@ export default function ReelCard({ reel, lineCount, spooledLines, onEdit, onDele
 
       {reel.notes && <p className="text-sm text-muted-foreground italic border-t border-border pt-2">{reel.notes}</p>}
 
-      <div className="flex items-center gap-2 mt-auto pt-1" data-html2canvas-ignore="true">
+      <div className="flex gap-2 mt-auto pt-1" data-html2canvas-ignore="true">
         <Button size="sm" variant="outline" className="flex-1" onClick={() => onEdit(reel)}>
           <Pencil className="w-3.5 h-3.5 mr-1.5" /> Edit
         </Button>
         <ShareButton card={card} photoUrls={getItemImages(reel)} />
-        <div className="w-px self-stretch bg-border mx-1" aria-hidden="true" />
         <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => onDelete(reel)}>
           <Trash2 className="w-3.5 h-3.5" />
         </Button>

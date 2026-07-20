@@ -9,17 +9,19 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import Layout from '@/components/Layout';
 import Home from '@/pages/Home';
-import Gear from '@/pages/Gear';
+import Lines from '@/pages/Lines';
+import Reels from '@/pages/Reels';
+import Rods from '@/pages/Rods';
 import About from '@/pages/About';
 import Settings from '@/pages/Settings';
 import Catches from '@/pages/Catches';
-import CatchDetail from '@/pages/CatchDetail';
+import Lures from '@/pages/Lures';
+import Misc from '@/pages/Misc';
 import Moon from '@/pages/Moon';
 import Weather from '@/pages/Weather';
+import Gear from '@/pages/Gear';
 import MapView from '@/pages/MapView';
 // Add page imports here
-import { initAlarmService } from '@/lib/alarmService';
-import PushNotificationManager from '@/components/PushNotificationManager';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -59,21 +61,21 @@ const AuthenticatedApp = () => {
     <Routes>
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />
-        <Route path="/gear" element={<Navigate to="/gear/lines" replace />} />
-        <Route path="/gear/:tab" element={<Gear />} />
-        <Route path="/lines" element={<Navigate to="/gear/lines" replace />} />
-        <Route path="/reels" element={<Navigate to="/gear/reels" replace />} />
-        <Route path="/rods" element={<Navigate to="/gear/rods" replace />} />
-        <Route path="/lures" element={<Navigate to="/gear/lures" replace />} />
-        <Route path="/misc" element={<Navigate to="/gear/misc" replace />} />
+        <Route path="/lines" element={<Lines />} />
+        <Route path="/reels" element={<Reels />} />
+        <Route path="/rods" element={<Rods />} />
         <Route path="/catches" element={<Catches />} />
-        <Route path="/catches/:id" element={<CatchDetail />} />
+        <Route path="/lures" element={<Lures />} />
+        <Route path="/misc" element={<Misc />} />
         <Route path="/moon" element={<Moon />} />
         <Route path="/weather" element={<Weather />} />
-        <Route path="/map" element={<MapView />} />
         <Route path="/about" element={<About />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/gear" element={<Navigate to="/gear/lines" replace />} />
+        <Route path="/gear/:tab" element={<Gear />} />
       </Route>
+      {/* MapView renders its own full-screen layout (including its own BottomTabBar), so it sits outside the shared <Layout> shell. */}
+      <Route path="/map" element={<MapView />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
@@ -81,16 +83,12 @@ const AuthenticatedApp = () => {
 
 
 function App() {
-  useEffect(() => {
-    initAlarmService();
-  }, []);
 
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
           <ScrollToTop />
-          <PushNotificationManager />
           <AuthenticatedApp />
         </Router>
         <Toaster />

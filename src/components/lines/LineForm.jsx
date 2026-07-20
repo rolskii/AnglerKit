@@ -9,10 +9,8 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2 } from "lucide-react";
 import ImageUpload from "@/components/ImageUpload";
-import BottomSheetSelect from "@/components/ui/bottom-sheet-select";
 
 const SPECIES = ["Trout", "Salmon", "Steelhead", "Bass", "Pike", "Saltwater", "Gar", "Muskie", "Anything", "Other"].sort((a, b) => a.localeCompare(b));
 const TYPES = ["Tip", "Body", "Head", "Integrated", "Shooting", "WF", "Running", "Sinking", "System", "Other"].sort((a, b) => a.localeCompare(b));
@@ -191,24 +189,24 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
              </div>
              <div className="space-y-1.5">
                <Label>Reel</Label>
-              <BottomSheetSelect
-                value={form.reel || "_none"}
-                onChange={(v) => set("reel", v === "_none" ? "" : v)}
-                options={[{ value: "_none", label: "Spooled" }, ...[...reels].sort((a, b) => a.name.localeCompare(b.name)).map((r) => ({ value: r.name, label: r.name }))]}
-                placeholder="Spooled"
-                label="Reel"
-              />
+              <Select value={form.reel || "_none"} onValueChange={(v) => set("reel", v === "_none" ? "" : v)}>
+                <SelectTrigger className="bg-muted"><SelectValue placeholder="Spooled" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="_none">Spooled</SelectItem>
+                  {[...reels].sort((a, b) => a.name.localeCompare(b.name)).map((r) => <SelectItem key={r.id} value={r.name}>{r.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-1.5">
                <Label>Rod</Label>
-               <BottomSheetSelect
-                 value={form.rod || "_none"}
-                 onChange={(v) => set("rod", v === "_none" ? "" : v)}
-                 options={[{ value: "_none", label: "None" }, ...[...rods].sort((a, b) => a.name.localeCompare(b.name)).map((r) => ({ value: r.name, label: r.name }))]}
-                 placeholder="None"
-                 label="Rod"
-               />
+               <Select value={form.rod || "_none"} onValueChange={(v) => set("rod", v === "_none" ? "" : v)}>
+                 <SelectTrigger className="bg-muted"><SelectValue placeholder="None" /></SelectTrigger>
+                 <SelectContent>
+                   <SelectItem value="_none">None</SelectItem>
+                   {[...rods].sort((a, b) => a.name.localeCompare(b.name)).map((r) => <SelectItem key={r.id} value={r.name}>{r.name}</SelectItem>)}
+                 </SelectContent>
+               </Select>
              </div>
              <div className="space-y-1.5">
                <Label>Value ($)</Label>

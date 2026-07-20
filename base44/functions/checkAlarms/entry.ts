@@ -35,6 +35,11 @@ Deno.serve(async (req) => {
     let sentCount = 0;
 
     for (const alarm of dueAlarms) {
+      // Mark fired before sending, not after — this runs on a schedule, so two
+      // overlapping invocations could otherwise both pick up the same
+      // still-unfired alarm and double-send the notification.
+      await base44.asServiceRole.entities.FishingAlarm.update(alarm.id, { fired: true });
+
       const subs = await base44.asServiceRole.entities.PushSubscription.filter({ created_by_id: alarm.created_by_id });
 
       const payload = JSON.stringify({
@@ -55,8 +60,6 @@ Deno.serve(async (req) => {
           }
         }
       }
-
-      await base44.asServiceRole.entities.FishingAlarm.update(alarm.id, { fired: true });
     }
 
     return Response.json({ checked: dueAlarms.length, sent: sentCount });

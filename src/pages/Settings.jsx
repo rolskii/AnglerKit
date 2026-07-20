@@ -1,23 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeftRight, Trash2, BellOff, SunMoon } from "lucide-react";
+import { Loader2, Sun, Moon, ArrowLeftRight, BellRing } from "lucide-react";
 import ImportExportSection from "@/components/settings/ImportExportSection";
-import AlarmSoundPicker from "@/components/settings/AlarmSoundPicker";
 import NotificationSetup from "@/components/settings/NotificationSetup";
-import ThemeToggle from "@/components/settings/ThemeToggle";
-import { clearFiredAlarms } from "@/lib/alarmService";
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { toast } from "sonner";
+import AlarmSoundPicker from "@/components/settings/AlarmSoundPicker";
 
 export default function Settings() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "light");
+
+  const applyTheme = (t) => {
+    setTheme(t);
+    localStorage.setItem("theme", t);
+    if (t === "dark") document.documentElement.classList.add("dark");
+    else document.documentElement.classList.remove("dark");
+  };
 
   useEffect(() => {
     base44.auth.isAuthenticated().then(async (authed) => {
@@ -28,19 +27,6 @@ export default function Settings() {
       setLoading(false);
     });
   }, []);
-
-  const handleDeleteAccount = async () => {
-    setDeleting(true);
-    try {
-      localStorage.clear();
-      await base44.auth.logout();
-    } catch (e) {
-      toast.error("Something went wrong");
-    } finally {
-      setDeleting(false);
-      setDeleteDialogOpen(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -61,18 +47,10 @@ export default function Settings() {
   }
 
   return (
-    <div className="space-y-6 md:space-y-8 -mt-4 md:-mt-8 max-w-2xl">
+    <div className="space-y-8 max-w-2xl">
       <div>
         <h1 className="font-heading text-2xl font-bold">Settings</h1>
         <p className="text-muted-foreground text-sm mt-1">Manage your import/export and appearance.</p>
-      </div>
-
-      <div className="rounded-lg border border-border bg-card p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <SunMoon className="w-5 h-5 text-primary" />
-          <h2 className="font-heading text-lg font-semibold">Appearance</h2>
-        </div>
-        <ThemeToggle />
       </div>
 
       <div>
@@ -83,74 +61,50 @@ export default function Settings() {
         <ImportExportSection />
       </div>
 
-      <div className="rounded-lg border border-border bg-card p-6 space-y-5">
-        <div className="flex items-center gap-2">
-          <BellOff className="w-5 h-5 text-primary" />
-          <h2 className="font-heading text-lg font-semibold">Alarms</h2>
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <BellRing className="w-5 h-5 text-primary" />
+          <h2 className="font-heading text-lg font-semibold">Fishing Alarms</h2>
         </div>
-
-        <div className="space-y-2">
-          <div>
-            <p className="text-sm font-medium">Push Notifications</p>
-            <p className="text-xs text-muted-foreground">Required for alarms to fire when the app is closed. Tap "Enable" and allow the permission prompt.</p>
-          </div>
+        <div className="space-y-4">
           <NotificationSetup />
-        </div>
-
-        <div className="space-y-2 pt-4 border-t border-border">
           <div>
-            <p className="text-sm font-medium">Alarm Sound</p>
-            <p className="text-xs text-muted-foreground">Choose the sound played when a feeding-time alarm triggers.</p>
+            <p className="text-sm font-medium mb-2">Alarm sound</p>
+            <AlarmSoundPicker />
           </div>
-          <AlarmSoundPicker />
-        </div>
-
-        <div className="space-y-2">
-          <p className="text-sm text-muted-foreground">Remove all saved fishing alarms from this device.</p>
-          <Button
-            variant="outline"
-            onClick={() => {
-              localStorage.removeItem("alarmsByDate");
-              clearFiredAlarms();
-              toast.success("All alarms cleared");
-            }}
-            className="flex items-center gap-2"
-          >
-            <BellOff className="w-4 h-4" /> Clear All Alarms
-          </Button>
         </div>
       </div>
 
-      <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-6 space-y-4">
+      <div className="rounded-lg border-0 bg-primary/10 p-6 space-y-4">
         <div>
-          <h2 className="font-heading text-lg font-semibold text-destructive">Account Deletion</h2>
-          <p className="text-sm text-muted-foreground">Permanently delete your account and sign out. This action cannot be undone.</p>
+          <h2 className="font-heading font-semibold">Appearance</h2>
+          <p className="text-sm text-muted-foreground">Choose between light and dark mode.</p>
         </div>
-        <Button variant="destructive" onClick={() => setDeleteDialogOpen(true)} className="flex items-center gap-2">
-          <Trash2 className="w-4 h-4" /> Delete My Account
-        </Button>
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={() => applyTheme("light")}
+            className={`flex items-center gap-3 rounded-lg border p-3 text-left transition-colors ${
+              theme === "light" ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:bg-accent/50"
+            }`}
+          >
+            <div className={`flex h-9 w-9 items-center justify-center rounded-md ${theme === "light" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+              <Sun className="w-5 h-5" />
+            </div>
+            <span className={`text-sm font-medium ${theme === "light" ? "text-primary" : ""}`}>Light</span>
+          </button>
+          <button
+            onClick={() => applyTheme("dark")}
+            className={`flex items-center gap-3 rounded-lg border p-3 text-left transition-colors ${
+              theme === "dark" ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:bg-accent/50"
+            }`}
+          >
+            <div className={`flex h-9 w-9 items-center justify-center rounded-md ${theme === "dark" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+              <Moon className="w-5 h-5" />
+            </div>
+            <span className={`text-sm font-medium ${theme === "dark" ? "text-primary" : ""}`}>Dark</span>
+          </button>
+        </div>
       </div>
-
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete your account?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently sign you out and clear all local data from this device. This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteAccount}
-              disabled={deleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {deleting ? "Deleting…" : "Delete Account"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }

@@ -12,7 +12,7 @@ import DrawingDialog from '@/components/map/DrawingDialog';
 import MeasureBar from '@/components/map/MeasureBar';
 import AreaBar from '@/components/map/AreaBar';
 import { computeSphericalArea, formatArea, formatDistance, isImperial } from '@/lib/sphericalArea';
-import { ChevronLeft, Route, Pencil } from 'lucide-react';
+import { Route, Pencil } from 'lucide-react';
 import { getSharedLocation, setSharedLocation } from '@/lib/sharedLocation';
 import { Link } from 'react-router-dom';
 import BottomTabBar from '@/components/BottomTabBar';

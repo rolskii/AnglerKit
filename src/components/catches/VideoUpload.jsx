@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Upload, Trash2, Loader2, Video } from "lucide-react";
+import { Trash2, Loader2, Video } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 
