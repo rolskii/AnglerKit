@@ -4,6 +4,18 @@ const VAPID_PUBLIC_KEY = 'BFsm3txeTi8rhAzQUu39fke-rJS2AgfzGnPiVdzTFi8pNlVzQxt5nP
 
 Deno.serve(async (req) => {
   try {
+    // Validate scheduler secret — only the scheduled automation may trigger this.
+    // Scheduled automations can't send custom HTTP headers, so the secret is
+    // passed via function_args (body.args.cron_secret) and checked against the
+    // CRON_SECRET environment variable.
+    const CRON_SECRET = Deno.env.get("CRON_SECRET");
+    let body = {};
+    try { body = await req.json(); } catch (_e) { /* empty body */ }
+    const providedSecret = body?.args?.cron_secret;
+    if (!CRON_SECRET || !providedSecret || providedSecret !== CRON_SECRET) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const base44 = createClientFromRequest(req);
     const VAPID_PRIVATE_KEY = Deno.env.get("VAPID_PRIVATE_KEY");
     if (!VAPID_PRIVATE_KEY) {
