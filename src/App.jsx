@@ -2,6 +2,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { useState, useEffect } from 'react';
+import { initAlarmService } from '@/lib/alarmService';
 import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
@@ -83,6 +84,12 @@ const AuthenticatedApp = () => {
 
 
 function App() {
+  useEffect(() => {
+    // Client-side immediate alarm fallback (sound + Notification while this
+    // tab is open) — complements the server-side checkAlarms push pipeline,
+    // which covers the case where no tab is open.
+    initAlarmService();
+  }, []);
 
   return (
     <AuthProvider>

@@ -1,177 +1,299 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Waves, MapPin, Bell, BellOff, Save } from 'lucide-react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { base44 } from '@/api/base44Client';
+import { getMoonTimes } from '@/lib/moonTimes';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Sun, Waves, MapPin, Bell, BellOff, Save, Star } from 'lucide-react';
 import FishIcon from '@/components/FishIcon';
-import DateSelector from '@/components/moon/DateSelector';
+import { searchLocations, geocodeLocation } from '@/lib/geocode';
+import { getSharedLocation, setSharedLocation } from '@/lib/sharedLocation';
+import { Input } from '@/components/ui/input';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import LocationMapPicker from '@/components/moon/LocationMapPicker';
 import DayRatingRing from '@/components/moon/DayRatingRing';
 import ActivityChart from '@/components/moon/ActivityChart';
 import SunMoonFooter from '@/components/moon/SunMoonFooter';
-import { syncAlarmToServer, removeAlarmFromServer } from '@/lib/pushService';
-import {
-  getSunTimes,
-  getMoonTimes,
-  getMoonTransit,
-  getMoonIllumination,
-  getMoonPhaseName,
-  formatTime,
-} from '@/lib/astronomy';
+import WeeklyBiteForecast from '@/components/moon/WeeklyBiteForecast';
+import DaySolunarDialog from '@/components/moon/DaySolunarDialog';
+import ShareStatusButton from '@/components/ShareStatusButton';
+import { clearFiredAlarms } from '@/lib/alarmService';
+import { ensurePushSubscription, syncAlarmToServer, removeAlarmFromServer } from '@/lib/pushService';
 
-const LUNAR_MONTH = 29.53058867;
-const DEFAULT_COORDS = { lat: 43.6532, lon: -79.3832 }; // Toronto, ON
+const todayStr = () => {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+};
 
-const toDateStr = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const parseTimeFromIso = (isoStr) => {
+  if (!isoStr) return null;
+  const d = new Date(isoStr);
+  if (isNaN(d.getTime())) return null;
+  let hours = d.getHours();
+  const minutes = d.getMinutes();
+  const period = hours >= 12 ? 'PM' : 'AM';
+  const h12 = hours % 12 || 12;
+  return `${h12}:${String(minutes).padStart(2, '0')} ${period}`;
+};
 
-const addMinutes = (date, min) => (date ? new Date(date.getTime() + min * 60000) : null);
+const parseToMinutes = (isoStr) => {
+  if (!isoStr) return null;
+  const d = new Date(isoStr);
+  if (isNaN(d.getTime())) return null;
+  return d.getHours() * 60 + d.getMinutes();
+};
 
-function daysInCycleFor(date) {
-  const knownNewMoon = new Date(2000, 0, 6);
-  const daysSinceNewMoon = (date - knownNewMoon) / (1000 * 60 * 60 * 24);
-  return ((daysSinceNewMoon % LUNAR_MONTH) + LUNAR_MONTH) % LUNAR_MONTH;
-}
+const minutesToTime = (mins) => {
+  let h = Math.floor(mins / 60);
+  const m = Math.round(mins % 60);
+  if (h >= 24) h -= 24;
+  const period = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 || 12;
+  return `${h12}:${String(m).padStart(2, '0')} ${period}`;
+};
 
-// Fishing activity is traditionally strongest around new/full moon (major
-// solunar periods) and tapers off near the quarters.
-function getFishBitePercentage(daysCycle) {
-  const distFromNew = Math.min(daysCycle, LUNAR_MONTH - daysCycle);
-  const distFromFull = Math.abs(daysCycle - LUNAR_MONTH / 2);
-  const distFromMajor = Math.min(distFromNew, distFromFull);
-  const pct = 35 + 65 * Math.exp(-(distFromMajor ** 2) / (2 * 3.2 ** 2));
-  return Math.max(20, Math.min(100, Math.round(pct)));
-}
-
-function getRatingLabel(pct) {
-  if (pct >= 85) return 'Excellent';
-  if (pct >= 70) return 'Very Good';
-  if (pct >= 55) return 'Good';
-  if (pct >= 40) return 'Fair';
-  return 'Poor';
-}
-
-// 20 hourly activity samples covering 5am - 12am (midnight), matching
-// ActivityChart's expected label layout (index 0 = 5am, index 19 = 12am).
-function buildActivityLevels(baseDate, lat, lon) {
-  const sun = getSunTimes(baseDate, lat, lon);
-  const moon = getMoonTimes(baseDate, lat, lon);
-  const transit = getMoonTransit(baseDate, lat, lon);
-
-  const gaussian = (hour, centerDate, sigma) => {
-    if (!centerDate) return 0;
-    const centerHour = centerDate.getHours() + centerDate.getMinutes() / 60;
-    let diff = Math.abs(hour - centerHour);
-    if (diff > 12) diff = 24 - diff; // wrap around midnight
-    return Math.exp(-(diff ** 2) / (2 * sigma ** 2));
-  };
-
+const computeActivityLevels = (major, minor) => {
+  const slotSize = 30;
+  const count = (24 * 60) / slotSize;
   const levels = [];
-  for (let i = 0; i < 20; i++) {
-    const hour = 5 + i;
-    let level = 18;
-    level += 70 * gaussian(hour, moon.rise, 1.1);
-    level += 70 * gaussian(hour, moon.set, 1.1);
-    level += 50 * gaussian(hour, transit, 1.3);
-    level += 35 * gaussian(hour, sun.sunrise, 0.6);
-    level += 35 * gaussian(hour, sun.sunset, 0.6);
-    levels.push(Math.max(0, Math.min(100, Math.round(level))));
+  for (let i = 0; i < count; i++) {
+    const slotStart = i * slotSize;
+    const slotMid = slotStart + slotSize / 2;
+    let level = 12;
+    for (const m of major) {
+      if (m.startMin === undefined) continue;
+      const overlap = Math.min(m.endMin, slotStart + slotSize) - Math.max(m.startMin, slotStart);
+      if (overlap > 0) level = Math.max(level, 95);
+      else {
+        const dist = Math.min(Math.abs(m.startMin - slotMid), Math.abs(m.endMin - slotMid));
+        if (dist < 30) level = Math.max(level, 65);
+        else if (dist < 60) level = Math.max(level, 38);
+      }
+    }
+    for (const m of minor) {
+      if (m.startMin === undefined) continue;
+      const overlap = Math.min(m.endMin, slotStart + slotSize) - Math.max(m.startMin, slotStart);
+      if (overlap > 0) level = Math.max(level, 65);
+      else {
+        const dist = Math.min(Math.abs(m.startMin - slotMid), Math.abs(m.endMin - slotMid));
+        if (dist < 15) level = Math.max(level, 42);
+      }
+    }
+    levels.push(level);
   }
   return levels;
-}
+};
+
+const buildSolunarTimes = (moonTimes, sunData) => {
+  const major = [];
+  const minor = [];
+  if (moonTimes) {
+    // Major: 2-hour windows centered on moon overhead (transit) and underfoot
+    if (moonTimes.transit != null) {
+      const t = Math.round(moonTimes.transit);
+      major.push({
+        text: 'Moon overhead',
+        time: `${minutesToTime(t - 60)} - ${minutesToTime(t + 60)}`,
+        startMin: t - 60,
+        endMin: t + 60,
+      });
+    }
+    if (moonTimes.underfoot != null) {
+      const t = Math.round(moonTimes.underfoot);
+      major.push({
+        text: 'Moon underfoot',
+        time: `${minutesToTime(t - 60)} - ${minutesToTime(t + 60)}`,
+        startMin: t - 60,
+        endMin: t + 60,
+      });
+    }
+    // Minor: 1-hour windows centered on moonrise and moonset
+    if (moonTimes.moonrise != null) {
+      const t = Math.round(moonTimes.moonrise);
+      minor.push({
+        text: 'Moonrise',
+        time: `${minutesToTime(t - 30)} - ${minutesToTime(t + 30)}`,
+        startMin: t - 30,
+        endMin: t + 30,
+      });
+    }
+    if (moonTimes.moonset != null) {
+      const t = Math.round(moonTimes.moonset);
+      minor.push({
+        text: 'Moonset',
+        time: `${minutesToTime(t - 30)} - ${minutesToTime(t + 30)}`,
+        startMin: t - 30,
+        endMin: t + 30,
+      });
+    }
+  }
+  return { major, minor };
+};
 
 export default function Moon() {
-  const savedLocation = localStorage.getItem('moonLocation');
-  const savedCoords = localStorage.getItem('moonCoords');
-  const [location, setLocation] = useState(savedLocation || 'Toronto, ON');
-  const [editingLocation, setEditingLocation] = useState(savedLocation || 'Toronto, ON');
-  const [coords, setCoords] = useState(savedCoords ? JSON.parse(savedCoords) : DEFAULT_COORDS);
-  const [selectedDate, setSelectedDate] = useState(toDateStr(new Date()));
-  const [suggestions, setSuggestions] = useState([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-
+  const [moonData, setMoonData] = useState(null);
+  const sharedInit = getSharedLocation();
+  const [location, setLocation] = useState(sharedInit.name);
+  const [editingLocation, setEditingLocation] = useState(sharedInit.name);
+  const [coords, setCoords] = useState(sharedInit.coords);
+  const [sunDataByDate, setSunDataByDate] = useState({});
+  const [selectedDate, setSelectedDate] = useState(todayStr());
   const [alarmsByDate, setAlarmsByDate] = useState(() => {
-    const stored = localStorage.getItem('alarmsByDateV2');
+    const stored = localStorage.getItem('alarmsByDate');
     return stored ? JSON.parse(stored) : {};
   });
-  const currentDayAlarmList = alarmsByDate[selectedDate] || [];
+  const rawDayAlarms = alarmsByDate[selectedDate];
+  const currentDayAlarmList = Array.isArray(rawDayAlarms) ? rawDayAlarms : (rawDayAlarms && rawDayAlarms.time ? [rawDayAlarms] : []);
   const [pendingTime, setPendingTime] = useState(null);
   const [pendingOffset, setPendingOffset] = useState(15);
-  const firedKeysRef = useRef(new Set());
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [locationDialogOpen, setLocationDialogOpen] = useState(false);
+  const [weeklyForecastOpen, setWeeklyForecastOpen] = useState(false);
+  const [dayDetailOpen, setDayDetailOpen] = useState(false);
+  const [savedLocations, setSavedLocations] = useState(() => {
+    const stored = localStorage.getItem('moonSavedLocations');
+    return stored ? JSON.parse(stored) : [];
+  });
+  const contentRef = useRef(null);
 
   useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          if (!savedCoords) {
-            setCoords({ lat: pos.coords.latitude, lon: pos.coords.longitude });
-          }
-        },
-        () => {},
-        { timeout: 5000 }
-      );
-    }
+    const syncSaved = () => {
+      const stored = localStorage.getItem('moonSavedLocations');
+      setSavedLocations(stored ? JSON.parse(stored) : []);
+    };
+    window.addEventListener('moonSavedLocationsChanged', syncSaved);
+    return () => window.removeEventListener('moonSavedLocationsChanged', syncSaved);
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem('alarmsByDateV2', JSON.stringify(alarmsByDate));
-  }, [alarmsByDate]);
-
-  // Reset any pending (unsaved) alarm selection when switching days.
-  useEffect(() => {
-    setPendingTime(null);
-  }, [selectedDate]);
-
-  useEffect(() => {
-    const hasAnyAlarm = Object.values(alarmsByDate).some((list) => list.length > 0);
-    if (hasAnyAlarm && 'Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission();
-    }
-  }, [alarmsByDate]);
-
-  const parseTimeToMinutes = (timeStr) => {
-    const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
-    if (!match) return null;
-    let hours = parseInt(match[1]);
-    const minutes = parseInt(match[2]);
-    const period = match[3].toUpperCase();
-    if (period === 'PM' && hours !== 12) hours += 12;
-    if (period === 'AM' && hours === 12) hours = 0;
-    return hours * 60 + minutes;
+  const handleSelectDay = (dateStr) => {
+    setSelectedDate(dateStr);
+    setWeeklyForecastOpen(false);
+    setDayDetailOpen(true);
   };
 
-  // In-tab immediate fallback: every 30s, check all saved alarms across all
-  // dates and fire any that are due. The server-side checkAlarms function
-  // covers the case where this tab isn't open.
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const now = new Date();
-      Object.entries(alarmsByDate).forEach(([date, list]) => {
-        list.forEach((alarm) => {
-          const key = `${date}|${alarm.time}`;
-          if (firedKeysRef.current.has(key)) return;
-          const minutes = parseTimeToMinutes(alarm.time);
-          if (minutes == null) return;
-          const [y, m, d] = date.split('-').map(Number);
-          const alarmDate = new Date(y, m - 1, d, Math.floor(minutes / 60), minutes % 60, 0);
-          alarmDate.setMinutes(alarmDate.getMinutes() - alarm.offset);
-          if (now >= alarmDate && now - alarmDate < 15 * 60000) {
-            firedKeysRef.current.add(key);
-            if ('Notification' in window && Notification.permission === 'granted') {
-              new Notification('🎣 Fishing Time!', {
-                body: `Your feeding window (${alarm.time}) is starting${alarm.offset > 0 ? ` in ${alarm.offset} minutes` : ' now'}!`,
-              });
-            }
-          }
-        });
-      });
-    }, 30000);
-    return () => clearInterval(interval);
-  }, [alarmsByDate]);
+  const openLocationDialog = () => {
+    setLocationDialogOpen(true);
+  };
 
-  const handleLocationChange = (selectedLocation) => {
+  const selectLocationFromMap = (name, lat, lon) => {
+    handleLocationChange(name, lat, lon);
+  };
+
+  const isLocationSaved = () => {
+    return savedLocations.some(loc => loc.name === location);
+  };
+
+  const toggleSaveLocation = () => {
+    if (isLocationSaved()) {
+      const updated = savedLocations.filter(loc => loc.name !== location);
+      setSavedLocations(updated);
+      localStorage.setItem('moonSavedLocations', JSON.stringify(updated));
+    } else {
+      const newLoc = { name: location, lat: coords.lat, lon: coords.lon };
+      const updated = [...savedLocations, newLoc];
+      setSavedLocations(updated);
+      localStorage.setItem('moonSavedLocations', JSON.stringify(updated));
+    }
+  };
+
+  const selectSavedLocation = (loc) => {
+    handleLocationChange(loc.name, loc.lat, loc.lon);
+  };
+
+  // Moon phase calculation
+  const calculateMoonPhase = (date) => {
+    const knownNewMoon = new Date(2000, 0, 6);
+    const lunarMonth = 29.53058867;
+    const daysSinceNewMoon = (date - knownNewMoon) / (1000 * 60 * 60 * 24);
+    const daysInCycle = daysSinceNewMoon % lunarMonth;
+    const illumination = (1 - Math.cos(Math.PI * 2 * (daysInCycle / lunarMonth))) / 2;
+
+    let name = 'New Moon';
+    if (daysInCycle < 1.84) name = 'New Moon';
+    else if (daysInCycle < 7.38) name = 'Waxing Crescent';
+    else if (daysInCycle < 9.23) name = 'First Quarter';
+    else if (daysInCycle < 14.77) name = 'Waxing Gibbous';
+    else if (daysInCycle < 16.61) name = 'Full Moon';
+    else if (daysInCycle < 23.15) name = 'Waning Gibbous';
+    else if (daysInCycle < 25) name = 'Last Quarter';
+    else name = 'Waning Crescent';
+
+    return { name, illumination, daysInCycle };
+  };
+
+  const calculateFishingRating = (daysInCycle) => {
+    const lunarMonth = 29.53058867;
+    const distFromNew = Math.min(daysInCycle, lunarMonth - daysInCycle);
+    const distFromFull = Math.abs(daysInCycle - lunarMonth / 2);
+    const distFromMajor = Math.min(distFromNew, distFromFull);
+    if (distFromMajor < 1) return 7;
+    if (distFromMajor < 2.5) return 6;
+    if (distFromMajor < 4.5) return 5;
+    if (distFromMajor < 6) return 4;
+    return 3;
+  };
+
+  const getRatingLabel = (rating) => {
+    if (rating >= 7) return 'Excellent';
+    if (rating >= 6) return 'Very Good';
+    if (rating >= 5) return 'Good';
+    if (rating >= 4) return 'Fair';
+    return 'Moderate';
+  };
+
+  // Calculate moon data when date or location changes
+  useEffect(() => {
+    const [year, month, day] = selectedDate.split('-');
+    const date = new Date(year, month - 1, day);
+    const phase = calculateMoonPhase(date);
+    setMoonData({
+      date: date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
+      phase: phase.name,
+      illumination: Math.round(phase.illumination * 100),
+      location: location,
+      fishingRating: calculateFishingRating(phase.daysInCycle),
+    });
+  }, [location, selectedDate]);
+
+  // Fetch sun data from Environment Canada when coords change
+  useEffect(() => {
+    const fetchSunData = async () => {
+      try {
+        const res = await base44.functions.invoke('ecweather', { lat: coords.lat, lon: coords.lon });
+        const data = res.data;
+        if (data.daily && data.daily.time) {
+          const byDate = {};
+          data.daily.time.forEach((d, i) => {
+            byDate[d] = { sunriseIso: data.daily.sunrise?.[i], sunsetIso: data.daily.sunset?.[i] };
+          });
+          setSunDataByDate(byDate);
+        }
+      } catch (e) {}
+    };
+    fetchSunData();
+  }, [coords]);
+
+  // Location handling
+  const handleLocationChange = async (selectedLocation, lat, lon) => {
     const locationToUse = (typeof selectedLocation === 'string' && selectedLocation) || editingLocation;
-    if (locationToUse && locationToUse.trim()) {
-      localStorage.setItem('moonLocation', locationToUse);
-      setEditingLocation(locationToUse);
-      setLocation(locationToUse);
-      setShowSuggestions(false);
+    if (!locationToUse || !locationToUse.trim()) return;
+
+    setEditingLocation(locationToUse);
+    setLocation(locationToUse);
+    setPendingTime(null);
+    setShowSuggestions(false);
+
+    if (lat !== undefined && lon !== undefined) {
+      setSharedLocation(locationToUse, lat, lon);
+      setCoords({ lat, lon, name: locationToUse });
+    } else {
+      try {
+        const result = await geocodeLocation(locationToUse);
+        if (result) {
+          setSharedLocation(locationToUse, result.lat, result.lon);
+          setCoords({ lat: result.lat, lon: result.lon, name: locationToUse });
+        }
+      } catch (e) {}
     }
   };
 
@@ -183,208 +305,301 @@ export default function Moon() {
       return;
     }
     try {
-      const response = await fetch(
-        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(value)}&language=en&count=5&format=json`
-      );
-      const data = await response.json();
-      if (data.results) {
-        setSuggestions(data.results.map(r => ({
-          label: `${r.name}${r.admin1 ? ', ' + r.admin1 : ''}${r.country ? ', ' + r.country : ''}`,
-          lat: r.latitude,
-          lon: r.longitude,
-        })));
-        setShowSuggestions(true);
-      }
+      const results = await searchLocations(value, 5);
+      setSuggestions(results);
+      setShowSuggestions(true);
     } catch (err) {
       setSuggestions([]);
     }
   };
 
-  const handleSuggestionSelect = (suggestion) => {
-    setEditingLocation(suggestion.label);
-    setLocation(suggestion.label);
-    setCoords({ lat: suggestion.lat, lon: suggestion.lon });
-    localStorage.setItem('moonLocation', suggestion.label);
-    localStorage.setItem('moonCoords', JSON.stringify({ lat: suggestion.lat, lon: suggestion.lon }));
-    setShowSuggestions(false);
-    setSuggestions([]);
+  // Alarm handling
+  const parseTimeToMinutes = (timeStr) => {
+    const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+    if (!match) return null;
+    let hours = parseInt(match[1]);
+    const minutes = parseInt(match[2]);
+    const period = match[3].toUpperCase();
+    if (period === 'PM' && hours !== 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
+    return hours * 60 + minutes;
   };
 
-  const onToggleAlarm = (timeStr) => {
-    const existingIdx = currentDayAlarmList.findIndex(a => a.time === timeStr);
-    if (existingIdx >= 0) {
-      const updated = currentDayAlarmList.filter(a => a.time !== timeStr);
-      setAlarmsByDate({ ...alarmsByDate, [selectedDate]: updated });
+  const toggleAlarm = (timeStr) => {
+    const existing = currentDayAlarmList.find(a => a.time === timeStr);
+    if (existing) {
+      const newList = currentDayAlarmList.filter(a => a.time !== timeStr);
+      const updated = { ...alarmsByDate };
+      if (newList.length === 0) delete updated[selectedDate];
+      else updated[selectedDate] = newList;
+      setAlarmsByDate(updated);
+      setPendingTime(null);
+      clearFiredAlarms();
       removeAlarmFromServer(selectedDate, timeStr);
-      firedKeysRef.current.delete(`${selectedDate}|${timeStr}`);
       return;
     }
-    if (pendingTime === timeStr) {
-      setPendingTime(null);
-    } else {
-      setPendingTime(timeStr);
-      setPendingOffset(15);
-    }
+    setPendingTime(timeStr);
+    setPendingOffset(15);
   };
 
-  const onSaveAlarm = () => {
+  const saveAlarm = () => {
     if (!pendingTime) return;
-    const newAlarm = { time: pendingTime, offset: pendingOffset };
-    setAlarmsByDate({
-      ...alarmsByDate,
-      [selectedDate]: [...currentDayAlarmList, newAlarm],
-    });
+    const timeInMinutes = parseTimeToMinutes(pendingTime);
+    if (!timeInMinutes) return;
+
+    const offset = pendingOffset;
+
+    const existing = currentDayAlarmList.find(a => a.time === pendingTime);
+    const newList = existing
+      ? currentDayAlarmList.map(a => a.time === pendingTime ? { time: pendingTime, enabled: true, offset } : a)
+      : [...currentDayAlarmList, { time: pendingTime, enabled: true, offset }];
+
+    setAlarmsByDate({ ...alarmsByDate, [selectedDate]: newList });
+    clearFiredAlarms();
+    ensurePushSubscription();
     syncAlarmToServer(selectedDate, pendingTime, pendingOffset, location);
+
+    if ('Notification' in window && Notification.permission !== 'granted') {
+      import('@/components/ui/use-toast').then(({ toast }) => {
+        toast({
+          title: 'Enable notifications',
+          description: 'Go to Settings to enable push notifications so this alarm fires when the app is closed.',
+        });
+      });
+    }
+
     setPendingTime(null);
   };
 
-  // --- Derived astronomy for the selected day ---
-  const [y, m, d] = selectedDate.split('-').map(Number);
-  const selectedDateObj = new Date(y, m - 1, d, 12, 0, 0); // noon, avoids DST edge cases
-  const daysCycle = daysInCycleFor(selectedDateObj);
-  const illum = getMoonIllumination(selectedDateObj);
-  const phaseName = getMoonPhaseName(illum.phase);
-  const fishPct = getFishBitePercentage(daysCycle);
-  const ratingTier = Math.max(1, Math.min(7, Math.round((fishPct / 100) * 7)));
-  const ratingLabel = getRatingLabel(fishPct);
+  // Persist alarms & cleanup
+  useEffect(() => {
+    localStorage.setItem('alarmsByDate', JSON.stringify(alarmsByDate));
+  }, [alarmsByDate]);
 
-  const sunTimes = getSunTimes(selectedDateObj, coords.lat, coords.lon);
-  const moonTimes = getMoonTimes(selectedDateObj, coords.lat, coords.lon);
-  const moonTransit = getMoonTransit(selectedDateObj, coords.lat, coords.lon);
-
-  const solunar = {
-    major: [
-      moonTimes.rise
-        ? { text: 'Moonrise to 2 hrs after', time: `${formatTime(moonTimes.rise)} - ${formatTime(addMinutes(moonTimes.rise, 120))}` }
-        : null,
-      { text: 'Moon highest point', time: formatTime(moonTransit) },
-      moonTimes.set
-        ? { text: 'Moonset to 2 hrs after', time: `${formatTime(moonTimes.set)} - ${formatTime(addMinutes(moonTimes.set, 120))}` }
-        : null,
-    ].filter(Boolean),
-    minor: [
-      { text: 'Sunrise to 30 min after', time: `${formatTime(sunTimes.sunrise)} - ${formatTime(addMinutes(sunTimes.sunrise, 30))}` },
-      { text: 'Sunset to 30 min after', time: `${formatTime(sunTimes.sunset)} - ${formatTime(addMinutes(sunTimes.sunset, 30))}` },
-    ],
-  };
-
-  // Activity chart: 5-day window centered on the selected date, matching DateSelector.
-  const todayStr = toDateStr(new Date());
-  const activityDays = [-2, -1, 0, 1, 2].map((offset) => {
-    const dt = new Date(selectedDateObj);
-    dt.setDate(dt.getDate() + offset);
-    const dateStr = toDateStr(dt);
-    const isToday = dateStr === todayStr;
-    const now = new Date();
-    let highlightIndex = null;
-    if (isToday) {
-      const hour = now.getHours() + now.getMinutes() / 60;
-      if (hour >= 5) highlightIndex = Math.min(19, Math.round(hour - 5));
+  useEffect(() => {
+    if (currentDayAlarmList.length > 0 && 'Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
     }
+  }, [currentDayAlarmList.length]);
+
+  const moonTimes = useMemo(() => {
+    const [year, month, day] = selectedDate.split('-');
+    const date = new Date(year, month - 1, day);
+    return getMoonTimes(date, coords.lat, coords.lon);
+  }, [selectedDate, coords]);
+
+  const sunData = useMemo(() => {
+    const raw = sunDataByDate[selectedDate];
+    if (!raw) return null;
+    const sunriseMin = parseToMinutes(raw.sunriseIso);
+    const sunsetMin = parseToMinutes(raw.sunsetIso);
+    if (sunriseMin == null || sunsetMin == null) return null;
+    return {
+      sunrise: parseTimeFromIso(raw.sunriseIso),
+      sunset: parseTimeFromIso(raw.sunsetIso),
+      zenith: minutesToTime((sunriseMin + sunsetMin) / 2),
+      sunriseMin,
+      sunsetMin,
+    };
+  }, [sunDataByDate, selectedDate]);
+
+  const currentSlot = Math.floor((new Date().getHours() * 60 + new Date().getMinutes()) / 30);
+  const multiDayActivity = useMemo(() => Array.from({ length: 10 }, (_, i) => {
+    const offset = i - 3;
+    const [yr, mo, dy] = selectedDate.split('-');
+    const date = new Date(yr, mo - 1, dy);
+    date.setDate(date.getDate() + offset);
+    const dateStr = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+    const phase = calculateMoonPhase(date);
+    const rating = calculateFishingRating(phase.daysInCycle);
+
+    const dayMoon = getMoonTimes(date, coords.lat, coords.lon);
+    const daySun = sunDataByDate[dateStr];
+    const dayMajor = [];
+    if (dayMoon.transit != null) dayMajor.push({ startMin: Math.round(dayMoon.transit) - 60, endMin: Math.round(dayMoon.transit) + 60 });
+    if (dayMoon.underfoot != null) dayMajor.push({ startMin: Math.round(dayMoon.underfoot) - 60, endMin: Math.round(dayMoon.underfoot) + 60 });
+    const dayMinor = [];
+    if (dayMoon.moonrise != null) dayMinor.push({ startMin: Math.round(dayMoon.moonrise) - 30, endMin: Math.round(dayMoon.moonrise) + 30 });
+    if (dayMoon.moonset != null) dayMinor.push({ startMin: Math.round(dayMoon.moonset) - 30, endMin: Math.round(dayMoon.moonset) + 30 });
+    if (daySun) {
+      const sr = parseToMinutes(daySun.sunriseIso);
+      const ss = parseToMinutes(daySun.sunsetIso);
+      if (sr != null) dayMinor.push({ startMin: sr - 30, endMin: sr + 30 });
+      if (ss != null) dayMinor.push({ startMin: ss - 30, endMin: ss + 30 });
+    }
+
+    const fullLevels = computeActivityLevels(dayMajor, dayMinor);
+    const scaleFactor = 0.55 + (rating / 7) * 0.45;
+    const dayLevels = fullLevels.map(l => Math.round(l * scaleFactor)).slice(10);
+    const isTodayDay = dateStr === todayStr();
+    const highlightIndex = isTodayDay
+      ? (currentSlot >= 10 ? currentSlot - 10 : null)
+      : dayLevels.indexOf(Math.max(...dayLevels));
     return {
       dateStr,
-      label: isToday ? 'Today' : dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
-      levels: buildActivityLevels(dt, coords.lat, coords.lon),
+      label: isTodayDay ? 'Today' : offset === 0 ? date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : offset === 1 ? 'Tomorrow' : date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
+      levels: dayLevels,
       highlightIndex,
     };
-  });
+  }), [selectedDate, coords, sunDataByDate, currentSlot]);
+
+  if (!moonData) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  const solunar = buildSolunarTimes(moonTimes, sunData);
+  const ratingPercent = Math.round((moonData.fishingRating / 7) * 100);
 
   return (
-    <div className="min-h-screen bg-background p-4 pb-20">
+    <div className="space-y-6 md:space-y-8 -mt-4 md:-mt-8">
       <div className="max-w-2xl mx-auto space-y-4">
+      <div ref={contentRef} className="space-y-4">
         {/* Header */}
-        <div className="text-center mb-4">
-          <h1 className="text-3xl font-display font-bold mb-2">Moon Phase</h1>
-          <p className="text-muted-foreground text-sm">Check lunar phases and solunar feeding times to plan your fishing trips.</p>
-
-          {/* Location Selector */}
-          <div className="mt-4 flex gap-2 max-w-md mx-auto">
-            <div className="flex-1 relative">
-              <input
-                type="text"
-                value={editingLocation}
-                onChange={(e) => handleLocationInput(e.target.value)}
-                placeholder="Enter location"
-                className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-card text-foreground placeholder:text-muted-foreground text-center"
-                onKeyPress={(e) => e.key === 'Enter' && handleLocationChange()}
-                onFocus={(e) => {
-                  e.target.select();
-                  editingLocation.trim().length >= 2 && setShowSuggestions(true);
-                }}
-                onBlur={() => setTimeout(() => setShowSuggestions(false), 100)}
-              />
-              {showSuggestions && suggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-50 max-h-40 overflow-y-auto" onMouseDown={(e) => e.preventDefault()}>
-                  {suggestions.map((suggestion, idx) => (
-                    <div
-                      key={idx}
-                      onClick={() => handleSuggestionSelect(suggestion)}
-                      className="w-full px-3 py-2.5 text-xs text-left hover:bg-primary/10 border-b border-border/50 last:border-b-0 transition-colors cursor-pointer"
-                    >
-                      {suggestion.label}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="mt-3 flex items-center justify-center gap-1.5 text-sm text-muted-foreground">
-            <MapPin className="w-4 h-4" />
-            {location}
-          </div>
+        <div className="space-y-2 px-1">
+          <h1 className="text-2xl md:text-[34px] font-heading font-extrabold tracking-tight leading-tight">Moon Phase</h1>
         </div>
 
-        {/* Date Selector */}
+        {/* Day Rating Card */}
         <Card>
-          <CardContent className="py-3">
-            <DateSelector selectedDate={selectedDate} onSelectDate={setSelectedDate} />
-          </CardContent>
-        </Card>
-
-        {/* Fish Bite Rating + Phase */}
-        <Card className="bg-primary/10">
-          <CardHeader className="text-center pb-2">
-            <CardTitle className="text-2xl">{phaseName}</CardTitle>
-            <CardDescription>
-              {selectedDateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center gap-3 pb-6">
-            <DayRatingRing percentage={fishPct} rating={ratingTier} ratingLabel={ratingLabel} />
-            <div className="flex justify-center gap-1.5">
-              {[1, 2, 3, 4, 5, 6, 7].map((n) => (
-                <FishIcon
-                  key={n}
-                  className={`w-5 h-5 transition-opacity ${n <= ratingTier ? 'opacity-100' : 'opacity-25'}`}
-                />
-              ))}
+          <CardContent className="pt-3 pb-3">
+            <div className="flex items-center gap-3">
+              <div className="flex-1">
+                <DayRatingRing percentage={ratingPercent} rating={moonData.fishingRating} ratingLabel={getRatingLabel(moonData.fishingRating).toUpperCase()} />
+                <div className="flex gap-1.5 mt-2">
+                  {[1, 2, 3, 4, 5, 6, 7].map((n) => (
+                    <FishIcon
+                      key={n}
+                      className={`w-6 h-6 text-primary transition-opacity ${n <= moonData.fishingRating ? 'opacity-100' : 'opacity-25'}`}
+                    />
+                  ))}
+                </div>
+                <div className="flex flex-col items-start gap-1.5 mt-2">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button className="text-xs text-primary/70 hover:text-primary transition-colors bg-primary/10 hover:bg-primary/20 px-2 py-0.5 rounded-full border border-primary/20 font-medium">
+                        For: {moonData.date}
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 pl-3" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={new Date(selectedDate + 'T00:00:00')}
+                        onSelect={(date) => {
+                          if (date) {
+                            const y = date.getFullYear();
+                            const m = String(date.getMonth() + 1).padStart(2, '0');
+                            const d = String(date.getDate()).padStart(2, '0');
+                            setSelectedDate(`${y}-${m}-${d}`);
+                          }
+                        }}
+                        className="p-3"
+                        classNames={{
+                          head_cell: "text-muted-foreground rounded-md w-12 font-normal text-sm",
+                          cell: "relative p-0 text-center text-sm focus-within:relative focus-within:z-20",
+                          day: "h-11 w-11 p-0 font-normal text-sm aria-selected:opacity-100",
+                          nav_button: "h-9 w-9 bg-transparent p-0 opacity-50 hover:opacity-100",
+                          caption_label: "text-base font-medium",
+                        }}
+                        modifiers={{
+                          goodFishing: (date) => {
+                            const phase = calculateMoonPhase(date);
+                            return calculateFishingRating(phase.daysInCycle) >= 5;
+                          },
+                        }}
+                        modifiersStyles={{
+                          goodFishing: {
+                            border: '2px solid #16a34a',
+                            borderRadius: '50%',
+                          },
+                        }}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <div className="relative flex items-center gap-1">
+                    <div className="flex items-center gap-1 bg-muted/50 rounded-full px-2 py-0.5 border border-border">
+                      <MapPin className="w-3 h-3 text-muted-foreground shrink-0" />
+                      <input
+                        value={editingLocation}
+                        onChange={(e) => handleLocationInput(e.target.value)}
+                        onFocus={() => { if (suggestions.length) setShowSuggestions(true); }}
+                        onBlur={() => { setTimeout(() => setShowSuggestions(false), 200); handleLocationChange(editingLocation); }}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { setShowSuggestions(false); handleLocationChange(editingLocation); } }}
+                        placeholder="Search location..."
+                        className="text-xs bg-transparent outline-none w-32 placeholder:text-muted-foreground/50"
+                      />
+                    </div>
+                    <button
+                      onClick={openLocationDialog}
+                      className="p-1 rounded-full hover:bg-accent/20 text-muted-foreground hover:text-primary transition-colors"
+                      title="Pick on map"
+                    >
+                      <MapPin className="w-3.5 h-3.5" />
+                    </button>
+                    {showSuggestions && suggestions.length > 0 && (
+                      <div className="absolute z-[5000] top-full left-0 mt-1 max-h-48 overflow-y-auto bg-popover rounded-lg shadow-lg border border-border min-w-48">
+                        {suggestions.map((s, i) => (
+                          <button
+                            key={i}
+                            onMouseDown={(e) => { e.preventDefault(); handleLocationChange(s.name, s.lat, s.lon); setShowSuggestions(false); }}
+                            className="w-full text-left px-3 py-2 text-xs hover:bg-accent/10 truncate flex items-center gap-1.5"
+                          >
+                            <MapPin className="w-3 h-3 text-muted-foreground shrink-0" />
+                            {s.name}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className={`shrink-0 relative w-20 h-20 flex items-center justify-center ${moonData.fishingRating >= 5 ? 'animate-pulse-slow' : ''}`}>
+                <svg className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none" viewBox="0 0 80 80">
+                  <circle cx="40" cy="40" r="34" fill="none" stroke="hsl(var(--muted))" strokeWidth="8" />
+                  <circle
+                    cx="40" cy="40" r="34" fill="none"
+                    stroke={moonData.fishingRating >= 5 ? '#16a34a' : '#ca8a04'}
+                    strokeWidth="8"
+                    strokeLinecap="round"
+                    strokeDasharray={`${(ratingPercent / 100) * 2 * Math.PI * 34} ${2 * Math.PI * 34}`}
+                  />
+                </svg>
+                <span
+                  className="text-xl font-bold text-foreground cursor-pointer hover:text-primary transition-colors"
+                  onClick={() => setWeeklyForecastOpen(true)}
+                >
+                  {ratingPercent}%
+                </span>
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Hourly Fish Activity */}
+        {/* Activity Chart */}
         <Card>
-          <CardHeader className="pb-2">
+          <CardHeader className="pt-3 pb-0">
             <CardTitle className="text-base">Hourly Fish Activity</CardTitle>
-            <CardDescription>Predicted bite activity through the day</CardDescription>
           </CardHeader>
-          <CardContent>
-            <ActivityChart days={activityDays} scrollToDate={selectedDate} />
+          <CardContent className="pt-0 pb-3">
+            <ActivityChart days={multiDayActivity} scrollToDate={selectedDate} />
           </CardContent>
         </Card>
 
-        {/* Solunar Feeding Times */}
+        {/* Major & Minor Times — Two Columns */}
         <Card className="bg-card border-primary/20">
-          <CardHeader className="pb-2">
+          <CardHeader className="pt-3 pb-2">
             <CardTitle className="flex items-center gap-2 text-base">
               Solunar Feeding Times
               <Waves className="w-5 h-5 text-primary" />
             </CardTitle>
-            <CardDescription>Major & minor feeding windows for {selectedDateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</CardDescription>
+            <CardDescription>Major & minor feeding windows for {moonData.date}</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-3 pb-3">
             <div className="grid grid-cols-2 gap-2">
+              {/* Major Times */}
               <div className="border-r border-border pr-2">
                 <p className="text-xs font-bold text-primary tracking-wide mb-3">MAJOR TIME</p>
                 <ul className="space-y-2">
@@ -394,9 +609,9 @@ export default function Moon() {
                     return (
                       <li key={idx}>
                         <div className="flex items-center gap-1.5 whitespace-nowrap">
-                          <p className="text-sm font-medium whitespace-nowrap">{item.time}</p>
-                          <button
-                            onClick={() => onToggleAlarm(alarmTime)}
+                           <p className="text-sm font-medium whitespace-nowrap">{item.time}</p>
+                           <button
+                             onClick={() => toggleAlarm(alarmTime)}
                             className={`p-1 rounded-md flex items-center transition-colors ${
                               hasAlarm
                                 ? 'bg-primary text-primary-foreground'
@@ -414,6 +629,7 @@ export default function Moon() {
                   })}
                 </ul>
               </div>
+              {/* Minor Times */}
               <div>
                 <p className="text-xs font-bold text-amber-500 tracking-wide mb-3">MINOR TIME</p>
                 <ul className="space-y-2">
@@ -427,6 +643,7 @@ export default function Moon() {
               </div>
             </div>
 
+            {/* Pending alarm UI */}
             {(pendingTime || currentDayAlarmList.length > 0) && (
               <div className="mt-4 space-y-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
                 {pendingTime ? (
@@ -448,7 +665,7 @@ export default function Moon() {
                     </div>
                     <div className="flex gap-2">
                       <button
-                        onClick={onSaveAlarm}
+                        onClick={saveAlarm}
                         className="flex-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center gap-1.5 transition-colors"
                       >
                         <Save className="w-3.5 h-3.5" /> Save Alarm
@@ -472,65 +689,114 @@ export default function Moon() {
                       </div>
                     ))}
                     <p className="text-xs text-green-600">
-                      {currentDayAlarmList.length} alarm{currentDayAlarmList.length !== 1 ? 's' : ''} active
+                      {currentDayAlarmList.length} alarm{currentDayAlarmList.length !== 1 ? 's' : ''} active for {selectedDate}
                     </p>
                   </div>
                 )}
               </div>
             )}
+
           </CardContent>
         </Card>
 
         {/* Sun & Moon Footer */}
         <Card>
-          <CardContent className="pt-4 pb-4">
+          <CardContent className="pt-3 pb-3">
             <SunMoonFooter
-              sunrise={formatTime(sunTimes.sunrise)}
-              sunset={formatTime(sunTimes.sunset)}
-              zenith={formatTime(sunTimes.solarNoon)}
-              moonPhase={phaseName}
-              illumination={Math.round(illum.fraction * 100)}
+              sunrise={sunData?.sunrise}
+              sunset={sunData?.sunset}
+              zenith={sunData?.zenith}
+              moonPhase={moonData.phase}
+              illumination={moonData.illumination}
             />
           </CardContent>
         </Card>
 
         {/* Fishing Tips */}
-        <Card className="bg-secondary/30">
-          <CardHeader>
-            <CardTitle className="text-base">Fishing Tips for {phaseName}</CardTitle>
+        <Card className="bg-secondary/30 border-0 shadow-none">
+          <CardHeader className="pt-0 pb-2">
+            <CardTitle className="text-base">Fishing Tips for {moonData.phase}</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            {phaseName === 'Full Moon' && (
+          <CardContent className="space-y-1.5 text-sm pt-0 pb-3">
+            {moonData.phase === 'Full Moon' && (
               <>
-                <p>✓ Excellent fishing conditions—bright light aids fish spotting of prey</p>
-                <p>✓ Night fishing is particularly productive</p>
-                <p>✓ Fish may be more active in deeper water during the day</p>
+                <p className="whitespace-nowrap">✓ Excellent — bright light aids fish spotting prey</p>
+                <p className="whitespace-nowrap">✓ Night fishing is particularly productive</p>
+                <p className="whitespace-nowrap">✓ Fish more active in deeper water during the day</p>
               </>
             )}
-            {phaseName === 'New Moon' && (
+            {moonData.phase === 'New Moon' && (
               <>
-                <p>✓ Daytime fishing can be excellent—less light means more feeding</p>
-                <p>✓ Night fishing is challenging due to darkness</p>
-                <p>✓ Darker nights push fish to feed more during day</p>
+                <p className="whitespace-nowrap">✓ Daytime fishing can be excellent — less light, more feeding</p>
+                <p className="whitespace-nowrap">✓ Night fishing is challenging due to darkness</p>
+                <p className="whitespace-nowrap">✓ Darker nights push fish to feed more during day</p>
               </>
             )}
-            {(phaseName.includes('Crescent') || phaseName.includes('Gibbous')) && (
+            {(moonData.phase.includes('Crescent') || moonData.phase.includes('Gibbous')) && (
               <>
-                <p>✓ Transitional phase—good all-around fishing conditions</p>
-                <p>✓ Balance between day and night feeding activity</p>
-                <p>✓ Consistent activity throughout the day</p>
+                <p className="whitespace-nowrap">✓ Transitional phase — good all-around fishing</p>
+                <p className="whitespace-nowrap">✓ Balance between day and night feeding activity</p>
+                <p className="whitespace-nowrap">✓ Consistent activity throughout the day</p>
               </>
             )}
-            {phaseName.includes('Quarter') && (
+            {moonData.phase.includes('Quarter') && (
               <>
-                <p>✓ Moderate fishing conditions</p>
-                <p>✓ Morning and evening peaks are more pronounced</p>
-                <p>✓ Follow solunar feeding times closely</p>
+                <p className="whitespace-nowrap">✓ Moderate fishing conditions</p>
+                <p className="whitespace-nowrap">✓ Morning and evening peaks are more pronounced</p>
+                <p className="whitespace-nowrap">✓ Follow solunar feeding times closely</p>
               </>
             )}
           </CardContent>
         </Card>
+
       </div>
+        {/* Share */}
+        <div className="px-1">
+          <ShareStatusButton
+            targetRef={contentRef}
+            title={`Moon & Fishing — ${moonData.date}`}
+            text={[
+              `🌙 ${moonData.phase} (${moonData.illumination}% illuminated)`,
+              `🐟 Fishing Rating: ${getRatingLabel(moonData.fishingRating)} (${moonData.fishingRating}/7)`,
+              `📍 ${moonData.location}`,
+              solunar.major.length ? `Major: ${solunar.major.map(m => m.time).join(', ')}` : '',
+              solunar.minor.length ? `Minor: ${solunar.minor.map(m => m.time).join(', ')}` : '',
+              sunData?.sunrise ? `Sunrise: ${parseTimeFromIso(sunData.sunrise)}` : '',
+              sunData?.sunset ? `Sunset: ${parseTimeFromIso(sunData.sunset)}` : '',
+            ].filter(Boolean).join('\n')}
+          />
+        </div>
+      </div>
+
+      <WeeklyBiteForecast
+        open={weeklyForecastOpen}
+        onOpenChange={setWeeklyForecastOpen}
+        startDate={selectedDate}
+        onSelectDay={handleSelectDay}
+      />
+
+      <DaySolunarDialog
+        open={dayDetailOpen}
+        onOpenChange={setDayDetailOpen}
+        moonData={moonData}
+        solunar={solunar}
+        sunData={sunData}
+        currentDayAlarmList={currentDayAlarmList}
+        onToggleAlarm={toggleAlarm}
+        pendingTime={pendingTime}
+        setPendingTime={setPendingTime}
+        pendingOffset={pendingOffset}
+        setPendingOffset={setPendingOffset}
+        onSaveAlarm={saveAlarm}
+      />
+
+      <LocationMapPicker
+        open={locationDialogOpen}
+        onOpenChange={setLocationDialogOpen}
+        initialCoords={coords}
+        savedLocations={savedLocations}
+        onSelect={selectLocationFromMap}
+      />
     </div>
   );
 }
