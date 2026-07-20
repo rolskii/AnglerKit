@@ -1,36 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Cloud, CloudRain, Sun, Wind, Droplets, Eye, MapPin, ChevronDown } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Droplets, Wind, Eye, MapPin, Gauge, Thermometer } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import WeatherGlyph from '@/components/weather/WeatherGlyph';
+import AirQualityCard from '@/components/weather/AirQualityCard';
+import AlertColorSymbols from '@/components/weather/AlertColorSymbols';
+import HourlyConditionsCard from '@/components/weather/HourlyConditionsCard';
+import DayForecastDialog from '@/components/weather/DayForecastDialog';
+import { formatTemp, formatWind, formatPressure } from '@/lib/weatherUnits';
 
 // ecweather always returns metric values (°C, km/h, km) regardless of the
 // `unit` param it's given — that param only controls the wording of EC's
-// prose forecast text. These convert the numeric fields for display.
-const cToF = (c) => (c * 9) / 5 + 32;
-const kmhToMph = (kmh) => kmh * 0.621371;
+// prose forecast text. formatTemp/formatWind/formatPressure (from
+// @/lib/weatherUnits) do the display-time conversion, so the raw metric
+// payload is kept as-is here rather than pre-converted.
 const kmToMi = (km) => km * 0.621371;
 
-function convertWeatherForDisplay(weatherData, unit) {
-  const convertTemp = (v) => (v == null ? v : unit === 'fahrenheit' ? cToF(v) : v);
-  const convertBlock = (block) => {
-    if (!block) return block;
-    const out = { ...block };
-    if ('temperature_2m' in out) out.temperature_2m = Array.isArray(out.temperature_2m)
-      ? out.temperature_2m.map(convertTemp) : convertTemp(out.temperature_2m);
-    if ('temperature_2m_max' in out) out.temperature_2m_max = out.temperature_2m_max.map(convertTemp);
-    if ('temperature_2m_min' in out) out.temperature_2m_min = out.temperature_2m_min.map(convertTemp);
-    if ('apparent_temperature' in out) out.apparent_temperature = convertTemp(out.apparent_temperature);
-    if ('wind_speed_10m' in out) out.wind_speed_10m = Array.isArray(out.wind_speed_10m)
-      ? out.wind_speed_10m.map(kmhToMph) : kmhToMph(out.wind_speed_10m);
-    if ('visibility' in out) out.visibility = kmToMi(out.visibility);
-    return out;
+const getWeatherDescription = (code) => {
+  const codes = {
+    0: 'Clear', 1: 'Mostly Clear', 2: 'Partly Cloudy', 3: 'Cloudy',
+    45: 'Foggy', 48: 'Foggy', 51: 'Light Drizzle', 53: 'Drizzle',
+    55: 'Heavy Drizzle', 61: 'Light Rain', 63: 'Rain', 65: 'Heavy Rain',
+    71: 'Light Snow', 73: 'Snow', 75: 'Heavy Snow',
+    80: 'Light Showers', 81: 'Showers', 82: 'Heavy Showers',
+    85: 'Light Snow Showers', 86: 'Snow Showers',
+    95: 'Thunderstorm', 96: 'Thunderstorm with Hail', 99: 'Thunderstorm with Hail',
   };
-  return {
-    current: convertBlock(weatherData.current),
-    daily: convertBlock(weatherData.daily),
-    hourly: convertBlock(weatherData.hourly),
-  };
-}
+  return codes[code] || 'Unknown';
+};
 
 export default function Weather() {
   const savedLocation = localStorage.getItem('weatherLocation');
@@ -45,7 +42,9 @@ export default function Weather() {
   const [tempUnit, setTempUnit] = useState(() => localStorage.getItem('weatherTempUnit') || 'fahrenheit');
   const [lastCoords, setLastCoords] = useState(savedCoords ? JSON.parse(savedCoords) : null);
   const [userCoords, setUserCoords] = useState(null);
-  const [selectedDay, setSelectedDay] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [dayDialogOpen, setDayDialogOpen] = useState(false);
+  const [dayDialogData, setDayDialogData] = useState(null);
 
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
     const R = 3959;
@@ -63,7 +62,9 @@ export default function Weather() {
   };
 
   // EC-primary-for-Canada / WeatherKit-elsewhere, via the ecweather backend
-  // function — replaces the old direct-to-Open-Meteo calls.
+  // function. The response is kept in raw metric units — formatTemp/
+  // formatWind/formatPressure/formatVisibility (from @/lib/weatherUnits)
+  // convert for display based on tempUnit.
   const fetchEcWeather = async (lat, lon, unit) => {
     const now = new Date();
     const localDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
@@ -73,7 +74,7 @@ export default function Weather() {
     if (!data || data.error) {
       throw new Error(data?.error || 'Failed to fetch weather data.');
     }
-    return convertWeatherForDisplay(data, unit);
+    return data;
   };
 
   const fetchWeatherByCoords = async (lat, lon, locationName, unit = tempUnit) => {
@@ -167,7 +168,6 @@ export default function Weather() {
     const loc = (typeof overrideLocation === 'string' && overrideLocation) || editingLocation;
     if (!loc || !loc.trim()) return;
 
-    // If the location text hasn't changed and we already have coords, refetch directly
     if (lastCoords && loc.trim() === location) {
       fetchWeatherByCoords(lastCoords.lat, lastCoords.lon, lastCoords.name || loc);
       return;
@@ -213,40 +213,9 @@ export default function Weather() {
     }
   }, []);
 
-  const getWeatherDescription = (code) => {
-    const codes = {
-      0: 'Clear',
-      1: 'Mostly Clear',
-      2: 'Partly Cloudy',
-      3: 'Cloudy',
-      45: 'Foggy',
-      48: 'Foggy',
-      51: 'Light Drizzle',
-      53: 'Drizzle',
-      55: 'Heavy Drizzle',
-      61: 'Light Rain',
-      63: 'Rain',
-      65: 'Heavy Rain',
-      71: 'Light Snow',
-      73: 'Snow',
-      75: 'Heavy Snow',
-      80: 'Light Showers',
-      81: 'Showers',
-      82: 'Heavy Showers',
-      85: 'Light Snow Showers',
-      86: 'Snow Showers',
-      95: 'Thunderstorm',
-      96: 'Thunderstorm with Hail',
-      99: 'Thunderstorm with Hail',
-    };
-    return codes[code] || 'Unknown';
-  };
-
-  const getWeatherIcon = (code) => {
-    if (code === 0 || code === 1) return Sun;
-    if (code === 2 || code === 3) return Cloud;
-    if (code >= 51 && code <= 99) return CloudRain;
-    return Cloud;
+  const openDayDialog = (date, idx) => {
+    setDayDialogData({ date, idx, daily: weather.daily });
+    setDayDialogOpen(true);
   };
 
   if (loading) {
@@ -279,13 +248,27 @@ export default function Weather() {
 
   const current = weather.current;
   const daily = weather.daily;
-  const WeatherIcon = getWeatherIcon(current.weather_code);
+  const hourly = weather.hourly;
+
+  const futureDays = daily.time
+    .map((date, idx) => ({ date, idx }))
+    .filter(({ date }) => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return new Date(date + 'T00:00:00') >= today;
+    });
+
+  const weekMax = Math.max(...futureDays.map(({ idx }) => daily.temperature_2m_max[idx]));
+  const weekMin = Math.min(...futureDays.map(({ idx }) => daily.temperature_2m_min[idx]));
+  const weekSpan = Math.max(1, weekMax - weekMin);
+
+  const dailySummary = daily.text_summary?.[0] || daily.night_text_summary?.[0] || null;
 
   return (
     <div className="min-h-screen bg-background p-4 pb-20">
-      <div className="max-w-2xl mx-auto space-y-6">
+      <div className="max-w-2xl mx-auto space-y-4">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-4">
           <div className="flex items-center justify-center gap-3 mb-2">
             <h1 className="text-3xl font-display font-bold">Weather</h1>
             <button
@@ -296,7 +279,7 @@ export default function Weather() {
               °{tempUnit === 'fahrenheit' ? 'F' : 'C'}
             </button>
           </div>
-          <p className="text-muted-foreground">Check current weather conditions and 7-day forecast for your fishing location.</p>
+          <p className="text-muted-foreground text-sm">Current conditions and forecast for your fishing location.</p>
         </div>
 
         {/* Location Controls */}
@@ -356,118 +339,124 @@ export default function Weather() {
           </CardContent>
         </Card>
 
+        {/* Alerts */}
+        <AlertColorSymbols alerts={weather.alerts} />
+
         {/* Current Weather Card */}
         <Card className="bg-primary/10">
-          <CardContent className="pt-6">
-            <div className="space-y-6">
-              {/* Temperature and Condition */}
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-5xl font-bold text-primary">{Math.round(current.temperature_2m)}°</p>
-                  <p className="text-muted-foreground mt-1">{getWeatherDescription(current.weather_code)}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Feels like {Math.round(current.apparent_temperature)}°</p>
-                </div>
-                <div className="flex items-center justify-center">
-                  <WeatherIcon className="w-24 h-24 text-primary" />
-                </div>
+          <CardContent className="pt-6 space-y-4">
+            {/* Temperature and Condition */}
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-5xl font-bold text-primary">{formatTemp(current.temperature_2m, tempUnit)}°</p>
+                <p className="text-muted-foreground mt-1">{current.condition || getWeatherDescription(current.weather_code)}</p>
+                <p className="text-xs text-muted-foreground mt-1">Feels like {formatTemp(current.apparent_temperature, tempUnit)}°</p>
               </div>
+              <div className="w-24 h-24 flex items-center justify-center">
+                <WeatherGlyph code={current.weather_code} className="w-24 h-24" animated />
+              </div>
+            </div>
 
-              {/* Conditions Grid */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-card p-4 rounded-lg">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                    <Droplets className="w-4 h-4" />
-                    Humidity
-                  </div>
-                  <p className="text-lg font-semibold">{current.relative_humidity_2m}%</p>
+            {/* EC / WeatherKit text summary */}
+            {dailySummary && (
+              <p className="text-sm text-foreground/80 leading-relaxed bg-card/60 rounded-lg p-3">{dailySummary}</p>
+            )}
+
+            {/* AQHI (Ontario only) */}
+            <AirQualityCard airQuality={weather.air_quality} />
+
+            {/* Conditions Grid */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-card p-3 rounded-lg">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                  <Droplets className="w-4 h-4" />
+                  Humidity
                 </div>
-                <div className="bg-card p-4 rounded-lg">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                    <Wind className="w-4 h-4" />
-                    Wind Speed
-                  </div>
-                  <p className="text-lg font-semibold">{Math.round(current.wind_speed_10m)} mph</p>
-                </div>
-                <div className="bg-card p-4 rounded-lg">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                    <Eye className="w-4 h-4" />
-                    Visibility
-                  </div>
-                  <p className="text-lg font-semibold">{current.visibility.toFixed(1)} mi</p>
-                </div>
-                <div className="bg-card p-4 rounded-lg">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                    <CloudRain className="w-4 h-4" />
-                    Precipitation
-                  </div>
-                  <p className="text-lg font-semibold">{current.precipitation.toFixed(2)}"</p>
-                </div>
+                <p className="text-lg font-semibold">{current.relative_humidity_2m}%</p>
               </div>
+              <div className="bg-card p-3 rounded-lg">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                  <Wind className="w-4 h-4" />
+                  Wind
+                </div>
+                <p className="text-lg font-semibold">{formatWind(current.wind_speed_10m, tempUnit)}</p>
+              </div>
+              <div className="bg-card p-3 rounded-lg">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                  <Thermometer className="w-4 h-4" />
+                  {current.humidex != null ? 'Humidex' : 'Dew Point'}
+                </div>
+                <p className="text-lg font-semibold">
+                  {current.humidex != null ? formatTemp(current.humidex, tempUnit) : formatTemp(current.dewpoint, tempUnit)}°
+                </p>
+              </div>
+              <div className="bg-card p-3 rounded-lg">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                  <Gauge className="w-4 h-4" />
+                  Pressure
+                </div>
+                <p className="text-lg font-semibold">{formatPressure(current.pressure, tempUnit)}</p>
+              </div>
+              <div className="bg-card p-3 rounded-lg">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                  <Eye className="w-4 h-4" />
+                  Visibility
+                </div>
+                <p className="text-lg font-semibold">
+                  {tempUnit === 'fahrenheit' ? `${kmToMi(current.visibility).toFixed(1)} mi` : `${current.visibility.toFixed(1)} km`}
+                </p>
+              </div>
+              {current.dewpoint != null && current.humidex != null && (
+                <div className="bg-card p-3 rounded-lg">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                    <Droplets className="w-4 h-4" />
+                    Dew Point
+                  </div>
+                  <p className="text-lg font-semibold">{formatTemp(current.dewpoint, tempUnit)}°</p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
 
-        {/* 7-Day Forecast */}
+        {/* Hourly Conditions */}
+        <HourlyConditionsCard hourly={hourly} selectedDate={selectedDate} daily={daily} tempUnit={tempUnit} />
+
+        {/* 5-Day Forecast */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">10-Day Forecast</CardTitle>
-            <CardDescription>Daily high and low temperatures</CardDescription>
+            <CardTitle className="text-lg">{futureDays.length}-Day Forecast</CardTitle>
+            <CardDescription>Tap a day for details</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {daily.time.map((date, idx) => {
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                if (new Date(date) < today) return null;
-                const ForecastIcon = getWeatherIcon(daily.weather_code[idx]);
+            <div className="space-y-1">
+              {futureDays.map(({ date, idx }) => {
+                const max = daily.temperature_2m_max[idx];
+                const min = daily.temperature_2m_min[idx];
+                const barStart = ((min - weekMin) / weekSpan) * 100;
+                const barWidth = Math.max(6, ((max - min) / weekSpan) * 100);
+                const isToday = date === new Date().toISOString().split('T')[0];
                 return (
-                  <div key={idx}>
-                    <button
-                      onClick={() => setSelectedDay(selectedDay === date ? null : date)}
-                      className="w-full flex items-center justify-between p-3 bg-card rounded-lg hover:bg-primary/5 transition-colors text-left"
-                    >
-                      <div className="flex items-center gap-3 flex-1">
-                        <ForecastIcon className="w-6 h-6 text-primary flex-shrink-0" />
-                        <div>
-                          <p className="text-sm font-medium">
-                            {new Date(date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-                          </p>
-                          <p className="text-xs text-muted-foreground">{getWeatherDescription(daily.weather_code[idx])}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className="text-right">
-                          <p className="text-sm font-semibold">{Math.round(daily.temperature_2m_max[idx])}°</p>
-                          <p className="text-xs text-muted-foreground">{Math.round(daily.temperature_2m_min[idx])}°</p>
-                        </div>
-                        <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${selectedDay === date ? 'rotate-180' : ''}`} />
-                      </div>
-                    </button>
-                    {selectedDay === date && weather.hourly && (
-                      <div className="mt-2 pb-2 overflow-x-auto">
-                        <div className="flex gap-3 px-1 min-w-max">
-                          {weather.hourly.time
-                            .map((hTime, hIdx) => ({ hTime, hIdx }))
-                            .filter(({ hTime }) => hTime.startsWith(date))
-                            .map(({ hTime, hIdx }) => {
-                              const HourIcon = getWeatherIcon(weather.hourly.weather_code[hIdx]);
-                              const hourLabel = new Date(hTime).toLocaleTimeString('en-US', { hour: 'numeric', hour12: true });
-                              return (
-                                <div key={hIdx} className="flex flex-col items-center gap-1.5 w-16 p-2 rounded-lg bg-secondary/40">
-                                  <p className="text-xs text-muted-foreground">{hourLabel}</p>
-                                  <HourIcon className="w-6 h-6 text-primary" />
-                                  <p className="text-sm font-semibold">{Math.round(weather.hourly.temperature_2m[hIdx])}°</p>
-                                  <p className="text-xs text-primary flex items-center gap-0.5">
-                                    <Droplets className="w-3 h-3" />
-                                    {weather.hourly.precipitation_probability[hIdx]}%
-                                  </p>
-                                </div>
-                              );
-                            })}
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  <button
+                    key={idx}
+                    onClick={() => { setSelectedDate(date); openDayDialog(date, idx); }}
+                    className="w-full flex items-center gap-3 p-2.5 rounded-lg hover:bg-primary/5 transition-colors text-left"
+                  >
+                    <p className="text-sm font-medium w-14 shrink-0">
+                      {isToday ? 'Today' : new Date(date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short' })}
+                    </p>
+                    <div className="w-9 h-9 shrink-0 flex items-center justify-center">
+                      <WeatherGlyph code={daily.weather_code[idx]} className="w-9 h-9" />
+                    </div>
+                    <p className="text-xs text-muted-foreground w-10 text-right shrink-0">{formatTemp(min, tempUnit)}°</p>
+                    <div className="flex-1 h-1.5 bg-muted rounded-full relative overflow-hidden">
+                      <div
+                        className="absolute h-full rounded-full bg-gradient-to-r from-blue-400 via-amber-400 to-red-400"
+                        style={{ left: `${barStart}%`, width: `${barWidth}%` }}
+                      />
+                    </div>
+                    <p className="text-sm font-semibold w-10 text-right shrink-0">{formatTemp(max, tempUnit)}°</p>
+                  </button>
                 );
               })}
             </div>
@@ -480,25 +469,30 @@ export default function Weather() {
             <CardTitle className="text-base">Fishing Conditions</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
-            {current.precipitation > 0.1 && (
-              <p>✓ Rain in the forecast — fish are often more active before and after rainfall</p>
-            )}
-            {current.wind_speed_10m < 5 && (
+            {current.wind_speed_10m < 8 && (
               <p>✓ Light winds — ideal for sight fishing and surface presentations</p>
             )}
-            {current.wind_speed_10m >= 10 && (
+            {current.wind_speed_10m >= 16 && (
               <p>✓ Strong winds — try heavier flies and lures, fish may be deeper</p>
             )}
             {current.relative_humidity_2m > 70 && (
               <p>✓ High humidity — great for insect activity and hatches</p>
             )}
-            {((tempUnit === 'fahrenheit' && current.temperature_2m > 70 && current.temperature_2m < 85) ||
-              (tempUnit === 'celsius' && current.temperature_2m > 21 && current.temperature_2m < 29)) && (
-              <p>✓ Optimal temperature range for most freshwater species</p>
+            {current.temperature_2m > 10 && current.temperature_2m < 24 && (
+              <p>✓ Comfortable temperature range for most freshwater species</p>
             )}
           </CardContent>
         </Card>
       </div>
+
+      <DayForecastDialog
+        open={dayDialogOpen}
+        onOpenChange={setDayDialogOpen}
+        dayData={dayDialogData}
+        hourly={hourly}
+        tempUnit={tempUnit}
+        location={location}
+      />
     </div>
   );
 }

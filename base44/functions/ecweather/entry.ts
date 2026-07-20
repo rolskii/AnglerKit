@@ -257,6 +257,7 @@ function parseWeatherXml(xmlText, localDate, tzOffset) {
     sunset: [],
     text_summary: [],
     night_text_summary: [],
+    wind_speed_10m_max: [],
   };
 
   // Use the frontend-provided local date to avoid UTC timezone drift
@@ -290,6 +291,7 @@ function parseWeatherXml(xmlText, localDate, tzOffset) {
       daily.sunset.push(sunset);
       daily.text_summary.push(dayTextSummary);
       daily.night_text_summary.push(nightTextSummary);
+      daily.wind_speed_10m_max.push(windSpeed);
       dayOffset++;
       i += 1;
       continue;
@@ -342,10 +344,15 @@ function parseWeatherXml(xmlText, localDate, tzOffset) {
     daily.sunset.push(sunset);
     daily.text_summary.push(dayTextSummary);
     daily.night_text_summary.push(nightTextSummary);
+    daily.wind_speed_10m_max.push(windSpeed);
     dayOffset++;
   }
 
   // --- Build hourly forecast (pseudo-hourly from daily highs/lows) ---
+  // NOTE: EC's citypage XML only carries humidity/pressure/apparent-temperature
+  // for the single current observation, not per-hour forecasts, so these three
+  // hourly arrays are seeded with that single value and only vary if the
+  // WeatherKit blend below has real forecasted numbers to swap in.
   const hourly = {
     time: [],
     temperature_2m: [],
@@ -353,6 +360,9 @@ function parseWeatherXml(xmlText, localDate, tzOffset) {
     precipitation_probability: [],
     precipitation_mm: [],
     wind_speed_10m: [],
+    relative_humidity_2m: [],
+    pressure_msl: [],
+    apparent_temperature: [],
   };
 
   const nowHour = new Date();
@@ -390,6 +400,9 @@ function parseWeatherXml(xmlText, localDate, tzOffset) {
     hourly.precipitation_probability.push(dayPop);
     hourly.precipitation_mm.push(0);
     hourly.wind_speed_10m.push(windSpeed);
+    hourly.relative_humidity_2m.push(humidity);
+    hourly.pressure_msl.push(pressure);
+    hourly.apparent_temperature.push(apparentTemp);
   }
 
   // --- Weather alerts/warnings ---
@@ -624,6 +637,9 @@ async function fetchWeatherKitData(lat, lon) {
         conditionCode: h.conditionCode ?? null,
         temperature: h.temperature ?? null,
         windSpeed: h.windSpeed ?? null,
+        humidity: h.humidityPercent != null ? h.humidityPercent : (h.humidity != null ? h.humidity * 100 : null),
+        pressure: h.pressure ?? null,
+        apparentTemperature: h.temperatureApparent ?? null,
       };
     }
   }
@@ -660,6 +676,7 @@ async function fetchWeatherKitData(lat, lon) {
     sunset: [],
     text_summary: [],
     night_text_summary: [],
+    wind_speed_10m_max: [],
   };
   const days = wk.forecastDaily?.days || [];
   for (const d of days.slice(0, 6)) {
@@ -675,6 +692,7 @@ async function fetchWeatherKitData(lat, lon) {
     daily.sunset.push(d.sunset ?? null);
     daily.text_summary.push(d.conditionCode ?? '');
     daily.night_text_summary.push(null);
+    daily.wind_speed_10m_max.push(d.windSpeedMax ?? d.windGustSpeedMax ?? d.windSpeed ?? 0);
   }
 
   // Build hourly from WeatherKit forecastHourly (for non-Canada)
@@ -685,6 +703,9 @@ async function fetchWeatherKitData(lat, lon) {
     precipitation_probability: [],
     precipitation_mm: [],
     wind_speed_10m: [],
+    relative_humidity_2m: [],
+    pressure_msl: [],
+    apparent_temperature: [],
   };
   const nowHour = new Date();
   nowHour.setMinutes(0, 0, 0);
@@ -709,12 +730,18 @@ async function fetchWeatherKitData(lat, lon) {
       hourly.precipitation_probability.push(Math.round(bestMatch.precipitationChance * 100));
       hourly.precipitation_mm.push(bestMatch.precipitationAmount ?? 0);
       hourly.wind_speed_10m.push(bestMatch.windSpeed ?? 0);
+      hourly.relative_humidity_2m.push(bestMatch.humidity ?? current.relative_humidity_2m);
+      hourly.pressure_msl.push(bestMatch.pressure ?? current.pressure);
+      hourly.apparent_temperature.push(bestMatch.apparentTemperature ?? bestMatch.temperature ?? current.apparent_temperature);
     } else {
       hourly.temperature_2m.push(0);
       hourly.weather_code.push(3);
       hourly.precipitation_probability.push(0);
       hourly.precipitation_mm.push(0);
       hourly.wind_speed_10m.push(0);
+      hourly.relative_humidity_2m.push(current.relative_humidity_2m);
+      hourly.pressure_msl.push(current.pressure);
+      hourly.apparent_temperature.push(current.apparent_temperature);
     }
   }
 
@@ -799,6 +826,7 @@ Deno.serve(async (req) => {
           const newHourly = {
             time: [], temperature_2m: [], weather_code: [],
             precipitation_probability: [], precipitation_mm: [], wind_speed_10m: [],
+            relative_humidity_2m: [], pressure_msl: [], apparent_temperature: [],
           };
           const nowHour = new Date();
           nowHour.setMinutes(0, 0, 0);
@@ -819,6 +847,12 @@ Deno.serve(async (req) => {
               newHourly.precipitation_probability.push(ecMatch.lop ?? 0);
               newHourly.precipitation_mm.push(wkMatch?.precipitationAmount ?? 0);
               newHourly.wind_speed_10m.push(ecMatch.windSpeed ?? 0);
+              // EC's hourly forecast doesn't carry humidity/pressure/apparent-temp —
+              // use WeatherKit's forecast for this hour when available, else hold
+              // the current single observation as a reasonable approximation.
+              newHourly.relative_humidity_2m.push(wkMatch?.humidity ?? weatherData.current.relative_humidity_2m);
+              newHourly.pressure_msl.push(wkMatch?.pressure ?? weatherData.current.pressure);
+              newHourly.apparent_temperature.push(wkMatch?.apparentTemperature ?? weatherData.current.apparent_temperature);
             } else if (wkMatch) {
               // Beyond EC's ~24h range — fall back to WeatherKit
               newHourly.temperature_2m.push(
@@ -828,6 +862,9 @@ Deno.serve(async (req) => {
               newHourly.precipitation_probability.push(Math.round((wkMatch.precipitationChance ?? 0) * 100));
               newHourly.precipitation_mm.push(wkMatch.precipitationAmount ?? 0);
               newHourly.wind_speed_10m.push(wkMatch.windSpeed ?? 0);
+              newHourly.relative_humidity_2m.push(wkMatch.humidity ?? weatherData.current.relative_humidity_2m);
+              newHourly.pressure_msl.push(wkMatch.pressure ?? weatherData.current.pressure);
+              newHourly.apparent_temperature.push(wkMatch.apparentTemperature ?? weatherData.current.apparent_temperature);
             } else {
               // Neither source has data this far out — hold the last known conditions
               newHourly.temperature_2m.push(weatherData.current.temperature_2m);
@@ -835,6 +872,9 @@ Deno.serve(async (req) => {
               newHourly.precipitation_probability.push(0);
               newHourly.precipitation_mm.push(0);
               newHourly.wind_speed_10m.push(weatherData.current.wind_speed_10m);
+              newHourly.relative_humidity_2m.push(weatherData.current.relative_humidity_2m);
+              newHourly.pressure_msl.push(weatherData.current.pressure);
+              newHourly.apparent_temperature.push(weatherData.current.apparent_temperature);
             }
           }
           weatherData.hourly = newHourly;
