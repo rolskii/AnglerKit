@@ -740,36 +740,48 @@ Deno.serve(async (req) => {
     // Non-Canada (USA, rest of world): use WeatherKit as the primary source.
     const isCanada = site && distance <= 200;
 
-    // --- WeatherKit as primary data source for ALL locations ---
-    const wkData = await fetchWeatherKitData(lat, lon);
-    if (!wkData) {
+    // --- Fetch EC and WeatherKit independently so an outage in one source ---
+    // --- can never take down weather for locations that rely on the other. ---
+    let ecXml = null;
+    let ecData = null;
+    if (isCanada) {
+      try {
+        ecXml = await fetchWeatherXml(site.province, site.code);
+        ecData = parseWeatherXml(ecXml, localDate, tzOffset);
+      } catch (e) {
+        // EC unavailable right now — WeatherKit below can still cover this location
+      }
+    }
+
+    let wkData = null;
+    try {
+      wkData = await fetchWeatherKitData(lat, lon);
+    } catch (e) {
+      // WeatherKit unavailable — fine as long as EC covered a Canadian location
+    }
+
+    // EC current conditions are only trusted as the primary source once they
+    // actually contain a condition string (same sanity check as before).
+    const ecUsable = isCanada && !!ecData && ecData.current.condition != null;
+
+    if (!ecUsable && !wkData) {
       return Response.json({ error: 'Weather data unavailable for this location.' }, { status: 404 });
     }
 
-    const weatherData = {
-      current: wkData.current,
-      daily: wkData.daily,
-      hourly: wkData.hourly,
-      alerts: [],
-    };
+    // Base weatherData on EC for Canada when it's usable, otherwise WeatherKit.
+    const weatherData = ecUsable
+      ? { current: ecData.current, daily: ecData.daily, hourly: ecData.hourly, alerts: ecData.alerts || [] }
+      : { current: wkData.current, daily: wkData.daily, hourly: wkData.hourly, alerts: [] };
 
-    // --- For Canadian locations, supplement with EC alerts, text summaries, AQHI ---
-    if (isCanada) {
+    // --- For Canadian locations, enrich with EC alerts, text summaries, AQHI, ---
+    // --- and blend in WeatherKit's longer-range hourly forecast where available ---
+    if (isCanada && ecData) {
       try {
-        const xml = await fetchWeatherXml(site.province, site.code);
-        const ecData = parseWeatherXml(xml, localDate, tzOffset);
-
-        // Use EC current conditions (temperature, dewpoint, humidity, wind,
-        // visibility, pressure, etc.) as the primary source — same feed as the
-        // hourly curve, so the big temperature matches the first hourly card.
-        if (ecData.current.condition != null) {
-          weatherData.current = ecData.current;
-        }
-
-        // --- Replace WeatherKit hourly with EC's real hourly forecasts ---
+        // --- Replace hourly with EC's real hourly forecasts ---
         // EC and The Weather Network share the same model data source, so using
         // EC's <hourlyForecastGroup> aligns the hourly curve with TWN's numbers.
-        const ecHourlyForecasts = parseECHourlyForecasts(xml);
+        // Beyond EC's ~24h range, fall back to WeatherKit's hourly data if available.
+        const ecHourlyForecasts = parseECHourlyForecasts(ecXml);
         if (ecHourlyForecasts.length > 0) {
           const findNearest = (arr, ts) => {
             let best = null, minDiff = Infinity;
@@ -780,7 +792,7 @@ Deno.serve(async (req) => {
             return (best && minDiff < 3600000) ? best : null;
           };
 
-          const wkHourlyArr = Object.entries(wkData.hourlyMap || {}).map(
+          const wkHourlyArr = Object.entries(wkData?.hourlyMap || {}).map(
             ([ts, val]) => ({ timestamp: Number(ts), ...val })
           );
 
@@ -807,39 +819,48 @@ Deno.serve(async (req) => {
               newHourly.precipitation_probability.push(ecMatch.lop ?? 0);
               newHourly.precipitation_mm.push(wkMatch?.precipitationAmount ?? 0);
               newHourly.wind_speed_10m.push(ecMatch.windSpeed ?? 0);
-            } else {
+            } else if (wkMatch) {
               // Beyond EC's ~24h range — fall back to WeatherKit
               newHourly.temperature_2m.push(
-                h === 0 ? weatherData.current.temperature_2m : (wkMatch?.temperature ?? weatherData.current.temperature_2m)
+                h === 0 ? weatherData.current.temperature_2m : (wkMatch.temperature ?? weatherData.current.temperature_2m)
               );
-              newHourly.weather_code.push(wkMatch ? (wkConditionToWMO[wkMatch.conditionCode] ?? 3) : 3);
-              newHourly.precipitation_probability.push(wkMatch ? Math.round(wkMatch.precipitationChance * 100) : 0);
-              newHourly.precipitation_mm.push(wkMatch?.precipitationAmount ?? 0);
-              newHourly.wind_speed_10m.push(wkMatch?.windSpeed ?? 0);
+              newHourly.weather_code.push(wkConditionToWMO[wkMatch.conditionCode] ?? 3);
+              newHourly.precipitation_probability.push(Math.round((wkMatch.precipitationChance ?? 0) * 100));
+              newHourly.precipitation_mm.push(wkMatch.precipitationAmount ?? 0);
+              newHourly.wind_speed_10m.push(wkMatch.windSpeed ?? 0);
+            } else {
+              // Neither source has data this far out — hold the last known conditions
+              newHourly.temperature_2m.push(weatherData.current.temperature_2m);
+              newHourly.weather_code.push(weatherData.current.weather_code);
+              newHourly.precipitation_probability.push(0);
+              newHourly.precipitation_mm.push(0);
+              newHourly.wind_speed_10m.push(weatherData.current.wind_speed_10m);
             }
           }
           weatherData.hourly = newHourly;
         }
 
         // Use EC weather alerts (official Environment Canada warnings)
-        weatherData.alerts = ecData.alerts || [];
+        if (ecData.alerts) weatherData.alerts = ecData.alerts;
 
-        // Replace WeatherKit's condition-code text summaries with EC's detailed narratives
+        // Replace daily text summaries with EC's detailed narratives
         ecData.daily.time.forEach((date, ecIdx) => {
-          const wkIdx = weatherData.daily.time.indexOf(date);
-          if (wkIdx !== -1) {
-            weatherData.daily.text_summary[wkIdx] = ecData.daily.text_summary?.[ecIdx] || null;
-            weatherData.daily.night_text_summary[wkIdx] = ecData.daily.night_text_summary?.[ecIdx] || null;
+          const idx = weatherData.daily.time.indexOf(date);
+          if (idx !== -1) {
+            weatherData.daily.text_summary[idx] = ecData.daily.text_summary?.[ecIdx] || null;
+            weatherData.daily.night_text_summary[idx] = ecData.daily.night_text_summary?.[ecIdx] || null;
           }
         });
 
-        // Use EC humidex and pressure tendency (WeatherKit doesn't provide these)
-        if (ecData.current.humidex != null) weatherData.current.humidex = ecData.current.humidex;
-        if (ecData.current.pressure_tendency) weatherData.current.pressure_tendency = ecData.current.pressure_tendency;
-        // Always set BOTH uv_index and uv_category from EC so they stay consistent
-        // (EC uses the daily max from the forecast text when current UV is unavailable)
-        if (ecData.current.uv_index != null) weatherData.current.uv_index = ecData.current.uv_index;
-        if (ecData.current.uv_category) weatherData.current.uv_category = ecData.current.uv_category;
+        // If WeatherKit ended up as the primary current-conditions source
+        // (EC's current conditions weren't usable), still borrow EC's extra
+        // fields that WeatherKit doesn't provide.
+        if (!ecUsable) {
+          if (ecData.current.humidex != null) weatherData.current.humidex = ecData.current.humidex;
+          if (ecData.current.pressure_tendency) weatherData.current.pressure_tendency = ecData.current.pressure_tendency;
+          if (ecData.current.uv_index != null) weatherData.current.uv_index = ecData.current.uv_index;
+          if (ecData.current.uv_category) weatherData.current.uv_category = ecData.current.uv_category;
+        }
 
         // Override hourly weather codes for thunderstorm risk mentioned in EC night text summaries
         const tzOffsetHours = tzOffset != null ? -tzOffset / 60 : 0;
@@ -873,13 +894,13 @@ Deno.serve(async (req) => {
           }
         }
       } catch (e) {
-        // EC supplements are optional — WeatherKit data is still valid
+        // EC enrichments are optional — base weatherData is still valid
       }
     }
 
     if (unit === 'fahrenheit') {
-      weatherData.daily.text_summary = weatherData.daily.text_summary.map(convertSummaryToImperial);
-      weatherData.daily.night_text_summary = weatherData.daily.night_text_summary.map(convertSummaryToImperial);
+      weatherData.daily.text_summary = (weatherData.daily.text_summary || []).map(convertSummaryToImperial);
+      weatherData.daily.night_text_summary = (weatherData.daily.night_text_summary || []).map(convertSummaryToImperial);
     }
 
     return Response.json(weatherData);
