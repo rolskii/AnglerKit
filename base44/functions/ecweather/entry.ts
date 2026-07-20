@@ -836,6 +836,9 @@ Deno.serve(async (req) => {
         // Use EC humidex and pressure tendency (WeatherKit doesn't provide these)
         if (ecData.current.humidex != null) weatherData.current.humidex = ecData.current.humidex;
         if (ecData.current.pressure_tendency) weatherData.current.pressure_tendency = ecData.current.pressure_tendency;
+        // Always set BOTH uv_index and uv_category from EC so they stay consistent
+        // (EC uses the daily max from the forecast text when current UV is unavailable)
+        if (ecData.current.uv_index != null) weatherData.current.uv_index = ecData.current.uv_index;
         if (ecData.current.uv_category) weatherData.current.uv_category = ecData.current.uv_category;
 
         // Override hourly weather codes for thunderstorm risk mentioned in EC night text summaries
