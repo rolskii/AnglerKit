@@ -219,7 +219,7 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
                   className="absolute right-0 text-[9px] text-muted-foreground whitespace-nowrap"
                   style={{ top: `${(tick.y / CHART_HEIGHT) * 100}%`, transform: 'translateY(-50%)' }}
                 >
-                  {tick.label}
+                  {tick.label}{unitLabel ? ` ${unitLabel}` : ''}
                 </span>
               ))}
             </div>

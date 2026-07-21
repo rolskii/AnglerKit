@@ -108,9 +108,8 @@ function DayPanel({ day, field, isToday, unitLabel }) {
       className="shrink-0 w-full"
       style={{ scrollSnapAlign: 'start' }}
     >
-      <div className="flex items-center justify-between px-1 mb-1">
+      <div className="px-1 mb-1">
         <span className="text-xs font-medium text-muted-foreground">{day.label}</span>
-        {unitLabel && <span className="text-xs text-muted-foreground">{unitLabel}</span>}
       </div>
       <div className="flex items-stretch gap-1.5">
         <div className="relative w-9 shrink-0" style={{ height: CHART_HEIGHT }}>
@@ -120,7 +119,7 @@ function DayPanel({ day, field, isToday, unitLabel }) {
               className="absolute right-0 text-[9px] text-muted-foreground whitespace-nowrap"
               style={{ top: `${(tick.y / CHART_HEIGHT) * 100}%`, transform: 'translateY(-50%)' }}
             >
-              {tick.label}
+              {tick.label}{unitLabel ? ` ${unitLabel}` : ''}
             </span>
           ))}
         </div>
