@@ -187,101 +187,77 @@ function computeTrend(readings, field, hoursBack = 6) {
 }
 
 // --- Historical range support ---
-const RANGE_DAYS = { '24h': 1, '2d': 2, '1w': 7, '1m': 30, '3m': 90, '6m': 180, '1y': 365 };
+async function fetchRealtimeSpan(stationId, fromDate, toDate) {
+  const params = new URLSearchParams({
+    f: 'json',
+    STATION_NUMBER: stationId,
+    datetime: `${fromDate.toISOString()}/${toDate.toISOString()}`,
+    limit: '2000',
+  });
+  const data = await ogcFetch('hydrometric-realtime', params);
+  const points = (data.features || [])
+    .map(f => ({ time: f.properties.DATETIME, level: f.properties.LEVEL ?? null, discharge: f.properties.DISCHARGE ?? null }))
+    .sort((a, b) => new Date(a.time) - new Date(b.time));
+  return { granularity: 'hourly', time: points.map(p => p.time), level: points.map(p => p.level), discharge: points.map(p => p.discharge) };
+}
 
 async function fetchHistoricalSeries(stationId, range, startDateStr, endDateStr) {
-  let start, end;
-  if (range === 'custom' && startDateStr && endDateStr) {
-    start = new Date(startDateStr);
-    end = new Date(endDateStr);
+  // Each range selects a specific historical day; the chart always shows
+  // that day's 24h on a fixed 12am→12am axis.
+  let targetDate;
+  if (range === 'custom' && startDateStr) {
+    targetDate = new Date(startDateStr);
   } else {
-    const days = RANGE_DAYS[range] || 7;
-    end = new Date();
-    start = new Date(end.getTime() - days * 86400000);
-  }
-  const spanDays = (end.getTime() - start.getTime()) / 86400000;
-
-  async function fetchRealtimeSpan(fromDate, toDate) {
-    const params = new URLSearchParams({
-      f: 'json',
-      STATION_NUMBER: stationId,
-      datetime: `${fromDate.toISOString()}/${toDate.toISOString()}`,
-      limit: '2000',
-    });
-    const data = await ogcFetch('hydrometric-realtime', params);
-    const points = (data.features || [])
-      .map(f => ({ time: f.properties.DATETIME, level: f.properties.LEVEL ?? null, discharge: f.properties.DISCHARGE ?? null }))
-      .sort((a, b) => new Date(a.time) - new Date(b.time));
-    return { granularity: 'hourly', time: points.map(p => p.time), level: points.map(p => p.level), discharge: points.map(p => p.discharge) };
-  }
-
-  if (spanDays <= 2.5) {
-    return fetchRealtimeSpan(start, end);
-  }
-
-  // Longer spans: page through the daily-mean collection in ~1-year chunks.
-  // Confirmed field names live: DATE, LEVEL, DISCHARGE (STATION_NUMBER identifies
-  // the station). The datetime filter must be a full RFC3339 timestamp — a
-  // bare "YYYY-MM-DD/YYYY-MM-DD" interval gets silently ignored by this API
-  // and it just returns whatever it has for the station instead of erroring,
-  // so we also filter client-side below as a safety net regardless of what
-  // the server actually honoured.
-  const allPoints = [];
-  let chunkStart = new Date(start);
-  while (chunkStart < end) {
-    const chunkEnd = new Date(Math.min(chunkStart.getTime() + 365 * 86400000, end.getTime()));
-    const params = new URLSearchParams({
-      f: 'json',
-      STATION_NUMBER: stationId,
-      datetime: `${chunkStart.toISOString()}/${chunkEnd.toISOString()}`,
-      sortby: 'DATE',
-      limit: '2000',
-    });
-    try {
-      const data = await ogcFetch('hydrometric-daily-mean', params);
-      for (const f of (data.features || [])) {
-        const p = f.properties;
-        allPoints.push({
-          time: p.DATE || p.DATETIME || p.DATE_TIME || null,
-          level: p.LEVEL ?? p.DAILY_MEAN_LEVEL ?? p.MEAN_LEVEL ?? p.VALUE ?? null,
-          discharge: p.DISCHARGE ?? p.DAILY_MEAN_DISCHARGE ?? p.MEAN_DISCHARGE ?? null,
-        });
-      }
-    } catch (e) {
-      // this chunk unavailable — continue with what we have
+    const now = new Date();
+    switch (range) {
+      case '24h': targetDate = new Date(now.getTime() - 86400000); break; // yesterday
+      case '2d': targetDate = new Date(now.getTime() - 2 * 86400000); break;
+      case '1w': case '7d': targetDate = new Date(now.getTime() - 7 * 86400000); break;
+      case '1m': targetDate = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate()); break;
+      case '3m': targetDate = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate()); break;
+      case '6m': targetDate = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate()); break;
+      case '1y': targetDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate()); break;
+      default: targetDate = new Date(now.getTime() - 86400000);
     }
-    chunkStart = chunkEnd;
-  }
-  // Client-side range filter — belt-and-suspenders against the API ignoring
-  // the datetime filter and handing back out-of-range data for the station.
-  const startMs = start.getTime();
-  const endMs = end.getTime();
-  const validPoints = allPoints.filter(p => {
-    if (!p.time || (p.level == null && p.discharge == null)) return false;
-    const t = new Date(p.time).getTime();
-    return !isNaN(t) && t >= startMs && t <= endMs;
-  });
-  validPoints.sort((a, b) => new Date(a.time) - new Date(b.time));
-
-  if (validPoints.length > 0) {
-    return {
-      granularity: 'daily',
-      time: validPoints.map(p => p.time),
-      level: validPoints.map(p => p.level),
-      discharge: validPoints.map(p => p.discharge),
-    };
   }
 
-  // Fallback: the daily-mean collection returned nothing usable for this
-  // range (wrong field names, no coverage for this station, etc.) — rather
-  // than show a blank chart, fall back to whatever the realtime feed still
-  // has for the tail end of the requested range. This will typically only
-  // cover the last day or two, but that's still more useful than nothing.
+  const start = new Date(targetDate);
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(start.getTime() + 86400000); // next midnight
+
+  // Try hourly realtime data for the target day
   try {
-    return await fetchRealtimeSpan(new Date(end.getTime() - 2 * 86400000), end);
+    const hourly = await fetchRealtimeSpan(stationId, start, end);
+    if (hourly.time.length > 0) return hourly;
   } catch (e) {
-    return { granularity: 'daily', time: [], level: [], discharge: [] };
+    // fall through to daily mean
   }
+
+  // Fallback: daily mean for that day
+  try {
+    const params = new URLSearchParams({
+      f: 'json',
+      STATION_NUMBER: stationId,
+      datetime: `${start.toISOString()}/${end.toISOString()}`,
+      limit: '10',
+    });
+    const data = await ogcFetch('hydrometric-daily-mean', params);
+    const points = (data.features || [])
+      .map(f => ({ time: f.properties.DATE || f.properties.DATETIME, level: f.properties.LEVEL ?? null, discharge: f.properties.DISCHARGE ?? null }))
+      .filter(p => p.time && (p.level != null || p.discharge != null));
+    if (points.length > 0) {
+      return {
+        granularity: 'daily',
+        time: points.map(p => p.time),
+        level: points.map(p => p.level),
+        discharge: points.map(p => p.discharge),
+      };
+    }
+  } catch (e) {
+    // fall through
+  }
+
+  return { granularity: 'hourly', time: [], level: [], discharge: [] };
 }
 
 // Shared response builder for "here's one specific station's current
