@@ -359,12 +359,6 @@ export default function RiverConditions() {
                     </div>
                   )}
 
-                  {advisory && (
-                    <div className={`rounded-lg p-2.5 flex items-start gap-2 ${advisory.tone}`}>
-                      <advisory.icon className="w-4 h-4 shrink-0 mt-0.5" />
-                      <p className="text-xs leading-snug">{advisory.text}</p>
-                    </div>
-                  )}
                 </CardContent>
               </Card>
 
