@@ -2,9 +2,30 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { buildSmoothPath, generateFixedIntervalTicks } from '@/lib/chartUtils';
 import { Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const CHART_HEIGHT = 80;
 const CHART_WIDTH = 720;
+
+const RANGES = [
+  { key: '24h', label: '24H' },
+  { key: '2d', label: '2D' },
+  { key: '7d', label: '1W' },
+  { key: '1m', label: '1M' },
+  { key: '3m', label: '3M' },
+  { key: '6m', label: '6M' },
+  { key: '1y', label: '1Y' },
+];
+
+const RANGE_AGO_LABELS = {
+  '24h': 'This time yesterday',
+  '2d': '2 days ago',
+  '7d': '1 week ago',
+  '1m': '1 month ago',
+  '3m': '3 months ago',
+  '6m': '6 months ago',
+  '1y': '1 year ago',
+};
 
 function formatValue(v, field) {
   if (v == null || isNaN(v)) return '—';
@@ -18,10 +39,18 @@ function labelForHour(h) {
   return hh > 12 ? `${hh - 12}pm` : `${hh}am`;
 }
 
-const MAJOR_HOURS = [0, 3, 6, 9, 12, 15, 18, 21, 24];
+function formatDate(d, spanDays) {
+  if (spanDays <= 2.5) {
+    return d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', hour12: true });
+  }
+  if (spanDays <= 60) {
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+  return d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+}
 
 export default function HistoricalRangeChart({ stationId, stationName, field = 'level', unitLabel, currentValue, normalLevel }) {
-  const range = '24h';
+  const [range, setRange] = useState('24h');
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -55,27 +84,8 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
     const times = data.time.map(t => new Date(t));
     const known = values.map((v, i) => ({ v, t: times[i] })).filter(p => p.v != null);
     if (known.length === 0) return null;
-
-    // Oldest point from the full 24h dataset for the "this time yesterday"
-    // comparison (kept separate from the midnight-to-midnight chart window).
-    const oldest = known[0];
-
-    // Align the chart to a midnight-to-midnight window matching the top
-    // chart's "Today" panel, so the X-axis labels read 12am → 12am.
-    const lastDate = new Date(known[known.length - 1].t);
-    const endMidnight = new Date(lastDate);
-    endMidnight.setHours(24, 0, 0, 0);
-    const startMidnight = new Date(endMidnight.getTime() - 86400000);
-    const startTime = startMidnight.getTime();
-    const endTime = endMidnight.getTime();
-    const totalMs = endTime - startTime;
-
-    // Only render data within the midnight-to-midnight window
-    const windowed = known.filter(p => p.t.getTime() >= startTime && p.t.getTime() <= endTime);
-    if (windowed.length === 0) return null;
-
-    let min = Math.min(...windowed.map(p => p.v));
-    let max = Math.max(...windowed.map(p => p.v));
+    let min = Math.min(...known.map(p => p.v));
+    let max = Math.max(...known.map(p => p.v));
     if (normalLevel != null) {
       min = Math.min(min, normalLevel);
       max = Math.max(max, normalLevel);
@@ -89,22 +99,44 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
     const usableHeight = usableBottom - usableTop;
     const normalY = normalLevel != null ? usableBottom - ((normalLevel - min) / range_) * usableHeight : null;
 
-    const points = windowed.map((p) => ({
+    // Position data points by time fraction across the full data range.
+    const startTime = known[0].t.getTime();
+    const endTime = known[known.length - 1].t.getTime();
+    const totalMs = endTime - startTime || 1;
+    const spanDays = totalMs / 86400000;
+
+    const points = known.map((p) => ({
       x: ((p.t.getTime() - startTime) / totalMs) * CHART_WIDTH,
       y: usableBottom - ((p.v - min) / range_) * usableHeight,
     }));
     const pathD = buildSmoothPath(points);
     const areaD = `${pathD} L ${points[points.length - 1].x} ${CHART_HEIGHT} L ${points[0].x} ${CHART_HEIGHT} Z`;
 
-    // Fixed 3-hour ticks at 12am, 3am, 6am, …, 12am — same layout as the
-    // top chart's HourAxis. The nearest tick to the current time shows "Now".
-    const nowHour = new Date().getHours() + new Date().getMinutes() / 60;
-    const nearestMajor = MAJOR_HOURS.reduce((best, h) => Math.abs(h - nowHour) < Math.abs(best - nowHour) ? h : best, 0);
-    const ticks = MAJOR_HOURS.map(h => ({
-      pct: (h / 24) * 100,
-      label: h === nearestMajor ? 'Now' : labelForHour(h),
-      isNow: h === nearestMajor,
-    }));
+    // X-axis ticks:
+    // - 24h range: 3-hour clock-hour labels (12am, 3am, 6am, …) matching
+    //   the top chart's HourAxis format.
+    // - Longer ranges: date/time labels positioned at even intervals.
+    let ticks;
+    if (range === '24h') {
+      const firstTickDate = new Date(startTime);
+      firstTickDate.setMinutes(0, 0, 0);
+      const firstHourMod = firstTickDate.getHours() % 3;
+      if (firstHourMod !== 0) firstTickDate.setHours(firstTickDate.getHours() + (3 - firstHourMod));
+      ticks = [];
+      for (let t = firstTickDate.getTime(); t <= endTime; t += 3 * 3600000) {
+        const pct = ((t - startTime) / totalMs) * 100;
+        if (pct >= -2 && pct <= 102) {
+          ticks.push({ pct, label: labelForHour(new Date(t).getHours()) });
+        }
+      }
+    } else {
+      const tickCount = Math.max(4, Math.min(8, Math.round(CHART_WIDTH / 100)));
+      ticks = Array.from({ length: tickCount }, (_, i) => {
+        const fraction = i / (tickCount - 1);
+        const d = new Date(startTime + fraction * totalMs);
+        return { pct: fraction * 100, label: formatDate(d, spanDays) };
+      });
+    }
 
     const yTicks = field === 'discharge'
       ? [
@@ -114,19 +146,34 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
         ]
       : generateFixedIntervalTicks(min, max, 0.05, usableTop, usableBottom);
 
-    return { pathD, areaD, ticks, yTicks, normalY, oldest };
-  }, [data, field, normalLevel]);
+    return { pathD, areaD, ticks, yTicks, normalY, oldest: known[0] };
+  }, [data, field, normalLevel, range]);
 
   const comparison = useMemo(() => {
     if (!chart?.oldest || currentValue == null) return null;
     const oldVal = chart.oldest.v;
     if (oldVal == null) return null;
     const diff = currentValue - oldVal;
-    return { oldVal, diff, label: 'This time yesterday' };
-  }, [chart?.oldest, currentValue]);
+    return { oldVal, diff, label: RANGE_AGO_LABELS[range] || 'Earlier' };
+  }, [chart?.oldest, currentValue, range]);
 
   return (
     <div className="space-y-3">
+      {/* Range buttons */}
+      <div className="flex items-center gap-1 flex-wrap">
+        {RANGES.map(r => (
+          <Button
+            key={r.key}
+            size="sm"
+            variant={range === r.key ? 'default' : 'outline'}
+            className="h-7 px-2.5 text-xs"
+            onClick={() => setRange(r.key)}
+          >
+            {r.label}
+          </Button>
+        ))}
+      </div>
+
       {loading && (
         <div className="flex items-center gap-2 py-1.5">
           <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />
@@ -185,9 +232,7 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
                 {chart.ticks.map((tick, i) => (
                   <div key={i} className="absolute top-0 flex flex-col items-center" style={{ left: `${tick.pct}%`, transform: 'translateX(-50%)' }}>
                     <div className="w-px h-1.5 bg-muted-foreground/50" />
-                    <span className={`text-[11px] mt-0.5 whitespace-nowrap ${tick.isNow ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
-                      {tick.label}
-                    </span>
+                    <span className="text-[11px] mt-0.5 whitespace-nowrap text-muted-foreground">{tick.label}</span>
                   </div>
                 ))}
               </div>
