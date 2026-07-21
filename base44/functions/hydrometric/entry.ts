@@ -318,12 +318,43 @@ async function fetchHistoricalSeries(stationId, range, startDateStr, endDateStr)
     // realtime unavailable — continue with just daily-mean
   }
 
-  // Merge: prefer realtime daily means for overlapping dates (more recent),
-  // then combine with HYDAT daily-mean archive data.
+  // Fetch today's realtime readings at hourly granularity so the amber line
+  // extends all the way to the current time, not just today's daily mean.
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  let todayHourly = [];
+  try {
+    const todayRaw = await fetchRealtimeSpan(todayStart, end);
+    const byHour = {};
+    for (let i = 0; i < todayRaw.time.length; i++) {
+      const t = todayRaw.time[i];
+      if (!t) continue;
+      const hourKey = t.substring(0, 13); // "2026-07-21T22"
+      if (!byHour[hourKey]) byHour[hourKey] = { levels: [], discharges: [] };
+      if (todayRaw.level[i] != null) byHour[hourKey].levels.push(todayRaw.level[i]);
+      if (todayRaw.discharge[i] != null) byHour[hourKey].discharges.push(todayRaw.discharge[i]);
+    }
+    todayHourly = Object.entries(byHour)
+      .map(([hourKey, vals]) => ({
+        time: hourKey + ':00:00Z',
+        level: vals.levels.length > 0 ? vals.levels.reduce((a, b) => a + b, 0) / vals.levels.length : null,
+        discharge: vals.discharges.length > 0 ? vals.discharges.reduce((a, b) => a + b, 0) / vals.discharges.length : null,
+      }))
+      .filter(p => p.level != null || p.discharge != null)
+      .sort((a, b) => a.time.localeCompare(b.time));
+  } catch (e) {
+    // today's realtime unavailable — continue with daily means only
+  }
+
+  // Merge: prefer realtime daily means for overlapping dates, replace
+  // today's daily mean with hourly-granularity points, then combine
+  // with HYDAT daily-mean archive data.
   const realtimeDates = new Set(realtimeDaily.map(p => p.time));
+  const todayDates = new Set(todayHourly.map(p => p.time.substring(0, 10)));
   const merged = [
     ...validPoints.filter(p => !realtimeDates.has((p.time || '').substring(0, 10))),
-    ...realtimeDaily,
+    ...realtimeDaily.filter(p => !todayDates.has(p.time)),
+    ...todayHourly,
   ].sort((a, b) => new Date(a.time) - new Date(b.time));
 
   if (merged.length > 0) {
