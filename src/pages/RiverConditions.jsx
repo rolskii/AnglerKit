@@ -332,14 +332,9 @@ export default function RiverConditions() {
               {/* Nearest station card */}
               <Card className="bg-primary/10">
                 <CardContent className="p-3 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold truncate">{data.station.name}</p>
-                      <p className="text-xs text-muted-foreground">Station {data.station.id} · {data.station.distanceKm} km away</p>
-                    </div>
-                    <span className="text-[10px] text-muted-foreground text-right shrink-0">
-                      Updated {data.current?.datetimeLocal ? new Date(data.current.datetimeLocal).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '—'}
-                    </span>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold truncate">{data.station.name}</p>
+                    <p className="text-xs text-muted-foreground">Station {data.station.id} · {data.station.distanceKm} km away · Updated {data.current?.datetimeLocal ? new Date(data.current.datetimeLocal).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '—'}</p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2">
