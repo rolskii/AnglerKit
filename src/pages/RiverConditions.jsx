@@ -393,12 +393,12 @@ export default function RiverConditions() {
                     <CardTitle className="text-base">Nearby Stations</CardTitle>
                   </CardHeader>
                   <CardContent className="pt-0 pb-2">
-                    <div className="flex flex-col gap-1">
+                    <div className="flex flex-col">
                       {data.nearbyStations.map((s) => (
                         <button
                           key={s.id}
                           onClick={() => selectStation(s)}
-                          className="w-full flex items-center justify-between py-1.5 px-1 rounded-lg hover:bg-secondary transition-colors text-left"
+                          className="w-full flex items-center justify-between py-1 px-1 rounded-lg hover:bg-secondary transition-colors text-left"
                         >
                           <span className="text-sm text-foreground">{s.name}</span>
                           <span className="text-xs text-muted-foreground">{s.distanceKm} km</span>
