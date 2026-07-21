@@ -281,6 +281,7 @@ export default function RiverConditions() {
                           <TrendIndicator trend={data.trend?.level} />
                         </div>
                         <span className="text-xs text-muted-foreground leading-tight">Water Level</span>
+                        <span className="text-[10px] text-muted-foreground/70 leading-tight">{data.current?.datetimeLocal ? new Date(data.current.datetimeLocal).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '—'}</span>
                       </div>
                     </div>
                     <div className="bg-secondary rounded-xl flex items-center gap-2 p-2.5">
@@ -291,6 +292,7 @@ export default function RiverConditions() {
                           <TrendIndicator trend={data.trend?.discharge} />
                         </div>
                         <span className="text-xs text-muted-foreground leading-tight">Flow</span>
+                        <span className="text-[10px] text-muted-foreground/70 leading-tight">{data.current?.datetimeLocal ? new Date(data.current.datetimeLocal).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '—'}</span>
                       </div>
                     </div>
                   </div>
