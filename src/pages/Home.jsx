@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { ChevronRight, Camera, Moon as MoonIcon, Cloud, Bell, MapPin, ChevronDown, Map as MapIcon } from "lucide-react";
+import { ChevronRight, Camera, Moon as MoonIcon, Cloud, Bell, MapPin, ChevronDown, Map as MapIcon, Waves } from "lucide-react";
 import WeatherGlyph from "@/components/weather/WeatherGlyph";
 import { ReelIcon as ReelDiscIcon } from "@/components/GearIcons";
 import FishIcon from "@/components/FishIcon";
@@ -11,14 +11,12 @@ import PullToRefresh from "@/components/PullToRefresh";
 import FeaturedImage from "@/components/FeaturedImage";
 import LocationMapPicker from "@/components/moon/LocationMapPicker";
 import { getSharedLocation, setSharedLocation, initDefaultLocationFromGPS } from "@/lib/sharedLocation";
-
 const calculateMoonPhase = (date) => {
   const knownNewMoon = new Date(2000, 0, 6);
   const lunarMonth = 29.53058867;
   const daysSinceNewMoon = (date - knownNewMoon) / (1000 * 60 * 60 * 24);
   const daysInCycle = daysSinceNewMoon % lunarMonth;
   const illumination = (1 - Math.cos(Math.PI * 2 * (daysInCycle / lunarMonth))) / 2;
-
   let name = "New Moon";
   if (daysInCycle < 1.84) name = "New Moon";
   else if (daysInCycle < 7.38) name = "Waxing Crescent";
@@ -28,7 +26,6 @@ const calculateMoonPhase = (date) => {
   else if (daysInCycle < 23.15) name = "Waning Gibbous";
   else if (daysInCycle < 25) name = "Last Quarter";
   else name = "Waning Crescent";
-
   const lunarMonthLen = 29.53058867;
   const distFromNew = Math.min(daysInCycle, lunarMonthLen - daysInCycle);
   const distFromFull = Math.abs(daysInCycle - lunarMonthLen / 2);
@@ -38,10 +35,8 @@ const calculateMoonPhase = (date) => {
   else if (distFromMajor < 2.5) fishingRating = 6;
   else if (distFromMajor < 4.5) fishingRating = 5;
   else if (distFromMajor < 6) fishingRating = 4;
-
   return { name, illumination: Math.round(illumination * 100), fishingRating };
 };
-
 const getWeatherDescription = (code) => {
   const codes = {
     0: "Clear", 1: "Mostly Clear", 2: "Partly Cloudy", 3: "Cloudy",
@@ -54,7 +49,6 @@ const getWeatherDescription = (code) => {
   };
   return codes[code] || "Unknown";
 };
-
 const parseTimeToMinutes = (timeStr) => {
   const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
   if (!match) return null;
@@ -65,7 +59,6 @@ const parseTimeToMinutes = (timeStr) => {
   if (period === "AM" && hours === 12) hours = 0;
   return hours * 60 + minutes;
 };
-
 const getNextBiteWindow = () => {
   const periods = [
     { start: "5:48 AM", end: "7:48 AM" },
@@ -78,23 +71,22 @@ const getNextBiteWindow = () => {
   }
   return periods[0];
 };
-
 const items = [
   { to: "/gear/lines", title: "Gear", icon: ReelDiscIcon, tint: "orange", key: "gear" },
   { to: "/catches", title: "Fish Log", icon: Camera, tint: "blue", key: "catch" },
   { to: "/moon", title: "Moon Phase", icon: MoonIcon, tint: "purple", key: "moon" },
   { to: "/weather", title: "Weather", icon: Cloud, tint: "teal", key: "weather" },
+  { to: "/river", title: "River Conditions", icon: Waves, tint: "cyan", key: "river" },
   { to: "/map", title: "Map", icon: MapIcon, tint: "green", key: "map" },
 ];
-
 const tintClasses = {
   orange: "bg-tint-orange-bg text-tint-orange",
   blue: "bg-tint-blue-bg text-tint-blue",
   purple: "bg-tint-purple-bg text-tint-purple",
   teal: "bg-tint-teal-bg text-tint-teal",
+  cyan: "bg-cyan-100 text-cyan-600",
   green: "bg-green-100 text-green-600",
 };
-
 export default function Home() {
   const [moonPhase, setMoonPhase] = useState(null);
   const [weatherInfo, setWeatherInfo] = useState(null);
@@ -105,12 +97,10 @@ export default function Home() {
   const [location, setLocation] = useState(shared.name);
   const [locationDialogOpen, setLocationDialogOpen] = useState(false);
   const [coords, setCoords] = useState(shared.coords);
-
   const todayStr = () => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   };
-
   const getAlarmTimes = () => {
     try {
       const stored = localStorage.getItem('alarmsByDate');
@@ -122,7 +112,6 @@ export default function Home() {
       return list.filter(a => a.enabled).map(a => a.time);
     } catch { return []; }
   };
-
   const refreshData = async () => {
     await initDefaultLocationFromGPS();
     const now = new Date();
@@ -135,16 +124,12 @@ export default function Home() {
     setCoords(sharedLoc.coords);
     setDescriptions(prev => ({ ...prev, moon: `${phase.illumination}% illuminated` }));
     setAlarmTick(t => t + 1);
-
     const coords = sharedLoc.coords;
     const tempUnit = localStorage.getItem("weatherTempUnit") || "celsius";
     await fetchWeather(coords, tempUnit);
-
     await Promise.all([fetchGearCount(), fetchLastCatch(), fetchMapStats()]);
   };
-
   useEffect(() => { refreshData(); }, []);
-
   useEffect(() => {
     const recheck = () => setAlarmTick(t => t + 1);
     window.addEventListener('focus', recheck);
@@ -154,7 +139,6 @@ export default function Home() {
       window.removeEventListener('storage', recheck);
     };
   }, []);
-
   const fetchWeather = async (coords, tempUnit) => {
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
@@ -167,7 +151,6 @@ export default function Home() {
         const windLabel = wind < 8 ? "Light wind" : wind < 15 ? "Breezy" : "Windy";
         const tempSymbol = tempUnit === "fahrenheit" ? "°F" : "°C";
         const code = data.current.weather_code;
-
         const now = new Date();
         let isNight = false;
         if (data.daily?.sunrise?.[0] && data.daily?.sunset?.[0]) {
@@ -175,7 +158,6 @@ export default function Home() {
           const sunset = new Date(data.daily.sunset[0]);
           isNight = now < sunrise || now >= sunset;
         }
-
         setWeatherInfo({ temp: `${temp}${tempSymbol}`, windLabel, desc, code, isNight });
         setDescriptions(prev => ({ ...prev, weather: desc }));
         return;
@@ -184,7 +166,6 @@ export default function Home() {
       }
     }
   };
-
   const selectLocationFromMap = async (name, lat, lon) => {
     setSharedLocation(name, lat, lon);
     const newCoords = { lat, lon, name };
@@ -194,7 +175,6 @@ export default function Home() {
     const tempUnit = localStorage.getItem("weatherTempUnit") || "celsius";
     await fetchWeather(newCoords, tempUnit);
   };
-
   const fetchGearCount = async () => {
     try {
       const [lines, reels, rods, lures, misc] = await Promise.all([
@@ -216,7 +196,6 @@ export default function Home() {
       }));
     } catch (e) {}
   };
-
   const fetchLastCatch = async () => {
     try {
       const catches = await base44.entities.Catch.list("-date", 1);
@@ -229,7 +208,6 @@ export default function Home() {
       }
     } catch (e) {}
   };
-
   const fetchMapStats = async () => {
     try {
       const routes = await base44.entities.MapCourse.list("-updated_date", 500);
@@ -238,7 +216,6 @@ export default function Home() {
       let totalPins = routes.reduce((sum, r) => sum + (r.pins?.length || 0), 0);
       let totalDrawings = routes.reduce((sum, r) => sum + (r.drawings?.length || 0), 0);
       let totalMeasurements = routes.reduce((sum, r) => sum + (r.measurements?.length || 0), 0);
-
       setDescriptions(prev => ({
         ...prev,
         map: [
@@ -250,7 +227,6 @@ export default function Home() {
       }));
     } catch (e) {}
   };
-
   return (
     <PullToRefresh onRefresh={refreshData}>
     <div className="space-y-3 md:space-y-4 -mt-4 md:-mt-8">
@@ -261,7 +237,6 @@ export default function Home() {
           Track your fishing gear, predict the bite, check the weather and log every catch — all in one place.
         </p>
       </div>
-
       {/* Status bar */}
       {moonPhase && (
         <div className="px-4 pt-3 pb-0.5 rounded-2xl bg-card shadow-sm space-y-3">
@@ -322,9 +297,8 @@ export default function Home() {
           </div>
         </div>
       )}
-
       {/* Category grid */}
-      <div className="grid grid-cols-5 gap-1.5 md:gap-4">
+      <div className="grid grid-cols-3 gap-1.5 md:gap-4">
         {items.map((item) => {
           const Icon = item.icon;
           const isGear = item.to === "/gear/lines";
@@ -360,9 +334,7 @@ export default function Home() {
           );
         })}
       </div>
-
       <FeaturedImage />
-
       <LocationMapPicker
         open={locationDialogOpen}
         onOpenChange={setLocationDialogOpen}

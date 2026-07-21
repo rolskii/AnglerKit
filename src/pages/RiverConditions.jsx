@@ -1,9 +1,9 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  Waves, MapPin, ChevronDown, TrendingUp, TrendingDown, Minus,
+  Waves, MapPin, ChevronDown, TrendingUp, TrendingDown, Minus, Search,
   Droplets, Gauge, Star, StickyNote, Plus, AlertTriangle, Info, CheckCircle2,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -55,6 +55,11 @@ export default function RiverConditions() {
   const [notes, setNotes] = useState([]);
   const [noteText, setNoteText] = useState('');
   const [savingNote, setSavingNote] = useState(false);
+  const [stationQuery, setStationQuery] = useState('');
+  const [stationResults, setStationResults] = useState([]);
+  const [stationSearchOpen, setStationSearchOpen] = useState(false);
+  const [searchingStations, setSearchingStations] = useState(false);
+  const searchDebounceRef = useRef(null);
 
   const fetchConditions = useCallback(async (lat, lon) => {
     if (!lat || !lon) return;
@@ -70,6 +75,27 @@ export default function RiverConditions() {
       }
     } catch (e) {
       setError('Could not load river conditions for this location.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Fetch conditions for one exact, already-known station (from a river/
+  // station-name search result, or a "Nearby Stations" row) rather than
+  // searching for the nearest station to a lat/lon.
+  const fetchConditionsForStation = useCallback(async (stationId, name) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await base44.functions.invoke('hydrometric', { stationId, stationName: name });
+      if (res.data?.error) {
+        setError(res.data.error);
+        setData(null);
+      } else {
+        setData(res.data);
+      }
+    } catch (e) {
+      setError('Could not load conditions for that station.');
     } finally {
       setLoading(false);
     }
@@ -100,6 +126,30 @@ export default function RiverConditions() {
     base44.entities.SavedLocation.list('-created_date', 20).then(setFavorites).catch(() => {});
   }, []);
 
+  // Debounced river/station name search — e.g. typing "Credit River" lists
+  // every ECCC station with that text in its name, regardless of distance.
+  useEffect(() => {
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    const q = stationQuery.trim();
+    if (q.length < 2) {
+      setStationResults([]);
+      setSearchingStations(false);
+      return;
+    }
+    setSearchingStations(true);
+    searchDebounceRef.current = setTimeout(async () => {
+      try {
+        const res = await base44.functions.invoke('hydrometric', { searchQuery: q });
+        setStationResults(res.data?.stations || []);
+      } catch (e) {
+        setStationResults([]);
+      } finally {
+        setSearchingStations(false);
+      }
+    }, 350);
+    return () => clearTimeout(searchDebounceRef.current);
+  }, [stationQuery]);
+
   const loadNotes = useCallback(async (stationId) => {
     if (!stationId) { setNotes([]); return; }
     try {
@@ -126,6 +176,21 @@ export default function RiverConditions() {
     setLocationName(fav.name);
     setCoords({ lat: fav.lat, lon: fav.lon, name: fav.name });
     fetchConditions(fav.lat, fav.lon);
+  };
+
+  // Used by both river/station-name search results and "Nearby Stations"
+  // rows — jumps straight to that exact station rather than re-searching
+  // for the nearest one to a point.
+  const selectStation = (station) => {
+    setStationQuery('');
+    setStationResults([]);
+    setStationSearchOpen(false);
+    setLocationName(station.name);
+    if (station.lat != null && station.lon != null) {
+      setSharedLocation(station.name, station.lat, station.lon);
+      setCoords({ lat: station.lat, lon: station.lon, name: station.name });
+    }
+    fetchConditionsForStation(station.id, station.name);
   };
 
   const handleSaveNote = async () => {
@@ -179,6 +244,42 @@ export default function RiverConditions() {
               <span className="max-w-[120px] truncate">{locationName}</span>
               <ChevronDown className="w-3 h-3 opacity-60" />
             </button>
+          </div>
+
+          {/* River / station name search */}
+          <div className="relative px-1">
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="text"
+                value={stationQuery}
+                onChange={(e) => { setStationQuery(e.target.value); setStationSearchOpen(true); }}
+                onFocus={() => setStationSearchOpen(true)}
+                onBlur={() => setTimeout(() => setStationSearchOpen(false), 150)}
+                placeholder="Search for a river or station…"
+                className="w-full text-sm bg-secondary rounded-full pl-8 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/40"
+              />
+            </div>
+            {stationSearchOpen && stationQuery.trim().length >= 2 && (
+              <div className="absolute z-30 left-0 right-0 mt-1 bg-card border border-border rounded-xl shadow-md max-h-64 overflow-y-auto">
+                {searchingStations ? (
+                  <p className="text-xs text-muted-foreground px-3 py-2">Searching…</p>
+                ) : stationResults.length === 0 ? (
+                  <p className="text-xs text-muted-foreground px-3 py-2">No stations found.</p>
+                ) : (
+                  stationResults.map((s) => (
+                    <button
+                      key={s.id}
+                      onClick={() => selectStation(s)}
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-secondary transition-colors flex items-center justify-between gap-2"
+                    >
+                      <span className="truncate">{s.name}</span>
+                      {s.prov && <span className="text-xs text-muted-foreground shrink-0">{s.prov}</span>}
+                    </button>
+                  ))
+                )}
+              </div>
+            )}
           </div>
 
           {/* Favorites strip */}
@@ -343,10 +444,14 @@ export default function RiverConditions() {
                   <CardContent className="pt-0">
                     <div className="flex flex-col gap-1">
                       {data.nearbyStations.map((s) => (
-                        <div key={s.id} className="flex items-center justify-between py-1.5 px-1">
+                        <button
+                          key={s.id}
+                          onClick={() => selectStation(s)}
+                          className="w-full flex items-center justify-between py-1.5 px-1 rounded-lg hover:bg-secondary transition-colors text-left"
+                        >
                           <span className="text-sm text-foreground">{s.name}</span>
                           <span className="text-xs text-muted-foreground">{s.distanceKm} km</span>
-                        </div>
+                        </button>
                       ))}
                     </div>
                   </CardContent>

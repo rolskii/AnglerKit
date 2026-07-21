@@ -198,12 +198,11 @@ async function fetchHistoricalSeries(stationId, range, startDateStr, endDateStr)
   }
   const spanDays = (end.getTime() - start.getTime()) / 86400000;
 
-  if (spanDays <= 2.5) {
-    // Short spans: use the realtime hourly feed directly.
+  async function fetchRealtimeSpan(fromDate, toDate) {
     const params = new URLSearchParams({
       f: 'json',
       STATION_NUMBER: stationId,
-      datetime: `${start.toISOString()}/${end.toISOString()}`,
+      datetime: `${fromDate.toISOString()}/${toDate.toISOString()}`,
       limit: '2000',
     });
     const data = await ogcFetch('hydrometric-realtime', params);
@@ -213,7 +212,15 @@ async function fetchHistoricalSeries(stationId, range, startDateStr, endDateStr)
     return { granularity: 'hourly', time: points.map(p => p.time), level: points.map(p => p.level), discharge: points.map(p => p.discharge) };
   }
 
+  if (spanDays <= 2.5) {
+    return fetchRealtimeSpan(start, end);
+  }
+
   // Longer spans: page through the daily-mean collection in ~1-year chunks.
+  // NOTE: the exact property names ECCC's hydrometric-daily-mean collection
+  // uses haven't been live-verified from this environment (outbound network
+  // to api.weather.gc.ca is blocked here) — we defensively try a few likely
+  // field-name variants rather than assuming a single one.
   const allPoints = [];
   let chunkStart = new Date(start);
   while (chunkStart < end) {
@@ -227,10 +234,11 @@ async function fetchHistoricalSeries(stationId, range, startDateStr, endDateStr)
     try {
       const data = await ogcFetch('hydrometric-daily-mean', params);
       for (const f of (data.features || [])) {
+        const p = f.properties;
         allPoints.push({
-          time: f.properties.DATE || f.properties.DATETIME,
-          level: f.properties.LEVEL ?? null,
-          discharge: f.properties.DISCHARGE ?? null,
+          time: p.DATE || p.DATETIME || p.DATE_TIME || null,
+          level: p.LEVEL ?? p.DAILY_MEAN_LEVEL ?? p.MEAN_LEVEL ?? p.VALUE ?? null,
+          discharge: p.DISCHARGE ?? p.DAILY_MEAN_DISCHARGE ?? p.MEAN_DISCHARGE ?? null,
         });
       }
     } catch (e) {
@@ -238,19 +246,68 @@ async function fetchHistoricalSeries(stationId, range, startDateStr, endDateStr)
     }
     chunkStart = chunkEnd;
   }
-  allPoints.sort((a, b) => new Date(a.time) - new Date(b.time));
+  const validPoints = allPoints.filter(p => p.time && (p.level != null || p.discharge != null));
+  validPoints.sort((a, b) => new Date(a.time) - new Date(b.time));
+
+  if (validPoints.length > 0) {
+    return {
+      granularity: 'daily',
+      time: validPoints.map(p => p.time),
+      level: validPoints.map(p => p.level),
+      discharge: validPoints.map(p => p.discharge),
+    };
+  }
+
+  // Fallback: the daily-mean collection returned nothing usable for this
+  // range (wrong field names, no coverage for this station, etc.) — rather
+  // than show a blank chart, fall back to whatever the realtime feed still
+  // has for the tail end of the requested range. This will typically only
+  // cover the last day or two, but that's still more useful than nothing.
+  try {
+    return await fetchRealtimeSpan(new Date(end.getTime() - 2 * 86400000), end);
+  } catch (e) {
+    return { granularity: 'daily', time: [], level: [], discharge: [] };
+  }
+}
+
+// Shared response builder for "here's one specific station's current
+// conditions" — used by both the nearest-to-coordinates flow and the
+// direct-station-by-search-result flow.
+async function buildStationResponse(chosen, readings) {
+  const latest = readings[readings.length - 1];
+  const levelTrend = computeTrend(readings, 'level');
+  const dischargeTrend = computeTrend(readings, 'discharge');
+  const normal = await fetchNormalComparison(chosen.id, latest.level);
   return {
-    granularity: 'daily',
-    time: allPoints.map(p => p.time),
-    level: allPoints.map(p => p.level),
-    discharge: allPoints.map(p => p.discharge),
+    station: {
+      id: chosen.id,
+      name: chosen.name,
+      lat: chosen.lat,
+      lon: chosen.lon,
+      distanceKm: chosen.distanceKm != null ? Math.round(chosen.distanceKm * 10) / 10 : null,
+    },
+    current: {
+      level: latest.level,
+      discharge: latest.discharge,
+      levelSymbol: latest.levelSymbol,
+      dischargeSymbol: latest.dischargeSymbol,
+      datetimeUtc: latest.datetimeUtc,
+      datetimeLocal: latest.datetimeLocal,
+    },
+    trend: { level: levelTrend, discharge: dischargeTrend },
+    normal,
+    hourly: {
+      time: readings.map(r => r.datetimeUtc),
+      level: readings.map(r => r.level),
+      discharge: readings.map(r => r.discharge),
+    },
   };
 }
 
 Deno.serve(async (req) => {
   try {
     const body = await req.json();
-    const { lat, lon, stationId, historicalRange, startDate, endDate, stationName } = body;
+    const { lat, lon, stationId, historicalRange, startDate, endDate, stationName, searchQuery } = body;
 
     // --- Historical range mode: skip nearest-station search, query directly ---
     if (historicalRange && stationId) {
@@ -258,6 +315,41 @@ Deno.serve(async (req) => {
       return Response.json({ station: { id: stationId, name: stationName || null }, historical });
     }
 
+    // --- River/station name search mode: "Credit River" → every station ---
+    // --- with that text in its name, regardless of distance from the user. ---
+    if (searchQuery != null) {
+      const q = String(searchQuery).trim().toLowerCase();
+      if (q.length < 2) return Response.json({ stations: [] });
+      const stations = await fetchStationList();
+      const matches = stations
+        .filter(s => s.name.toLowerCase().includes(q))
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .slice(0, 40)
+        .map(s => ({ id: s.id, name: s.name, lat: s.lat, lon: s.lon, prov: s.prov }));
+      return Response.json({ stations: matches });
+    }
+
+    // --- Direct station mode: user picked an exact station from search results ---
+    if (stationId && (!lat || !lon)) {
+      const stations = await fetchStationList();
+      const known = stations.find(s => s.id === stationId);
+      const readings = await fetchRealtimeReadings(stationId);
+      if (readings.length === 0) {
+        return Response.json({ error: 'This station currently has no live readings.' }, { status: 404 });
+      }
+      const chosen = known || { id: stationId, name: stationName || stationId, lat: null, lon: null, distanceKm: null };
+      const result = await buildStationResponse(chosen, readings);
+      let nearbyStations = [];
+      if (chosen.lat != null && chosen.lon != null) {
+        nearbyStations = findNearestStations(stations, chosen.lat, chosen.lon, 6, 150)
+          .filter(c => c.id !== chosen.id)
+          .slice(0, 5)
+          .map(c => ({ id: c.id, name: c.name, lat: c.lat, lon: c.lon, distanceKm: Math.round(c.distanceKm * 10) / 10 }));
+      }
+      return Response.json({ ...result, nearbyStations });
+    }
+
+    // --- Default mode: nearest station(s) to a lat/lon ---
     if (!lat || !lon) {
       return Response.json({ error: 'Missing lat/lon parameters' }, { status: 400 });
     }
@@ -289,31 +381,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'No nearby hydrometric station currently has live readings.' }, { status: 404 });
     }
 
-    const latest = readings[readings.length - 1];
-    const levelTrend = computeTrend(readings, 'level');
-    const dischargeTrend = computeTrend(readings, 'discharge');
-    const normal = await fetchNormalComparison(chosen.id, latest.level);
-
+    const result = await buildStationResponse(chosen, readings);
     return Response.json({
-      station: { id: chosen.id, name: chosen.name, lat: chosen.lat, lon: chosen.lon, distanceKm: Math.round(chosen.distanceKm * 10) / 10 },
-      current: {
-        level: latest.level,
-        discharge: latest.discharge,
-        levelSymbol: latest.levelSymbol,
-        dischargeSymbol: latest.dischargeSymbol,
-        datetimeUtc: latest.datetimeUtc,
-        datetimeLocal: latest.datetimeLocal,
-      },
-      trend: { level: levelTrend, discharge: dischargeTrend },
-      normal,
-      hourly: {
-        time: readings.map(r => r.datetimeUtc),
-        level: readings.map(r => r.level),
-        discharge: readings.map(r => r.discharge),
-      },
+      ...result,
       nearbyStations: candidates
         .filter(c => c.id !== chosen.id)
-        .map(c => ({ id: c.id, name: c.name, distanceKm: Math.round(c.distanceKm * 10) / 10 })),
+        .map(c => ({ id: c.id, name: c.name, lat: c.lat, lon: c.lon, distanceKm: Math.round(c.distanceKm * 10) / 10 })),
     });
   } catch (err) {
     return Response.json({ error: err.message || 'Failed to fetch hydrometric data' }, { status: 500 });

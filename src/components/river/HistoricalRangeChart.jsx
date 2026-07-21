@@ -136,13 +136,14 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
       )}
 
       {loading && (
-        <div className="flex items-center justify-center h-40">
-          <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+        <div className="flex items-center gap-2 py-1.5">
+          <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />
+          <span className="text-xs text-muted-foreground">Loading…</span>
         </div>
       )}
 
       {!loading && error && (
-        <p className="text-sm text-muted-foreground text-center py-6">{error}</p>
+        <p className="text-xs text-muted-foreground py-1.5">{error}</p>
       )}
 
       {!loading && !error && chart && (
@@ -172,7 +173,7 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
       )}
 
       {!loading && !error && !chart && (
-        <p className="text-sm text-muted-foreground text-center py-6">No data available for this range.</p>
+        <p className="text-xs text-muted-foreground py-1.5">No data available for this range.</p>
       )}
     </div>
   );
