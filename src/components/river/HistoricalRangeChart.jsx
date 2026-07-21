@@ -131,8 +131,11 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
     const usableHeight = usableBottom - usableTop;
     const normalY = normalLevel != null ? usableBottom - ((normalLevel - min) / range_) * usableHeight : null;
 
-    const n = known.length;
-    const renderWidth = Math.max(CHART_WIDTH, n * 4);
+    // Render width is proportional to time span (~25px per hour) so the
+    // visible container (~300px) shows a ~12-hour window; panning left
+    // reveals more history.
+    const spanHours = timeSpan / 3600000;
+    const renderWidth = Math.max(300, spanHours * 25);
 
     // Time-based X positioning — both series map to the same coordinate space.
     const toX = (t) => ((t - startTime) / timeSpan) * renderWidth;
@@ -142,12 +145,14 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
     const recentPoints = hourlyKnown.map(p => ({ x: toX(p.t.getTime()), y: toY(p.v) }));
 
     const histPathD = buildSmoothPath(histPoints);
-    const histAreaD = `${histPathD} L ${histPoints[histPoints.length - 1].x} ${CHART_HEIGHT} L ${histPoints[0].x} ${CHART_HEIGHT} Z`;
     const recentPathD = recentPoints.length > 1 ? buildSmoothPath(recentPoints) : '';
+    const recentAreaD = recentPoints.length > 1
+      ? `${recentPathD} L ${recentPoints[recentPoints.length - 1].x} ${CHART_HEIGHT} L ${recentPoints[0].x} ${CHART_HEIGHT} Z`
+      : '';
 
     // X-axis ticks evenly spaced across the combined time range.
     const spanDays = timeSpan / 86400000;
-    const tickCount = Math.max(6, Math.round(renderWidth / 110));
+    const tickCount = Math.max(6, Math.min(60, Math.round(renderWidth / 100)));
     const ticks = Array.from({ length: tickCount }, (_, i) => {
       const tickTime = startTime + (i / (tickCount - 1)) * timeSpan;
       return { x: toX(tickTime), label: formatAxisLabel(new Date(tickTime), spanDays) };
@@ -163,7 +168,7 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
         ]
       : generateFixedIntervalTicks(min, max, 0.05, usableTop, usableBottom);
 
-    return { histPathD, histAreaD, recentPathD, recentPoints, ticks, yTicks, min, max, renderWidth, oldest: known[0], normalY };
+    return { histPathD, recentAreaD, recentPathD, recentPoints, ticks, yTicks, min, max, renderWidth, oldest: known[0], normalY };
   }, [data, field, normalLevel, hourlyData]);
 
   // Compares the current live reading to the oldest point in the currently
@@ -273,16 +278,18 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
                   preserveAspectRatio="none"
                 >
                   <defs>
-                    <linearGradient id="historicalGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor={HISTORICAL_STROKE} stopOpacity="0.4" />
-                      <stop offset="100%" stopColor={HISTORICAL_STROKE} stopOpacity="0.05" />
+                    <linearGradient id="recentGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={RECENT_STROKE} stopOpacity="0.4" />
+                      <stop offset="100%" stopColor={RECENT_STROKE} stopOpacity="0.05" />
                     </linearGradient>
                   </defs>
                   {chart.normalY != null && (
                     <line x1="0" y1={chart.normalY} x2={chart.renderWidth} y2={chart.normalY} stroke={NORMAL_STROKE} strokeWidth="1.5" strokeDasharray="5 3" />
                   )}
-                  <path d={chart.histAreaD} fill="url(#historicalGradient)" stroke="none" />
                   <path d={chart.histPathD} fill="none" stroke={HISTORICAL_STROKE} strokeWidth="2" strokeLinecap="round" />
+                  {chart.recentAreaD && (
+                    <path d={chart.recentAreaD} fill="url(#recentGradient)" stroke="none" />
+                  )}
                   {chart.recentPathD && (
                     <path d={chart.recentPathD} fill="none" stroke={RECENT_STROKE} strokeWidth="2.5" strokeLinecap="round" />
                   )}
