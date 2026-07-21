@@ -127,7 +127,7 @@ export default function Home() {
     const coords = sharedLoc.coords;
     const tempUnit = localStorage.getItem("weatherTempUnit") || "celsius";
     await fetchWeather(coords, tempUnit);
-    await Promise.all([fetchGearCount(), fetchLastCatch(), fetchMapStats()]);
+    await Promise.all([fetchGearCount(), fetchLastCatch(), fetchMapStats(), fetchRiverConditions(coords)]);
   };
   useEffect(() => { refreshData(); }, []);
   useEffect(() => {
@@ -207,6 +207,26 @@ export default function Home() {
         setDescriptions(prev => ({ ...prev, catch: "No catches yet" }));
       }
     } catch (e) {}
+  };
+  const fetchRiverConditions = async (coords) => {
+    try {
+      const res = await base44.functions.invoke('hydrometric', { lat: coords.lat, lon: coords.lon });
+      const d = res.data;
+      if (d?.error || !d?.current) {
+        setDescriptions(prev => ({ ...prev, river: null }));
+        return;
+      }
+      const level = d.current.level != null ? `${d.current.level.toFixed(2)} m` : null;
+      const flow = d.current.discharge != null ? `${d.current.discharge.toFixed(1)} m³/s` : null;
+      const parts = [level, flow].filter(Boolean);
+      setDescriptions(prev => ({
+        ...prev,
+        river: parts.length ? parts : null,
+        riverName: d.station?.name,
+      }));
+    } catch (e) {
+      setDescriptions(prev => ({ ...prev, river: null }));
+    }
   };
   const fetchMapStats = async () => {
     try {
