@@ -389,10 +389,10 @@ export default function RiverConditions() {
               {/* Nearby stations */}
               {data.nearbyStations?.length > 0 && (
                 <Card>
-                  <CardHeader className="pt-3 pb-2">
+                  <CardHeader className="pt-3 pb-2 px-3">
                     <CardTitle className="text-base">Nearby Stations</CardTitle>
                   </CardHeader>
-                  <CardContent className="pt-0 pb-2">
+                  <CardContent className="pt-0 pb-2 px-3">
                     <div className="flex flex-col">
                       {data.nearbyStations.map((s) => (
                         <button
