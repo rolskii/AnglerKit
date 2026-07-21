@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { buildSmoothPath } from '@/lib/chartUtils';
+import { buildSmoothPath, generateFixedIntervalTicks } from '@/lib/chartUtils';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Loader2 } from 'lucide-react';
@@ -117,14 +117,15 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
       return { x: points[idx]?.x ?? 0, label: formatAxisLabel(known[idx].t, spanDays) };
     });
 
-    // Y-axis elevation labels — top/middle/bottom of the plotted range so the
-    // user can read approximate water level (or discharge) values off the chart.
-    const mid = (max + min) / 2;
-    const yTicks = [
-      { y: usableTop, label: formatValue(max, field) },
-      { y: (usableTop + usableBottom) / 2, label: formatValue(mid, field) },
-      { y: usableBottom, label: formatValue(min, field) },
-    ];
+    // Y-axis elevation labels at 5 cm intervals for water level (0.95, 1.00,
+    // 1.05, …); discharge falls back to top/middle/bottom of the range.
+    const yTicks = field === 'discharge'
+      ? [
+          { y: usableTop, label: formatValue(max, field) },
+          { y: (usableTop + usableBottom) / 2, label: formatValue((max + min) / 2, field) },
+          { y: usableBottom, label: formatValue(min, field) },
+        ]
+      : generateFixedIntervalTicks(min, max, 0.05, usableTop, usableBottom);
 
     return { pathD, areaD, ticks, yTicks, min, max, renderWidth, oldest: known[0], normalY };
   }, [data, field, normalLevel]);

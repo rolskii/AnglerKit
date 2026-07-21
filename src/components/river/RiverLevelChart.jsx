@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef } from 'react';
-import { buildSmoothPath } from '@/lib/chartUtils';
+import { buildSmoothPath, generateFixedIntervalTicks } from '@/lib/chartUtils';
 import { useNowTick } from '@/hooks/useNowTick';
 
 const CHART_HEIGHT = 80;
@@ -92,17 +92,21 @@ function DayPanel({ day, field, isToday, unitLabel, normalLevel }) {
     });
   }, [points, bounds]);
 
-  // Y-axis elevation labels (top/middle/bottom of this day's plotted range).
+  // Y-axis elevation labels at 5 cm intervals for water level (0.95, 1.00,
+  // 1.05, …); discharge falls back to top/middle/bottom of the range.
   const yTicks = useMemo(() => {
     if (!bounds) return [];
     const usableTop = CHART_HEIGHT * PAD_TOP_PCT;
     const usableBottom = CHART_HEIGHT * (1 - PAD_BOTTOM_PCT);
-    const mid = (bounds.min + bounds.max) / 2;
-    return [
-      { y: usableTop, label: formatElevation(bounds.max, field) },
-      { y: (usableTop + usableBottom) / 2, label: formatElevation(mid, field) },
-      { y: usableBottom, label: formatElevation(bounds.min, field) },
-    ];
+    if (field === 'discharge') {
+      const mid = (bounds.min + bounds.max) / 2;
+      return [
+        { y: usableTop, label: formatElevation(bounds.max, field) },
+        { y: (usableTop + usableBottom) / 2, label: formatElevation(mid, field) },
+        { y: usableBottom, label: formatElevation(bounds.min, field) },
+      ];
+    }
+    return generateFixedIntervalTicks(bounds.min, bounds.max, 0.05, usableTop, usableBottom);
   }, [bounds, field]);
 
   const knownPoints = svgPoints.filter(p => p.y != null);

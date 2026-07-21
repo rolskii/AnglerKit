@@ -28,3 +28,20 @@ export function buildSmoothPath(points, tension = 6) {
 
   return d;
 }
+
+// Generates Y-axis ticks at a fixed value interval (e.g. every 0.05 m for
+// water level). Ticks are positioned within the [min, max] range mapped to
+// [usableTop, usableBottom]. Returns [{ y, label }] where label is the
+// value formatted to 2 decimal places.
+export function generateFixedIntervalTicks(min, max, interval, usableTop, usableBottom) {
+  const range = max - min || 1;
+  const usableHeight = usableBottom - usableTop;
+  const start = Math.ceil(min / interval) * interval;
+  const end = Math.floor(max / interval) * interval;
+  const ticks = [];
+  for (let v = start; v <= end + interval * 0.001; v += interval) {
+    const y = usableBottom - ((v - min) / range) * usableHeight;
+    ticks.push({ y, label: v.toFixed(2) });
+  }
+  return ticks;
+}
