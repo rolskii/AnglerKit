@@ -28,3 +28,20 @@ export function buildSmoothPath(points, tension = 6) {
 
   return d;
 }
+
+// Expands the [min, max] range with proportional padding when the data span
+// is small (e.g. water levels only ~5 cm apart). Without this, a stable
+// period fills the full chart height and minor fluctuations look exaggerated.
+// Padding = 50% of the range on each side, which doubles the visible range so
+// the data line occupies roughly half the chart height.
+export function padSmallRange(min, max, threshold = 0.1) {
+  let lo = min;
+  let hi = max;
+  const range = hi - lo;
+  if (range > 0 && range < threshold) {
+    const pad = range * 0.5;
+    lo -= pad;
+    hi += pad;
+  }
+  return { min: lo, max: hi };
+}

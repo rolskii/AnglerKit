@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { buildSmoothPath } from '@/lib/chartUtils';
+import { buildSmoothPath, padSmallRange } from '@/lib/chartUtils';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Loader2 } from 'lucide-react';
@@ -92,6 +92,7 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
       min = Math.min(min, normalLevel);
       max = Math.max(max, normalLevel);
     }
+    ({ min, max } = padSmallRange(min, max));
     const range_ = max - min || 1;
     const usableTop = CHART_HEIGHT * 0.08;
     const usableBottom = CHART_HEIGHT * 0.92;
