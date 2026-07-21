@@ -174,8 +174,8 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
     const oldVal = chart.oldest.v;
     if (oldVal == null) return null;
     const diff = currentValue - oldVal;
-    const label = range === 'custom'
-      ? `On ${chart.oldest.t.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+    const label = chart.oldest.t
+      ? chart.oldest.t.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
       : (RANGE_AGO_LABELS[range] || 'Earlier in this range');
     return { oldVal, diff, label };
   }, [chart?.oldest, currentValue, range]);
