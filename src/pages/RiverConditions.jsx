@@ -321,7 +321,7 @@ export default function RiverConditions() {
                 </CardContent>
               </Card>
 
-              {/* Hourly chart */}
+              {/* Hourly chart + historical overlay */}
               <Card>
                 <CardHeader className="pt-3 pb-2 px-3">
                   <CardTitle className="text-base">Water Level (Today / Yesterday)</CardTitle>
@@ -334,16 +334,9 @@ export default function RiverConditions() {
                       <p className="text-xs leading-snug">{advisory.text}</p>
                     </div>
                   )}
-                </CardContent>
-              </Card>
-
-              {/* Historical chart */}
-              <Card>
-                <CardHeader className="pt-3 pb-2 px-3">
-                  <CardTitle className="text-base">Historical Water Level</CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0 pb-2 px-3">
-                  <HistoricalRangeChart stationId={data.station.id} stationName={data.station.name} field="level" unitLabel="m" currentValue={data.current?.level} normalLevel={data.normal?.median} onDataChange={setHistoricalHourly} />
+                  <div className="mt-2 pt-2 border-t border-border/60">
+                    <HistoricalRangeChart stationId={data.station.id} stationName={data.station.name} field="level" unitLabel="m" currentValue={data.current?.level} normalLevel={data.normal?.median} onDataChange={setHistoricalHourly} />
+                  </div>
                 </CardContent>
               </Card>
 
