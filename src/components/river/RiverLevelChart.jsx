@@ -159,7 +159,7 @@ function DayPanel({ day, field, isToday, unitLabel, normalLevel }) {
           </svg>
           {bounds?.normalY != null && normalLevel != null && (
             <span
-            className="absolute left-1 top-1 inline-flex items-center gap-1 text-[11px] font-medium text-green-600 bg-background/80 px-1 rounded whitespace-nowrap"
+            className="absolute right-1 top-1 inline-flex items-center gap-1 text-[11px] font-medium text-green-600 bg-background/80 px-1 rounded whitespace-nowrap"
             >
               <span className="inline-block w-3 border-t border-dashed border-green-500" />
               Normal level ({normalLevel.toFixed(2)}{unitLabel ? ` ${unitLabel}` : ''})
