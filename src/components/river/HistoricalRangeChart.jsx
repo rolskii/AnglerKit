@@ -252,7 +252,7 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
                     className="absolute left-1 text-[9px] font-medium text-green-600 bg-background/80 px-1 rounded whitespace-nowrap"
                     style={{ top: `${(chart.normalY / CHART_HEIGHT) * 100}%`, transform: "translateY(-50%)" }}
                   >
-                    Normal level ({normalLevel.toFixed(2)}{unitLabel ? ` ${unitLabel}` : ""})
+                    Normal level
                   </span>
                 )}
                 <div className="relative h-5 mt-1" style={{ width: chart.renderWidth }}>
