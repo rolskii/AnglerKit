@@ -155,9 +155,9 @@ function DayPanel({ day, field, isToday, unitLabel, normalLevel }) {
           </svg>
           {bounds?.normalY != null && normalLevel != null && (
             <span
-              className="absolute left-1 text-[9px] font-medium text-green-600 bg-background/80 px-1 rounded whitespace-nowrap"
-              style={{ top: `${(bounds.normalY / CHART_HEIGHT) * 100}%`, transform: 'translateY(-100%)' }}
+              className="absolute left-1 top-1 inline-flex items-center gap-1 text-[9px] font-medium text-green-600 bg-background/80 px-1 rounded whitespace-nowrap"
             >
+              <span className="inline-block w-3 border-t border-dashed border-green-500" />
               Normal level ({normalLevel.toFixed(2)}{unitLabel ? ` ${unitLabel}` : ''})
             </span>
           )}
