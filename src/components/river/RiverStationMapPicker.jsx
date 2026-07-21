@@ -16,10 +16,22 @@ function fetchAllStations() {
   if (stationListPromise) return stationListPromise;
   stationListPromise = base44.functions.invoke('hydrometric', { listStations: true })
     .then(res => {
-      stationListCache = res.data?.stations || [];
-      return stationListCache;
+      if (res.data?.error) {
+        console.error('[RiverStationMapPicker] listStations returned an error:', res.data.error);
+        stationListPromise = null; // don't cache a failure — let the next open retry
+        return [];
+      }
+      const stations = res.data?.stations || [];
+      if (stations.length === 0) {
+        console.error('[RiverStationMapPicker] listStations returned zero stations. Full response:', res.data);
+        stationListPromise = null;
+        return [];
+      }
+      stationListCache = stations;
+      return stations;
     })
-    .catch(() => {
+    .catch((e) => {
+      console.error('[RiverStationMapPicker] listStations call threw:', e);
       stationListPromise = null;
       return [];
     });
@@ -41,7 +53,9 @@ export default function RiverStationMapPicker({ open, onOpenChange, initialCoord
   const [selectedStation, setSelectedStation] = useState(null);
   const [mapLoading, setMapLoading] = useState(false);
   const [mapError, setMapError] = useState(null);
+  const [stationsLoadFailed, setStationsLoadFailed] = useState(false);
   const [savingFavorite, setSavingFavorite] = useState(false);
+  const [retryTick, setRetryTick] = useState(0);
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const debounceRef = useRef(null);
@@ -76,6 +90,9 @@ export default function RiverStationMapPicker({ open, onOpenChange, initialCoord
         const [stations, favs] = await Promise.all([fetchAllStations(), loadFavoriteStations()]);
         if (cancelled) return;
         setAllStations(stations);
+        // Distinguish "call failed / returned nothing" from "still loading" so
+        // the user isn't left wondering why only favorites show up on the map.
+        setStationsLoadFailed(stations.length === 0);
 
         await prepareMapKit();
         if (cancelled || !mapContainerRef.current) return;
@@ -161,7 +178,13 @@ export default function RiverStationMapPicker({ open, onOpenChange, initialCoord
         mapRef.current = null;
       }
     };
-  }, [open]);
+  }, [open, retryTick]);
+
+  const handleRetryStations = () => {
+    stationListCache = null;
+    stationListPromise = null;
+    setRetryTick(t => t + 1);
+  };
 
   const handleSearchInput = (value) => {
     setSearchValue(value);
@@ -254,9 +277,15 @@ export default function RiverStationMapPicker({ open, onOpenChange, initialCoord
               <p className="text-[10px] text-muted-foreground/60">{mapError}</p>
             </div>
           )}
-          {!mapLoading && !mapError && (
+          {!mapLoading && !mapError && !stationsLoadFailed && (
             <div className="absolute bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-black/60 text-white text-[10px] whitespace-nowrap">
               Tap a station to select it
+            </div>
+          )}
+          {!mapLoading && !mapError && stationsLoadFailed && (
+            <div className="absolute top-2 left-2 right-2 px-3 py-2 rounded-lg bg-red-600/90 text-white text-xs flex items-center justify-between gap-2">
+              <span>Couldn't load the full station list — only favorites are shown.</span>
+              <button onClick={handleRetryStations} className="shrink-0 underline font-medium">Retry</button>
             </div>
           )}
         </div>
