@@ -64,11 +64,17 @@ function DayPanel({ day, field, isToday, unitLabel, normalLevel }) {
     const vals = withValues.map(p => p.value);
     let min = Math.min(...vals);
     let max = Math.max(...vals);
+    let normalY = null;
     if (normalLevel != null) {
       min = Math.min(min, normalLevel);
       max = Math.max(max, normalLevel);
+      const range = max - min || 1;
+      const usableTop = CHART_HEIGHT * PAD_TOP_PCT;
+      const usableBottom = CHART_HEIGHT * (1 - PAD_BOTTOM_PCT);
+      const usableHeight = usableBottom - usableTop;
+      normalY = usableBottom - ((normalLevel - min) / range) * usableHeight;
     }
-    return { min, max };
+    return { min, max, normalY };
   }, [withValues, normalLevel]);
 
   const svgPoints = useMemo(() => {
@@ -127,7 +133,7 @@ function DayPanel({ day, field, isToday, unitLabel, normalLevel }) {
             </span>
           ))}
         </div>
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 relative">
           <svg viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`} className="w-full" style={{ height: CHART_HEIGHT }} preserveAspectRatio="none">
             <defs>
               <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
@@ -135,14 +141,9 @@ function DayPanel({ day, field, isToday, unitLabel, normalLevel }) {
                 <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.05" />
               </linearGradient>
             </defs>
-            {normalLevel != null && bounds && (() => {
-              const range = bounds.max - bounds.min || 1;
-              const usableTop = CHART_HEIGHT * PAD_TOP_PCT;
-              const usableBottom = CHART_HEIGHT * (1 - PAD_BOTTOM_PCT);
-              const usableHeight = usableBottom - usableTop;
-              const y = usableBottom - ((normalLevel - bounds.min) / range) * usableHeight;
-              return <line x1="0" y1={y} x2={CHART_WIDTH} y2={y} stroke="#22c55e" strokeWidth="1.5" strokeDasharray="5 3" />;
-            })()}
+            {bounds?.normalY != null && (
+              <line x1="0" y1={bounds.normalY} x2={CHART_WIDTH} y2={bounds.normalY} stroke="#22c55e" strokeWidth="1.5" strokeDasharray="5 3" />
+            )}
             {areaD && <path d={areaD} fill={`url(#${gradId})`} stroke="none" />}
             {pathD && <path d={pathD} fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" />}
             {knownPoints.filter(p => p.isReal).map((p, i) => (
@@ -152,6 +153,14 @@ function DayPanel({ day, field, isToday, unitLabel, normalLevel }) {
               <circle cx={lastReal.x} cy={lastReal.y} r={4} fill="hsl(var(--background))" stroke="hsl(var(--primary))" strokeWidth="2" />
             )}
           </svg>
+          {bounds?.normalY != null && normalLevel != null && (
+            <span
+              className="absolute left-1 text-[9px] font-medium text-green-600 bg-background/80 px-1 rounded whitespace-nowrap"
+              style={{ top: `${(bounds.normalY / CHART_HEIGHT) * 100}%`, transform: 'translateY(-50%)' }}
+            >
+              Normal level ({normalLevel.toFixed(2)}{unitLabel ? ` ${unitLabel}` : ''})
+            </span>
+          )}
           <HourAxis nowHour={isToday ? new Date().getHours() + new Date().getMinutes() / 60 : null} />
         </div>
       </div>
