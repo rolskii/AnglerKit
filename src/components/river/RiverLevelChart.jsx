@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useRef } from 'react';
-import { buildSmoothPath, padSmallRange } from '@/lib/chartUtils';
+import { buildSmoothPath } from '@/lib/chartUtils';
 import { useNowTick } from '@/hooks/useNowTick';
 
-const CHART_HEIGHT = 160;
+const CHART_HEIGHT = 80;
 const CHART_WIDTH = 720;
 const PAD_TOP_PCT = 0.08;
 const PAD_BOTTOM_PCT = 0.08;
@@ -64,7 +64,6 @@ function DayPanel({ day, field, isToday, unitLabel, normalLevel }) {
     const vals = withValues.map(p => p.value);
     let min = Math.min(...vals);
     let max = Math.max(...vals);
-    ({ min, max } = padSmallRange(min, max));
     let normalY = null;
     if (normalLevel != null) {
       min = Math.min(min, normalLevel);
