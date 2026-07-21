@@ -150,13 +150,47 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
       ? `${recentPathD} L ${recentPoints[recentPoints.length - 1].x} ${CHART_HEIGHT} L ${recentPoints[0].x} ${CHART_HEIGHT} Z`
       : '';
 
-    // X-axis ticks evenly spaced across the combined time range.
+    // X-axis ticks aligned to natural time boundaries:
+    // 3-hour intervals for short spans (12am, 3am, 6am…), daily for
+    // medium spans, monthly for long spans. The nearest tick to "now"
+    // is replaced with a "Now" label.
     const spanDays = timeSpan / 86400000;
-    const tickCount = Math.max(6, Math.min(60, Math.round(renderWidth / 100)));
-    const ticks = Array.from({ length: tickCount }, (_, i) => {
-      const tickTime = startTime + (i / (tickCount - 1)) * timeSpan;
-      return { x: toX(tickTime), label: formatAxisLabel(new Date(tickTime), spanDays) };
-    });
+    let intervalMs, formatFn;
+    if (spanDays <= 2.5) {
+      intervalMs = 3 * 3600000;
+      formatFn = (d) => {
+        const h = d.getHours();
+        if (h === 0) return '12am';
+        if (h === 12) return '12pm';
+        return h > 12 ? `${h - 12}pm` : `${h}am`;
+      };
+    } else if (spanDays <= 60) {
+      intervalMs = 86400000;
+      formatFn = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    } else {
+      intervalMs = 30 * 86400000;
+      formatFn = (d) => d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+    }
+    const firstTickMs = Math.ceil(startTime / intervalMs) * intervalMs;
+    const ticks = [];
+    for (let t = firstTickMs; t <= endTime; t += intervalMs) {
+      ticks.push({ x: toX(t), label: formatFn(new Date(t)) });
+    }
+    // Replace the nearest tick to "now" with "Now".
+    const nowMs = Date.now();
+    if (nowMs >= startTime && nowMs <= endTime) {
+      let nearestIdx = -1;
+      let nearestDist = Infinity;
+      ticks.forEach((tick, i) => {
+        const tickMs = startTime + (tick.x / renderWidth) * timeSpan;
+        const dist = Math.abs(tickMs - nowMs);
+        if (dist < nearestDist) { nearestDist = dist; nearestIdx = i; }
+      });
+      if (nearestIdx >= 0 && nearestDist < intervalMs / 2) {
+        ticks[nearestIdx].label = 'Now';
+        ticks[nearestIdx].isNow = true;
+      }
+    }
 
     // Y-axis elevation labels at 5 cm intervals for water level (0.95, 1.00,
     // 1.05, …); discharge falls back to top/middle/bottom of the range.
@@ -301,7 +335,7 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
                   {chart.ticks.map((tick, i) => (
                     <span
                       key={i}
-                      className="absolute text-[11px] text-muted-foreground whitespace-nowrap"
+                      className={`absolute text-[11px] whitespace-nowrap ${tick.isNow ? 'text-primary font-semibold' : 'text-muted-foreground'}`}
                       style={{ left: tick.x, transform: 'translateX(-50%)' }}
                     >
                       {tick.label}
