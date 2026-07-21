@@ -184,15 +184,11 @@ export default function Weather() {
 
   useEffect(() => {
     const init = async () => {
-      if (lastCoords) {
-        fetchWeatherByCoords(lastCoords.lat, lastCoords.lon, lastCoords.name || location);
-      } else {
-        const loc = await initDefaultLocationFromGPS();
-        setLastCoords(loc.coords);
-        setLocation(loc.name);
-        setEditingLocation(loc.name);
-        fetchWeatherByCoords(loc.coords.lat, loc.coords.lon, loc.name, tempUnit);
-      }
+      const loc = await initDefaultLocationFromGPS();
+      setLastCoords(loc.coords);
+      setLocation(loc.name);
+      setEditingLocation(loc.name);
+      fetchWeatherByCoords(loc.coords.lat, loc.coords.lon, loc.name, tempUnit);
     };
     init();
     if (navigator.geolocation) {
