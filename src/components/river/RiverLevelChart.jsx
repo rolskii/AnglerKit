@@ -164,14 +164,6 @@ function DayPanel({ day, field, isToday, unitLabel, normalLevel }) {
               <circle cx={lastReal.x} cy={lastReal.y} r={4} fill="hsl(var(--background))" stroke="hsl(var(--primary))" strokeWidth="2" />
             )}
           </svg>
-          {bounds?.normalY != null && normalLevel != null && (
-            <span
-            className="absolute right-1 top-1 inline-flex items-center gap-1 text-[11px] font-medium text-green-600 bg-background/80 px-1 rounded whitespace-nowrap"
-            >
-              <span className="inline-block w-3 border-t border-dashed border-green-500" />
-              Normal level ({normalLevel.toFixed(2)}{unitLabel ? ` ${unitLabel}` : ''})
-            </span>
-          )}
           <HourAxis nowHour={isToday ? new Date().getHours() + new Date().getMinutes() / 60 : null} />
         </div>
       </div>

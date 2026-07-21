@@ -323,7 +323,15 @@ export default function RiverConditions() {
               {/* Hourly chart */}
               <Card>
                 <CardHeader className="pt-3 pb-2 px-3">
-                  <CardTitle className="text-base">Water Level (Today / Yesterday)</CardTitle>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-base">Water Level (Today / Yesterday)</CardTitle>
+                    {data.normal?.median != null && (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-green-600 whitespace-nowrap">
+                        <span className="inline-block w-3 border-t border-dashed border-green-500" />
+                        Normal level ({data.normal.median.toFixed(2)} m)
+                      </span>
+                    )}
+                  </div>
                 </CardHeader>
                 <CardContent className="pt-0 pb-2 px-3">
                   <RiverLevelChart hourly={data.hourly} field="level" unitLabel="m" normalLevel={data.normal?.median} />
@@ -339,7 +347,15 @@ export default function RiverConditions() {
               {/* Historical chart */}
               <Card>
                 <CardHeader className="pt-3 pb-2 px-3">
-                  <CardTitle className="text-base">Historical Water Level</CardTitle>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-base">Historical Water Level</CardTitle>
+                    {data.normal?.median != null && (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-green-600 whitespace-nowrap">
+                        <span className="inline-block w-3 border-t border-dashed border-green-500" />
+                        Normal level ({data.normal.median.toFixed(2)} m)
+                      </span>
+                    )}
+                  </div>
                 </CardHeader>
                 <CardContent className="pt-0 pb-2 px-3">
                   <HistoricalRangeChart stationId={data.station.id} stationName={data.station.name} field="level" unitLabel="m" currentValue={data.current?.level} normalLevel={data.normal?.median} />
