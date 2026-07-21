@@ -185,7 +185,7 @@ function DayPanel({ day, field, isToday, unitLabel, normalLevel, overlayHours, s
             {areaD && <path d={areaD} fill={`url(#${gradId})`} stroke="none" />}
             {/* Historical overlay line — drawn behind the current line */}
             {overlayPathD && (
-              <path d={overlayPathD} fill="none" stroke="#f59e0b" strokeWidth="1.5" strokeOpacity="0.65" strokeDasharray="4 3" strokeLinecap="round" />
+              <path d={overlayPathD} fill="none" stroke="#b91c1c" strokeWidth="2" strokeLinecap="round" />
             )}
             {pathD && <path d={pathD} fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" />}
             {knownPoints.filter(p => p.isReal).map((p, i) => (
@@ -204,8 +204,8 @@ function DayPanel({ day, field, isToday, unitLabel, normalLevel, overlayHours, s
             </span>
           )}
           {overlayPathD && (
-            <span className="absolute left-1 top-1 inline-flex items-center gap-1 text-[11px] font-medium text-amber-600 bg-background/80 px-1 rounded whitespace-nowrap">
-              <span className="inline-block w-3 border-t border-dashed border-amber-500" />
+            <span className="absolute left-1 top-1 inline-flex items-center gap-1 text-[11px] font-medium text-red-700 bg-background/80 px-1 rounded whitespace-nowrap">
+              <span className="inline-block w-3 border-t border-red-700" />
               Historical
             </span>
           )}
