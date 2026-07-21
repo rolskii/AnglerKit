@@ -146,6 +146,23 @@ export default function RiverConditions() {
     // handled by the sharedLocationChanged listener below.
   }, []);
 
+  // Refresh immediately when the tab/app becomes visible again — the
+  // interval-based auto-refresh skips ticks while hidden, so without this
+  // a user returning to the page would see stale data until the next tick.
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') {
+        fetchConditions(coords?.lat, coords?.lon);
+      }
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', onVisible);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', onVisible);
+    };
+  }, [fetchConditions, coords]);
+
   useEffect(() => {
     const onLocationChange = (e) => {
       const { name, lat, lon } = e.detail || {};
