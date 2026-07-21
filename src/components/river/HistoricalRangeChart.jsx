@@ -247,14 +247,6 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
                   <path d={chart.areaD} fill="url(#historicalGradient)" stroke="none" />
                   <path d={chart.pathD} fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" />
                 </svg>
-                {chart.normalY != null && normalLevel != null && (
-                  <span
-                    className="absolute left-1 text-[9px] font-medium text-green-600 bg-background/80 px-1 rounded whitespace-nowrap"
-                    style={{ top: `${(chart.normalY / CHART_HEIGHT) * 100}%`, transform: "translateY(-50%)" }}
-                  >
-                    Normal level
-                  </span>
-                )}
                 <div className="relative h-5 mt-1" style={{ width: chart.renderWidth }}>
                   {chart.ticks.map((tick, i) => (
                     <span
