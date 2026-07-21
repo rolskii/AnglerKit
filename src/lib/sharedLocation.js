@@ -23,6 +23,39 @@ export function getSharedLocation() {
   return { name, coords: { lat: coords.lat, lon: coords.lon, name } };
 }
 
+// When no location has been saved yet, try to resolve the user's current GPS
+// position and save it as the shared default. If GPS is unavailable or denied,
+// the existing Toronto default remains. Returns the active shared location.
+export async function initDefaultLocationFromGPS() {
+  const alreadySaved =
+    localStorage.getItem('sharedLocationName') ||
+    localStorage.getItem('moonLocation') ||
+    localStorage.getItem('weatherLocation');
+  if (alreadySaved) return getSharedLocation();
+
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) { resolve(getSharedLocation()); return; }
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude: lat, longitude: lon } = pos.coords;
+        let name = `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
+        try {
+          const res = await fetch(
+            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`
+          );
+          const data = await res.json();
+          const parts = [data.city || data.locality || data.principalSubdivision, data.countryCode].filter(Boolean);
+          if (parts.length) name = parts.join(', ');
+        } catch {}
+        setSharedLocation(name, lat, lon);
+        resolve(getSharedLocation());
+      },
+      () => resolve(getSharedLocation()),
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  });
+}
+
 export function setSharedLocation(name, lat, lon) {
   const coords = { lat, lon, name };
   // Write to the unified keys AND the legacy per-page keys so any page

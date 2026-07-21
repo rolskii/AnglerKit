@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Droplets, MapPin, ChevronDown, Thermometer, Eye, Wind, Gauge, TrendingUp, TrendingDown, Minus, Sunrise, Sunset, Sun, Moon, CloudSun, CloudMoon, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, CloudLightning } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { searchLocations, geocodeLocation } from '@/lib/geocode';
-import { getSharedLocation, setSharedLocation } from '@/lib/sharedLocation';
+import { getSharedLocation, setSharedLocation, initDefaultLocationFromGPS } from '@/lib/sharedLocation';
 import LocationMapPicker from '@/components/moon/LocationMapPicker';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
@@ -183,17 +183,24 @@ export default function Weather() {
   };
 
   useEffect(() => {
+    const init = async () => {
+      if (lastCoords) {
+        fetchWeatherByCoords(lastCoords.lat, lastCoords.lon, lastCoords.name || location);
+      } else {
+        const loc = await initDefaultLocationFromGPS();
+        setLastCoords(loc.coords);
+        setLocation(loc.name);
+        setEditingLocation(loc.name);
+        fetchWeatherByCoords(loc.coords.lat, loc.coords.lon, loc.name, tempUnit);
+      }
+    };
+    init();
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => setUserCoords({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
         () => {},
         { timeout: 5000 }
       );
-    }
-    if (lastCoords) {
-      fetchWeatherByCoords(lastCoords.lat, lastCoords.lon, lastCoords.name || location);
-    } else {
-      fetchUserLocation();
     }
   }, []);
 

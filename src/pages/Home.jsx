@@ -10,7 +10,7 @@ import { base44 } from "@/api/base44Client";
 import PullToRefresh from "@/components/PullToRefresh";
 import FeaturedImage from "@/components/FeaturedImage";
 import LocationMapPicker from "@/components/moon/LocationMapPicker";
-import { getSharedLocation, setSharedLocation } from "@/lib/sharedLocation";
+import { getSharedLocation, setSharedLocation, initDefaultLocationFromGPS } from "@/lib/sharedLocation";
 
 const calculateMoonPhase = (date) => {
   const knownNewMoon = new Date(2000, 0, 6);
@@ -124,6 +124,7 @@ export default function Home() {
   };
 
   const refreshData = async () => {
+    await initDefaultLocationFromGPS();
     const now = new Date();
     const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const phase = calculateMoonPhase(midnight);

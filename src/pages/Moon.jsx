@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Sun, Waves, MapPin, Bell, BellOff, Save, Star } from 'lucide-react';
 import FishIcon from '@/components/FishIcon';
 import { searchLocations, geocodeLocation } from '@/lib/geocode';
-import { getSharedLocation, setSharedLocation } from '@/lib/sharedLocation';
+import { getSharedLocation, setSharedLocation, initDefaultLocationFromGPS } from '@/lib/sharedLocation';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
@@ -254,6 +254,18 @@ export default function Moon() {
       fishingRating: calculateFishingRating(phase.daysInCycle),
     });
   }, [location, selectedDate]);
+
+  // On first mount with no saved location, try GPS before falling back to Toronto
+  useEffect(() => {
+    const init = async () => {
+      await initDefaultLocationFromGPS();
+      const loc = getSharedLocation();
+      setLocation(loc.name);
+      setEditingLocation(loc.name);
+      setCoords(loc.coords);
+    };
+    init();
+  }, []);
 
   // Fetch sun data from Environment Canada when coords change
   useEffect(() => {
