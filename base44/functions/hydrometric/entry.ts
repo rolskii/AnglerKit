@@ -189,48 +189,6 @@ function computeTrend(readings, field, hoursBack = 6) {
 // --- Historical range support ---
 const RANGE_DAYS = { '24h': 1, '2d': 2, '1w': 7, '1m': 30, '3m': 90, '6m': 180, '1y': 365 };
 
-// Fetches realtime readings in 7-day chunks (to stay within the OGC API's
-// 2000-item page limit) and immediately groups them into daily means —
-// avoids holding 30 days of 5-minute readings in memory when we only
-// need daily-level granularity for the historical chart.
-async function fetchRealtimeDailyMeans(stationId, fromDate, toDate) {
-  const dailyMap = {};
-  const CHUNK_DAYS = 7;
-  let chunkStart = new Date(fromDate);
-  while (chunkStart < toDate) {
-    const chunkEnd = new Date(Math.min(chunkStart.getTime() + CHUNK_DAYS * 86400000, toDate.getTime()));
-    const params = new URLSearchParams({
-      f: 'json',
-      STATION_NUMBER: stationId,
-      datetime: `${chunkStart.toISOString()}/${chunkEnd.toISOString()}`,
-      limit: '2000',
-      sortby: 'DATETIME',
-    });
-    try {
-      const data = await ogcFetch('hydrometric-realtime', params);
-      for (const f of (data.features || [])) {
-        const dt = f.properties.DATETIME;
-        if (!dt) continue;
-        const dayKey = dt.substring(0, 10);
-        if (!dailyMap[dayKey]) dailyMap[dayKey] = { levels: [], discharges: [] };
-        if (f.properties.LEVEL != null) dailyMap[dayKey].levels.push(f.properties.LEVEL);
-        if (f.properties.DISCHARGE != null) dailyMap[dayKey].discharges.push(f.properties.DISCHARGE);
-      }
-    } catch (e) {
-      // this chunk unavailable — continue
-    }
-    chunkStart = chunkEnd;
-  }
-  return Object.entries(dailyMap)
-    .map(([dayKey, vals]) => ({
-      time: dayKey,
-      level: vals.levels.length > 0 ? vals.levels.reduce((a, b) => a + b, 0) / vals.levels.length : null,
-      discharge: vals.discharges.length > 0 ? vals.discharges.reduce((a, b) => a + b, 0) / vals.discharges.length : null,
-    }))
-    .filter(p => p.level != null || p.discharge != null)
-    .sort((a, b) => a.time.localeCompare(b.time));
-}
-
 async function fetchHistoricalSeries(stationId, range, startDateStr, endDateStr) {
   let start, end;
   if (range === 'custom' && startDateStr && endDateStr) {
@@ -258,17 +216,6 @@ async function fetchHistoricalSeries(stationId, range, startDateStr, endDateStr)
   }
 
   if (spanDays <= 2.5) {
-    // Use daily means (not raw 5-min realtime) so the amber historic line
-    // doesn't duplicate the blue current line.
-    const daily = await fetchRealtimeDailyMeans(stationId, start, end);
-    if (daily.length > 0) {
-      return {
-        granularity: 'daily',
-        time: daily.map(p => p.time),
-        level: daily.map(p => p.level),
-        discharge: daily.map(p => p.discharge),
-      };
-    }
     return fetchRealtimeSpan(start, end);
   }
 
@@ -316,38 +263,20 @@ async function fetchHistoricalSeries(stationId, range, startDateStr, endDateStr)
   });
   validPoints.sort((a, b) => new Date(a.time) - new Date(b.time));
 
-  // Also fetch recent realtime data (covers the last ~30 days) and
-  // downsample to daily means — this fills the gap between the HYDAT
-  // archive end (~6 months ago) and now, so the historic line shows
-  // recent daily-level data rather than falling back to just 2 days
-  // of realtime that would overlap the current 48-hour line.
-  const realtimeStart = new Date(Math.max(start.getTime(), end.getTime() - 31 * 86400000));
-  let realtimeDaily = [];
-  try {
-    realtimeDaily = await fetchRealtimeDailyMeans(stationId, realtimeStart, end);
-  } catch (e) {
-    // realtime unavailable — continue with just daily-mean
-  }
-
-  // Merge: prefer realtime daily means for overlapping dates (more recent),
-  // then combine with HYDAT daily-mean archive data. The amber line stays
-  // at daily granularity so it never duplicates the blue current line.
-  const realtimeDates = new Set(realtimeDaily.map(p => p.time));
-  const merged = [
-    ...validPoints.filter(p => !realtimeDates.has((p.time || '').substring(0, 10))),
-    ...realtimeDaily,
-  ].sort((a, b) => new Date(a.time) - new Date(b.time));
-
-  if (merged.length > 0) {
+  if (validPoints.length > 0) {
     return {
       granularity: 'daily',
-      time: merged.map(p => p.time),
-      level: merged.map(p => p.level),
-      discharge: merged.map(p => p.discharge),
+      time: validPoints.map(p => p.time),
+      level: validPoints.map(p => p.level),
+      discharge: validPoints.map(p => p.discharge),
     };
   }
 
-  // Final fallback: realtime at original granularity for whatever's available
+  // Fallback: the daily-mean collection returned nothing usable for this
+  // range (wrong field names, no coverage for this station, etc.) — rather
+  // than show a blank chart, fall back to whatever the realtime feed still
+  // has for the tail end of the requested range. This will typically only
+  // cover the last day or two, but that's still more useful than nothing.
   try {
     return await fetchRealtimeSpan(new Date(end.getTime() - 2 * 86400000), end);
   } catch (e) {
