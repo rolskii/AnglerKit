@@ -211,7 +211,7 @@ async function fetchRealtimeSpan(stationId, fromDate, toDate) {
   return { granularity: 'hourly', time: points.map(p => p.time), level: points.map(p => p.level), discharge: points.map(p => p.discharge) };
 }
 
-async function fetchHistoricalSeries(stationId, range, startDateStr, endDateStr) {
+async function fetchHistoricalSeries(stationId, range, startDateStr, endDateStr, tzOffsetMin = 0) {
   // Each range selects a specific historical day; the chart always shows
   // that day's 24h on a fixed 12am→12am axis.
   let targetDate;
@@ -231,9 +231,13 @@ async function fetchHistoricalSeries(stationId, range, startDateStr, endDateStr)
     }
   }
 
-  const start = new Date(targetDate);
-  start.setHours(0, 0, 0, 0);
-  const end = new Date(start.getTime() + 86400000); // next midnight
+  // Compute local midnight (not UTC midnight) — the backend runs in UTC, so
+  // we shift by the caller's timezone offset to get midnight in the user's
+  // local timezone. Without this, UTC midnight = 8pm EDT and the data
+  // wraps around when the frontend converts to local hours.
+  const tzOffsetMs = tzOffsetMin * 60000;
+  const start = new Date(Date.UTC(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 0, 0, 0) + tzOffsetMs);
+  const end = new Date(start.getTime() + 86400000); // next local midnight
 
   // Try hourly realtime data for the target day
   try {
@@ -307,11 +311,11 @@ async function buildStationResponse(chosen, readings) {
 Deno.serve(async (req) => {
   try {
     const body = await req.json();
-    const { lat, lon, stationId, historicalRange, startDate, endDate, stationName, searchQuery, listStations } = body;
+    const { lat, lon, stationId, historicalRange, startDate, endDate, stationName, searchQuery, listStations, tzOffset } = body;
 
     // --- Historical range mode: skip nearest-station search, query directly ---
     if (historicalRange && stationId) {
-      const historical = await fetchHistoricalSeries(stationId, historicalRange, startDate, endDate);
+      const historical = await fetchHistoricalSeries(stationId, historicalRange, startDate, endDate, tzOffset);
       return Response.json({ station: { id: stationId, name: stationName || null }, historical });
     }
 

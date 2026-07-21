@@ -63,6 +63,7 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
           stationId,
           stationName,
           historicalRange: range,
+          tzOffset: new Date().getTimezoneOffset(),
         });
         if (!cancelled) setData(res.data.historical);
       } catch (e) {
@@ -78,8 +79,25 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
   const chart = useMemo(() => {
     if (!data?.time?.length) return null;
     const values = data[field] || [];
-    const times = data.time.map(t => new Date(t));
-    const known = values.map((v, i) => ({ v, t: times[i] })).filter(p => p.v != null);
+
+    // Bucket the 5-minute realtime readings by local hour (0–23), averaging
+    // all readings within each hour. This produces ~24 clean data points that
+    // align with the 12am→12am axis labels, instead of plotting 288 raw
+    // points that create visual artifacts.
+    const buckets = new Array(24).fill(null);
+    data.time.forEach((t, i) => {
+      const v = values[i];
+      if (v == null) return;
+      const h = new Date(t).getHours();
+      if (buckets[h] == null) buckets[h] = { sum: 0, count: 0 };
+      buckets[h].sum += v;
+      buckets[h].count++;
+    });
+    const known = [];
+    buckets.forEach((b, h) => {
+      if (b == null) return;
+      known.push({ v: b.sum / b.count, hour: h });
+    });
     if (known.length === 0) return null;
 
     let min = Math.min(...known.map(p => p.v));
@@ -97,27 +115,18 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
     const usableHeight = usableBottom - usableTop;
     const normalY = normalLevel != null ? usableBottom - ((normalLevel - min) / range_) * usableHeight : null;
 
-    // If only a single data point is available (daily-mean fallback for
-    // older ranges), render it as a flat horizontal line spanning the full
-    // 12am→12am axis so the graph fills the chart instead of showing a dot.
+    // If only a single hour has data (daily-mean fallback for older
+    // ranges), render as a flat line spanning the full 12am→12am axis.
     let plotKnown = known;
     if (known.length === 1) {
       const v = known[0].v;
-      const d = known[0].t;
-      plotKnown = [
-        { v, t: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0) },
-        { v, t: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59) },
-      ];
+      plotKnown = [{ v, hour: 0 }, { v, hour: 24 }];
     }
 
-    // Position data points by hour of day (0–23) on the fixed 12am→12am axis.
-    const points = plotKnown.map((p) => {
-      const hour = p.t.getHours() + p.t.getMinutes() / 60;
-      return {
-        x: (hour / 24) * CHART_WIDTH,
-        y: usableBottom - ((p.v - min) / range_) * usableHeight,
-      };
-    });
+    const points = plotKnown.map((p) => ({
+      x: (p.hour / 24) * CHART_WIDTH,
+      y: usableBottom - ((p.v - min) / range_) * usableHeight,
+    }));
     const pathD = buildSmoothPath(points);
     const areaD = points.length > 0
       ? `${pathD} L ${points[points.length - 1].x} ${CHART_HEIGHT} L ${points[0].x} ${CHART_HEIGHT} Z`
@@ -131,14 +140,10 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
         ]
       : generateFixedIntervalTicks(min, max, 0.05, usableTop, usableBottom);
 
-    // Find the data point closest to "this time" on the target day for the
-    // comparison text.
+    // Find the hour bucket closest to "this time" for the comparison text.
     const nowHour = new Date().getHours() + new Date().getMinutes() / 60;
-    const closest = known.reduce((best, p) => {
-      const pHour = p.t.getHours() + p.t.getMinutes() / 60;
-      const bestHour = best.t.getHours() + best.t.getMinutes() / 60;
-      return Math.abs(pHour - nowHour) < Math.abs(bestHour - nowHour) ? p : best;
-    }, known[0]);
+    const closest = known.reduce((best, p) =>
+      Math.abs(p.hour - nowHour) < Math.abs(best.hour - nowHour) ? p : best, known[0]);
 
     return { pathD, areaD, ticks: FIXED_TICKS, yTicks, normalY, oldest: closest.v };
   }, [data, field, normalLevel]);
