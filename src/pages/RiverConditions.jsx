@@ -349,10 +349,7 @@ export default function RiverConditions() {
               {/* Notes */}
               <Card>
                 <CardHeader className="pt-3 pb-2 px-3">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <StickyNote className="w-4 h-4 text-primary" />
-                    Notes for this location
-                  </CardTitle>
+                  <CardTitle className="text-base">Notes for this location</CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0 pb-2 px-3 space-y-3">
                   {notes.length === 0 ? (
