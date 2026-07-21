@@ -99,13 +99,31 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
     const usableHeight = usableBottom - usableTop;
     const normalY = normalLevel != null ? usableBottom - ((normalLevel - min) / range_) * usableHeight : null;
 
-    // Position data points by time fraction across the full data range.
-    const startTime = known[0].t.getTime();
-    const endTime = known[known.length - 1].t.getTime();
+    // Position data points by time fraction.
+    // - 24h range: align to a midnight-to-midnight window (today 00:00 →
+    //   tomorrow 00:00) so the X-axis reads 12am → 12am, matching the top
+    //   chart. Data before midnight is clipped (shown on the top chart's
+    //   "Yesterday" panel); the empty right portion is future hours.
+    // - Longer ranges: use the full data span.
+    let startTime, endTime;
+    if (range === '24h') {
+      const lastDate = new Date(known[known.length - 1].t);
+      const endMidnight = new Date(lastDate);
+      endMidnight.setHours(24, 0, 0, 0);
+      startTime = new Date(endMidnight.getTime() - 86400000).getTime();
+      endTime = endMidnight.getTime();
+    } else {
+      startTime = known[0].t.getTime();
+      endTime = known[known.length - 1].t.getTime();
+    }
     const totalMs = endTime - startTime || 1;
     const spanDays = totalMs / 86400000;
 
-    const points = known.map((p) => ({
+    const plotKnown = range === '24h'
+      ? known.filter(p => p.t.getTime() >= startTime && p.t.getTime() <= endTime)
+      : known;
+
+    const points = plotKnown.map((p) => ({
       x: ((p.t.getTime() - startTime) / totalMs) * CHART_WIDTH,
       y: usableBottom - ((p.v - min) / range_) * usableHeight,
     }));
@@ -113,22 +131,16 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
     const areaD = `${pathD} L ${points[points.length - 1].x} ${CHART_HEIGHT} L ${points[0].x} ${CHART_HEIGHT} Z`;
 
     // X-axis ticks:
-    // - 24h range: 3-hour clock-hour labels (12am, 3am, 6am, …) matching
-    //   the top chart's HourAxis format.
+    // - 24h range: fixed 3-hour clock labels (12am, 3am, …, 12am) at even
+    //   positions matching the top chart's HourAxis.
     // - Longer ranges: date/time labels positioned at even intervals.
     let ticks;
     if (range === '24h') {
-      const firstTickDate = new Date(startTime);
-      firstTickDate.setMinutes(0, 0, 0);
-      const firstHourMod = firstTickDate.getHours() % 3;
-      if (firstHourMod !== 0) firstTickDate.setHours(firstTickDate.getHours() + (3 - firstHourMod));
-      ticks = [];
-      for (let t = firstTickDate.getTime(); t <= endTime; t += 3 * 3600000) {
-        const pct = ((t - startTime) / totalMs) * 100;
-        if (pct >= -2 && pct <= 102) {
-          ticks.push({ pct, label: labelForHour(new Date(t).getHours()) });
-        }
-      }
+      const MAJOR_HOURS = [0, 3, 6, 9, 12, 15, 18, 21, 24];
+      ticks = MAJOR_HOURS.map(h => ({
+        pct: (h / 24) * 100,
+        label: labelForHour(h),
+      }));
     } else {
       const tickCount = Math.max(4, Math.min(8, Math.round(CHART_WIDTH / 100)));
       ticks = Array.from({ length: tickCount }, (_, i) => {
