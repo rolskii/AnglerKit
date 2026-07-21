@@ -106,8 +106,18 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
       min = Math.min(min, normalLevel);
       max = Math.max(max, normalLevel);
     }
+    // Pick a tick interval that ensures enough Y-axis labels (4–5) for the
+    // current data range, instead of always using 0.05m which produces too
+    // few labels when the range is narrow.
+    let tickInterval = 0.05;
     if (field === 'level') {
-      max = Math.floor(max / 0.05) * 0.05 + 0.05;
+      const dataRange = max - min;
+      if (dataRange <= 0.04) tickInterval = 0.01;
+      else if (dataRange <= 0.08) tickInterval = 0.02;
+      else if (dataRange <= 0.20) tickInterval = 0.05;
+      else if (dataRange <= 0.40) tickInterval = 0.10;
+      else tickInterval = 0.20;
+      max = Math.floor(max / tickInterval) * tickInterval + tickInterval;
     }
     const range_ = max - min || 1;
     const usableTop = CHART_HEIGHT * 0.08;
@@ -138,7 +148,7 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
           { y: (usableTop + usableBottom) / 2, label: formatValue((max + min) / 2, field) },
           { y: usableBottom, label: formatValue(min, field) },
         ]
-      : generateFixedIntervalTicks(min, max, 0.05, usableTop, usableBottom);
+      : generateFixedIntervalTicks(min, max, tickInterval, usableTop, usableBottom);
 
     // Find the hour bucket closest to "this time" for the comparison text.
     const nowHour = new Date().getHours() + new Date().getMinutes() / 60;
