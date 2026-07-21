@@ -349,10 +349,10 @@ export default function RiverConditions() {
                 <CardHeader className="pt-3 pb-2 px-3">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-base">Historical Water Level</CardTitle>
-                    {data.normal?.median != null && (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-green-600 whitespace-nowrap">
-                        <span className="inline-block w-3 border-t border-dashed border-green-500" />
-                        Normal level ({data.normal.median.toFixed(2)} m)
+                    {data.current?.level != null && (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-600 whitespace-nowrap">
+                        <span className="inline-block w-3 border-t border-dashed border-amber-500" />
+                        Now ({data.current.level.toFixed(2)} m)
                       </span>
                     )}
                   </div>
