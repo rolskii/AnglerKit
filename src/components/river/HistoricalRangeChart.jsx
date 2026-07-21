@@ -16,7 +16,7 @@ function formatValue(v, field) {
 }
 
 export default function HistoricalRangeChart({ stationId, stationName, field = 'level', unitLabel, currentValue, normalLevel }) {
-  const [range, setRange] = useState('24h');
+  const range = '24h';
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -89,9 +89,17 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
       if (hh === 12) return '12pm';
       return hh > 12 ? `${hh - 12}pm` : `${hh}am`;
     };
+    const seenHours = new Set();
     const ticks = known
       .map((p, i) => ({ p, i }))
-      .filter(({ p }) => p.t.getHours() % 3 === 0)
+      .filter(({ p }) => {
+        const h = p.t.getHours();
+        if (h % 3 === 0 && !seenHours.has(h)) {
+          seenHours.add(h);
+          return true;
+        }
+        return false;
+      })
       .map(({ p, i }) => ({ x: points[i].x, label: labelForHour(p.t.getHours()) }));
 
     // Y-axis elevation labels at 5 cm intervals for water level (0.95, 1.00,
@@ -115,9 +123,7 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
     const oldVal = chart.oldest.v;
     if (oldVal == null) return null;
     const diff = currentValue - oldVal;
-    const label = range === 'custom'
-      ? `On ${chart.oldest.t.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
-      : (RANGE_AGO_LABELS[range] || 'Earlier in this range');
+    const label = RANGE_AGO_LABELS[range] || 'Earlier in this range';
     return { oldVal, diff, label };
   }, [chart?.oldest, currentValue, range]);
 
