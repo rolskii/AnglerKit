@@ -334,7 +334,7 @@ export default function RiverConditions() {
                       className="text-xs text-muted-foreground flex items-center gap-1 hover:text-primary transition-colors shrink-0 mt-0.5"
                     >
                       <MapPin className="w-3.5 h-3.5" />
-                      <span className="max-w-[100px] truncate">{locationName}</span>
+                      <span className="max-w-[160px] truncate">{locationName}</span>
                       <ChevronDown className="w-3 h-3 opacity-60" />
                     </button>
                   </div>
