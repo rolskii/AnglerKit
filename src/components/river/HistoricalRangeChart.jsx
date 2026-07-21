@@ -44,7 +44,7 @@ function formatAxisLabel(date, spanDays) {
   return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
 }
 
-export default function HistoricalRangeChart({ stationId, stationName, field = 'level', unitLabel, currentValue }) {
+export default function HistoricalRangeChart({ stationId, stationName, field = 'level', unitLabel, currentValue, normalLevel }) {
   const [range, setRange] = useState('1w');
   const [customFrom, setCustomFrom] = useState(null);
   const [customTo, setCustomTo] = useState(null);
@@ -86,12 +86,17 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
     const times = data.time.map(t => new Date(t));
     const known = values.map((v, i) => ({ v, t: times[i] })).filter(p => p.v != null);
     if (known.length === 0) return null;
-    const min = Math.min(...known.map(p => p.v));
-    const max = Math.max(...known.map(p => p.v));
+    let min = Math.min(...known.map(p => p.v));
+    let max = Math.max(...known.map(p => p.v));
+    if (normalLevel != null) {
+      min = Math.min(min, normalLevel);
+      max = Math.max(max, normalLevel);
+    }
     const range_ = max - min || 1;
     const usableTop = CHART_HEIGHT * 0.08;
     const usableBottom = CHART_HEIGHT * 0.92;
     const usableHeight = usableBottom - usableTop;
+    const normalY = normalLevel != null ? usableBottom - ((normalLevel - min) / range_) * usableHeight : null;
     const n = known.length;
     // Render at a fixed pixel-per-point scale (not squeezed to fit the
     // screen) so longer ranges are wide enough to pan across — same idea
@@ -121,8 +126,8 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
       { y: usableBottom, label: formatValue(min, field) },
     ];
 
-    return { pathD, areaD, ticks, yTicks, min, max, renderWidth, oldest: known[0] };
-  }, [data, field]);
+    return { pathD, areaD, ticks, yTicks, min, max, renderWidth, oldest: known[0], normalY };
+  }, [data, field, normalLevel]);
 
   // Compares the current live reading to the oldest point in the currently
   // selected range — i.e. "this time N ago" — so it's easy to see how today
@@ -236,6 +241,9 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
                       <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.05" />
                     </linearGradient>
                   </defs>
+                  {chart.normalY != null && (
+                    <line x1="0" y1={chart.normalY} x2={chart.renderWidth} y2={chart.normalY} stroke="#22c55e" strokeWidth="1.5" strokeDasharray="5 3" />
+                  )}
                   <path d={chart.areaD} fill="url(#historicalGradient)" stroke="none" />
                   <path d={chart.pathD} fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" />
                 </svg>
@@ -253,6 +261,12 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
               </div>
             </div>
           </div>
+          {chart?.normalY != null && normalLevel != null && (
+            <p className="text-xs font-medium text-green-600 flex items-center gap-1.5 mt-1">
+              <span className="inline-block w-4 h-0.5 border-t-2 border-dashed border-green-500 shrink-0" />
+              Normal level ({normalLevel.toFixed(2)}{unitLabel ? ` ${unitLabel}` : ''})
+            </p>
+          )}
         </div>
       )}
 

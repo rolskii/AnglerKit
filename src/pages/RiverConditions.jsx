@@ -376,10 +376,15 @@ export default function RiverConditions() {
                 <CardContent className="pt-0 pb-2">
                   <RiverLevelChart hourly={data.hourly} field="level" unitLabel="m" normalLevel={data.normal?.median} />
                   {data.normal && (
-                    <p className="text-xs text-foreground leading-snug mt-2 flex items-center gap-1.5">
-                      <span className="inline-block w-4 h-0.5 border-t-2 border-dashed border-green-500 shrink-0" />
-                      {buildNormalSummary(data.normal, data.trend?.level)}
-                    </p>
+                    <div className="mt-2 space-y-0.5">
+                      <p className="text-xs font-medium text-green-600 flex items-center gap-1.5">
+                        <span className="inline-block w-4 h-0.5 border-t-2 border-dashed border-green-500 shrink-0" />
+                        Normal level ({data.normal.median?.toFixed(2)} m)
+                      </p>
+                      <p className="text-xs text-foreground leading-snug">
+                        {buildNormalSummary(data.normal, data.trend?.level)}
+                      </p>
+                    </div>
                   )}
                 </CardContent>
               </Card>
@@ -390,7 +395,7 @@ export default function RiverConditions() {
                   <CardTitle className="text-base">Historical Water Level</CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0 pb-2">
-                  <HistoricalRangeChart stationId={data.station.id} stationName={data.station.name} field="level" unitLabel="m" currentValue={data.current?.level} />
+                  <HistoricalRangeChart stationId={data.station.id} stationName={data.station.name} field="level" unitLabel="m" currentValue={data.current?.level} normalLevel={data.normal?.median} />
                 </CardContent>
               </Card>
 
