@@ -367,7 +367,7 @@ export default function RiverConditions() {
                             </span>
                             <div className="flex items-center gap-2">
                               <span className="text-[10px] text-muted-foreground">
-                                {n.created_date ? new Date(n.created_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''}
+                                {n.created_date ? new Date(n.created_date).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : ''}
                               </span>
                               <button
                                 onClick={() => handleDeleteNote(n.id)}
