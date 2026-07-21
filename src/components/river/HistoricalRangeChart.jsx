@@ -15,16 +15,6 @@ function formatValue(v, field) {
   return field === 'discharge' ? v.toFixed(1) : v.toFixed(2);
 }
 
-function formatAxisLabel(date, spanDays) {
-  if (spanDays <= 2.5) {
-    return date.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true });
-  }
-  if (spanDays <= 60) {
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  }
-  return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
-}
-
 export default function HistoricalRangeChart({ stationId, stationName, field = 'level', unitLabel, currentValue, normalLevel }) {
   const [range, setRange] = useState('24h');
   const [data, setData] = useState(null);
@@ -91,12 +81,18 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
     const pathD = buildSmoothPath(points);
     const areaD = `${pathD} L ${points[points.length - 1].x} ${CHART_HEIGHT} L ${points[0].x} ${CHART_HEIGHT} Z`;
 
-    const spanDays = (times[times.length - 1] - times[0]) / 86400000;
-    const tickCount = Math.max(6, Math.round(renderWidth / 110));
-    const ticks = Array.from({ length: tickCount }, (_, i) => {
-      const idx = Math.round((i / (tickCount - 1)) * (n - 1));
-      return { x: points[idx]?.x ?? 0, label: formatAxisLabel(known[idx].t, spanDays) };
-    });
+    // X-axis: hourly time labels at 3-hour intervals (12am, 3am, 6am, …),
+    // matching the Water Level (Today/Yesterday) chart's HourAxis above.
+    const labelForHour = (h) => {
+      const hh = h % 24;
+      if (hh === 0) return '12am';
+      if (hh === 12) return '12pm';
+      return hh > 12 ? `${hh - 12}pm` : `${hh}am`;
+    };
+    const ticks = known
+      .map((p, i) => ({ p, i }))
+      .filter(({ p }) => p.t.getHours() % 3 === 0)
+      .map(({ p, i }) => ({ x: points[i].x, label: labelForHour(p.t.getHours()) }));
 
     // Y-axis elevation labels at 5 cm intervals for water level (0.95, 1.00,
     // 1.05, …); discharge falls back to top/middle/bottom of the range.
