@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { buildSmoothPath, generateFixedIntervalTicks } from '@/lib/chartUtils';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import RiverLevelChart from '@/components/river/RiverLevelChart';
 
 const CHART_HEIGHT = 80;
 const CHART_WIDTH = 720;
@@ -30,13 +31,6 @@ const RANGE_AGO_LABELS = {
 function formatValue(v, field) {
   if (v == null || isNaN(v)) return '—';
   return field === 'discharge' ? v.toFixed(1) : v.toFixed(2);
-}
-
-function labelForHour(h) {
-  const hh = h % 24;
-  if (hh === 0) return '12am';
-  if (hh === 12) return '12pm';
-  return hh > 12 ? `${hh - 12}pm` : `${hh}am`;
 }
 
 function formatDate(d, spanDays) {
@@ -78,12 +72,16 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
     return () => { cancelled = true; };
   }, [stationId, stationName, range]);
 
+  // For the 24h range we reuse RiverLevelChart (two scrollable day panels
+  // with the 12am→12am 3-hour axis) so yesterday's data is visible alongside
+  // today's. Longer ranges use a single fitted panel with date labels.
   const chart = useMemo(() => {
-    if (!data?.time?.length) return null;
+    if (range === '24h' || !data?.time?.length) return null;
     const values = data[field] || [];
     const times = data.time.map(t => new Date(t));
     const known = values.map((v, i) => ({ v, t: times[i] })).filter(p => p.v != null);
     if (known.length === 0) return null;
+
     let min = Math.min(...known.map(p => p.v));
     let max = Math.max(...known.map(p => p.v));
     if (normalLevel != null) {
@@ -99,56 +97,24 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
     const usableHeight = usableBottom - usableTop;
     const normalY = normalLevel != null ? usableBottom - ((normalLevel - min) / range_) * usableHeight : null;
 
-    // Position data points by time fraction.
-    // - 24h range: align to a midnight-to-midnight window (today 00:00 →
-    //   tomorrow 00:00) so the X-axis reads 12am → 12am, matching the top
-    //   chart. Data before midnight is clipped (shown on the top chart's
-    //   "Yesterday" panel); the empty right portion is future hours.
-    // - Longer ranges: use the full data span.
-    let startTime, endTime;
-    if (range === '24h') {
-      const lastDate = new Date(known[known.length - 1].t);
-      const endMidnight = new Date(lastDate);
-      endMidnight.setHours(24, 0, 0, 0);
-      startTime = new Date(endMidnight.getTime() - 86400000).getTime();
-      endTime = endMidnight.getTime();
-    } else {
-      startTime = known[0].t.getTime();
-      endTime = known[known.length - 1].t.getTime();
-    }
+    const startTime = known[0].t.getTime();
+    const endTime = known[known.length - 1].t.getTime();
     const totalMs = endTime - startTime || 1;
     const spanDays = totalMs / 86400000;
 
-    const plotKnown = range === '24h'
-      ? known.filter(p => p.t.getTime() >= startTime && p.t.getTime() <= endTime)
-      : known;
-
-    const points = plotKnown.map((p) => ({
+    const points = known.map((p) => ({
       x: ((p.t.getTime() - startTime) / totalMs) * CHART_WIDTH,
       y: usableBottom - ((p.v - min) / range_) * usableHeight,
     }));
     const pathD = buildSmoothPath(points);
     const areaD = `${pathD} L ${points[points.length - 1].x} ${CHART_HEIGHT} L ${points[0].x} ${CHART_HEIGHT} Z`;
 
-    // X-axis ticks:
-    // - 24h range: fixed 3-hour clock labels (12am, 3am, …, 12am) at even
-    //   positions matching the top chart's HourAxis.
-    // - Longer ranges: date/time labels positioned at even intervals.
-    let ticks;
-    if (range === '24h') {
-      const MAJOR_HOURS = [0, 3, 6, 9, 12, 15, 18, 21, 24];
-      ticks = MAJOR_HOURS.map(h => ({
-        pct: (h / 24) * 100,
-        label: labelForHour(h),
-      }));
-    } else {
-      const tickCount = Math.max(4, Math.min(8, Math.round(CHART_WIDTH / 100)));
-      ticks = Array.from({ length: tickCount }, (_, i) => {
-        const fraction = i / (tickCount - 1);
-        const d = new Date(startTime + fraction * totalMs);
-        return { pct: fraction * 100, label: formatDate(d, spanDays) };
-      });
-    }
+    const tickCount = Math.max(4, Math.min(8, Math.round(CHART_WIDTH / 100)));
+    const ticks = Array.from({ length: tickCount }, (_, i) => {
+      const fraction = i / (tickCount - 1);
+      const d = new Date(startTime + fraction * totalMs);
+      return { pct: fraction * 100, label: formatDate(d, spanDays) };
+    });
 
     const yTicks = field === 'discharge'
       ? [
@@ -158,16 +124,23 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
         ]
       : generateFixedIntervalTicks(min, max, 0.05, usableTop, usableBottom);
 
-    return { pathD, areaD, ticks, yTicks, normalY, oldest: known[0] };
+    return { pathD, areaD, ticks, yTicks, normalY };
   }, [data, field, normalLevel, range]);
 
+  const oldest = useMemo(() => {
+    if (!data?.time?.length) return null;
+    const values = data[field] || [];
+    for (let i = 0; i < values.length; i++) {
+      if (values[i] != null) return values[i];
+    }
+    return null;
+  }, [data, field]);
+
   const comparison = useMemo(() => {
-    if (!chart?.oldest || currentValue == null) return null;
-    const oldVal = chart.oldest.v;
-    if (oldVal == null) return null;
-    const diff = currentValue - oldVal;
-    return { oldVal, diff, label: RANGE_AGO_LABELS[range] || 'Earlier' };
-  }, [chart?.oldest, currentValue, range]);
+    if (oldest == null || currentValue == null) return null;
+    const diff = currentValue - oldest;
+    return { oldVal: oldest, diff, label: RANGE_AGO_LABELS[range] || 'Earlier' };
+  }, [oldest, currentValue, range]);
 
   return (
     <div className="space-y-3">
@@ -197,63 +170,68 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
         <p className="text-xs text-muted-foreground py-1.5">{error}</p>
       )}
 
-      {!loading && !error && chart && (
-        <div className="space-y-1.5">
-          {comparison && (
-            <p className="text-xs text-foreground leading-snug">
-              {comparison.label}: <span className="font-medium">{formatValue(comparison.oldVal, field)}{unitLabel ? ` ${unitLabel}` : ''}</span>
-              {' '}vs now <span className="font-medium">{formatValue(currentValue, field)}{unitLabel ? ` ${unitLabel}` : ''}</span>{' '}
-              <span className={comparison.diff > 0 ? 'text-blue-600' : comparison.diff < 0 ? 'text-amber-600' : 'text-muted-foreground'}>
-                ({comparison.diff > 0 ? '+' : ''}{formatValue(comparison.diff, field)}{unitLabel ? ` ${unitLabel}` : ''})
+      {!loading && !error && comparison && (
+        <p className="text-xs text-foreground leading-snug">
+          {comparison.label}: <span className="font-medium">{formatValue(comparison.oldVal, field)}{unitLabel ? ` ${unitLabel}` : ''}</span>
+          {' '}vs now <span className="font-medium">{formatValue(currentValue, field)}{unitLabel ? ` ${unitLabel}` : ''}</span>{' '}
+          <span className={comparison.diff > 0 ? 'text-blue-600' : comparison.diff < 0 ? 'text-amber-600' : 'text-muted-foreground'}>
+            ({comparison.diff > 0 ? '+' : ''}{formatValue(comparison.diff, field)}{unitLabel ? ` ${unitLabel}` : ''})
+          </span>
+        </p>
+      )}
+
+      {/* 24h: reuse the top chart's two-panel layout (Yesterday + Today) */}
+      {!loading && !error && range === '24h' && data?.time?.length && (
+        <RiverLevelChart hourly={data} field={field} unitLabel={unitLabel} normalLevel={normalLevel} />
+      )}
+
+      {/* Longer ranges: single fitted panel with date labels */}
+      {!loading && !error && range !== '24h' && chart && (
+        <div className="flex items-stretch gap-1.5">
+          <div className="relative w-9 shrink-0" style={{ height: CHART_HEIGHT }}>
+            {chart.yTicks.map((tick, i) => (
+              <span
+                key={i}
+                className="absolute right-0 text-[11px] text-muted-foreground whitespace-nowrap"
+                style={{ top: `${(tick.y / CHART_HEIGHT) * 100}%`, transform: 'translateY(-50%)' }}
+              >
+                {tick.label}{unitLabel ? ` ${unitLabel}` : ''}
               </span>
-            </p>
-          )}
-          <div className="flex items-stretch gap-1.5">
-            <div className="relative w-9 shrink-0" style={{ height: CHART_HEIGHT }}>
-              {chart.yTicks.map((tick, i) => (
-                <span
-                  key={i}
-                  className="absolute right-0 text-[11px] text-muted-foreground whitespace-nowrap"
-                  style={{ top: `${(tick.y / CHART_HEIGHT) * 100}%`, transform: 'translateY(-50%)' }}
-                >
-                  {tick.label}{unitLabel ? ` ${unitLabel}` : ''}
-                </span>
-              ))}
-            </div>
-            <div className="flex-1 min-w-0 relative">
+            ))}
+          </div>
+          <div className="flex-1 min-w-0 relative">
+            {chart.normalY != null && (
+              <span className="absolute right-1 top-1 z-10 inline-flex items-center gap-1 text-[11px] font-medium text-green-600 bg-background/80 px-1 rounded whitespace-nowrap">
+                <span className="inline-block w-3 border-t border-dashed border-green-500" />
+                Normal level
+              </span>
+            )}
+            <svg viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`} className="w-full" style={{ height: CHART_HEIGHT, overflow: 'hidden' }} preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="historicalGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.45" />
+                  <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.05" />
+                </linearGradient>
+              </defs>
               {chart.normalY != null && (
-                <span className="absolute right-1 top-1 z-10 inline-flex items-center gap-1 text-[11px] font-medium text-green-600 bg-background/80 px-1 rounded whitespace-nowrap">
-                  <span className="inline-block w-3 border-t border-dashed border-green-500" />
-                  Normal level
-                </span>
+                <line x1="0" y1={chart.normalY} x2={CHART_WIDTH} y2={chart.normalY} stroke="#22c55e" strokeWidth="1.5" strokeDasharray="5 3" />
               )}
-              <svg viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`} className="w-full" style={{ height: CHART_HEIGHT, overflow: 'hidden' }} preserveAspectRatio="none">
-                <defs>
-                  <linearGradient id="historicalGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.45" />
-                    <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.05" />
-                  </linearGradient>
-                </defs>
-                {chart.normalY != null && (
-                  <line x1="0" y1={chart.normalY} x2={CHART_WIDTH} y2={chart.normalY} stroke="#22c55e" strokeWidth="1.5" strokeDasharray="5 3" />
-                )}
-                <path d={chart.areaD} fill="url(#historicalGradient)" stroke="none" />
-                <path d={chart.pathD} fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" />
-              </svg>
-              <div className="relative h-6 mt-1">
-                {chart.ticks.map((tick, i) => (
-                  <div key={i} className="absolute top-0 flex flex-col items-center" style={{ left: `${tick.pct}%`, transform: 'translateX(-50%)' }}>
-                    <div className="w-px h-1.5 bg-muted-foreground/50" />
-                    <span className="text-[11px] mt-0.5 whitespace-nowrap text-muted-foreground">{tick.label}</span>
-                  </div>
-                ))}
-              </div>
+              <path d={chart.areaD} fill="url(#historicalGradient)" stroke="none" />
+              <path d={chart.pathD} fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+            <div className="relative h-6 mt-1">
+              {chart.ticks.map((tick, i) => (
+                <div key={i} className="absolute top-0 flex flex-col items-center" style={{ left: `${tick.pct}%`, transform: 'translateX(-50%)' }}>
+                  <div className="w-px h-1.5 bg-muted-foreground/50" />
+                  <span className="text-[11px] mt-0.5 whitespace-nowrap text-muted-foreground">{tick.label}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
       )}
 
-      {!loading && !error && !chart && (
+      {!loading && !error && !data?.time?.length && (
         <p className="text-xs text-muted-foreground py-1.5">No data available for this range.</p>
       )}
     </div>
