@@ -18,6 +18,8 @@ function labelForHour(h) {
   return hh > 12 ? `${hh - 12}pm` : `${hh}am`;
 }
 
+const MAJOR_HOURS = [0, 3, 6, 9, 12, 15, 18, 21, 24];
+
 export default function HistoricalRangeChart({ stationId, stationName, field = 'level', unitLabel, currentValue, normalLevel }) {
   const range = '24h';
   const [data, setData] = useState(null);
@@ -53,8 +55,27 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
     const times = data.time.map(t => new Date(t));
     const known = values.map((v, i) => ({ v, t: times[i] })).filter(p => p.v != null);
     if (known.length === 0) return null;
-    let min = Math.min(...known.map(p => p.v));
-    let max = Math.max(...known.map(p => p.v));
+
+    // Oldest point from the full 24h dataset for the "this time yesterday"
+    // comparison (kept separate from the midnight-to-midnight chart window).
+    const oldest = known[0];
+
+    // Align the chart to a midnight-to-midnight window matching the top
+    // chart's "Today" panel, so the X-axis labels read 12am → 12am.
+    const lastDate = new Date(known[known.length - 1].t);
+    const endMidnight = new Date(lastDate);
+    endMidnight.setHours(24, 0, 0, 0);
+    const startMidnight = new Date(endMidnight.getTime() - 86400000);
+    const startTime = startMidnight.getTime();
+    const endTime = endMidnight.getTime();
+    const totalMs = endTime - startTime;
+
+    // Only render data within the midnight-to-midnight window
+    const windowed = known.filter(p => p.t.getTime() >= startTime && p.t.getTime() <= endTime);
+    if (windowed.length === 0) return null;
+
+    let min = Math.min(...windowed.map(p => p.v));
+    let max = Math.max(...windowed.map(p => p.v));
     if (normalLevel != null) {
       min = Math.min(min, normalLevel);
       max = Math.max(max, normalLevel);
@@ -68,32 +89,22 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
     const usableHeight = usableBottom - usableTop;
     const normalY = normalLevel != null ? usableBottom - ((normalLevel - min) / range_) * usableHeight : null;
 
-    // Position data points by time fraction (not index) so ticks line up
-    // with actual clock hours, matching the top chart's HourAxis.
-    const startTime = known[0].t.getTime();
-    const endTime = known[known.length - 1].t.getTime();
-    const totalMs = endTime - startTime || 1;
-
-    const points = known.map((p) => ({
+    const points = windowed.map((p) => ({
       x: ((p.t.getTime() - startTime) / totalMs) * CHART_WIDTH,
       y: usableBottom - ((p.v - min) / range_) * usableHeight,
     }));
     const pathD = buildSmoothPath(points);
     const areaD = `${pathD} L ${points[points.length - 1].x} ${CHART_HEIGHT} L ${points[0].x} ${CHART_HEIGHT} Z`;
 
-    // Fixed 3-hour interval ticks positioned by time fraction, matching
-    // the Water Level (Today/Yesterday) chart's HourAxis above.
-    const firstTickDate = new Date(startTime);
-    firstTickDate.setMinutes(0, 0, 0);
-    const firstHourMod = firstTickDate.getHours() % 3;
-    if (firstHourMod !== 0) firstTickDate.setHours(firstTickDate.getHours() + (3 - firstHourMod));
-    const ticks = [];
-    for (let t = firstTickDate.getTime(); t <= endTime; t += 3 * 3600000) {
-      const pct = ((t - startTime) / totalMs) * 100;
-      if (pct >= -2 && pct <= 102) {
-        ticks.push({ pct, label: labelForHour(new Date(t).getHours()) });
-      }
-    }
+    // Fixed 3-hour ticks at 12am, 3am, 6am, …, 12am — same layout as the
+    // top chart's HourAxis. The nearest tick to the current time shows "Now".
+    const nowHour = new Date().getHours() + new Date().getMinutes() / 60;
+    const nearestMajor = MAJOR_HOURS.reduce((best, h) => Math.abs(h - nowHour) < Math.abs(best - nowHour) ? h : best, 0);
+    const ticks = MAJOR_HOURS.map(h => ({
+      pct: (h / 24) * 100,
+      label: h === nearestMajor ? 'Now' : labelForHour(h),
+      isNow: h === nearestMajor,
+    }));
 
     const yTicks = field === 'discharge'
       ? [
@@ -103,7 +114,7 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
         ]
       : generateFixedIntervalTicks(min, max, 0.05, usableTop, usableBottom);
 
-    return { pathD, areaD, ticks, yTicks, normalY, oldest: known[0] };
+    return { pathD, areaD, ticks, yTicks, normalY, oldest };
   }, [data, field, normalLevel]);
 
   const comparison = useMemo(() => {
@@ -157,7 +168,7 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
                   Normal level
                 </span>
               )}
-              <svg viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`} className="w-full" style={{ height: CHART_HEIGHT }} preserveAspectRatio="none">
+              <svg viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`} className="w-full" style={{ height: CHART_HEIGHT, overflow: 'hidden' }} preserveAspectRatio="none">
                 <defs>
                   <linearGradient id="historicalGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.45" />
@@ -174,7 +185,9 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
                 {chart.ticks.map((tick, i) => (
                   <div key={i} className="absolute top-0 flex flex-col items-center" style={{ left: `${tick.pct}%`, transform: 'translateX(-50%)' }}>
                     <div className="w-px h-1.5 bg-muted-foreground/50" />
-                    <span className="text-[11px] mt-0.5 whitespace-nowrap text-muted-foreground">{tick.label}</span>
+                    <span className={`text-[11px] mt-0.5 whitespace-nowrap ${tick.isNow ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
+                      {tick.label}
+                    </span>
                   </div>
                 ))}
               </div>
