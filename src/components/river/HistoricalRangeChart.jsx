@@ -253,9 +253,6 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
               </div>
             </div>
           </div>
-          {unitLabel && (
-            <p className="text-[9px] text-muted-foreground text-right pr-1">{unitLabel}</p>
-          )}
         </div>
       )}
 
