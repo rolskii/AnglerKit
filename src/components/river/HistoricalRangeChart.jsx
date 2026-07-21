@@ -19,6 +19,11 @@ const RANGES = [
 const CHART_HEIGHT = 160;
 const CHART_WIDTH = 720;
 
+function formatValue(v, field) {
+  if (v == null || isNaN(v)) return '—';
+  return field === 'discharge' ? v.toFixed(1) : v.toFixed(2);
+}
+
 function formatAxisLabel(date, spanDays) {
   if (spanDays <= 2.5) {
     return date.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true });
@@ -90,7 +95,16 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
       return { x: points[idx]?.x ?? 0, label: formatAxisLabel(known[idx].t, spanDays) };
     });
 
-    return { pathD, areaD, ticks, min, max };
+    // Y-axis elevation labels — top/middle/bottom of the plotted range so the
+    // user can read approximate water level (or discharge) values off the chart.
+    const mid = (max + min) / 2;
+    const yTicks = [
+      { y: usableTop, label: formatValue(max, field) },
+      { y: (usableTop + usableBottom) / 2, label: formatValue(mid, field) },
+      { y: usableBottom, label: formatValue(min, field) },
+    ];
+
+    return { pathD, areaD, ticks, yTicks, min, max };
   }, [data, field]);
 
   return (
@@ -147,28 +161,46 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
       )}
 
       {!loading && !error && chart && (
-        <div>
-          <svg viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`} className="w-full" style={{ height: CHART_HEIGHT }} preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="historicalGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.45" />
-                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.05" />
-              </linearGradient>
-            </defs>
-            <path d={chart.areaD} fill="url(#historicalGradient)" stroke="none" />
-            <path d={chart.pathD} fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" />
-          </svg>
-          <div className="relative h-5 mt-1">
-            {chart.ticks.map((tick, i) => (
-              <span
-                key={i}
-                className="absolute text-[9px] text-muted-foreground whitespace-nowrap"
-                style={{ left: `${(tick.x / CHART_WIDTH) * 100}%`, transform: 'translateX(-50%)' }}
-              >
-                {tick.label}
-              </span>
-            ))}
+        <div className="space-y-0.5">
+          <div className="flex items-stretch gap-1.5">
+            <div className="relative w-9 shrink-0" style={{ height: CHART_HEIGHT }}>
+              {chart.yTicks.map((tick, i) => (
+                <span
+                  key={i}
+                  className="absolute right-0 text-[9px] text-muted-foreground whitespace-nowrap"
+                  style={{ top: `${(tick.y / CHART_HEIGHT) * 100}%`, transform: 'translateY(-50%)' }}
+                >
+                  {tick.label}
+                </span>
+              ))}
+            </div>
+            <div className="flex-1 min-w-0">
+              <svg viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`} className="w-full" style={{ height: CHART_HEIGHT }} preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="historicalGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.45" />
+                    <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.05" />
+                  </linearGradient>
+                </defs>
+                <path d={chart.areaD} fill="url(#historicalGradient)" stroke="none" />
+                <path d={chart.pathD} fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+              <div className="relative h-5 mt-1">
+                {chart.ticks.map((tick, i) => (
+                  <span
+                    key={i}
+                    className="absolute text-[9px] text-muted-foreground whitespace-nowrap"
+                    style={{ left: `${(tick.x / CHART_WIDTH) * 100}%`, transform: 'translateX(-50%)' }}
+                  >
+                    {tick.label}
+                  </span>
+                ))}
+              </div>
+            </div>
           </div>
+          {unitLabel && (
+            <p className="text-[9px] text-muted-foreground text-right pr-1">{unitLabel}</p>
+          )}
         </div>
       )}
 

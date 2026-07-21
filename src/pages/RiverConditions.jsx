@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Waves, MapPin, ChevronDown, TrendingUp, TrendingDown, Minus, Search,
-  Droplets, Gauge, Star, StickyNote, Plus, AlertTriangle, Info, CheckCircle2,
+  Droplets, Gauge, StickyNote, Plus, AlertTriangle, Info, CheckCircle2,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { getSharedLocation, setSharedLocation } from '@/lib/sharedLocation';
@@ -171,13 +171,6 @@ export default function RiverConditions() {
     fetchConditions(lat, lon);
   };
 
-  const handleFavoriteSelect = (fav) => {
-    setSharedLocation(fav.name, fav.lat, fav.lon);
-    setLocationName(fav.name);
-    setCoords({ lat: fav.lat, lon: fav.lon, name: fav.name });
-    fetchConditions(fav.lat, fav.lon);
-  };
-
   // Used by both river/station-name search results and "Nearby Stations"
   // rows — jumps straight to that exact station rather than re-searching
   // for the nearest one to a point.
@@ -281,24 +274,6 @@ export default function RiverConditions() {
               </div>
             )}
           </div>
-
-          {/* Favorites strip */}
-          {favorites.length > 0 && (
-            <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
-              {favorites.map((fav) => (
-                <button
-                  key={fav.id}
-                  onClick={() => handleFavoriteSelect(fav)}
-                  className={`shrink-0 px-3 py-1 text-xs font-medium rounded-full transition-colors flex items-center gap-1 ${
-                    fav.name === locationName ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
-                  }`}
-                >
-                  <Star className="w-3 h-3" />
-                  {fav.name}
-                </button>
-              ))}
-            </div>
-          )}
 
           {error && (
             <Card>

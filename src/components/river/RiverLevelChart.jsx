@@ -49,15 +49,27 @@ function HourAxis({ nowHour }) {
   );
 }
 
+function formatElevation(v, field) {
+  if (v == null || isNaN(v)) return '—';
+  return field === 'discharge' ? v.toFixed(1) : v.toFixed(2);
+}
+
 function DayPanel({ day, field, isToday, unitLabel }) {
   const points = day.hours; // [{hour, value, isReal}]
   const withValues = points.filter(p => p.value != null);
   const gradId = `riverGradient-${field}-${day.dateStr}`;
 
+  const bounds = useMemo(() => {
+    if (withValues.length === 0) return null;
+    return {
+      min: Math.min(...withValues.map(p => p.value)),
+      max: Math.max(...withValues.map(p => p.value)),
+    };
+  }, [withValues]);
+
   const svgPoints = useMemo(() => {
-    if (withValues.length === 0) return [];
-    const min = Math.min(...withValues.map(p => p.value));
-    const max = Math.max(...withValues.map(p => p.value));
+    if (!bounds) return [];
+    const { min, max } = bounds;
     const range = max - min || 1;
     const usableTop = CHART_HEIGHT * PAD_TOP_PCT;
     const usableBottom = CHART_HEIGHT * (1 - PAD_BOTTOM_PCT);
@@ -68,7 +80,20 @@ function DayPanel({ day, field, isToday, unitLabel }) {
       const y = usableBottom - ((p.value - min) / range) * usableHeight;
       return { x, y, hour: p.hour, isReal: p.isReal, value: p.value };
     });
-  }, [points, withValues]);
+  }, [points, bounds]);
+
+  // Y-axis elevation labels (top/middle/bottom of this day's plotted range).
+  const yTicks = useMemo(() => {
+    if (!bounds) return [];
+    const usableTop = CHART_HEIGHT * PAD_TOP_PCT;
+    const usableBottom = CHART_HEIGHT * (1 - PAD_BOTTOM_PCT);
+    const mid = (bounds.min + bounds.max) / 2;
+    return [
+      { y: usableTop, label: formatElevation(bounds.max, field) },
+      { y: (usableTop + usableBottom) / 2, label: formatElevation(mid, field) },
+      { y: usableBottom, label: formatElevation(bounds.min, field) },
+    ];
+  }, [bounds, field]);
 
   const knownPoints = svgPoints.filter(p => p.y != null);
   const pathD = buildSmoothPath(knownPoints);
@@ -87,23 +112,38 @@ function DayPanel({ day, field, isToday, unitLabel }) {
         <span className="text-xs font-medium text-muted-foreground">{day.label}</span>
         {unitLabel && <span className="text-xs text-muted-foreground">{unitLabel}</span>}
       </div>
-      <svg viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`} className="w-full" style={{ height: CHART_HEIGHT }} preserveAspectRatio="none">
-        <defs>
-          <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.45" />
-            <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.05" />
-          </linearGradient>
-        </defs>
-        {areaD && <path d={areaD} fill={`url(#${gradId})`} stroke="none" />}
-        {pathD && <path d={pathD} fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" />}
-        {knownPoints.filter(p => p.isReal).map((p, i) => (
-          <circle key={i} cx={p.x} cy={p.y} r={2} fill="hsl(var(--primary))" />
-        ))}
-        {lastReal && (
-          <circle cx={lastReal.x} cy={lastReal.y} r={4} fill="hsl(var(--background))" stroke="hsl(var(--primary))" strokeWidth="2" />
-        )}
-      </svg>
-      <HourAxis nowHour={isToday ? new Date().getHours() + new Date().getMinutes() / 60 : null} />
+      <div className="flex items-stretch gap-1.5">
+        <div className="relative w-9 shrink-0" style={{ height: CHART_HEIGHT }}>
+          {yTicks.map((tick, i) => (
+            <span
+              key={i}
+              className="absolute right-0 text-[9px] text-muted-foreground whitespace-nowrap"
+              style={{ top: `${(tick.y / CHART_HEIGHT) * 100}%`, transform: 'translateY(-50%)' }}
+            >
+              {tick.label}
+            </span>
+          ))}
+        </div>
+        <div className="flex-1 min-w-0">
+          <svg viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`} className="w-full" style={{ height: CHART_HEIGHT }} preserveAspectRatio="none">
+            <defs>
+              <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.45" />
+                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.05" />
+              </linearGradient>
+            </defs>
+            {areaD && <path d={areaD} fill={`url(#${gradId})`} stroke="none" />}
+            {pathD && <path d={pathD} fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" />}
+            {knownPoints.filter(p => p.isReal).map((p, i) => (
+              <circle key={i} cx={p.x} cy={p.y} r={2} fill="hsl(var(--primary))" />
+            ))}
+            {lastReal && (
+              <circle cx={lastReal.x} cy={lastReal.y} r={4} fill="hsl(var(--background))" stroke="hsl(var(--primary))" strokeWidth="2" />
+            )}
+          </svg>
+          <HourAxis nowHour={isToday ? new Date().getHours() + new Date().getMinutes() / 60 : null} />
+        </div>
+      </div>
     </div>
   );
 }

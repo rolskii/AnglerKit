@@ -136,14 +136,17 @@ async function fetchNormalComparison(stationId, todayLevel, yearsBack = 10) {
       const params = new URLSearchParams({
         f: 'json',
         STATION_NUMBER: stationId,
-        datetime: `${start.toISOString().slice(0, 10)}/${end.toISOString().slice(0, 10)}`,
+        datetime: `${start.toISOString()}/${end.toISOString()}`,
         limit: '100',
       });
       try {
         const data = await ogcFetch('hydrometric-daily-mean', params);
+        const startMs = start.getTime();
+        const endMs = end.getTime();
         for (const f of (data.features || [])) {
           const v = f.properties.LEVEL;
-          if (v != null) samples.push(v);
+          const t = f.properties.DATE ? new Date(f.properties.DATE).getTime() : NaN;
+          if (v != null && !isNaN(t) && t >= startMs && t <= endMs) samples.push(v);
         }
       } catch (e) {
         // this year's data unavailable — skip it
@@ -217,10 +220,12 @@ async function fetchHistoricalSeries(stationId, range, startDateStr, endDateStr)
   }
 
   // Longer spans: page through the daily-mean collection in ~1-year chunks.
-  // NOTE: the exact property names ECCC's hydrometric-daily-mean collection
-  // uses haven't been live-verified from this environment (outbound network
-  // to api.weather.gc.ca is blocked here) — we defensively try a few likely
-  // field-name variants rather than assuming a single one.
+  // Confirmed field names live: DATE, LEVEL, DISCHARGE (STATION_NUMBER identifies
+  // the station). The datetime filter must be a full RFC3339 timestamp — a
+  // bare "YYYY-MM-DD/YYYY-MM-DD" interval gets silently ignored by this API
+  // and it just returns whatever it has for the station instead of erroring,
+  // so we also filter client-side below as a safety net regardless of what
+  // the server actually honoured.
   const allPoints = [];
   let chunkStart = new Date(start);
   while (chunkStart < end) {
@@ -228,7 +233,8 @@ async function fetchHistoricalSeries(stationId, range, startDateStr, endDateStr)
     const params = new URLSearchParams({
       f: 'json',
       STATION_NUMBER: stationId,
-      datetime: `${chunkStart.toISOString().slice(0, 10)}/${chunkEnd.toISOString().slice(0, 10)}`,
+      datetime: `${chunkStart.toISOString()}/${chunkEnd.toISOString()}`,
+      sortby: 'DATE',
       limit: '2000',
     });
     try {
@@ -246,7 +252,15 @@ async function fetchHistoricalSeries(stationId, range, startDateStr, endDateStr)
     }
     chunkStart = chunkEnd;
   }
-  const validPoints = allPoints.filter(p => p.time && (p.level != null || p.discharge != null));
+  // Client-side range filter — belt-and-suspenders against the API ignoring
+  // the datetime filter and handing back out-of-range data for the station.
+  const startMs = start.getTime();
+  const endMs = end.getTime();
+  const validPoints = allPoints.filter(p => {
+    if (!p.time || (p.level == null && p.discharge == null)) return false;
+    const t = new Date(p.time).getTime();
+    return !isNaN(t) && t >= startMs && t <= endMs;
+  });
   validPoints.sort((a, b) => new Date(a.time) - new Date(b.time));
 
   if (validPoints.length > 0) {
