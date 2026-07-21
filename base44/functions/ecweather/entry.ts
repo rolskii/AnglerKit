@@ -143,6 +143,19 @@ function getForecastPop(forecastXml) {
   return getTagText(abbrMatch[1], 'pop');
 }
 
+// EC's per-period <precipitation> block carries an expected accumulation amount
+// (e.g. <accumulation><amount units="cm">1</amount></accumulation>), only present
+// when precipitation is actually forecast for that period. Normalizes to mm.
+function getForecastPrecipAmount(forecastXml) {
+  const precipMatch = forecastXml.match(/<precipitation>([\s\S]*?)<\/precipitation>/);
+  if (!precipMatch) return 0;
+  const amountMatch = precipMatch[1].match(/<amount[^>]*units="([^"]*)"[^>]*>([\s\S]*?)<\/amount>/);
+  if (!amountMatch) return 0;
+  const value = parseFloat(amountMatch[2]);
+  if (isNaN(value)) return 0;
+  return amountMatch[1] === 'cm' ? value * 10 : value;
+}
+
 function getRiseSet(riseSetXml, name) {
   const re = new RegExp(`<dateTime[^>]*name="${name}"[^>]*>([\\s\\S]*?)</dateTime>`, 'g');
   const matches = [];
@@ -238,7 +251,8 @@ function parseWeatherXml(xmlText, localDate, tzOffset) {
     const ic = parseInt(getForecastIconCode(f)) || 0;
     const pop = parseInt(getForecastPop(f)) || 0;
     const textSummary = getTagText(f, 'textSummary');
-    return { period, textSummary, tempHigh, tempLow, iconCode: ic, pop };
+    const precipAmount = getForecastPrecipAmount(f);
+    return { period, textSummary, tempHigh, tempLow, iconCode: ic, pop, precipAmount };
   });
 
   // --- Sunrise / sunset (today only) ---
@@ -266,7 +280,7 @@ function parseWeatherXml(xmlText, localDate, tzOffset) {
   let i = 0;
   while (i < forecasts.length) {
     const f = forecasts[i];
-    let highTemp = null, lowTemp = null, dayIcon = 0, dayPop = 0;
+    let highTemp = null, lowTemp = null, dayIcon = 0, dayPop = 0, dayPrecip = 0;
     let dayTextSummary = null, nightTextSummary = null;
 
     // If the first usable forecast is a night-only period ("Tonight"),
@@ -275,6 +289,7 @@ function parseWeatherXml(xmlText, localDate, tzOffset) {
       lowTemp = parseFloat(f.tempLow);
       dayIcon = f.iconCode;
       dayPop = f.pop;
+      dayPrecip = f.precipAmount || 0;
       nightTextSummary = f.textSummary;
       dayTextSummary = null; // don't use night text as day summary — frontend will generate one
       highTemp = Math.max(lowTemp, temperature); // current observed temp may exceed tonight's forecast low
@@ -285,7 +300,7 @@ function parseWeatherXml(xmlText, localDate, tzOffset) {
       daily.weather_code.push(ecIconToWMO[dayIcon] ?? 3);
       daily.temperature_2m_max.push(highTemp);
       daily.temperature_2m_min.push(lowTemp);
-      daily.precipitation_sum.push(0);
+      daily.precipitation_sum.push(dayPrecip);
       daily.precipitation_probability.push(dayPop);
       daily.sunrise.push(sunrise);
       daily.sunset.push(sunset);
@@ -302,9 +317,11 @@ function parseWeatherXml(xmlText, localDate, tzOffset) {
       highTemp = parseFloat(f.tempHigh);
       dayIcon = f.iconCode;
       dayPop = f.pop;
+      dayPrecip = f.precipAmount || 0;
       dayTextSummary = f.textSummary;
       if (i + 1 < forecasts.length && forecasts[i + 1].tempLow) {
         lowTemp = parseFloat(forecasts[i + 1].tempLow);
+        dayPrecip += forecasts[i + 1].precipAmount || 0;
         nightTextSummary = forecasts[i + 1].textSummary;
         i += 2;
       } else {
@@ -315,11 +332,13 @@ function parseWeatherXml(xmlText, localDate, tzOffset) {
       lowTemp = parseFloat(f.tempLow);
       dayIcon = f.iconCode;
       dayPop = f.pop;
+      dayPrecip = f.precipAmount || 0;
       nightTextSummary = f.textSummary;
       if (i + 1 < forecasts.length && forecasts[i + 1].tempHigh) {
         highTemp = parseFloat(forecasts[i + 1].tempHigh);
         dayIcon = forecasts[i + 1].iconCode;
         dayPop = Math.max(dayPop, forecasts[i + 1].pop);
+        dayPrecip += forecasts[i + 1].precipAmount || 0;
         dayTextSummary = forecasts[i + 1].textSummary;
         i += 2;
       } else {
@@ -338,7 +357,7 @@ function parseWeatherXml(xmlText, localDate, tzOffset) {
     daily.weather_code.push(ecIconToWMO[dayIcon] ?? 3);
     daily.temperature_2m_max.push(highTemp ?? (lowTemp ?? 0));
     daily.temperature_2m_min.push(lowTemp ?? (highTemp ?? 0));
-    daily.precipitation_sum.push(0);
+    daily.precipitation_sum.push(dayPrecip);
     daily.precipitation_probability.push(dayPop);
     daily.sunrise.push(sunrise);
     daily.sunset.push(sunset);
