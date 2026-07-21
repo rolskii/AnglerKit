@@ -1,29 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { buildSmoothPath, generateFixedIntervalTicks } from '@/lib/chartUtils';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
 import { Loader2 } from 'lucide-react';
-
-const RANGES = [
-  { key: '24h', label: '24H' },
-  { key: '2d', label: '2D' },
-  { key: '1w', label: '1W' },
-  { key: '1m', label: '1M' },
-  { key: '3m', label: '3M' },
-  { key: '6m', label: '6M' },
-  { key: '1y', label: '1Y' },
-  { key: 'custom', label: 'Custom' },
-];
 
 const RANGE_AGO_LABELS = {
   '24h': 'This time yesterday',
-  '2d': '2 days ago',
-  '1w': '1 week ago',
-  '1m': '1 month ago',
-  '3m': '3 months ago',
-  '6m': '6 months ago',
-  '1y': '1 year ago',
 };
 
 const CHART_HEIGHT = 80;
@@ -45,16 +26,13 @@ function formatAxisLabel(date, spanDays) {
 }
 
 export default function HistoricalRangeChart({ stationId, stationName, field = 'level', unitLabel, currentValue, normalLevel }) {
-  const [range, setRange] = useState('1w');
-  const [customFrom, setCustomFrom] = useState(null);
-  const [customTo, setCustomTo] = useState(null);
+  const [range, setRange] = useState('24h');
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     if (!stationId) return;
-    if (range === 'custom' && (!customFrom || !customTo)) return;
     let cancelled = false;
     const load = async () => {
       setLoading(true);
@@ -64,8 +42,6 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
           stationId,
           stationName,
           historicalRange: range,
-          startDate: range === 'custom' ? customFrom.toISOString() : undefined,
-          endDate: range === 'custom' ? customTo.toISOString() : undefined,
         });
         if (!cancelled) setData(res.data.historical);
       } catch (e) {
@@ -76,7 +52,7 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
     };
     load();
     return () => { cancelled = true; };
-  }, [stationId, stationName, range, customFrom, customTo]);
+  }, [stationId, stationName, range]);
 
   const scrollRef = useRef(null);
 
@@ -160,46 +136,6 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
 
   return (
     <div className="space-y-3">
-      <div className="flex gap-1.5 flex-wrap">
-        {RANGES.map(r => (
-          <button
-            key={r.key}
-            onClick={() => setRange(r.key)}
-            className={`px-2.5 py-1 text-xs font-medium rounded-full transition-colors ${
-              range === r.key ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
-            }`}
-          >
-            {r.label}
-          </button>
-        ))}
-      </div>
-
-      {range === 'custom' && (
-        <div className="flex gap-2 items-center text-sm">
-          <Popover>
-            <PopoverTrigger asChild>
-              <button className="px-2.5 py-1 rounded-lg bg-secondary text-xs">
-                {customFrom ? customFrom.toLocaleDateString() : 'From'}
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar mode="single" selected={customFrom} onSelect={setCustomFrom} />
-            </PopoverContent>
-          </Popover>
-          <span className="text-muted-foreground text-xs">to</span>
-          <Popover>
-            <PopoverTrigger asChild>
-              <button className="px-2.5 py-1 rounded-lg bg-secondary text-xs">
-                {customTo ? customTo.toLocaleDateString() : 'To'}
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar mode="single" selected={customTo} onSelect={setCustomTo} />
-            </PopoverContent>
-          </Popover>
-        </div>
-      )}
-
       {loading && (
         <div className="flex items-center gap-2 py-1.5">
           <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />
