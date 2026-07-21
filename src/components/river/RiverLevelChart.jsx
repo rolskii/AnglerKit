@@ -11,6 +11,14 @@ function localDateStr(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
+function pickTickInterval(dataRange) {
+  if (dataRange <= 0.04) return 0.01;
+  if (dataRange <= 0.08) return 0.02;
+  if (dataRange <= 0.20) return 0.05;
+  if (dataRange <= 0.40) return 0.10;
+  return 0.20;
+}
+
 // 24h tick axis matching the Moon page's chart: major labeled ticks every
 // 3 hours, minor unlabeled notches for the hours in between. `nowHour`
 // (0-23, or null) replaces the nearest major tick's label with "Now".
@@ -54,12 +62,15 @@ function formatElevation(v, field) {
   return field === 'discharge' ? v.toFixed(1) : v.toFixed(2);
 }
 
-function DayPanel({ day, field, isToday, unitLabel, normalLevel }) {
+function DayPanel({ day, field, isToday, unitLabel, normalLevel, overlayHours, sharedBounds }) {
   const points = day.hours; // [{hour, value, isReal}]
   const withValues = points.filter(p => p.value != null);
   const gradId = `riverGradient-${field}-${day.dateStr}`;
 
   const bounds = useMemo(() => {
+    // When an overlay is active, use the shared bounds (computed across all
+    // panels + overlay data) so both lines share the same Y-axis scale.
+    if (sharedBounds) return sharedBounds;
     if (withValues.length === 0) return null;
     const vals = withValues.map(p => p.value);
     let min = Math.min(...vals);
@@ -68,10 +79,9 @@ function DayPanel({ day, field, isToday, unitLabel, normalLevel }) {
       min = Math.min(min, normalLevel);
       max = Math.max(max, normalLevel);
     }
-    // Always extend the top to the next 5cm tick above the max value so
-    // the highest data point always has headroom (water level only).
     if (field === 'level') {
-      max = Math.floor(max / 0.05) * 0.05 + 0.05;
+      const interval = pickTickInterval(max - min);
+      max = Math.floor(max / interval) * interval + interval;
     }
     let normalY = null;
     if (normalLevel != null) {
@@ -82,14 +92,15 @@ function DayPanel({ day, field, isToday, unitLabel, normalLevel }) {
       normalY = usableBottom - ((normalLevel - min) / range) * usableHeight;
     }
     return { min, max, normalY };
-  }, [withValues, normalLevel, field]);
+  }, [withValues, normalLevel, field, sharedBounds]);
+
+  const usableTop = CHART_HEIGHT * PAD_TOP_PCT;
+  const usableBottom = CHART_HEIGHT * (1 - PAD_BOTTOM_PCT);
 
   const svgPoints = useMemo(() => {
     if (!bounds) return [];
     const { min, max } = bounds;
     const range = max - min || 1;
-    const usableTop = CHART_HEIGHT * PAD_TOP_PCT;
-    const usableBottom = CHART_HEIGHT * (1 - PAD_BOTTOM_PCT);
     const usableHeight = usableBottom - usableTop;
     return points.map(p => {
       const x = (p.hour / 24) * CHART_WIDTH;
@@ -97,14 +108,26 @@ function DayPanel({ day, field, isToday, unitLabel, normalLevel }) {
       const y = usableBottom - ((p.value - min) / range) * usableHeight;
       return { x, y, hour: p.hour, isReal: p.isReal, value: p.value };
     });
-  }, [points, bounds]);
+  }, [points, bounds, usableTop, usableBottom]);
 
-  // Y-axis elevation labels at 5 cm intervals for water level (0.95, 1.00,
-  // 1.05, …); discharge falls back to top/middle/bottom of the range.
+  // Overlay (historical) SVG points — positioned by hour of day on the
+  // same 12am→12am axis using the shared bounds.
+  const overlaySvgPoints = useMemo(() => {
+    if (!bounds || !overlayHours) return [];
+    const { min, max } = bounds;
+    const range = max - min || 1;
+    const usableHeight = usableBottom - usableTop;
+    return overlayHours.map(p => {
+      const x = (p.hour / 24) * CHART_WIDTH;
+      if (p.value == null) return { x, y: null };
+      const y = usableBottom - ((p.value - min) / range) * usableHeight;
+      return { x, y };
+    });
+  }, [overlayHours, bounds, usableTop, usableBottom]);
+
+  // Y-axis elevation labels — dynamic interval based on data range.
   const yTicks = useMemo(() => {
     if (!bounds) return [];
-    const usableTop = CHART_HEIGHT * PAD_TOP_PCT;
-    const usableBottom = CHART_HEIGHT * (1 - PAD_BOTTOM_PCT);
     if (field === 'discharge') {
       const mid = (bounds.min + bounds.max) / 2;
       return [
@@ -113,14 +136,18 @@ function DayPanel({ day, field, isToday, unitLabel, normalLevel }) {
         { y: usableBottom, label: formatElevation(bounds.min, field) },
       ];
     }
-    return generateFixedIntervalTicks(bounds.min, bounds.max, 0.05, usableTop, usableBottom);
-  }, [bounds, field]);
+    const interval = pickTickInterval(bounds.max - bounds.min);
+    return generateFixedIntervalTicks(bounds.min, bounds.max, interval, usableTop, usableBottom);
+  }, [bounds, field, usableTop, usableBottom]);
 
   const knownPoints = svgPoints.filter(p => p.y != null);
   const pathD = buildSmoothPath(knownPoints);
   const areaD = knownPoints.length > 0
     ? `${pathD} L ${knownPoints[knownPoints.length - 1].x} ${CHART_HEIGHT} L ${knownPoints[0].x} ${CHART_HEIGHT} Z`
     : '';
+
+  const overlayKnown = overlaySvgPoints.filter(p => p.y != null);
+  const overlayPathD = buildSmoothPath(overlayKnown);
 
   const lastReal = isToday ? [...knownPoints].reverse().find(p => p.isReal) : null;
 
@@ -156,6 +183,10 @@ function DayPanel({ day, field, isToday, unitLabel, normalLevel }) {
               <line x1="0" y1={bounds.normalY} x2={CHART_WIDTH} y2={bounds.normalY} stroke="#22c55e" strokeWidth="1.5" strokeDasharray="5 3" />
             )}
             {areaD && <path d={areaD} fill={`url(#${gradId})`} stroke="none" />}
+            {/* Historical overlay line — drawn behind the current line */}
+            {overlayPathD && (
+              <path d={overlayPathD} fill="none" stroke="#f59e0b" strokeWidth="1.5" strokeOpacity="0.65" strokeDasharray="4 3" strokeLinecap="round" />
+            )}
             {pathD && <path d={pathD} fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" />}
             {knownPoints.filter(p => p.isReal).map((p, i) => (
               <circle key={i} cx={p.x} cy={p.y} r={2} fill="hsl(var(--primary))" />
@@ -172,6 +203,12 @@ function DayPanel({ day, field, isToday, unitLabel, normalLevel }) {
               Normal level ({normalLevel.toFixed(2)}{unitLabel ? ` ${unitLabel}` : ''})
             </span>
           )}
+          {overlayPathD && (
+            <span className="absolute left-1 top-1 inline-flex items-center gap-1 text-[11px] font-medium text-amber-600 bg-background/80 px-1 rounded whitespace-nowrap">
+              <span className="inline-block w-3 border-t border-dashed border-amber-500" />
+              Historical
+            </span>
+          )}
           <HourAxis nowHour={isToday ? new Date().getHours() + new Date().getMinutes() / 60 : null} />
         </div>
       </div>
@@ -179,7 +216,7 @@ function DayPanel({ day, field, isToday, unitLabel, normalLevel }) {
   );
 }
 
-export default function RiverLevelChart({ hourly, field = 'level', scrollToToday = true, unitLabel, normalLevel }) {
+export default function RiverLevelChart({ hourly, field = 'level', scrollToToday = true, unitLabel, normalLevel, overlayHourly }) {
   const scrollRef = useRef(null);
   const now = useNowTick(60000);
 
@@ -203,6 +240,60 @@ export default function RiverLevelChart({ hourly, field = 'level', scrollToToday
     }));
   }, [hourly, field, now]);
 
+  // Bucket the historical overlay data by local hour (0–23), averaging all
+  // readings within each hour — same approach as the current day's data.
+  const overlayHours = useMemo(() => {
+    if (!overlayHourly?.time?.length) return null;
+    const values = overlayHourly[field] || [];
+    const buckets = new Array(24).fill(null).map((_, h) => ({ hour: h, value: null, isReal: false }));
+    const counts = new Array(24).fill(0);
+    overlayHourly.time.forEach((t, i) => {
+      const v = values[i];
+      if (v == null) return;
+      const h = new Date(t).getHours();
+      if (buckets[h].value == null) {
+        buckets[h].value = v;
+      } else {
+        buckets[h].value = (buckets[h].value * counts[h] + v) / (counts[h] + 1);
+      }
+      counts[h]++;
+      buckets[h].isReal = true;
+    });
+    return buckets;
+  }, [overlayHourly, field]);
+
+  // When an overlay is active, compute shared bounds across all visible
+  // days + the overlay data so both lines use the same Y-axis scale.
+  const sharedBounds = useMemo(() => {
+    if (!overlayHours) return null;
+    const allVals = [];
+    days.forEach(day => {
+      day.hours.forEach(p => {
+        if (p.value != null) allVals.push(p.value);
+      });
+    });
+    overlayHours.forEach(p => {
+      if (p.value != null) allVals.push(p.value);
+    });
+    if (allVals.length === 0) return null;
+    let min = Math.min(...allVals);
+    let max = Math.max(...allVals);
+    if (normalLevel != null) {
+      min = Math.min(min, normalLevel);
+      max = Math.max(max, normalLevel);
+    }
+    if (field === 'level') {
+      const interval = pickTickInterval(max - min);
+      max = Math.floor(max / interval) * interval + interval;
+    }
+    const range = max - min || 1;
+    const usableTop = CHART_HEIGHT * PAD_TOP_PCT;
+    const usableBottom = CHART_HEIGHT * (1 - PAD_BOTTOM_PCT);
+    const usableHeight = usableBottom - usableTop;
+    const normalY = normalLevel != null ? usableBottom - ((normalLevel - min) / range) * usableHeight : null;
+    return { min, max, normalY };
+  }, [days, overlayHours, normalLevel, field]);
+
   useEffect(() => {
     if (scrollToToday && scrollRef.current && days.length > 0) {
       scrollRef.current.scrollTo({ left: scrollRef.current.scrollWidth, behavior: 'instant' });
@@ -222,7 +313,7 @@ export default function RiverLevelChart({ hourly, field = 'level', scrollToToday
       style={{ scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' }}
     >
       {days.map((day) => (
-        <DayPanel key={day.dateStr} day={day} field={field} isToday={day.label === 'Today'} unitLabel={unitLabel} normalLevel={normalLevel} />
+        <DayPanel key={day.dateStr} day={day} field={field} isToday={day.label === 'Today'} unitLabel={unitLabel} normalLevel={normalLevel} overlayHours={overlayHours} sharedBounds={sharedBounds} />
       ))}
     </div>
   );

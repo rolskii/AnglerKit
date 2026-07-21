@@ -94,6 +94,7 @@ export default function RiverConditions() {
   const [noteText, setNoteText] = useState('');
   const [savingNote, setSavingNote] = useState(false);
   const [noteDialogOpen, setNoteDialogOpen] = useState(false);
+  const [historicalHourly, setHistoricalHourly] = useState(null);
 
 
   const fetchConditions = useCallback(async (lat, lon) => {
@@ -326,7 +327,7 @@ export default function RiverConditions() {
                   <CardTitle className="text-base">Water Level (Today / Yesterday)</CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0 pb-2 px-3">
-                  <RiverLevelChart hourly={data.hourly} field="level" unitLabel="m" normalLevel={data.normal?.median} />
+                  <RiverLevelChart hourly={data.hourly} field="level" unitLabel="m" normalLevel={data.normal?.median} overlayHourly={historicalHourly} />
                   {advisory && (
                     <div className={`rounded-lg p-2.5 flex items-start gap-2 mt-2 ${advisory.tone}`}>
                       <advisory.icon className="w-4 h-4 shrink-0 mt-0.5" />
@@ -342,7 +343,7 @@ export default function RiverConditions() {
                   <CardTitle className="text-base">Historical Water Level</CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0 pb-2 px-3">
-                  <HistoricalRangeChart stationId={data.station.id} stationName={data.station.name} field="level" unitLabel="m" currentValue={data.current?.level} normalLevel={data.normal?.median} />
+                  <HistoricalRangeChart stationId={data.station.id} stationName={data.station.name} field="level" unitLabel="m" currentValue={data.current?.level} normalLevel={data.normal?.median} onDataChange={setHistoricalHourly} />
                 </CardContent>
               </Card>
 
