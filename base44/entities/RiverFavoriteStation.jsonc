@@ -1,0 +1,65 @@
+{
+  "name": "RiverFavoriteStation",
+  "type": "object",
+  "properties": {
+    "station_id": {
+      "type": "string",
+      "description": "ECCC hydrometric station ID that was favorited"
+    },
+    "station_name": {
+      "type": "string",
+      "description": "Display name of the station at the time it was favorited"
+    },
+    "lat": {
+      "type": "number",
+      "description": "Latitude of the station, if known"
+    },
+    "lon": {
+      "type": "number",
+      "description": "Longitude of the station, if known"
+    }
+  },
+  "required": [
+    "station_id",
+    "station_name"
+  ],
+  "rls": {
+    "create": true,
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

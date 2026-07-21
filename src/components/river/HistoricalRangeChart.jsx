@@ -16,6 +16,16 @@ const RANGES = [
   { key: 'custom', label: 'Custom' },
 ];
 
+const RANGE_AGO_LABELS = {
+  '24h': 'This time yesterday',
+  '2d': '2 days ago',
+  '1w': '1 week ago',
+  '1m': '1 month ago',
+  '3m': '3 months ago',
+  '6m': '6 months ago',
+  '1y': '1 year ago',
+};
+
 const CHART_HEIGHT = 160;
 const CHART_WIDTH = 720;
 
@@ -34,7 +44,7 @@ function formatAxisLabel(date, spanDays) {
   return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
 }
 
-export default function HistoricalRangeChart({ stationId, stationName, field = 'level', unitLabel }) {
+export default function HistoricalRangeChart({ stationId, stationName, field = 'level', unitLabel, currentValue }) {
   const [range, setRange] = useState('1w');
   const [customFrom, setCustomFrom] = useState(null);
   const [customTo, setCustomTo] = useState(null);
@@ -111,8 +121,22 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
       { y: usableBottom, label: formatValue(min, field) },
     ];
 
-    return { pathD, areaD, ticks, yTicks, min, max, renderWidth };
+    return { pathD, areaD, ticks, yTicks, min, max, renderWidth, oldest: known[0] };
   }, [data, field]);
+
+  // Compares the current live reading to the oldest point in the currently
+  // selected range — i.e. "this time N ago" — so it's easy to see how today
+  // stacks up against the same point in the past, not just eyeball the line.
+  const comparison = useMemo(() => {
+    if (!chart?.oldest || currentValue == null) return null;
+    const oldVal = chart.oldest.v;
+    if (oldVal == null) return null;
+    const diff = currentValue - oldVal;
+    const label = range === 'custom'
+      ? `On ${chart.oldest.t.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+      : (RANGE_AGO_LABELS[range] || 'Earlier in this range');
+    return { oldVal, diff, label };
+  }, [chart?.oldest, currentValue, range]);
 
   // Default to panned all the way to the right (most recent data) — the
   // user can then swipe/drag left to explore earlier points and back right
@@ -177,7 +201,16 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
       )}
 
       {!loading && !error && chart && (
-        <div className="space-y-0.5">
+        <div className="space-y-1.5">
+          {comparison && (
+            <p className="text-xs text-foreground leading-snug">
+              {comparison.label}: <span className="font-medium">{formatValue(comparison.oldVal, field)}{unitLabel ? ` ${unitLabel}` : ''}</span>
+              {' '}vs now <span className="font-medium">{formatValue(currentValue, field)}{unitLabel ? ` ${unitLabel}` : ''}</span>{' '}
+              <span className={comparison.diff > 0 ? 'text-blue-600' : comparison.diff < 0 ? 'text-amber-600' : 'text-muted-foreground'}>
+                ({comparison.diff > 0 ? '+' : ''}{formatValue(comparison.diff, field)}{unitLabel ? ` ${unitLabel}` : ''})
+              </span>
+            </p>
+          )}
           <div className="flex items-stretch gap-1.5">
             <div className="relative w-9 shrink-0" style={{ height: CHART_HEIGHT }}>
               {chart.yTicks.map((tick, i) => (

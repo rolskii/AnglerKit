@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Waves, MapPin, ChevronDown, TrendingUp, TrendingDown, Minus, Search,
-  Droplets, Gauge, StickyNote, Plus, AlertTriangle, Info, CheckCircle2,
+  Droplets, Gauge, StickyNote, Plus, AlertTriangle, Info, CheckCircle2, Star, X,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { getSharedLocation, setSharedLocation } from '@/lib/sharedLocation';
@@ -33,6 +33,21 @@ function buildNormalSummary(normal, trend) {
   const pct = normal.percentile;
   const isBelow = pct != null && pct <= 30;
   const isAbove = pct != null && pct >= 70;
+
+  // Always state a below/above direction, even inside the "near normal"
+  // middle band — the backend's plain "near normal" label alone doesn't say
+  // which side of the median the reading is on, which is what's confusing.
+  let levelPhrase = normal.label;
+  if (pct != null) {
+    if (pct >= 90) levelPhrase = 'much higher than normal';
+    else if (pct >= 70) levelPhrase = 'higher than normal';
+    else if (pct <= 10) levelPhrase = 'much lower than normal';
+    else if (pct <= 30) levelPhrase = 'lower than normal';
+    else if (pct > 50) levelPhrase = 'slightly above normal';
+    else if (pct < 50) levelPhrase = 'slightly below normal';
+    else levelPhrase = 'right at normal';
+  }
+
   const direction = trend?.direction;
   const changePct = trend?.changePct != null ? Math.abs(trend.changePct) : 0;
   const fast = changePct >= 8;
@@ -46,7 +61,7 @@ function buildNormalSummary(normal, trend) {
   // or when levels are already near normal.
   const conjunction = (isBelow && direction === 'rising') || (isAbove && direction === 'falling') ? 'but' : 'and';
 
-  return `Currently ${normal.label}, ${conjunction} ${trendPhrase}.`;
+  return `Currently ${levelPhrase}, ${conjunction} ${trendPhrase}.`;
 }
 
 function buildAdvisory(data) {
@@ -82,6 +97,8 @@ export default function RiverConditions() {
   const [stationResults, setStationResults] = useState([]);
   const [stationSearchOpen, setStationSearchOpen] = useState(false);
   const [searchingStations, setSearchingStations] = useState(false);
+  const [favoriteStations, setFavoriteStations] = useState([]);
+  const [savingFavoriteStation, setSavingFavoriteStation] = useState(false);
   const searchDebounceRef = useRef(null);
 
   const fetchConditions = useCallback(async (lat, lon) => {
@@ -149,6 +166,19 @@ export default function RiverConditions() {
     base44.entities.SavedLocation.list('-created_date', 20).then(setFavorites).catch(() => {});
   }, []);
 
+  const loadFavoriteStations = useCallback(async () => {
+    try {
+      const results = await base44.entities.RiverFavoriteStation.list('-created_date', 50);
+      setFavoriteStations(results);
+    } catch (e) {
+      setFavoriteStations([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadFavoriteStations();
+  }, [loadFavoriteStations]);
+
   // Debounced river/station name search — e.g. typing "Credit River" lists
   // every ECCC station with that text in its name, regardless of distance.
   useEffect(() => {
@@ -207,6 +237,43 @@ export default function RiverConditions() {
       setCoords({ lat: station.lat, lon: station.lon, name: station.name });
     }
     fetchConditionsForStation(station.id, station.name);
+  };
+
+  // Favorited *stations* are a separate concept from the general saved
+  // *locations* used elsewhere in the app — a station search result (e.g.
+  // "Credit River at Norval") isn't tied to a GPS location the user picked,
+  // so it needs its own dedicated favorites list.
+  const currentFavorite = favoriteStations.find(f => f.station_id === data?.station?.id);
+
+  const toggleFavoriteStation = async () => {
+    if (!data?.station?.id || savingFavoriteStation) return;
+    setSavingFavoriteStation(true);
+    try {
+      if (currentFavorite) {
+        await base44.entities.RiverFavoriteStation.delete(currentFavorite.id);
+      } else {
+        await base44.entities.RiverFavoriteStation.create({
+          station_id: data.station.id,
+          station_name: data.station.name,
+          lat: data.station.lat ?? null,
+          lon: data.station.lon ?? null,
+        });
+      }
+      await loadFavoriteStations();
+    } catch (e) {
+      // leave state as-is on failure
+    } finally {
+      setSavingFavoriteStation(false);
+    }
+  };
+
+  const removeFavoriteStation = async (fav) => {
+    try {
+      await base44.entities.RiverFavoriteStation.delete(fav.id);
+      await loadFavoriteStations();
+    } catch (e) {
+      // ignore
+    }
   };
 
   const handleSaveNote = async () => {
@@ -298,6 +365,46 @@ export default function RiverConditions() {
             )}
           </div>
 
+          {/* Favorite stations — separate from the general saved locations
+              used elsewhere, since a searched-for station isn't tied to a
+              GPS point the way a favorite location is. */}
+          {favoriteStations.length > 0 && (
+            <Card>
+              <CardHeader className="pt-3 pb-2">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Star className="w-4 h-4 text-primary fill-primary" />
+                  Favorite Stations
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="flex flex-col gap-1">
+                  {favoriteStations.map((fav) => (
+                    <div
+                      key={fav.id}
+                      className={`flex items-center justify-between rounded-lg pl-1 pr-0.5 py-0.5 transition-colors ${
+                        fav.station_id === data?.station?.id ? 'bg-secondary' : 'hover:bg-secondary'
+                      }`}
+                    >
+                      <button
+                        onClick={() => selectStation({ id: fav.station_id, name: fav.station_name, lat: fav.lat, lon: fav.lon })}
+                        className="flex-1 min-w-0 text-left py-1"
+                      >
+                        <span className="text-sm text-foreground truncate">{fav.station_name}</span>
+                      </button>
+                      <button
+                        onClick={() => removeFavoriteStation(fav)}
+                        className="shrink-0 p-1.5 text-muted-foreground hover:text-foreground"
+                        aria-label="Remove favorite station"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {error && (
             <Card>
               <CardContent className="pt-6 text-center">
@@ -313,11 +420,21 @@ export default function RiverConditions() {
               <Card className="bg-primary/10">
                 <CardContent className="p-3 space-y-3">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-semibold">{data.station.name}</p>
-                      <p className="text-xs text-muted-foreground">Station {data.station.id} · {data.station.distanceKm} km away</p>
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <button
+                        onClick={toggleFavoriteStation}
+                        disabled={savingFavoriteStation}
+                        className="shrink-0 p-0.5 -ml-0.5"
+                        aria-label={currentFavorite ? 'Remove from favorite stations' : 'Add to favorite stations'}
+                      >
+                        <Star className={`w-4 h-4 ${currentFavorite ? 'fill-primary text-primary' : 'text-muted-foreground'}`} />
+                      </button>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold truncate">{data.station.name}</p>
+                        <p className="text-xs text-muted-foreground">Station {data.station.id} · {data.station.distanceKm} km away</p>
+                      </div>
                     </div>
-                    <span className="text-[10px] text-muted-foreground text-right">
+                    <span className="text-[10px] text-muted-foreground text-right shrink-0">
                       Updated {data.current?.datetimeLocal ? new Date(data.current.datetimeLocal).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '—'}
                     </span>
                   </div>
@@ -384,7 +501,7 @@ export default function RiverConditions() {
                   <CardTitle className="text-base">Historical Water Level</CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <HistoricalRangeChart stationId={data.station.id} stationName={data.station.name} field="level" unitLabel="m" />
+                  <HistoricalRangeChart stationId={data.station.id} stationName={data.station.name} field="level" unitLabel="m" currentValue={data.current?.level} />
                 </CardContent>
               </Card>
 
