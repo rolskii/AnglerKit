@@ -370,10 +370,10 @@ export default function RiverConditions() {
 
               {/* Hourly chart */}
               <Card>
-                <CardHeader className="pt-3 pb-2">
+                <CardHeader className="pt-3 pb-2 px-3">
                   <CardTitle className="text-base">Water Level (Today / Yesterday)</CardTitle>
                 </CardHeader>
-                <CardContent className="pt-0 pb-2">
+                <CardContent className="pt-0 pb-2 px-3">
                   <RiverLevelChart hourly={data.hourly} field="level" unitLabel="m" normalLevel={data.normal?.median} />
                   {advisory && (
                     <div className={`rounded-lg p-2.5 flex items-start gap-2 mt-2 ${advisory.tone}`}>
@@ -386,23 +386,23 @@ export default function RiverConditions() {
 
               {/* Historical chart */}
               <Card>
-                <CardHeader className="pt-3 pb-2">
+                <CardHeader className="pt-3 pb-2 px-3">
                   <CardTitle className="text-base">Historical Water Level</CardTitle>
                 </CardHeader>
-                <CardContent className="pt-0 pb-2">
+                <CardContent className="pt-0 pb-2 px-3">
                   <HistoricalRangeChart stationId={data.station.id} stationName={data.station.name} field="level" unitLabel="m" currentValue={data.current?.level} normalLevel={data.normal?.median} />
                 </CardContent>
               </Card>
 
               {/* Notes */}
               <Card>
-                <CardHeader className="pt-3 pb-2">
+                <CardHeader className="pt-3 pb-2 px-3">
                   <CardTitle className="text-base flex items-center gap-2">
                     <StickyNote className="w-4 h-4 text-primary" />
                     Notes for this location
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="pt-0 pb-2 space-y-3">
+                <CardContent className="pt-0 pb-2 px-3 space-y-3">
                   <div className="bg-secondary/60 rounded-lg p-2.5 space-y-2">
                     <p className="text-xs text-muted-foreground">
                       WL: {data.current?.level != null ? `${data.current.level.toFixed(2)} m` : '—'} · Flow: {data.current?.discharge != null ? `${data.current.discharge.toFixed(1)} m³/s` : '—'} (auto-captured on save)
