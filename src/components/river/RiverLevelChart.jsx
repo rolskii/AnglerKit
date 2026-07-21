@@ -38,7 +38,7 @@ function HourAxis({ nowHour }) {
           >
             <div className={isMajor ? 'w-px h-1.5 bg-muted-foreground/50' : 'w-px h-1 bg-muted-foreground/25'} />
             {isMajor && (
-              <span className={`text-[9px] mt-0.5 whitespace-nowrap ${isNowLabel ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
+              <span className={`text-[11px] mt-0.5 whitespace-nowrap ${isNowLabel ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
                 {isNowLabel ? 'Now' : labelFor(h)}
               </span>
             )}
@@ -130,7 +130,7 @@ function DayPanel({ day, field, isToday, unitLabel, normalLevel }) {
           {yTicks.map((tick, i) => (
             <span
               key={i}
-              className="absolute right-0 text-[9px] text-muted-foreground whitespace-nowrap"
+              className="absolute right-0 text-[11px] text-muted-foreground whitespace-nowrap"
               style={{ top: `${(tick.y / CHART_HEIGHT) * 100}%`, transform: 'translateY(-50%)' }}
             >
               {tick.label}{unitLabel ? ` ${unitLabel}` : ''}
@@ -159,7 +159,7 @@ function DayPanel({ day, field, isToday, unitLabel, normalLevel }) {
           </svg>
           {bounds?.normalY != null && normalLevel != null && (
             <span
-              className="absolute left-1 top-1 inline-flex items-center gap-1 text-[9px] font-medium text-green-600 bg-background/80 px-1 rounded whitespace-nowrap"
+            className="absolute left-1 top-1 inline-flex items-center gap-1 text-[11px] font-medium text-green-600 bg-background/80 px-1 rounded whitespace-nowrap"
             >
               <span className="inline-block w-3 border-t border-dashed border-green-500" />
               Normal level ({normalLevel.toFixed(2)}{unitLabel ? ` ${unitLabel}` : ''})

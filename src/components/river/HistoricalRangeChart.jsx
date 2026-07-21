@@ -222,7 +222,7 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
               {chart.yTicks.map((tick, i) => (
                 <span
                   key={i}
-                  className="absolute right-0 text-[9px] text-muted-foreground whitespace-nowrap"
+                  className="absolute right-0 text-[11px] text-muted-foreground whitespace-nowrap"
                   style={{ top: `${(tick.y / CHART_HEIGHT) * 100}%`, transform: 'translateY(-50%)' }}
                 >
                   {tick.label}{unitLabel ? ` ${unitLabel}` : ''}
@@ -232,7 +232,7 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
             <div ref={scrollRef} className="flex-1 min-w-0 overflow-x-auto scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
               <div className="relative" style={{ width: chart.renderWidth }}>
                 {chart.normalY != null && (
-                  <span className="sticky left-1 top-1 z-10 inline-flex items-center gap-1 text-[9px] font-medium text-green-600 bg-background/80 px-1 rounded whitespace-nowrap pointer-events-none w-fit">
+                  <span className="sticky left-1 top-1 z-10 inline-flex items-center gap-1 text-[11px] font-medium text-green-600 bg-background/80 px-1 rounded whitespace-nowrap pointer-events-none w-fit">
                     <span className="inline-block w-3 border-t border-dashed border-green-500" />
                     Normal level
                   </span>
@@ -258,7 +258,7 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
                   {chart.ticks.map((tick, i) => (
                     <span
                       key={i}
-                      className="absolute text-[9px] text-muted-foreground whitespace-nowrap"
+                      className="absolute text-[11px] text-muted-foreground whitespace-nowrap"
                       style={{ left: tick.x, transform: 'translateX(-50%)' }}
                     >
                       {tick.label}
