@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Waves, MapPin, ChevronDown, TrendingUp, TrendingDown, Minus,
-  Droplets, Gauge, StickyNote, Plus, AlertTriangle, Info, CheckCircle2,
+  Droplets, Gauge, StickyNote, Plus, AlertTriangle, Info, CheckCircle2, Trash2,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { getSharedLocation, setSharedLocation } from '@/lib/sharedLocation';
@@ -198,6 +198,16 @@ export default function RiverConditions() {
     fetchConditionsForStation(station.id, station.name);
   };
 
+  const handleDeleteNote = async (noteId) => {
+    if (!noteId) return;
+    try {
+      await base44.entities.RiverNote.delete(noteId);
+      await loadNotes(data?.station?.id);
+    } catch (e) {
+      // keep silent — the note stays in the list
+    }
+  };
+
   const handleSaveNote = async () => {
     if (!noteText.trim() || !data?.station?.id) return;
     setSavingNote(true);
@@ -359,9 +369,18 @@ export default function RiverConditions() {
                             <span className="text-xs font-medium text-muted-foreground">
                               WL: {n.level != null ? `${n.level.toFixed(2)} m` : '—'} · Flow: {n.discharge != null ? `${n.discharge.toFixed(1)} m³/s` : '—'}
                             </span>
-                            <span className="text-[10px] text-muted-foreground">
-                              {n.created_date ? new Date(n.created_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] text-muted-foreground">
+                                {n.created_date ? new Date(n.created_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''}
+                              </span>
+                              <button
+                                onClick={() => handleDeleteNote(n.id)}
+                                className="text-muted-foreground hover:text-destructive transition-colors"
+                                aria-label="Delete note"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
                           </div>
                           <p className="text-sm text-foreground leading-snug">{n.note}</p>
                         </div>
