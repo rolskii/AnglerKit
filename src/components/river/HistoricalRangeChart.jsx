@@ -97,8 +97,21 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
     const usableHeight = usableBottom - usableTop;
     const normalY = normalLevel != null ? usableBottom - ((normalLevel - min) / range_) * usableHeight : null;
 
+    // If only a single data point is available (daily-mean fallback for
+    // older ranges), render it as a flat horizontal line spanning the full
+    // 12am→12am axis so the graph fills the chart instead of showing a dot.
+    let plotKnown = known;
+    if (known.length === 1) {
+      const v = known[0].v;
+      const d = known[0].t;
+      plotKnown = [
+        { v, t: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0) },
+        { v, t: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59) },
+      ];
+    }
+
     // Position data points by hour of day (0–23) on the fixed 12am→12am axis.
-    const points = known.map((p) => {
+    const points = plotKnown.map((p) => {
       const hour = p.t.getHours() + p.t.getMinutes() / 60;
       return {
         x: (hour / 24) * CHART_WIDTH,

@@ -195,8 +195,18 @@ async function fetchRealtimeSpan(stationId, fromDate, toDate) {
     limit: '2000',
   });
   const data = await ogcFetch('hydrometric-realtime', params);
+  // Client-side range filter — the realtime API sometimes ignores the
+  // datetime filter and returns recent data instead of the requested
+  // historical window. Reject anything outside [fromDate, toDate].
+  const startMs = fromDate.getTime();
+  const endMs = toDate.getTime();
   const points = (data.features || [])
     .map(f => ({ time: f.properties.DATETIME, level: f.properties.LEVEL ?? null, discharge: f.properties.DISCHARGE ?? null }))
+    .filter(p => {
+      if (!p.time) return false;
+      const t = new Date(p.time).getTime();
+      return !isNaN(t) && t >= startMs && t <= endMs;
+    })
     .sort((a, b) => new Date(a.time) - new Date(b.time));
   return { granularity: 'hourly', time: points.map(p => p.time), level: points.map(p => p.level), discharge: points.map(p => p.discharge) };
 }
