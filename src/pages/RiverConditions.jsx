@@ -348,17 +348,6 @@ export default function RiverConditions() {
                     </div>
                   </div>
 
-                  {data.normal && (
-                    <div className="bg-secondary/60 rounded-lg p-2.5">
-                      <div className="mb-1">
-                        <span className="text-xs font-medium text-muted-foreground">Compared to Normal</span>
-                      </div>
-                      <div className="h-1.5 rounded-full bg-muted overflow-hidden relative">
-                        <div className="absolute inset-y-0 left-0 bg-primary rounded-full" style={{ width: `${data.normal.percentile}%` }} />
-                      </div>
-                    </div>
-                  )}
-
                 </CardContent>
               </Card>
 
