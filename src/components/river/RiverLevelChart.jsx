@@ -146,7 +146,16 @@ function DayPanel({ day, field, isToday, unitLabel, normalLevel, overlayHours, s
     ? `${pathD} L ${knownPoints[knownPoints.length - 1].x} ${CHART_HEIGHT} L ${knownPoints[0].x} ${CHART_HEIGHT} Z`
     : '';
 
-  const overlayKnown = overlaySvgPoints.filter(p => p.y != null);
+  const overlayKnown = (() => {
+    const known = overlaySvgPoints.filter(p => p.y != null);
+    if (known.length === 0) return [];
+    const extended = [...known];
+    const first = known[0];
+    const last = known[known.length - 1];
+    if (first.x > 0) extended.unshift({ x: 0, y: first.y });
+    if (last.x < CHART_WIDTH) extended.push({ x: CHART_WIDTH, y: last.y });
+    return extended;
+  })();
   const overlayPathD = buildSmoothPath(overlayKnown);
 
   const lastReal = isToday ? [...knownPoints].reverse().find(p => p.isReal) : null;
