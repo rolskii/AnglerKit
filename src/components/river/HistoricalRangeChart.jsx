@@ -28,7 +28,8 @@ const RANGE_AGO_LABELS = {
 
 const CHART_HEIGHT = 80;
 const CHART_WIDTH = 720;
-const RECENT_STROKE = '#f59e0b';
+const HISTORICAL_STROKE = '#f59e0b';
+const RECENT_STROKE = 'hsl(var(--primary))';
 const NORMAL_STROKE = '#22c55e';
 
 function formatValue(v, field) {
@@ -273,17 +274,17 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
                 >
                   <defs>
                     <linearGradient id="historicalGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.45" />
-                      <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.05" />
+                      <stop offset="0%" stopColor={HISTORICAL_STROKE} stopOpacity="0.4" />
+                      <stop offset="100%" stopColor={HISTORICAL_STROKE} stopOpacity="0.05" />
                     </linearGradient>
                   </defs>
                   {chart.normalY != null && (
                     <line x1="0" y1={chart.normalY} x2={chart.renderWidth} y2={chart.normalY} stroke={NORMAL_STROKE} strokeWidth="1.5" strokeDasharray="5 3" />
                   )}
                   <path d={chart.histAreaD} fill="url(#historicalGradient)" stroke="none" />
-                  <path d={chart.histPathD} fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" />
+                  <path d={chart.histPathD} fill="none" stroke={HISTORICAL_STROKE} strokeWidth="2" strokeLinecap="round" />
                   {chart.recentPathD && (
-                    <path d={chart.recentPathD} fill="none" stroke={RECENT_STROKE} strokeWidth="2" strokeLinecap="round" />
+                    <path d={chart.recentPathD} fill="none" stroke={RECENT_STROKE} strokeWidth="2.5" strokeLinecap="round" />
                   )}
                   {chart.recentPoints?.length > 0 && (
                     <circle cx={chart.recentPoints[chart.recentPoints.length - 1].x} cy={chart.recentPoints[chart.recentPoints.length - 1].y} r={3.5} fill="hsl(var(--background))" stroke={RECENT_STROKE} strokeWidth="2" />
