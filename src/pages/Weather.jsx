@@ -549,7 +549,7 @@ export default function Weather() {
             <CardTitle className="text-base">5-Day Forecast</CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
-            <div className="flex flex-col gap-0.5">
+            <div className="flex flex-col gap-0">
               {forecastDays.map(({ date, idx }) => {
                 return (
                   <div
