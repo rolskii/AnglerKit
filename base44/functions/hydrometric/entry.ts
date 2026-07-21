@@ -321,12 +321,21 @@ async function buildStationResponse(chosen, readings) {
 Deno.serve(async (req) => {
   try {
     const body = await req.json();
-    const { lat, lon, stationId, historicalRange, startDate, endDate, stationName, searchQuery } = body;
+    const { lat, lon, stationId, historicalRange, startDate, endDate, stationName, searchQuery, listStations } = body;
 
     // --- Historical range mode: skip nearest-station search, query directly ---
     if (historicalRange && stationId) {
       const historical = await fetchHistoricalSeries(stationId, historicalRange, startDate, endDate);
       return Response.json({ station: { id: stationId, name: stationName || null }, historical });
+    }
+
+    // --- Full station list mode: every ECCC hydrometric station in Canada,
+    // for plotting on the river station map picker. ---
+    if (listStations) {
+      const stations = await fetchStationList();
+      return Response.json({
+        stations: stations.map(s => ({ id: s.id, name: s.name, lat: s.lat, lon: s.lon, prov: s.prov })),
+      });
     }
 
     // --- River/station name search mode: "Credit River" → every station ---
