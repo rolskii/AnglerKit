@@ -22,6 +22,7 @@ import Moon from '@/pages/Moon';
 import Weather from '@/pages/Weather';
 import Gear from '@/pages/Gear';
 import MapView from '@/pages/MapView';
+import RiverConditions from '@/pages/RiverConditions';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -70,6 +71,7 @@ const AuthenticatedApp = () => {
         <Route path="/misc" element={<Misc />} />
         <Route path="/moon" element={<Moon />} />
         <Route path="/weather" element={<Weather />} />
+        <Route path="/river" element={<RiverConditions />} />
         <Route path="/about" element={<About />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/gear" element={<Navigate to="/gear/lines" replace />} />

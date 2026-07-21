@@ -143,17 +143,22 @@ function getForecastPop(forecastXml) {
   return getTagText(abbrMatch[1], 'pop');
 }
 
-// EC's per-period <precipitation> block carries an expected accumulation amount
-// (e.g. <accumulation><amount units="cm">1</amount></accumulation>), only present
-// when precipitation is actually forecast for that period. Normalizes to mm.
+// EC forecast periods carry precipitation as a <precipitation><accumulation>
+// <amount units="cm">X</amount></accumulation></precipitation> block. Returns
+// the amount in mm (EC reports cm), or 0 if this period has no accumulation
+// (e.g. a dry forecast period omits the <accumulation> tag entirely).
 function getForecastPrecipAmount(forecastXml) {
   const precipMatch = forecastXml.match(/<precipitation>([\s\S]*?)<\/precipitation>/);
   if (!precipMatch) return 0;
-  const amountMatch = precipMatch[1].match(/<amount[^>]*units="([^"]*)"[^>]*>([\s\S]*?)<\/amount>/);
+  const accumMatch = precipMatch[1].match(/<accumulation>([\s\S]*?)<\/accumulation>/);
+  if (!accumMatch) return 0;
+  const amountMatch = accumMatch[1].match(/<amount[^>]*units="([^"]*)"[^>]*>([\s\S]*?)<\/amount>/);
   if (!amountMatch) return 0;
+  const units = amountMatch[1];
   const value = parseFloat(amountMatch[2]);
   if (isNaN(value)) return 0;
-  return amountMatch[1] === 'cm' ? value * 10 : value;
+  // Normalize to mm — EC reports "cm" for rain/snow accumulation.
+  return units === 'cm' ? value * 10 : value;
 }
 
 function getRiseSet(riseSetXml, name) {
@@ -250,8 +255,8 @@ function parseWeatherXml(xmlText, localDate, tzOffset) {
     const tempLow = getForecastTemp(f, 'low');
     const ic = parseInt(getForecastIconCode(f)) || 0;
     const pop = parseInt(getForecastPop(f)) || 0;
-    const textSummary = getTagText(f, 'textSummary');
     const precipAmount = getForecastPrecipAmount(f);
+    const textSummary = getTagText(f, 'textSummary');
     return { period, textSummary, tempHigh, tempLow, iconCode: ic, pop, precipAmount };
   });
 
@@ -271,7 +276,6 @@ function parseWeatherXml(xmlText, localDate, tzOffset) {
     sunset: [],
     text_summary: [],
     night_text_summary: [],
-    wind_speed_10m_max: [],
   };
 
   // Use the frontend-provided local date to avoid UTC timezone drift
@@ -292,7 +296,7 @@ function parseWeatherXml(xmlText, localDate, tzOffset) {
       dayPrecip = f.precipAmount || 0;
       nightTextSummary = f.textSummary;
       dayTextSummary = null; // don't use night text as day summary — frontend will generate one
-      highTemp = Math.max(lowTemp, temperature); // current observed temp may exceed tonight's forecast low
+      highTemp = lowTemp; // use tonight's low as the high for today's partial entry
 
       const date = new Date(today);
       const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -306,7 +310,6 @@ function parseWeatherXml(xmlText, localDate, tzOffset) {
       daily.sunset.push(sunset);
       daily.text_summary.push(dayTextSummary);
       daily.night_text_summary.push(nightTextSummary);
-      daily.wind_speed_10m_max.push(windSpeed);
       dayOffset++;
       i += 1;
       continue;
@@ -321,8 +324,8 @@ function parseWeatherXml(xmlText, localDate, tzOffset) {
       dayTextSummary = f.textSummary;
       if (i + 1 < forecasts.length && forecasts[i + 1].tempLow) {
         lowTemp = parseFloat(forecasts[i + 1].tempLow);
-        dayPrecip += forecasts[i + 1].precipAmount || 0;
         nightTextSummary = forecasts[i + 1].textSummary;
+        dayPrecip += forecasts[i + 1].precipAmount || 0;
         i += 2;
       } else {
         i += 1;
@@ -363,15 +366,10 @@ function parseWeatherXml(xmlText, localDate, tzOffset) {
     daily.sunset.push(sunset);
     daily.text_summary.push(dayTextSummary);
     daily.night_text_summary.push(nightTextSummary);
-    daily.wind_speed_10m_max.push(windSpeed);
     dayOffset++;
   }
 
   // --- Build hourly forecast (pseudo-hourly from daily highs/lows) ---
-  // NOTE: EC's citypage XML only carries humidity/pressure/apparent-temperature
-  // for the single current observation, not per-hour forecasts, so these three
-  // hourly arrays are seeded with that single value and only vary if the
-  // WeatherKit blend below has real forecasted numbers to swap in.
   const hourly = {
     time: [],
     temperature_2m: [],
@@ -379,9 +377,6 @@ function parseWeatherXml(xmlText, localDate, tzOffset) {
     precipitation_probability: [],
     precipitation_mm: [],
     wind_speed_10m: [],
-    relative_humidity_2m: [],
-    pressure_msl: [],
-    apparent_temperature: [],
   };
 
   const nowHour = new Date();
@@ -419,9 +414,6 @@ function parseWeatherXml(xmlText, localDate, tzOffset) {
     hourly.precipitation_probability.push(dayPop);
     hourly.precipitation_mm.push(0);
     hourly.wind_speed_10m.push(windSpeed);
-    hourly.relative_humidity_2m.push(humidity);
-    hourly.pressure_msl.push(pressure);
-    hourly.apparent_temperature.push(apparentTemp);
   }
 
   // --- Weather alerts/warnings ---
@@ -656,9 +648,6 @@ async function fetchWeatherKitData(lat, lon) {
         conditionCode: h.conditionCode ?? null,
         temperature: h.temperature ?? null,
         windSpeed: h.windSpeed ?? null,
-        humidity: h.humidityPercent != null ? h.humidityPercent : (h.humidity != null ? h.humidity * 100 : null),
-        pressure: h.pressure ?? null,
-        apparentTemperature: h.temperatureApparent ?? null,
       };
     }
   }
@@ -695,7 +684,6 @@ async function fetchWeatherKitData(lat, lon) {
     sunset: [],
     text_summary: [],
     night_text_summary: [],
-    wind_speed_10m_max: [],
   };
   const days = wk.forecastDaily?.days || [];
   for (const d of days.slice(0, 6)) {
@@ -711,7 +699,6 @@ async function fetchWeatherKitData(lat, lon) {
     daily.sunset.push(d.sunset ?? null);
     daily.text_summary.push(d.conditionCode ?? '');
     daily.night_text_summary.push(null);
-    daily.wind_speed_10m_max.push(d.windSpeedMax ?? d.windGustSpeedMax ?? d.windSpeed ?? 0);
   }
 
   // Build hourly from WeatherKit forecastHourly (for non-Canada)
@@ -722,9 +709,6 @@ async function fetchWeatherKitData(lat, lon) {
     precipitation_probability: [],
     precipitation_mm: [],
     wind_speed_10m: [],
-    relative_humidity_2m: [],
-    pressure_msl: [],
-    apparent_temperature: [],
   };
   const nowHour = new Date();
   nowHour.setMinutes(0, 0, 0);
@@ -749,18 +733,12 @@ async function fetchWeatherKitData(lat, lon) {
       hourly.precipitation_probability.push(Math.round(bestMatch.precipitationChance * 100));
       hourly.precipitation_mm.push(bestMatch.precipitationAmount ?? 0);
       hourly.wind_speed_10m.push(bestMatch.windSpeed ?? 0);
-      hourly.relative_humidity_2m.push(bestMatch.humidity ?? current.relative_humidity_2m);
-      hourly.pressure_msl.push(bestMatch.pressure ?? current.pressure);
-      hourly.apparent_temperature.push(bestMatch.apparentTemperature ?? bestMatch.temperature ?? current.apparent_temperature);
     } else {
       hourly.temperature_2m.push(0);
       hourly.weather_code.push(3);
       hourly.precipitation_probability.push(0);
       hourly.precipitation_mm.push(0);
       hourly.wind_speed_10m.push(0);
-      hourly.relative_humidity_2m.push(current.relative_humidity_2m);
-      hourly.pressure_msl.push(current.pressure);
-      hourly.apparent_temperature.push(current.apparent_temperature);
     }
   }
 
@@ -845,7 +823,6 @@ Deno.serve(async (req) => {
           const newHourly = {
             time: [], temperature_2m: [], weather_code: [],
             precipitation_probability: [], precipitation_mm: [], wind_speed_10m: [],
-            relative_humidity_2m: [], pressure_msl: [], apparent_temperature: [],
           };
           const nowHour = new Date();
           nowHour.setMinutes(0, 0, 0);
@@ -866,12 +843,6 @@ Deno.serve(async (req) => {
               newHourly.precipitation_probability.push(ecMatch.lop ?? 0);
               newHourly.precipitation_mm.push(wkMatch?.precipitationAmount ?? 0);
               newHourly.wind_speed_10m.push(ecMatch.windSpeed ?? 0);
-              // EC's hourly forecast doesn't carry humidity/pressure/apparent-temp —
-              // use WeatherKit's forecast for this hour when available, else hold
-              // the current single observation as a reasonable approximation.
-              newHourly.relative_humidity_2m.push(wkMatch?.humidity ?? weatherData.current.relative_humidity_2m);
-              newHourly.pressure_msl.push(wkMatch?.pressure ?? weatherData.current.pressure);
-              newHourly.apparent_temperature.push(wkMatch?.apparentTemperature ?? weatherData.current.apparent_temperature);
             } else if (wkMatch) {
               // Beyond EC's ~24h range — fall back to WeatherKit
               newHourly.temperature_2m.push(
@@ -881,9 +852,6 @@ Deno.serve(async (req) => {
               newHourly.precipitation_probability.push(Math.round((wkMatch.precipitationChance ?? 0) * 100));
               newHourly.precipitation_mm.push(wkMatch.precipitationAmount ?? 0);
               newHourly.wind_speed_10m.push(wkMatch.windSpeed ?? 0);
-              newHourly.relative_humidity_2m.push(wkMatch.humidity ?? weatherData.current.relative_humidity_2m);
-              newHourly.pressure_msl.push(wkMatch.pressure ?? weatherData.current.pressure);
-              newHourly.apparent_temperature.push(wkMatch.apparentTemperature ?? weatherData.current.apparent_temperature);
             } else {
               // Neither source has data this far out — hold the last known conditions
               newHourly.temperature_2m.push(weatherData.current.temperature_2m);
@@ -891,9 +859,6 @@ Deno.serve(async (req) => {
               newHourly.precipitation_probability.push(0);
               newHourly.precipitation_mm.push(0);
               newHourly.wind_speed_10m.push(weatherData.current.wind_speed_10m);
-              newHourly.relative_humidity_2m.push(weatherData.current.relative_humidity_2m);
-              newHourly.pressure_msl.push(weatherData.current.pressure);
-              newHourly.apparent_temperature.push(weatherData.current.apparent_temperature);
             }
           }
           weatherData.hourly = newHourly;

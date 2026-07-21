@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { getMoonTimes } from '@/lib/moonTimes';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,12 +18,12 @@ import DaySolunarDialog from '@/components/moon/DaySolunarDialog';
 import ShareStatusButton from '@/components/ShareStatusButton';
 import { clearFiredAlarms } from '@/lib/alarmService';
 import { ensurePushSubscription, syncAlarmToServer, removeAlarmFromServer } from '@/lib/pushService';
-
+import PullToRefresh from '@/components/PullToRefresh';
+import { useAutoRefresh } from '@/hooks/useAutoRefresh';
 const todayStr = () => {
   const now = new Date();
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 };
-
 const parseTimeFromIso = (isoStr) => {
   if (!isoStr) return null;
   const d = new Date(isoStr);
@@ -34,14 +34,12 @@ const parseTimeFromIso = (isoStr) => {
   const h12 = hours % 12 || 12;
   return `${h12}:${String(minutes).padStart(2, '0')} ${period}`;
 };
-
 const parseToMinutes = (isoStr) => {
   if (!isoStr) return null;
   const d = new Date(isoStr);
   if (isNaN(d.getTime())) return null;
   return d.getHours() * 60 + d.getMinutes();
 };
-
 const minutesToTime = (mins) => {
   let h = Math.floor(mins / 60);
   const m = Math.round(mins % 60);
@@ -50,7 +48,6 @@ const minutesToTime = (mins) => {
   const h12 = h % 12 || 12;
   return `${h12}:${String(m).padStart(2, '0')} ${period}`;
 };
-
 const computeActivityLevels = (major, minor) => {
   const slotSize = 30;
   const count = (24 * 60) / slotSize;
@@ -82,7 +79,6 @@ const computeActivityLevels = (major, minor) => {
   }
   return levels;
 };
-
 const buildSolunarTimes = (moonTimes, sunData) => {
   const major = [];
   const minor = [];
@@ -128,7 +124,6 @@ const buildSolunarTimes = (moonTimes, sunData) => {
   }
   return { major, minor };
 };
-
 export default function Moon() {
   const [moonData, setMoonData] = useState(null);
   const sharedInit = getSharedLocation();
@@ -155,7 +150,6 @@ export default function Moon() {
     return stored ? JSON.parse(stored) : [];
   });
   const contentRef = useRef(null);
-
   useEffect(() => {
     const syncSaved = () => {
       const stored = localStorage.getItem('moonSavedLocations');
@@ -164,25 +158,20 @@ export default function Moon() {
     window.addEventListener('moonSavedLocationsChanged', syncSaved);
     return () => window.removeEventListener('moonSavedLocationsChanged', syncSaved);
   }, []);
-
   const handleSelectDay = (dateStr) => {
     setSelectedDate(dateStr);
     setWeeklyForecastOpen(false);
     setDayDetailOpen(true);
   };
-
   const openLocationDialog = () => {
     setLocationDialogOpen(true);
   };
-
   const selectLocationFromMap = (name, lat, lon) => {
     handleLocationChange(name, lat, lon);
   };
-
   const isLocationSaved = () => {
     return savedLocations.some(loc => loc.name === location);
   };
-
   const toggleSaveLocation = () => {
     if (isLocationSaved()) {
       const updated = savedLocations.filter(loc => loc.name !== location);
@@ -195,11 +184,9 @@ export default function Moon() {
       localStorage.setItem('moonSavedLocations', JSON.stringify(updated));
     }
   };
-
   const selectSavedLocation = (loc) => {
     handleLocationChange(loc.name, loc.lat, loc.lon);
   };
-
   // Moon phase calculation
   const calculateMoonPhase = (date) => {
     const knownNewMoon = new Date(2000, 0, 6);
@@ -207,7 +194,6 @@ export default function Moon() {
     const daysSinceNewMoon = (date - knownNewMoon) / (1000 * 60 * 60 * 24);
     const daysInCycle = daysSinceNewMoon % lunarMonth;
     const illumination = (1 - Math.cos(Math.PI * 2 * (daysInCycle / lunarMonth))) / 2;
-
     let name = 'New Moon';
     if (daysInCycle < 1.84) name = 'New Moon';
     else if (daysInCycle < 7.38) name = 'Waxing Crescent';
@@ -217,10 +203,8 @@ export default function Moon() {
     else if (daysInCycle < 23.15) name = 'Waning Gibbous';
     else if (daysInCycle < 25) name = 'Last Quarter';
     else name = 'Waning Crescent';
-
     return { name, illumination, daysInCycle };
   };
-
   const calculateFishingRating = (daysInCycle) => {
     const lunarMonth = 29.53058867;
     const distFromNew = Math.min(daysInCycle, lunarMonth - daysInCycle);
@@ -232,7 +216,6 @@ export default function Moon() {
     if (distFromMajor < 6) return 4;
     return 3;
   };
-
   const getRatingLabel = (rating) => {
     if (rating >= 7) return 'Excellent';
     if (rating >= 6) return 'Very Good';
@@ -240,7 +223,6 @@ export default function Moon() {
     if (rating >= 4) return 'Fair';
     return 'Moderate';
   };
-
   // Calculate moon data when date or location changes
   useEffect(() => {
     const [year, month, day] = selectedDate.split('-');
@@ -254,7 +236,6 @@ export default function Moon() {
       fishingRating: calculateFishingRating(phase.daysInCycle),
     });
   }, [location, selectedDate]);
-
   // On first mount with no saved location, try GPS before falling back to Toronto
   useEffect(() => {
     const init = async () => {
@@ -266,35 +247,34 @@ export default function Moon() {
     };
     init();
   }, []);
-
   // Fetch sun data from Environment Canada when coords change
-  useEffect(() => {
-    const fetchSunData = async () => {
-      try {
-        const res = await base44.functions.invoke('ecweather', { lat: coords.lat, lon: coords.lon });
-        const data = res.data;
-        if (data.daily && data.daily.time) {
-          const byDate = {};
-          data.daily.time.forEach((d, i) => {
-            byDate[d] = { sunriseIso: data.daily.sunrise?.[i], sunsetIso: data.daily.sunset?.[i] };
-          });
-          setSunDataByDate(byDate);
-        }
-      } catch (e) {}
-    };
-    fetchSunData();
+  const fetchSunData = useCallback(async () => {
+    try {
+      const res = await base44.functions.invoke('ecweather', { lat: coords.lat, lon: coords.lon });
+      const data = res.data;
+      if (data.daily && data.daily.time) {
+        const byDate = {};
+        data.daily.time.forEach((d, i) => {
+          byDate[d] = { sunriseIso: data.daily.sunrise?.[i], sunsetIso: data.daily.sunset?.[i] };
+        });
+        setSunDataByDate(byDate);
+      }
+    } catch (e) {}
   }, [coords]);
-
+  useEffect(() => {
+    fetchSunData();
+  }, [fetchSunData]);
+  // Periodic background refresh + a manual trigger the pull-to-refresh
+  // gesture below can call directly — both share this one fetch.
+  const { refresh: refreshMoon } = useAutoRefresh(fetchSunData, 15 * 60 * 1000);
   // Location handling
   const handleLocationChange = async (selectedLocation, lat, lon) => {
     const locationToUse = (typeof selectedLocation === 'string' && selectedLocation) || editingLocation;
     if (!locationToUse || !locationToUse.trim()) return;
-
     setEditingLocation(locationToUse);
     setLocation(locationToUse);
     setPendingTime(null);
     setShowSuggestions(false);
-
     if (lat !== undefined && lon !== undefined) {
       setSharedLocation(locationToUse, lat, lon);
       setCoords({ lat, lon, name: locationToUse });
@@ -308,7 +288,6 @@ export default function Moon() {
       } catch (e) {}
     }
   };
-
   const handleLocationInput = async (value) => {
     setEditingLocation(value);
     if (value.trim().length < 2) {
@@ -324,7 +303,6 @@ export default function Moon() {
       setSuggestions([]);
     }
   };
-
   // Alarm handling
   const parseTimeToMinutes = (timeStr) => {
     const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
@@ -336,7 +314,6 @@ export default function Moon() {
     if (period === 'AM' && hours === 12) hours = 0;
     return hours * 60 + minutes;
   };
-
   const toggleAlarm = (timeStr) => {
     const existing = currentDayAlarmList.find(a => a.time === timeStr);
     if (existing) {
@@ -353,24 +330,19 @@ export default function Moon() {
     setPendingTime(timeStr);
     setPendingOffset(15);
   };
-
   const saveAlarm = () => {
     if (!pendingTime) return;
     const timeInMinutes = parseTimeToMinutes(pendingTime);
     if (!timeInMinutes) return;
-
     const offset = pendingOffset;
-
     const existing = currentDayAlarmList.find(a => a.time === pendingTime);
     const newList = existing
       ? currentDayAlarmList.map(a => a.time === pendingTime ? { time: pendingTime, enabled: true, offset } : a)
       : [...currentDayAlarmList, { time: pendingTime, enabled: true, offset }];
-
     setAlarmsByDate({ ...alarmsByDate, [selectedDate]: newList });
     clearFiredAlarms();
     ensurePushSubscription();
     syncAlarmToServer(selectedDate, pendingTime, pendingOffset, location);
-
     if ('Notification' in window && Notification.permission !== 'granted') {
       import('@/components/ui/use-toast').then(({ toast }) => {
         toast({
@@ -379,27 +351,22 @@ export default function Moon() {
         });
       });
     }
-
     setPendingTime(null);
   };
-
   // Persist alarms & cleanup
   useEffect(() => {
     localStorage.setItem('alarmsByDate', JSON.stringify(alarmsByDate));
   }, [alarmsByDate]);
-
   useEffect(() => {
     if (currentDayAlarmList.length > 0 && 'Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
     }
   }, [currentDayAlarmList.length]);
-
   const moonTimes = useMemo(() => {
     const [year, month, day] = selectedDate.split('-');
     const date = new Date(year, month - 1, day);
     return getMoonTimes(date, coords.lat, coords.lon);
   }, [selectedDate, coords]);
-
   const sunData = useMemo(() => {
     const raw = sunDataByDate[selectedDate];
     if (!raw) return null;
@@ -414,7 +381,6 @@ export default function Moon() {
       sunsetMin,
     };
   }, [sunDataByDate, selectedDate]);
-
   const currentSlot = Math.floor((new Date().getHours() * 60 + new Date().getMinutes()) / 30);
   const multiDayActivity = useMemo(() => Array.from({ length: 10 }, (_, i) => {
     const offset = i - 3;
@@ -424,7 +390,6 @@ export default function Moon() {
     const dateStr = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
     const phase = calculateMoonPhase(date);
     const rating = calculateFishingRating(phase.daysInCycle);
-
     const dayMoon = getMoonTimes(date, coords.lat, coords.lon);
     const daySun = sunDataByDate[dateStr];
     const dayMajor = [];
@@ -439,7 +404,6 @@ export default function Moon() {
       if (sr != null) dayMinor.push({ startMin: sr - 30, endMin: sr + 30 });
       if (ss != null) dayMinor.push({ startMin: ss - 30, endMin: ss + 30 });
     }
-
     const fullLevels = computeActivityLevels(dayMajor, dayMinor);
     const scaleFactor = 0.55 + (rating / 7) * 0.45;
     const dayLevels = fullLevels.map(l => Math.round(l * scaleFactor)).slice(10);
@@ -454,7 +418,6 @@ export default function Moon() {
       highlightIndex,
     };
   }), [selectedDate, coords, sunDataByDate, currentSlot]);
-
   if (!moonData) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -462,11 +425,10 @@ export default function Moon() {
       </div>
     );
   }
-
   const solunar = buildSolunarTimes(moonTimes, sunData);
   const ratingPercent = Math.round((moonData.fishingRating / 7) * 100);
-
   return (
+    <PullToRefresh onRefresh={refreshMoon}>
     <div className="space-y-6 md:space-y-8 -mt-4 md:-mt-8">
       <div className="max-w-2xl mx-auto space-y-4">
       <div ref={contentRef} className="space-y-4">
@@ -474,7 +436,6 @@ export default function Moon() {
         <div className="space-y-2 px-1">
           <h1 className="text-2xl md:text-[34px] font-heading font-extrabold tracking-tight leading-tight">Moon Phase</h1>
         </div>
-
         {/* Day Rating Card */}
         <Card>
           <CardContent className="pt-3 pb-3">
@@ -589,7 +550,6 @@ export default function Moon() {
             </div>
           </CardContent>
         </Card>
-
         {/* Activity Chart */}
         <Card>
           <CardHeader className="pt-3 pb-0">
@@ -599,7 +559,6 @@ export default function Moon() {
             <ActivityChart days={multiDayActivity} scrollToDate={selectedDate} />
           </CardContent>
         </Card>
-
         {/* Major & Minor Times — Two Columns */}
         <Card className="bg-card border-primary/20">
           <CardHeader className="pt-3 pb-2">
@@ -654,7 +613,6 @@ export default function Moon() {
                 </ul>
               </div>
             </div>
-
             {/* Pending alarm UI */}
             {(pendingTime || currentDayAlarmList.length > 0) && (
               <div className="mt-4 space-y-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
@@ -707,10 +665,8 @@ export default function Moon() {
                 )}
               </div>
             )}
-
           </CardContent>
         </Card>
-
         {/* Sun & Moon Footer */}
         <Card>
           <CardContent className="pt-3 pb-3">
@@ -723,7 +679,6 @@ export default function Moon() {
             />
           </CardContent>
         </Card>
-
         {/* Fishing Tips */}
         <Card className="bg-secondary/30 border-0 shadow-none">
           <CardHeader className="pt-0 pb-2">
@@ -760,7 +715,6 @@ export default function Moon() {
             )}
           </CardContent>
         </Card>
-
       </div>
         {/* Share */}
         <div className="px-1">
@@ -779,14 +733,12 @@ export default function Moon() {
           />
         </div>
       </div>
-
       <WeeklyBiteForecast
         open={weeklyForecastOpen}
         onOpenChange={setWeeklyForecastOpen}
         startDate={selectedDate}
         onSelectDay={handleSelectDay}
       />
-
       <DaySolunarDialog
         open={dayDetailOpen}
         onOpenChange={setDayDetailOpen}
@@ -801,7 +753,6 @@ export default function Moon() {
         setPendingOffset={setPendingOffset}
         onSaveAlarm={saveAlarm}
       />
-
       <LocationMapPicker
         open={locationDialogOpen}
         onOpenChange={setLocationDialogOpen}
@@ -810,5 +761,6 @@ export default function Moon() {
         onSelect={selectLocationFromMap}
       />
     </div>
+    </PullToRefresh>
   );
 }

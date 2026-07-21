@@ -19,9 +19,6 @@ self.addEventListener('push', (event) => {
 
   const options = {
     body: data.body,
-    // These local paths didn't exist in /public, so notifications were silently
-    // falling back to the browser's default icon. Point at the same hosted app
-    // icon manifest.json already uses instead of introducing new local assets.
     icon: 'https://media.base44.com/images/public/6a3f2458eb55a5d860886e35/3f39c9959_Untitled-July162026at224101.png',
     badge: 'https://media.base44.com/images/public/6a3f2458eb55a5d860886e35/3f39c9959_Untitled-July162026at224101.png',
     vibrate: [300, 150, 300, 150, 300, 150, 400],

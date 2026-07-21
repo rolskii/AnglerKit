@@ -14,7 +14,8 @@ import ShareStatusButton from '@/components/ShareStatusButton';
 import AlertColorSymbols from '@/components/weather/AlertColorSymbols';
 import AirQualityCard from '@/components/weather/AirQualityCard';
 import { formatTemp, formatWind, formatPrecip, formatPressure, formatVisibility } from '@/lib/weatherUnits';
-
+import PullToRefresh from '@/components/PullToRefresh';
+import { useAutoRefresh } from '@/hooks/useAutoRefresh';
 export default function Weather() {
   const sharedInit = getSharedLocation();
   const [weather, setWeather] = useState(null);
@@ -41,21 +42,17 @@ export default function Weather() {
   const [selectedDate, setSelectedDate] = useState(todayStr());
   const today = todayStr();
   const contentRef = useRef(null);
-
   const formatDate = (dateStr) => {
     const d = new Date(dateStr + 'T00:00:00');
     return d.toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric', year: '2-digit' });
   };
-
   const formatTime = (isoStr) => {
     if (!isoStr) return '';
     return new Date(isoStr).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
   };
-
   const handleMapSelect = (name, lat, lon) => {
     fetchWeatherByCoords(lat, lon, name, tempUnit);
   };
-
   useEffect(() => {
     const syncSaved = () => {
       const stored = localStorage.getItem('moonSavedLocations');
@@ -64,7 +61,6 @@ export default function Weather() {
     window.addEventListener('moonSavedLocationsChanged', syncSaved);
     return () => window.removeEventListener('moonSavedLocationsChanged', syncSaved);
   }, []);
-
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
     const R = 3959;
     const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -74,12 +70,10 @@ export default function Weather() {
       Math.sin(dLon / 2) ** 2;
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   };
-
   const saveLocation = (coords, locationName) => {
     localStorage.setItem('weatherLocation', locationName);
     localStorage.setItem('weatherCoords', JSON.stringify(coords));
   };
-
   const fetchWeatherByCoords = async (lat, lon, locationName, unit = tempUnit) => {
     if (!lat || !lon) return;
     try {
@@ -100,7 +94,14 @@ export default function Weather() {
       setLoading(false);
     }
   };
-
+  // Periodic background refresh + a manual trigger the pull-to-refresh
+  // gesture below can call directly — both share this one fetch.
+  const { refresh: refreshWeather } = useAutoRefresh(() => {
+    if (lastCoords?.lat && lastCoords?.lon) {
+      return fetchWeatherByCoords(lastCoords.lat, lastCoords.lon, lastCoords.name, tempUnit);
+    }
+    return Promise.resolve();
+  }, 15 * 60 * 1000);
   const fetchUserLocation = async () => {
     setLoading(true);
     setError(null);
@@ -113,7 +114,6 @@ export default function Weather() {
       setLoading(false);
     }
   };
-
   const handleLocationInput = async (value) => {
     setEditingLocation(value);
     if (value.trim().length < 2) {
@@ -138,7 +138,6 @@ export default function Weather() {
       setSuggestions([]);
     }
   };
-
   const toggleTempUnit = () => {
     const next = tempUnit === 'fahrenheit' ? 'celsius' : 'fahrenheit';
     setTempUnit(next);
@@ -148,24 +147,20 @@ export default function Weather() {
       fetchWeatherByCoords(lastCoords.lat, lastCoords.lon, lastCoords.name, next);
     }
   };
-
   const handleSuggestionSelect = (suggestion) => {
     setEditingLocation(suggestion.label);
     setShowSuggestions(false);
     setSuggestions([]);
     fetchWeatherByCoords(suggestion.lat, suggestion.lon, suggestion.name);
   };
-
   const handleLocationChange = async (overrideLocation) => {
     const loc = (typeof overrideLocation === 'string' && overrideLocation) || editingLocation;
     if (!loc || !loc.trim()) return;
-
     // If the location text hasn't changed and we already have coords, refetch directly
     if (lastCoords && loc.trim() === location) {
       fetchWeatherByCoords(lastCoords.lat, lastCoords.lon, lastCoords.name || loc);
       return;
     }
-
     try {
       setLoading(true);
       const result = await geocodeLocation(loc);
@@ -181,7 +176,6 @@ export default function Weather() {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     const init = async () => {
       const loc = await initDefaultLocationFromGPS();
@@ -199,7 +193,6 @@ export default function Weather() {
       );
     }
   }, []);
-
   const getConditionIcon = (code, isNight) => {
     if (code === 0 || code === 1) return isNight ? Moon : Sun;
     if (code === 2) return isNight ? CloudMoon : CloudSun;
@@ -211,7 +204,6 @@ export default function Weather() {
     if (code >= 95 && code <= 99) return CloudLightning;
     return Cloud;
   };
-
   const getWeatherDescription = (code) => {
     const codes = {
       0: 'Clear',
@@ -240,10 +232,8 @@ export default function Weather() {
     };
     return codes[code] || 'Unknown';
   };
-
   const getHealthAdvisory = () => {
     const parts = [];
-
     // Humidex advisory (based on Celsius thresholds)
     if (displayHumidex != null) {
       const h = displayHumidex;
@@ -257,7 +247,6 @@ export default function Weather() {
         parts.push({ icon: '✅', text: `Humidex ${h} — comfortable.`, tone: 'text-green-600' });
       }
     }
-
     // UV index advisory
     if (current.uv_index != null) {
       const uv = current.uv_index;
@@ -271,10 +260,8 @@ export default function Weather() {
         parts.push({ icon: '✅', text: `UV index ${uv} (${current.uv_category || 'low'}) — no sun protection needed.`, tone: 'text-green-600' });
       }
     }
-
     return parts;
   };
-
   const isNight = () => {
     if (!weather?.daily?.sunrise?.[0] || !weather?.daily?.sunset?.[0]) return false;
     const now = new Date();
@@ -282,7 +269,6 @@ export default function Weather() {
     const sunset = new Date(weather.daily.sunset[0]);
     return now < sunrise || now > sunset;
   };
-
   const getDailySummary = () => {
     if (!daily) return null;
     const dayIdx = daily.time.indexOf(selectedDate);
@@ -292,14 +278,12 @@ export default function Weather() {
     const minTemp = formatTemp(daily.temperature_2m_min[dayIdx], tempUnit);
     const precipProb = daily.precipitation_probability?.[dayIdx] ?? 0;
     const desc = getWeatherDescription(code);
-
     let summary = `${desc} with highs near ${maxTemp}° and lows around ${minTemp}°.`;
     if (precipProb >= 60) summary += ` High chance of precipitation (${precipProb}%).`;
     else if (precipProb >= 30) summary += ` Possible precipitation (${precipProb}%).`;
     else summary += ` Low chance of rain (${precipProb}%).`;
     return summary;
   };
-
   if (loading && !weather) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -307,7 +291,6 @@ export default function Weather() {
       </div>
     );
   }
-
   if (error) {
     return (
       <div className="min-h-screen bg-background p-4 pb-20 flex items-center justify-center">
@@ -325,9 +308,7 @@ export default function Weather() {
       </div>
     );
   }
-
   if (!weather) return null;
-
   const current = weather.current;
   const daily = weather.daily;
   const selectedDayIdx = (() => {
@@ -349,6 +330,7 @@ export default function Weather() {
     .slice(1, 6)
     .map((date, idx) => ({ date, idx: idx + 1 }));
   return (
+    <PullToRefresh onRefresh={refreshWeather}>
     <div className="space-y-3 md:space-y-4 -mt-4 md:-mt-8">
       <div className="max-w-2xl mx-auto space-y-3">
       <div ref={contentRef} className="space-y-3">
@@ -365,7 +347,6 @@ export default function Weather() {
             </button>
           </div>
         </div>
-
         {/* Current Weather Card */}
         <Card className="bg-primary/10">
           <CardContent className="p-3">
@@ -412,7 +393,6 @@ export default function Weather() {
                   </button>
                 </div>
               </div>
-
               {/* EC Text Summaries + Health Advisories */}
               <div className="bg-secondary/60 rounded-lg p-2.5 space-y-1">
                 {ecDaySummary ? (
@@ -449,17 +429,14 @@ export default function Weather() {
                   </div>
                 )}
               </div>
-
               {/* Weather Alerts */}
               {weather.alerts && weather.alerts.length > 0 && (
                 <AlertColorSymbols alerts={weather.alerts} />
               )}
-
               {/* Air Quality */}
               {weather.air_quality && (
                 <AirQualityCard airQuality={weather.air_quality} />
               )}
-
               {/* Conditions Grid */}
               <div className="grid grid-cols-3 gap-2">
                 <div className="bg-secondary rounded-xl flex items-center gap-2 p-2 overflow-hidden">
@@ -526,11 +503,9 @@ export default function Weather() {
                   </div>
                 </div>
               </div>
-
             </div>
           </CardContent>
         </Card>
-
         {/* Hourly Conditions for Selected Date */}
         <HourlyConditionsCard
           hourly={weather.hourly}
@@ -538,7 +513,6 @@ export default function Weather() {
           daily={daily}
           tempUnit={tempUnit}
         />
-
         {/* 10-Day Forecast */}
         <Card>
           <CardHeader className="pt-3 pb-2 flex-row items-center justify-between space-y-0">
@@ -587,7 +561,6 @@ export default function Weather() {
             </div>
           </CardContent>
         </Card>
-
       </div>
         {/* Share */}
         <div className="px-1">
@@ -608,9 +581,7 @@ export default function Weather() {
             ].join('\n')}
           />
         </div>
-
       </div>
-
       <LocationMapPicker
         open={mapPickerOpen}
         onOpenChange={setMapPickerOpen}
@@ -618,7 +589,6 @@ export default function Weather() {
         savedLocations={savedLocations}
         onSelect={handleMapSelect}
       />
-
       <DayForecastDialog
         open={dayDialogOpen}
         onOpenChange={setDayDialogOpen}
@@ -628,5 +598,6 @@ export default function Weather() {
         location={location}
       />
     </div>
+    </PullToRefresh>
   );
 }

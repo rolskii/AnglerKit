@@ -1,0 +1,373 @@
+import React, { useEffect, useState, useCallback } from 'react';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Waves, MapPin, ChevronDown, TrendingUp, TrendingDown, Minus,
+  Droplets, Gauge, Star, StickyNote, Plus, AlertTriangle, Info, CheckCircle2,
+} from 'lucide-react';
+import { base44 } from '@/api/base44Client';
+import { getSharedLocation, setSharedLocation } from '@/lib/sharedLocation';
+import LocationMapPicker from '@/components/moon/LocationMapPicker';
+import RiverLevelChart from '@/components/river/RiverLevelChart';
+import HistoricalRangeChart from '@/components/river/HistoricalRangeChart';
+import PullToRefresh from '@/components/PullToRefresh';
+import { useAutoRefresh } from '@/hooks/useAutoRefresh';
+
+function TrendIndicator({ trend }) {
+  if (!trend) return null;
+  const Icon = trend.direction === 'rising' ? TrendingUp : trend.direction === 'falling' ? TrendingDown : Minus;
+  const tone = trend.direction === 'rising' ? 'text-blue-600' : trend.direction === 'falling' ? 'text-amber-600' : 'text-muted-foreground';
+  return (
+    <span className={`inline-flex items-center gap-0.5 text-xs font-medium ${tone}`}>
+      <Icon className="w-3.5 h-3.5" />
+      {trend.direction !== 'steady' ? `${Math.abs(Math.round(trend.changePct))}%` : 'steady'}
+    </span>
+  );
+}
+
+function buildAdvisory(data) {
+  if (!data?.trend || !data?.current) return null;
+  const rising = data.trend.level?.direction === 'rising';
+  const high = data.normal?.percentile != null && data.normal.percentile >= 80;
+  const low = data.normal?.percentile != null && data.normal.percentile <= 20;
+  if (rising && high) {
+    return { icon: AlertTriangle, tone: 'text-red-600 bg-red-500/10', text: 'Water levels are rising and already higher than normal — use caution wading, and watch for increased turbidity.' };
+  }
+  if (rising) {
+    return { icon: Info, tone: 'text-amber-600 bg-amber-500/10', text: 'Water levels are rising. Conditions may become more difficult through the day.' };
+  }
+  if (low) {
+    return { icon: CheckCircle2, tone: 'text-green-600 bg-green-500/10', text: 'Water levels are lower than normal — good wading conditions, but fish may be more easily spooked in clearer, shallower water.' };
+  }
+  return null;
+}
+
+export default function RiverConditions() {
+  const sharedInit = getSharedLocation();
+  const [locationName, setLocationName] = useState(sharedInit.name);
+  const [coords, setCoords] = useState(sharedInit.coords);
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [mapPickerOpen, setMapPickerOpen] = useState(false);
+  const [favorites, setFavorites] = useState([]);
+  const [notes, setNotes] = useState([]);
+  const [noteText, setNoteText] = useState('');
+  const [savingNote, setSavingNote] = useState(false);
+
+  const fetchConditions = useCallback(async (lat, lon) => {
+    if (!lat || !lon) return;
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await base44.functions.invoke('hydrometric', { lat, lon });
+      if (res.data?.error) {
+        setError(res.data.error);
+        setData(null);
+      } else {
+        setData(res.data);
+      }
+    } catch (e) {
+      setError('Could not load river conditions for this location.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const { refresh } = useAutoRefresh(() => fetchConditions(coords?.lat, coords?.lon), 15 * 60 * 1000);
+
+  useEffect(() => {
+    fetchConditions(coords.lat, coords.lon);
+    // Intentionally run once on mount only — subsequent location changes are
+    // handled by the sharedLocationChanged listener below.
+  }, []);
+
+  useEffect(() => {
+    const onLocationChange = (e) => {
+      const { name, lat, lon } = e.detail || {};
+      if (lat && lon) {
+        setLocationName(name);
+        setCoords({ lat, lon, name });
+        fetchConditions(lat, lon);
+      }
+    };
+    window.addEventListener('sharedLocationChanged', onLocationChange);
+    return () => window.removeEventListener('sharedLocationChanged', onLocationChange);
+  }, [fetchConditions]);
+
+  useEffect(() => {
+    base44.entities.SavedLocation.list('-created_date', 20).then(setFavorites).catch(() => {});
+  }, []);
+
+  const loadNotes = useCallback(async (stationId) => {
+    if (!stationId) { setNotes([]); return; }
+    try {
+      const results = await base44.entities.RiverNote.filter({ station_id: stationId }, '-created_date', 100);
+      setNotes(results);
+    } catch (e) {
+      setNotes([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadNotes(data?.station?.id);
+  }, [data?.station?.id, loadNotes]);
+
+  const handleMapSelect = (name, lat, lon) => {
+    setSharedLocation(name, lat, lon);
+    setLocationName(name);
+    setCoords({ lat, lon, name });
+    fetchConditions(lat, lon);
+  };
+
+  const handleFavoriteSelect = (fav) => {
+    setSharedLocation(fav.name, fav.lat, fav.lon);
+    setLocationName(fav.name);
+    setCoords({ lat: fav.lat, lon: fav.lon, name: fav.name });
+    fetchConditions(fav.lat, fav.lon);
+  };
+
+  const handleSaveNote = async () => {
+    if (!noteText.trim() || !data?.station?.id) return;
+    setSavingNote(true);
+    try {
+      await base44.entities.RiverNote.create({
+        station_id: data.station.id,
+        station_name: data.station.name,
+        location_name: locationName,
+        lat: coords.lat,
+        lon: coords.lon,
+        level: data.current?.level ?? null,
+        discharge: data.current?.discharge ?? null,
+        note: noteText.trim(),
+      });
+      setNoteText('');
+      await loadNotes(data.station.id);
+    } catch (e) {
+      // leave the text in place so the user doesn't lose what they typed
+    } finally {
+      setSavingNote(false);
+    }
+  };
+
+  if (loading && !data) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  const advisory = buildAdvisory(data);
+
+  return (
+    <PullToRefresh onRefresh={refresh}>
+      <div className="space-y-3 md:space-y-4 -mt-4 md:-mt-8">
+        <div className="max-w-2xl mx-auto space-y-3">
+          {/* Header */}
+          <div className="flex items-center justify-between px-1 mb-2">
+            <h1 className="text-2xl md:text-[34px] font-heading font-extrabold tracking-tight leading-tight flex items-center gap-2">
+              <Waves className="w-6 h-6 md:w-8 md:h-8 text-primary" />
+              River Conditions
+            </h1>
+            <button
+              onClick={() => setMapPickerOpen(true)}
+              className="text-xs text-muted-foreground flex items-center gap-1 hover:text-primary transition-colors"
+            >
+              <MapPin className="w-3.5 h-3.5" />
+              <span className="max-w-[120px] truncate">{locationName}</span>
+              <ChevronDown className="w-3 h-3 opacity-60" />
+            </button>
+          </div>
+
+          {/* Favorites strip */}
+          {favorites.length > 0 && (
+            <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
+              {favorites.map((fav) => (
+                <button
+                  key={fav.id}
+                  onClick={() => handleFavoriteSelect(fav)}
+                  className={`shrink-0 px-3 py-1 text-xs font-medium rounded-full transition-colors flex items-center gap-1 ${
+                    fav.name === locationName ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
+                  }`}
+                >
+                  <Star className="w-3 h-3" />
+                  {fav.name}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {error && (
+            <Card>
+              <CardContent className="pt-6 text-center">
+                <p className="text-sm text-muted-foreground mb-4">{error}</p>
+                <Button variant="outline" size="sm" onClick={() => fetchConditions(coords.lat, coords.lon)}>Try Again</Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {data && !error && (
+            <>
+              {/* Nearest station card */}
+              <Card className="bg-primary/10">
+                <CardContent className="p-3 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-semibold">{data.station.name}</p>
+                      <p className="text-xs text-muted-foreground">Station {data.station.id} · {data.station.distanceKm} km away</p>
+                    </div>
+                    <span className="text-[10px] text-muted-foreground text-right">
+                      Updated {data.current?.datetimeLocal ? new Date(data.current.datetimeLocal).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '—'}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="bg-secondary rounded-xl flex items-center gap-2 p-2.5">
+                      <Droplets className="w-6 h-6 shrink-0 text-primary" />
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-sm font-semibold leading-tight">{data.current?.level != null ? `${data.current.level.toFixed(2)} m` : '—'}</p>
+                          <TrendIndicator trend={data.trend?.level} />
+                        </div>
+                        <span className="text-xs text-muted-foreground leading-tight">Water Level</span>
+                      </div>
+                    </div>
+                    <div className="bg-secondary rounded-xl flex items-center gap-2 p-2.5">
+                      <Gauge className="w-6 h-6 shrink-0 text-primary" />
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-sm font-semibold leading-tight">{data.current?.discharge != null ? `${data.current.discharge.toFixed(1)} m³/s` : '—'}</p>
+                          <TrendIndicator trend={data.trend?.discharge} />
+                        </div>
+                        <span className="text-xs text-muted-foreground leading-tight">Flow</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {data.normal && (
+                    <div className="bg-secondary/60 rounded-lg p-2.5">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-medium text-muted-foreground">Compared to Normal</span>
+                        <span className="text-xs font-semibold capitalize">{data.normal.label}</span>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-muted overflow-hidden relative">
+                        <div className="absolute inset-y-0 left-0 bg-primary rounded-full" style={{ width: `${data.normal.percentile}%` }} />
+                      </div>
+                    </div>
+                  )}
+
+                  {advisory && (
+                    <div className={`rounded-lg p-2.5 flex items-start gap-2 ${advisory.tone}`}>
+                      <advisory.icon className="w-4 h-4 shrink-0 mt-0.5" />
+                      <p className="text-xs leading-snug">{advisory.text}</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Hourly chart */}
+              <Card>
+                <CardHeader className="pt-3 pb-2">
+                  <CardTitle className="text-base">Water Level (Today / Yesterday)</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <RiverLevelChart hourly={data.hourly} field="level" unitLabel="m" />
+                </CardContent>
+              </Card>
+
+              {/* Historical chart */}
+              <Card>
+                <CardHeader className="pt-3 pb-2">
+                  <CardTitle className="text-base">Historical Water Level</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <HistoricalRangeChart stationId={data.station.id} stationName={data.station.name} field="level" unitLabel="m" />
+                </CardContent>
+              </Card>
+
+              {/* Notes */}
+              <Card>
+                <CardHeader className="pt-3 pb-2">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <StickyNote className="w-4 h-4 text-primary" />
+                    Notes for this location
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0 space-y-3">
+                  <div className="bg-secondary/60 rounded-lg p-2.5 space-y-2">
+                    <p className="text-xs text-muted-foreground">
+                      WL: {data.current?.level != null ? `${data.current.level.toFixed(2)} m` : '—'} · Flow: {data.current?.discharge != null ? `${data.current.discharge.toFixed(1)} m³/s` : '—'} (auto-captured on save)
+                    </p>
+                    <Textarea
+                      value={noteText}
+                      onChange={(e) => setNoteText(e.target.value)}
+                      placeholder="e.g. water conditions were green but not clear, fishing conditions were ideal..."
+                      className="text-sm min-h-[70px]"
+                    />
+                    <Button size="sm" onClick={handleSaveNote} disabled={!noteText.trim() || savingNote} className="gap-1.5">
+                      <Plus className="w-3.5 h-3.5" />
+                      {savingNote ? 'Saving…' : 'Add Note'}
+                    </Button>
+                  </div>
+
+                  {notes.length === 0 ? (
+                    <p className="text-xs text-muted-foreground text-center py-2">No notes yet for this location.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {notes.map((n) => (
+                        <div key={n.id} className="border-b border-border/60 last:border-b-0 pb-2 last:pb-0">
+                          <div className="flex items-center justify-between mb-0.5">
+                            <span className="text-xs font-medium text-muted-foreground">
+                              WL: {n.level != null ? `${n.level.toFixed(2)} m` : '—'} · Flow: {n.discharge != null ? `${n.discharge.toFixed(1)} m³/s` : '—'}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground">
+                              {n.created_date ? new Date(n.created_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''}
+                            </span>
+                          </div>
+                          <p className="text-sm text-foreground leading-snug">{n.note}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Nearby stations */}
+              {data.nearbyStations?.length > 0 && (
+                <Card>
+                  <CardHeader className="pt-3 pb-2">
+                    <CardTitle className="text-base">Nearby Stations</CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="flex flex-col gap-1">
+                      {data.nearbyStations.map((s) => (
+                        <div key={s.id} className="flex items-center justify-between py-1.5 px-1">
+                          <span className="text-sm text-foreground">{s.name}</span>
+                          <span className="text-xs text-muted-foreground">{s.distanceKm} km</span>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              <p className="text-[10px] text-muted-foreground text-center px-4 pb-2">
+                Hydrometric data from Environment and Climate Change Canada (ECCC). Water level/flow only — no official water temperature is published for these stations.
+              </p>
+            </>
+          )}
+        </div>
+
+        <LocationMapPicker
+          open={mapPickerOpen}
+          onOpenChange={setMapPickerOpen}
+          initialCoords={coords}
+          savedLocations={favorites}
+          onSelect={handleMapSelect}
+        />
+      </div>
+    </PullToRefresh>
+  );
+}

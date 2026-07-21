@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Outlet, NavLink, useNavigate, useLocation, Link } from "react-router-dom";
 import {
   LogOut, Menu, X,
-  Home as HomeIcon, Camera, Cloud, Map as MapIcon,
+  Home as HomeIcon, Camera, Cloud, Map as MapIcon, Waves,
   Settings as SettingsIcon, Info,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,28 +12,25 @@ import AppLogo from "@/components/AppLogo";
 import { Moon as MoonIcon } from "lucide-react";
 import BottomTabBar from "@/components/BottomTabBar";
 import { motion } from "framer-motion";
-
 const navItems = [
   { to: "/", label: "Home", icon: HomeIcon },
   { to: "/gear/lines", label: "Gear", icon: ReelDiscIcon, matchPrefix: "/gear" },
   { to: "/catches", label: "Fish Log", icon: Camera, matchPrefix: "/catches" },
   { to: "/moon", label: "Moon Phase", icon: MoonIcon },
   { to: "/weather", label: "Weather", icon: Cloud },
+  { to: "/river", label: "River Conditions", icon: Waves },
   { to: "/map", label: "Maps", icon: MapIcon },
   { to: "/settings", label: "Settings", icon: SettingsIcon },
   { to: "/about", label: "About", icon: Info },
 ];
-
 export default function Layout() {
   const [open, setOpen] = useState(false);
   const appName = "AnglerKit";
   const navigate = useNavigate();
   const location = useLocation();
-
   const handleLogout = async () => {
     await base44.auth.logout();
   };
-
   const NavLinks = () => {
     const location = useLocation();
     return (
@@ -65,7 +62,6 @@ export default function Layout() {
       </nav>
     );
   };
-
   return (
     <div
       className="min-h-screen bg-background"
@@ -92,7 +88,6 @@ export default function Layout() {
           </Button>
         </div>
       </aside>
-
       {/* Mobile header */}
       <header className="md:hidden sticky top-0 z-30 flex items-center justify-between border-b border-border/60 bg-background/80 backdrop-blur-xl px-4 py-3">
         <Link to="/" className="flex items-center gap-2.5">
@@ -103,7 +98,6 @@ export default function Layout() {
           {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </Button>
       </header>
-
       {/* Mobile drawer */}
       {open && (
         <div className="md:hidden fixed inset-0 z-40 bg-black/40 animate-in fade-in duration-200" onClick={() => setOpen(false)}>
@@ -126,7 +120,6 @@ export default function Layout() {
           </div>
         </div>
       )}
-
       <main className="md:pl-64">
         <div className="mx-auto max-w-6xl px-4 py-6 pb-20 md:px-8 md:py-10 md:pb-10">
           <motion.div
@@ -139,7 +132,6 @@ export default function Layout() {
           </motion.div>
         </div>
       </main>
-
       {/* Mobile bottom tab bar */}
       <BottomTabBar />
     </div>

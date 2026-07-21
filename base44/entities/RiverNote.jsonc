@@ -1,0 +1,81 @@
+{
+  "name": "RiverNote",
+  "type": "object",
+  "properties": {
+    "station_id": {
+      "type": "string",
+      "description": "ECCC hydrometric station ID this note is attached to"
+    },
+    "station_name": {
+      "type": "string",
+      "description": "Display name of the station/location at the time the note was saved"
+    },
+    "location_name": {
+      "type": "string",
+      "description": "Display name of the location being viewed (favorite/searched name) at the time the note was saved"
+    },
+    "lat": {
+      "type": "number",
+      "description": "Latitude of the viewed location"
+    },
+    "lon": {
+      "type": "number",
+      "description": "Longitude of the viewed location"
+    },
+    "level": {
+      "type": "number",
+      "description": "Water level (m) at the time the note was saved"
+    },
+    "discharge": {
+      "type": "number",
+      "description": "Discharge/flow (m3/s) at the time the note was saved"
+    },
+    "note": {
+      "type": "string",
+      "description": "Free-text note about water/fishing conditions"
+    }
+  },
+  "required": [
+    "station_id",
+    "note"
+  ],
+  "rls": {
+    "create": true,
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}
