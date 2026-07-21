@@ -375,10 +375,11 @@ export default function RiverConditions() {
                 </CardHeader>
                 <CardContent className="pt-0 pb-2">
                   <RiverLevelChart hourly={data.hourly} field="level" unitLabel="m" normalLevel={data.normal?.median} />
-                  {data.normal && (
-                    <p className="text-xs text-foreground leading-snug mt-2">
-                      {buildNormalSummary(data.normal, data.trend?.level)}
-                    </p>
+                  {advisory && (
+                    <div className={`rounded-lg p-2.5 flex items-start gap-2 mt-2 ${advisory.tone}`}>
+                      <advisory.icon className="w-4 h-4 shrink-0 mt-0.5" />
+                      <p className="text-xs leading-snug">{advisory.text}</p>
+                    </div>
                   )}
                 </CardContent>
               </Card>
