@@ -64,10 +64,17 @@ function DayPanel({ day, field, isToday, unitLabel, normalLevel }) {
     const vals = withValues.map(p => p.value);
     let min = Math.min(...vals);
     let max = Math.max(...vals);
-    let normalY = null;
     if (normalLevel != null) {
       min = Math.min(min, normalLevel);
       max = Math.max(max, normalLevel);
+    }
+    // Always extend the top to the next 5cm tick above the max value so
+    // the highest data point always has headroom (water level only).
+    if (field === 'level') {
+      max = Math.floor(max / 0.05) * 0.05 + 0.05;
+    }
+    let normalY = null;
+    if (normalLevel != null) {
       const range = max - min || 1;
       const usableTop = CHART_HEIGHT * PAD_TOP_PCT;
       const usableBottom = CHART_HEIGHT * (1 - PAD_BOTTOM_PCT);
@@ -75,7 +82,7 @@ function DayPanel({ day, field, isToday, unitLabel, normalLevel }) {
       normalY = usableBottom - ((normalLevel - min) / range) * usableHeight;
     }
     return { min, max, normalY };
-  }, [withValues, normalLevel]);
+  }, [withValues, normalLevel, field]);
 
   const svgPoints = useMemo(() => {
     if (!bounds) return [];

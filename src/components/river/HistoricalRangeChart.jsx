@@ -92,6 +92,11 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
       min = Math.min(min, normalLevel);
       max = Math.max(max, normalLevel);
     }
+    // Always extend the top to the next 5cm tick above the max value so
+    // the highest data point always has headroom (water level only).
+    if (field === 'level') {
+      max = Math.floor(max / 0.05) * 0.05 + 0.05;
+    }
     const range_ = max - min || 1;
     const usableTop = CHART_HEIGHT * 0.08;
     const usableBottom = CHART_HEIGHT * 0.92;
