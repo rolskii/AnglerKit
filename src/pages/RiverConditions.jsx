@@ -2,9 +2,10 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import {
   Waves, MapPin, ChevronDown, TrendingUp, TrendingDown, Minus,
-  Droplets, Gauge, StickyNote, Plus, AlertTriangle, Info, CheckCircle2, Trash2,
+  Droplets, Gauge, StickyNote, Plus, AlertTriangle, Info, CheckCircle2, Trash2, Pen,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { getSharedLocation, setSharedLocation } from '@/lib/sharedLocation';
@@ -92,6 +93,7 @@ export default function RiverConditions() {
   const [notes, setNotes] = useState([]);
   const [noteText, setNoteText] = useState('');
   const [savingNote, setSavingNote] = useState(false);
+  const [noteDialogOpen, setNoteDialogOpen] = useState(false);
 
 
   const fetchConditions = useCallback(async (lat, lon) => {
@@ -223,6 +225,7 @@ export default function RiverConditions() {
         note: noteText.trim(),
       });
       setNoteText('');
+      setNoteDialogOpen(false);
       await loadNotes(data.station.id);
     } catch (e) {
       // leave the text in place so the user doesn't lose what they typed
@@ -278,7 +281,16 @@ export default function RiverConditions() {
               <Card className="bg-primary/10">
                 <CardContent className="p-3 space-y-3">
                   <div className="space-y-1">
-                    <p className="text-sm font-semibold truncate">{data.station.name}</p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-sm font-semibold truncate">{data.station.name}</p>
+                      <button
+                        onClick={() => setNoteDialogOpen(true)}
+                        className="text-muted-foreground hover:text-primary transition-colors shrink-0"
+                        aria-label="Add note"
+                      >
+                        <Pen className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                     <p className="text-xs text-muted-foreground">Station {data.station.id} · {data.station.distanceKm} km away · Updated {data.current?.datetimeLocal ? new Date(data.current.datetimeLocal).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '—'}</p>
                   </div>
 
@@ -343,22 +355,6 @@ export default function RiverConditions() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0 pb-2 px-3 space-y-3">
-                  <div className="bg-secondary/60 rounded-lg p-2.5 space-y-2">
-                    <p className="text-xs text-muted-foreground">
-                      WL: {data.current?.level != null ? `${data.current.level.toFixed(2)} m` : '—'} · Flow: {data.current?.discharge != null ? `${data.current.discharge.toFixed(1)} m³/s` : '—'} (auto-captured on save)
-                    </p>
-                    <Textarea
-                      value={noteText}
-                      onChange={(e) => setNoteText(e.target.value)}
-                      placeholder="e.g. water conditions were green but not clear, fishing conditions were ideal..."
-                      className="text-sm min-h-[70px]"
-                    />
-                    <Button size="sm" onClick={handleSaveNote} disabled={!noteText.trim() || savingNote} className="gap-1.5">
-                      <Plus className="w-3.5 h-3.5" />
-                      {savingNote ? 'Saving…' : 'Add Note'}
-                    </Button>
-                  </div>
-
                   {notes.length === 0 ? (
                     <p className="text-xs text-muted-foreground text-center py-2">No notes yet for this location.</p>
                   ) : (
@@ -426,6 +422,33 @@ export default function RiverConditions() {
           initialCoords={coords}
           onSelect={selectStation}
         />
+
+        <Dialog open={noteDialogOpen} onOpenChange={setNoteDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Pen className="w-4 h-4 text-primary" />
+                Add Note
+              </DialogTitle>
+            </DialogHeader>
+            <p className="text-xs text-muted-foreground">
+              WL: {data.current?.level != null ? `${data.current.level.toFixed(2)} m` : '—'} · Flow: {data.current?.discharge != null ? `${data.current.discharge.toFixed(1)} m³/s` : '—'} (auto-captured on save)
+            </p>
+            <Textarea
+              value={noteText}
+              onChange={(e) => setNoteText(e.target.value)}
+              placeholder="e.g. water conditions were green but not clear, fishing conditions were ideal..."
+              className="text-sm min-h-[100px]"
+              autoFocus
+            />
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setNoteDialogOpen(false)}>Cancel</Button>
+              <Button onClick={handleSaveNote} disabled={!noteText.trim() || savingNote} className="gap-1.5">
+                {savingNote ? 'Saving…' : 'Save Note'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </PullToRefresh>
   );
