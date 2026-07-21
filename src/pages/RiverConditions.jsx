@@ -236,11 +236,21 @@ export default function RiverConditions() {
       <div className="space-y-3 md:space-y-4 -mt-4 md:-mt-8">
         <div className="max-w-2xl mx-auto space-y-3">
           {/* Header */}
-          <div className="px-1 mb-2">
+          <div className="px-1 mb-2 flex items-center justify-between">
             <h1 className="text-2xl md:text-[34px] font-heading font-extrabold tracking-tight leading-tight flex items-center gap-2">
               <Waves className="w-6 h-6 md:w-8 md:h-8 text-primary" />
               River Conditions
             </h1>
+            {data && !error && (
+              <button
+                onClick={() => setMapPickerOpen(true)}
+                className="text-xs text-muted-foreground flex items-center gap-1 hover:text-primary transition-colors shrink-0"
+              >
+                <MapPin className="w-3.5 h-3.5" />
+                <span className="max-w-[120px] truncate">{locationName}</span>
+                <ChevronDown className="w-3 h-3 opacity-60" />
+              </button>
+            )}
           </div>
 
           {error && (
@@ -258,14 +268,6 @@ export default function RiverConditions() {
               <Card className="bg-primary/10">
                 <CardContent className="p-3 space-y-3">
                   <div className="space-y-1">
-                    <button
-                      onClick={() => setMapPickerOpen(true)}
-                      className="text-xs text-muted-foreground flex items-center gap-1 hover:text-primary transition-colors"
-                    >
-                      <MapPin className="w-3.5 h-3.5" />
-                      <span className="max-w-[160px] truncate">{locationName}</span>
-                      <ChevronDown className="w-3 h-3 opacity-60" />
-                    </button>
                     <p className="text-sm font-semibold truncate">{data.station.name}</p>
                     <p className="text-xs text-muted-foreground">Station {data.station.id} · {data.station.distanceKm} km away · Updated {data.current?.datetimeLocal ? new Date(data.current.datetimeLocal).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '—'}</p>
                   </div>
