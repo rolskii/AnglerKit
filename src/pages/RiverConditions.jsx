@@ -26,6 +26,29 @@ function TrendIndicator({ trend }) {
   );
 }
 
+// Turns the raw "percentile vs. historical normal" + trend numbers into a
+// plain-language sentence, e.g. "Currently lower than normal, but rising fast."
+function buildNormalSummary(normal, trend) {
+  if (!normal) return null;
+  const pct = normal.percentile;
+  const isBelow = pct != null && pct <= 30;
+  const isAbove = pct != null && pct >= 70;
+  const direction = trend?.direction;
+  const changePct = trend?.changePct != null ? Math.abs(trend.changePct) : 0;
+  const fast = changePct >= 8;
+
+  let trendPhrase = 'holding steady';
+  if (direction === 'rising') trendPhrase = fast ? 'rising fast' : 'rising';
+  else if (direction === 'falling') trendPhrase = fast ? 'falling fast' : 'falling';
+
+  // "but" when the trend is moving back toward normal (below-and-rising,
+  // above-and-falling); "and" when it's reinforcing the current extreme,
+  // or when levels are already near normal.
+  const conjunction = (isBelow && direction === 'rising') || (isAbove && direction === 'falling') ? 'but' : 'and';
+
+  return `Currently ${normal.label}, ${conjunction} ${trendPhrase}.`;
+}
+
 function buildAdvisory(data) {
   if (!data?.trend || !data?.current) return null;
   const rising = data.trend.level?.direction === 'rising';
@@ -324,10 +347,12 @@ export default function RiverConditions() {
 
                   {data.normal && (
                     <div className="bg-secondary/60 rounded-lg p-2.5">
-                      <div className="flex items-center justify-between mb-1">
+                      <div className="mb-1">
                         <span className="text-xs font-medium text-muted-foreground">Compared to Normal</span>
-                        <span className="text-xs font-semibold capitalize">{data.normal.label}</span>
                       </div>
+                      <p className="text-xs text-foreground leading-snug mb-1.5">
+                        {buildNormalSummary(data.normal, data.trend?.level)}
+                      </p>
                       <div className="h-1.5 rounded-full bg-muted overflow-hidden relative">
                         <div className="absolute inset-y-0 left-0 bg-primary rounded-full" style={{ width: `${data.normal.percentile}%` }} />
                       </div>

@@ -6,7 +6,7 @@ import { ReelIcon as ReelDiscIcon } from "@/components/GearIcons";
 const tabs = [
   { to: "/", label: "Home", icon: HomeIcon, matchExact: true },
   { to: "/gear/lines", label: "Gear", icon: ReelDiscIcon, matchPrefix: "/gear" },
-  { to: "/catches", label: "Fish Log", icon: Camera, matchPrefix: "/catches" },
+  { to: "/catches", label: "FishLog", icon: Camera, matchPrefix: "/catches" },
   { to: "/moon", label: "Moon", icon: MoonIcon, matchExact: true },
   { to: "/weather", label: "Weather", icon: Cloud, matchExact: true },
   { to: "/river", label: "River", icon: Waves, matchExact: true },
@@ -18,7 +18,7 @@ export default function BottomTabBar() {
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 left-0 right-0 z-[600] flex items-center justify-around border-t border-border/60 bg-background/90 backdrop-blur-xl"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-[600] flex items-center justify-around px-1.5 border-t border-border/60 bg-background/90 backdrop-blur-xl"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       {tabs.map((tab) => {
@@ -31,12 +31,12 @@ export default function BottomTabBar() {
           <NavLink
             key={tab.to}
             to={tab.to}
-            className={`flex flex-col items-center gap-0.5 py-2 px-3 flex-1 transition-colors ${
+            className={`flex flex-col items-center gap-0.5 py-2 px-1 flex-1 transition-colors ${
               isActive ? "text-primary" : "text-muted-foreground"
             }`}
           >
             <Icon className={isGear ? "w-6 h-6" : "w-5 h-5"} strokeWidth={isActive ? 2.5 : 2} />
-            <span className="text-[10px] font-medium">{tab.label}</span>
+            <span className="text-[10px] font-medium whitespace-nowrap">{tab.label}</span>
           </NavLink>
         );
       })}
