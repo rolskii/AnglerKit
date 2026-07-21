@@ -76,7 +76,7 @@ const items = [
   { to: "/catches", title: "Fish Log", icon: Camera, tint: "blue", key: "catch" },
   { to: "/moon", title: "Moon Phase", icon: MoonIcon, tint: "purple", key: "moon" },
   { to: "/weather", title: "Weather", icon: Cloud, tint: "teal", key: "weather" },
-  { to: "/river", title: "River Conditions", icon: Waves, tint: "cyan", key: "river" },
+  { to: "/river", title: "River", icon: Waves, tint: "cyan", key: "river" },
   { to: "/map", title: "Map", icon: MapIcon, tint: "green", key: "map" },
 ];
 const tintClasses = {
@@ -298,20 +298,20 @@ export default function Home() {
         </div>
       )}
       {/* Category grid */}
-      <div className="grid grid-cols-3 gap-1.5 md:gap-4">
+      <div className="grid grid-cols-6 gap-1 md:gap-4">
         {items.map((item) => {
           const Icon = item.icon;
           const isGear = item.to === "/gear/lines";
           const desc = descriptions[item.key];
           return (
             <Link key={item.to} to={item.to} className="group">
-              <Card className="relative p-2.5 md:p-5 h-full rounded-2xl border-0 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer bg-card">
-                <div className="flex flex-col gap-2 md:gap-3">
-                  <div className={`flex h-9 w-9 md:h-11 md:w-11 items-center justify-center rounded-xl flex-shrink-0 ${tintClasses[item.tint]}`}>
-                    <Icon className={isGear ? "w-6 md:w-10 h-6 md:h-10" : "w-5 md:w-8 h-5 md:h-8"} strokeWidth={2} />
+              <Card className="relative p-1.5 md:p-5 h-full rounded-2xl border-0 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer bg-card">
+                <div className="flex flex-col gap-1 md:gap-3">
+                  <div className={`flex h-7 w-7 md:h-11 md:w-11 items-center justify-center rounded-xl flex-shrink-0 ${tintClasses[item.tint]}`}>
+                    <Icon className={isGear ? "w-5 md:w-10 h-5 md:h-10" : "w-4 md:w-8 h-4 md:h-8"} strokeWidth={2} />
                   </div>
                   <div className="space-y-0.5 md:space-y-1">
-                    <h2 className="text-xs md:text-lg font-heading font-semibold tracking-tight leading-tight">{item.title}</h2>
+                    <h2 className="text-[10px] md:text-lg font-heading font-semibold tracking-tight leading-tight">{item.title}</h2>
                     {item.key === "weather" && weatherInfo ? (
                       <p className="text-[10px] md:text-sm text-muted-foreground leading-tight">{weatherInfo.temp} · {weatherInfo.windLabel} · {weatherInfo.desc}</p>
                     ) : item.key === "moon" && moonPhase ? (
