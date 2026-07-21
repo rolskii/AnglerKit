@@ -257,19 +257,17 @@ export default function RiverConditions() {
               {/* Nearest station card */}
               <Card className="bg-primary/10">
                 <CardContent className="p-3 space-y-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold truncate">{data.station.name}</p>
-                      <p className="text-xs text-muted-foreground">Station {data.station.id} · {data.station.distanceKm} km away · Updated {data.current?.datetimeLocal ? new Date(data.current.datetimeLocal).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '—'}</p>
-                    </div>
+                  <div className="space-y-1">
                     <button
                       onClick={() => setMapPickerOpen(true)}
-                      className="text-xs text-muted-foreground flex items-center gap-1 hover:text-primary transition-colors shrink-0 mt-0.5"
+                      className="text-xs text-muted-foreground flex items-center gap-1 hover:text-primary transition-colors"
                     >
                       <MapPin className="w-3.5 h-3.5" />
                       <span className="max-w-[160px] truncate">{locationName}</span>
                       <ChevronDown className="w-3 h-3 opacity-60" />
                     </button>
+                    <p className="text-sm font-semibold truncate">{data.station.name}</p>
+                    <p className="text-xs text-muted-foreground">Station {data.station.id} · {data.station.distanceKm} km away · Updated {data.current?.datetimeLocal ? new Date(data.current.datetimeLocal).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '—'}</p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2">
