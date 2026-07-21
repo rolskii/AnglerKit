@@ -360,7 +360,7 @@ export default function RiverConditions() {
                         <div key={n.id} className="border-b border-border/60 last:border-b-0 pb-2 last:pb-0">
                           <div className="flex items-center justify-between mb-0.5">
                             <span className="text-xs font-medium text-muted-foreground">
-                              WL: {n.level != null ? `${n.level.toFixed(2)} m` : '—'} · Flow: {n.discharge != null ? `${n.discharge.toFixed(1)} m³/s` : '—'}{n.created_date ? ` · ${new Date(n.created_date).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}` : ''}
+                              WL: {n.level != null ? `${n.level.toFixed(2)} m` : '—'} · Flow: {n.discharge != null ? `${n.discharge.toFixed(1)} m³/s` : '—'}{n.created_date ? ` · ${new Date(n.created_date.endsWith('Z') || n.created_date.includes('+') ? n.created_date : n.created_date + 'Z').toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}` : ''}
                             </span>
                             <button
                               onClick={() => handleDeleteNote(n.id)}
