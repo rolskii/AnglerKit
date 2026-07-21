@@ -54,18 +54,22 @@ function formatElevation(v, field) {
   return field === 'discharge' ? v.toFixed(1) : v.toFixed(2);
 }
 
-function DayPanel({ day, field, isToday, unitLabel }) {
+function DayPanel({ day, field, isToday, unitLabel, normalLevel }) {
   const points = day.hours; // [{hour, value, isReal}]
   const withValues = points.filter(p => p.value != null);
   const gradId = `riverGradient-${field}-${day.dateStr}`;
 
   const bounds = useMemo(() => {
     if (withValues.length === 0) return null;
-    return {
-      min: Math.min(...withValues.map(p => p.value)),
-      max: Math.max(...withValues.map(p => p.value)),
-    };
-  }, [withValues]);
+    const vals = withValues.map(p => p.value);
+    let min = Math.min(...vals);
+    let max = Math.max(...vals);
+    if (normalLevel != null) {
+      min = Math.min(min, normalLevel);
+      max = Math.max(max, normalLevel);
+    }
+    return { min, max };
+  }, [withValues, normalLevel]);
 
   const svgPoints = useMemo(() => {
     if (!bounds) return [];
@@ -131,6 +135,14 @@ function DayPanel({ day, field, isToday, unitLabel }) {
                 <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.05" />
               </linearGradient>
             </defs>
+            {normalLevel != null && bounds && (() => {
+              const range = bounds.max - bounds.min || 1;
+              const usableTop = CHART_HEIGHT * PAD_TOP_PCT;
+              const usableBottom = CHART_HEIGHT * (1 - PAD_BOTTOM_PCT);
+              const usableHeight = usableBottom - usableTop;
+              const y = usableBottom - ((normalLevel - bounds.min) / range) * usableHeight;
+              return <line x1="0" y1={y} x2={CHART_WIDTH} y2={y} stroke="#22c55e" strokeWidth="1.5" strokeDasharray="5 3" />;
+            })()}
             {areaD && <path d={areaD} fill={`url(#${gradId})`} stroke="none" />}
             {pathD && <path d={pathD} fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" />}
             {knownPoints.filter(p => p.isReal).map((p, i) => (
@@ -147,7 +159,7 @@ function DayPanel({ day, field, isToday, unitLabel }) {
   );
 }
 
-export default function RiverLevelChart({ hourly, field = 'level', scrollToToday = true, unitLabel }) {
+export default function RiverLevelChart({ hourly, field = 'level', scrollToToday = true, unitLabel, normalLevel }) {
   const scrollRef = useRef(null);
   const now = useNowTick(60000);
 
@@ -190,7 +202,7 @@ export default function RiverLevelChart({ hourly, field = 'level', scrollToToday
       style={{ scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' }}
     >
       {days.map((day) => (
-        <DayPanel key={day.dateStr} day={day} field={field} isToday={day.label === 'Today'} unitLabel={unitLabel} />
+        <DayPanel key={day.dateStr} day={day} field={field} isToday={day.label === 'Today'} unitLabel={unitLabel} normalLevel={normalLevel} />
       ))}
     </div>
   );

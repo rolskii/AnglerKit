@@ -353,9 +353,6 @@ export default function RiverConditions() {
                       <div className="mb-1">
                         <span className="text-xs font-medium text-muted-foreground">Compared to Normal</span>
                       </div>
-                      <p className="text-xs text-foreground leading-snug mb-1.5">
-                        {buildNormalSummary(data.normal, data.trend?.level)}
-                      </p>
                       <div className="h-1.5 rounded-full bg-muted overflow-hidden relative">
                         <div className="absolute inset-y-0 left-0 bg-primary rounded-full" style={{ width: `${data.normal.percentile}%` }} />
                       </div>
@@ -377,7 +374,13 @@ export default function RiverConditions() {
                   <CardTitle className="text-base">Water Level (Today / Yesterday)</CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0 pb-2">
-                  <RiverLevelChart hourly={data.hourly} field="level" unitLabel="m" />
+                  <RiverLevelChart hourly={data.hourly} field="level" unitLabel="m" normalLevel={data.normal?.median} />
+                  {data.normal && (
+                    <p className="text-xs text-foreground leading-snug mt-2 flex items-center gap-1.5">
+                      <span className="inline-block w-4 h-0.5 border-t-2 border-dashed border-green-500 shrink-0" />
+                      {buildNormalSummary(data.normal, data.trend?.level)}
+                    </p>
+                  )}
                 </CardContent>
               </Card>
 
