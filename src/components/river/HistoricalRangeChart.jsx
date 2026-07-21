@@ -88,10 +88,6 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
     if (known.length === 0) return null;
     let min = Math.min(...known.map(p => p.v));
     let max = Math.max(...known.map(p => p.v));
-    if (currentValue != null) {
-      min = Math.min(min, currentValue);
-      max = Math.max(max, currentValue);
-    }
     // Always extend the top to the next 5cm tick above the max value so
     // the highest data point always has headroom (water level only).
     if (field === 'level') {
@@ -101,7 +97,6 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
     const usableTop = CHART_HEIGHT * 0.08;
     const usableBottom = CHART_HEIGHT * 0.92;
     const usableHeight = usableBottom - usableTop;
-    const currentY = currentValue != null ? usableBottom - ((currentValue - min) / range_) * usableHeight : null;
     const n = known.length;
     // Render at a fixed pixel-per-point scale (not squeezed to fit the
     // screen) so longer ranges are wide enough to pan across — same idea
@@ -132,8 +127,8 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
         ]
       : generateFixedIntervalTicks(min, max, 0.05, usableTop, usableBottom);
 
-    return { pathD, areaD, ticks, yTicks, min, max, renderWidth, oldest: known[0], currentY };
-  }, [data, field, currentValue]);
+    return { pathD, areaD, ticks, yTicks, min, max, renderWidth, oldest: known[0] };
+  }, [data, field]);
 
   // Compares the current live reading to the oldest point in the currently
   // selected range — i.e. "this time N ago" — so it's easy to see how today
@@ -247,14 +242,8 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
                       <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.05" />
                     </linearGradient>
                   </defs>
-                  {chart.currentY != null && (
-                    <line x1="0" y1={chart.currentY} x2={chart.renderWidth} y2={chart.currentY} stroke="#f59e0b" strokeWidth="1.5" strokeDasharray="5 3" />
-                  )}
                   <path d={chart.areaD} fill="url(#historicalGradient)" stroke="none" />
                   <path d={chart.pathD} fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" />
-                  {chart.currentY != null && (
-                    <circle cx={chart.renderWidth} cy={chart.currentY} r={4} fill="hsl(var(--background))" stroke="#f59e0b" strokeWidth="2" />
-                  )}
                 </svg>
                 <div className="relative h-5 mt-1" style={{ width: chart.renderWidth }}>
                   {chart.ticks.map((tick, i) => (

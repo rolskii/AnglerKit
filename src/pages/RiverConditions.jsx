@@ -320,11 +320,11 @@ export default function RiverConditions() {
                 </CardContent>
               </Card>
 
-              {/* Hourly chart */}
+              {/* Water level — hourly + historical in one card */}
               <Card>
                 <CardHeader className="pt-3 pb-2 px-3">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-base">Water Level (Today / Yesterday)</CardTitle>
+                    <CardTitle className="text-base">Water Level</CardTitle>
                     {data.normal?.median != null && (
                       <span className="inline-flex items-center gap-1 text-[11px] font-medium text-green-600 whitespace-nowrap">
                         <span className="inline-block w-3 border-t border-dashed border-green-500" />
@@ -333,32 +333,17 @@ export default function RiverConditions() {
                     )}
                   </div>
                 </CardHeader>
-                <CardContent className="pt-0 pb-2 px-3">
+                <CardContent className="pt-0 pb-2 px-3 space-y-3">
                   <RiverLevelChart hourly={data.hourly} field="level" unitLabel="m" normalLevel={data.normal?.median} />
+                  <div className="border-t border-border/60 pt-2">
+                    <HistoricalRangeChart stationId={data.station.id} stationName={data.station.name} field="level" unitLabel="m" currentValue={data.current?.level} />
+                  </div>
                   {advisory && (
-                    <div className={`rounded-lg p-2.5 flex items-start gap-2 mt-2 ${advisory.tone}`}>
+                    <div className={`rounded-lg p-2.5 flex items-start gap-2 ${advisory.tone}`}>
                       <advisory.icon className="w-4 h-4 shrink-0 mt-0.5" />
                       <p className="text-xs leading-snug">{advisory.text}</p>
                     </div>
                   )}
-                </CardContent>
-              </Card>
-
-              {/* Historical chart */}
-              <Card>
-                <CardHeader className="pt-3 pb-2 px-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-base">Historical Water Level</CardTitle>
-                    {data.current?.level != null && (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-600 whitespace-nowrap">
-                        <span className="inline-block w-3 border-t border-dashed border-amber-500" />
-                        Now ({data.current.level.toFixed(2)} m)
-                      </span>
-                    )}
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-0 pb-2 px-3">
-                  <HistoricalRangeChart stationId={data.station.id} stationName={data.station.name} field="level" unitLabel="m" currentValue={data.current?.level} normalLevel={data.normal?.median} />
                 </CardContent>
               </Card>
 
