@@ -376,7 +376,7 @@ export default function RiverConditions() {
                 <CardHeader className="pt-3 pb-2">
                   <CardTitle className="text-base">Water Level (Today / Yesterday)</CardTitle>
                 </CardHeader>
-                <CardContent className="pt-0">
+                <CardContent className="pt-0 pb-2">
                   <RiverLevelChart hourly={data.hourly} field="level" unitLabel="m" />
                 </CardContent>
               </Card>
@@ -386,7 +386,7 @@ export default function RiverConditions() {
                 <CardHeader className="pt-3 pb-2">
                   <CardTitle className="text-base">Historical Water Level</CardTitle>
                 </CardHeader>
-                <CardContent className="pt-0">
+                <CardContent className="pt-0 pb-2">
                   <HistoricalRangeChart stationId={data.station.id} stationName={data.station.name} field="level" unitLabel="m" currentValue={data.current?.level} />
                 </CardContent>
               </Card>
@@ -399,7 +399,7 @@ export default function RiverConditions() {
                     Notes for this location
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="pt-0 space-y-3">
+                <CardContent className="pt-0 pb-2 space-y-3">
                   <div className="bg-secondary/60 rounded-lg p-2.5 space-y-2">
                     <p className="text-xs text-muted-foreground">
                       WL: {data.current?.level != null ? `${data.current.level.toFixed(2)} m` : '—'} · Flow: {data.current?.discharge != null ? `${data.current.discharge.toFixed(1)} m³/s` : '—'} (auto-captured on save)
@@ -444,7 +444,7 @@ export default function RiverConditions() {
                   <CardHeader className="pt-3 pb-2">
                     <CardTitle className="text-base">Nearby Stations</CardTitle>
                   </CardHeader>
-                  <CardContent className="pt-0">
+                  <CardContent className="pt-0 pb-2">
                     <div className="flex flex-col gap-1">
                       {data.nearbyStations.map((s) => (
                         <button
