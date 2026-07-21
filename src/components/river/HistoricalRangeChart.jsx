@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { buildSmoothPath } from '@/lib/chartUtils';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -68,6 +68,8 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
     return () => { cancelled = true; };
   }, [stationId, stationName, range, customFrom, customTo]);
 
+  const scrollRef = useRef(null);
+
   const chart = useMemo(() => {
     if (!data?.time?.length) return null;
     const values = data[field] || [];
@@ -81,15 +83,20 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
     const usableBottom = CHART_HEIGHT * 0.92;
     const usableHeight = usableBottom - usableTop;
     const n = known.length;
+    // Render at a fixed pixel-per-point scale (not squeezed to fit the
+    // screen) so longer ranges are wide enough to pan across — same idea
+    // as the Hourly Fish Activity chart's swipeable day panels, but here
+    // it's one continuous scrollable line rather than discrete pages.
+    const renderWidth = Math.max(CHART_WIDTH, n * 4);
     const points = known.map((p, i) => ({
-      x: n > 1 ? (i / (n - 1)) * CHART_WIDTH : CHART_WIDTH / 2,
+      x: n > 1 ? (i / (n - 1)) * renderWidth : renderWidth / 2,
       y: usableBottom - ((p.v - min) / range_) * usableHeight,
     }));
     const pathD = buildSmoothPath(points);
     const areaD = `${pathD} L ${points[points.length - 1].x} ${CHART_HEIGHT} L ${points[0].x} ${CHART_HEIGHT} Z`;
 
     const spanDays = (times[times.length - 1] - times[0]) / 86400000;
-    const tickCount = 6;
+    const tickCount = Math.max(6, Math.round(renderWidth / 110));
     const ticks = Array.from({ length: tickCount }, (_, i) => {
       const idx = Math.round((i / (tickCount - 1)) * (n - 1));
       return { x: points[idx]?.x ?? 0, label: formatAxisLabel(known[idx].t, spanDays) };
@@ -104,8 +111,17 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
       { y: usableBottom, label: formatValue(min, field) },
     ];
 
-    return { pathD, areaD, ticks, yTicks, min, max };
+    return { pathD, areaD, ticks, yTicks, min, max, renderWidth };
   }, [data, field]);
+
+  // Default to panned all the way to the right (most recent data) — the
+  // user can then swipe/drag left to explore earlier points and back right
+  // to return to "now", same feel as the other river/moon charts.
+  useEffect(() => {
+    if (scrollRef.current && chart?.renderWidth) {
+      scrollRef.current.scrollLeft = scrollRef.current.scrollWidth;
+    }
+  }, [chart?.renderWidth, data]);
 
   return (
     <div className="space-y-3">
@@ -174,27 +190,33 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
                 </span>
               ))}
             </div>
-            <div className="flex-1 min-w-0">
-              <svg viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`} className="w-full" style={{ height: CHART_HEIGHT }} preserveAspectRatio="none">
-                <defs>
-                  <linearGradient id="historicalGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.45" />
-                    <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.05" />
-                  </linearGradient>
-                </defs>
-                <path d={chart.areaD} fill="url(#historicalGradient)" stroke="none" />
-                <path d={chart.pathD} fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" />
-              </svg>
-              <div className="relative h-5 mt-1">
-                {chart.ticks.map((tick, i) => (
-                  <span
-                    key={i}
-                    className="absolute text-[9px] text-muted-foreground whitespace-nowrap"
-                    style={{ left: `${(tick.x / CHART_WIDTH) * 100}%`, transform: 'translateX(-50%)' }}
-                  >
-                    {tick.label}
-                  </span>
-                ))}
+            <div ref={scrollRef} className="flex-1 min-w-0 overflow-x-auto scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
+              <div style={{ width: chart.renderWidth }}>
+                <svg
+                  viewBox={`0 0 ${chart.renderWidth} ${CHART_HEIGHT}`}
+                  style={{ width: chart.renderWidth, height: CHART_HEIGHT, display: 'block' }}
+                  preserveAspectRatio="none"
+                >
+                  <defs>
+                    <linearGradient id="historicalGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.45" />
+                      <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.05" />
+                    </linearGradient>
+                  </defs>
+                  <path d={chart.areaD} fill="url(#historicalGradient)" stroke="none" />
+                  <path d={chart.pathD} fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+                <div className="relative h-5 mt-1" style={{ width: chart.renderWidth }}>
+                  {chart.ticks.map((tick, i) => (
+                    <span
+                      key={i}
+                      className="absolute text-[9px] text-muted-foreground whitespace-nowrap"
+                      style={{ left: tick.x, transform: 'translateX(-50%)' }}
+                    >
+                      {tick.label}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
