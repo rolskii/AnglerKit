@@ -28,6 +28,8 @@ const RANGE_AGO_LABELS = {
 
 const CHART_HEIGHT = 80;
 const CHART_WIDTH = 720;
+const RECENT_STROKE = '#f59e0b';
+const NORMAL_STROKE = '#22c55e';
 
 function formatValue(v, field) {
   if (v == null || isNaN(v)) return '—';
@@ -44,7 +46,7 @@ function formatAxisLabel(date, spanDays) {
   return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
 }
 
-export default function HistoricalRangeChart({ stationId, stationName, field = 'level', unitLabel, currentValue, normalLevel }) {
+export default function HistoricalRangeChart({ stationId, stationName, field = 'level', unitLabel, currentValue, normalLevel, hourlyData }) {
   const [range, setRange] = useState('1w');
   const [customFrom, setCustomFrom] = useState(null);
   const [customTo, setCustomTo] = useState(null);
@@ -80,14 +82,43 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
 
   const scrollRef = useRef(null);
 
+  // Combined chart: historical line + recent hourly overlay, both plotted on
+  // a shared time→X and value→Y axis so the two series are directly
+  // comparable in the same visual space.
   const chart = useMemo(() => {
     if (!data?.time?.length) return null;
     const values = data[field] || [];
     const times = data.time.map(t => new Date(t));
     const known = values.map((v, i) => ({ v, t: times[i] })).filter(p => p.v != null);
     if (known.length === 0) return null;
-    let min = Math.min(...known.map(p => p.v));
-    let max = Math.max(...known.map(p => p.v));
+
+    // Recent hourly data (today / yesterday) — overlaid as a second line.
+    const hourlyValues = hourlyData?.[field] || [];
+    const hourlyTimes = (hourlyData?.time || []).map(t => new Date(t));
+    const hourlyKnown = hourlyValues
+      .map((v, i) => ({ v, t: hourlyTimes[i] }))
+      .filter(p => p.v != null && !isNaN(p.t.getTime()));
+
+    // Shared time axis spanning the union of both datasets.
+    const allTimes = [
+      ...known.map(p => p.t.getTime()),
+      ...hourlyKnown.map(p => p.t.getTime()),
+    ];
+    const startTime = Math.min(...allTimes);
+    const endTime = Math.max(...allTimes);
+    const timeSpan = endTime - startTime || 1;
+
+    // Shared value axis.
+    const allValues = [
+      ...known.map(p => p.v),
+      ...hourlyKnown.map(p => p.v),
+    ];
+    let min = Math.min(...allValues);
+    let max = Math.max(...allValues);
+    if (normalLevel != null) {
+      min = Math.min(min, normalLevel);
+      max = Math.max(max, normalLevel);
+    }
     // Always extend the top to the next 5cm tick above the max value so
     // the highest data point always has headroom (water level only).
     if (field === 'level') {
@@ -97,24 +128,28 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
     const usableTop = CHART_HEIGHT * 0.08;
     const usableBottom = CHART_HEIGHT * 0.92;
     const usableHeight = usableBottom - usableTop;
-    const n = known.length;
-    // Render at a fixed pixel-per-point scale (not squeezed to fit the
-    // screen) so longer ranges are wide enough to pan across — same idea
-    // as the Hourly Fish Activity chart's swipeable day panels, but here
-    // it's one continuous scrollable line rather than discrete pages.
-    const renderWidth = Math.max(CHART_WIDTH, n * 4);
-    const points = known.map((p, i) => ({
-      x: n > 1 ? (i / (n - 1)) * renderWidth : renderWidth / 2,
-      y: usableBottom - ((p.v - min) / range_) * usableHeight,
-    }));
-    const pathD = buildSmoothPath(points);
-    const areaD = `${pathD} L ${points[points.length - 1].x} ${CHART_HEIGHT} L ${points[0].x} ${CHART_HEIGHT} Z`;
+    const normalY = normalLevel != null ? usableBottom - ((normalLevel - min) / range_) * usableHeight : null;
 
-    const spanDays = (times[times.length - 1] - times[0]) / 86400000;
+    const n = known.length;
+    const renderWidth = Math.max(CHART_WIDTH, n * 4);
+
+    // Time-based X positioning — both series map to the same coordinate space.
+    const toX = (t) => ((t - startTime) / timeSpan) * renderWidth;
+    const toY = (v) => usableBottom - ((v - min) / range_) * usableHeight;
+
+    const histPoints = known.map(p => ({ x: toX(p.t.getTime()), y: toY(p.v) }));
+    const recentPoints = hourlyKnown.map(p => ({ x: toX(p.t.getTime()), y: toY(p.v) }));
+
+    const histPathD = buildSmoothPath(histPoints);
+    const histAreaD = `${histPathD} L ${histPoints[histPoints.length - 1].x} ${CHART_HEIGHT} L ${histPoints[0].x} ${CHART_HEIGHT} Z`;
+    const recentPathD = recentPoints.length > 1 ? buildSmoothPath(recentPoints) : '';
+
+    // X-axis ticks evenly spaced across the combined time range.
+    const spanDays = timeSpan / 86400000;
     const tickCount = Math.max(6, Math.round(renderWidth / 110));
     const ticks = Array.from({ length: tickCount }, (_, i) => {
-      const idx = Math.round((i / (tickCount - 1)) * (n - 1));
-      return { x: points[idx]?.x ?? 0, label: formatAxisLabel(known[idx].t, spanDays) };
+      const tickTime = startTime + (i / (tickCount - 1)) * timeSpan;
+      return { x: toX(tickTime), label: formatAxisLabel(new Date(tickTime), spanDays) };
     });
 
     // Y-axis elevation labels at 5 cm intervals for water level (0.95, 1.00,
@@ -127,8 +162,8 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
         ]
       : generateFixedIntervalTicks(min, max, 0.05, usableTop, usableBottom);
 
-    return { pathD, areaD, ticks, yTicks, min, max, renderWidth, oldest: known[0] };
-  }, [data, field]);
+    return { histPathD, histAreaD, recentPathD, recentPoints, ticks, yTicks, min, max, renderWidth, oldest: known[0], normalY };
+  }, [data, field, normalLevel, hourlyData]);
 
   // Compares the current live reading to the oldest point in the currently
   // selected range — i.e. "this time N ago" — so it's easy to see how today
@@ -242,8 +277,17 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
                       <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.05" />
                     </linearGradient>
                   </defs>
-                  <path d={chart.areaD} fill="url(#historicalGradient)" stroke="none" />
-                  <path d={chart.pathD} fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" />
+                  {chart.normalY != null && (
+                    <line x1="0" y1={chart.normalY} x2={chart.renderWidth} y2={chart.normalY} stroke={NORMAL_STROKE} strokeWidth="1.5" strokeDasharray="5 3" />
+                  )}
+                  <path d={chart.histAreaD} fill="url(#historicalGradient)" stroke="none" />
+                  <path d={chart.histPathD} fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" />
+                  {chart.recentPathD && (
+                    <path d={chart.recentPathD} fill="none" stroke={RECENT_STROKE} strokeWidth="2" strokeLinecap="round" />
+                  )}
+                  {chart.recentPoints?.length > 0 && (
+                    <circle cx={chart.recentPoints[chart.recentPoints.length - 1].x} cy={chart.recentPoints[chart.recentPoints.length - 1].y} r={3.5} fill="hsl(var(--background))" stroke={RECENT_STROKE} strokeWidth="2" />
+                  )}
                 </svg>
                 <div className="relative h-5 mt-1" style={{ width: chart.renderWidth }}>
                   {chart.ticks.map((tick, i) => (
