@@ -303,13 +303,8 @@ export default function RiverLevelChart({ hourly, field = 'level', scrollToToday
     return { min, max, normalY };
   }, [days, overlayHours, normalLevel, field]);
 
-  useEffect(() => {
-    if (scrollToToday && scrollRef.current && days.length > 0) {
-      scrollRef.current.scrollTo({ left: scrollRef.current.scrollWidth, behavior: 'instant' });
-    }
-    // Only re-run when the number of day-panels changes (new day rolled in),
-    // not on every minute tick — otherwise a manual scroll gets yanked back.
-  }, [days.length]);
+  // Auto-scroll to Today removed — it was hiding the Yesterday panel.
+  // The user now starts at Yesterday and can scroll right to Today.
 
   if (days.length === 0) {
     return <p className="text-sm text-muted-foreground py-4 text-center">No hourly data available yet.</p>;
