@@ -318,21 +318,21 @@ export default function RiverConditions() {
                     <div className="bg-secondary rounded-xl flex items-center gap-2 p-2.5">
                       <Droplets className="w-6 h-6 shrink-0 text-primary" />
                       <div className="min-w-0">
+                        <p className="text-xl font-semibold leading-tight">{data.current?.level != null ? formatLevel(data.current.level) : '—'}</p>
                         <div className="flex items-center gap-1.5">
-                          <p className="text-xl font-semibold leading-tight">{data.current?.level != null ? formatLevel(data.current.level) : '—'}</p>
+                          <span className="text-xs text-muted-foreground leading-tight">Water Level</span>
                           <TrendIndicator trend={data.trend?.level} />
                         </div>
-                        <span className="text-xs text-muted-foreground leading-tight">Water Level</span>
                       </div>
                     </div>
                     <div className="bg-secondary rounded-xl flex items-center gap-2 p-2.5">
                       <Gauge className="w-6 h-6 shrink-0 text-primary" />
                       <div className="min-w-0">
+                        <p className="text-xl font-semibold leading-tight">{data.current?.discharge != null ? formatDischarge(data.current.discharge) : '—'}</p>
                         <div className="flex items-center gap-1.5">
-                          <p className="text-xl font-semibold leading-tight">{data.current?.discharge != null ? formatDischarge(data.current.discharge) : '—'}</p>
+                          <span className="text-xs text-muted-foreground leading-tight">Flow</span>
                           <TrendIndicator trend={data.trend?.discharge} />
                         </div>
-                        <span className="text-xs text-muted-foreground leading-tight">Flow</span>
                       </div>
                     </div>
                   </div>
