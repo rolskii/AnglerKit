@@ -52,7 +52,7 @@ export default function RodCard({ rod, lineCount, pairedLines, onEdit, onDelete 
   };
   return (
     <Card ref={cardRef} className="p-4 flex flex-col gap-3">
-      <ImageGallery images={getItemImages(rod)} featuredLabel={[rod.brand, rod.model, rod.length, rod.line_weight].filter(Boolean).join(" ") || rod.name} featuredSubtitle="Rod" featuredLink="/gear/rods" />
+      <ImageGallery images={getItemImages(rod)} featuredLabel={[rod.brand, rod.model, rod.length, rod.line_weight ? `${rod.line_weight}wt` : null].filter(Boolean).join(" ") || rod.name} featuredSubtitle="Rod" featuredLink="/gear/rods" />
       <div className="flex items-start justify-between gap-2">
         <div>
           <h3 className="font-heading font-semibold">{rod.name}</h3>

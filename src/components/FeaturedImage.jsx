@@ -73,7 +73,7 @@ export default function FeaturedImage() {
                 item.brand,
                 item.model,
                 item.length,
-                item.line_weight,
+                item.line_weight ? `${item.line_weight}wt` : null,
               ].filter(Boolean).join(" ") || "Rod";
             } else {
               label = `${item.brand || ""} ${item.name || ""}`.trim() || type;
