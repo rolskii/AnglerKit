@@ -8,7 +8,7 @@ const CHART_HEIGHT = 180;
 const CHART_WIDTH = 720;
 const PAD_TOP_PCT = 0.08;
 const PAD_BOTTOM_PCT = 0.08;
-const WINDOW_HOURS = 12;
+const WINDOW_HOURS = 24;
 
 function pickTickInterval(dataRange) {
   if (dataRange <= 0.01) return 0.002;
