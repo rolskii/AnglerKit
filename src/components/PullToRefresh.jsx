@@ -51,15 +51,11 @@ export default function PullToRefresh({ onRefresh, children }) {
       onTouchEnd={onTouchEnd}
     >
       <div
-        className="flex justify-center overflow-hidden transition-[height] duration-200"
+        className="flex items-start justify-center overflow-hidden transition-[height] duration-200"
         style={{ height: pullDistance }}
       >
         <RefreshCw
-          className={`w-6 h-6 text-primary mt-3 transition-opacity duration-150 ${refreshing ? "animate-spin opacity-100" : ""}`}
-          style={{
-            opacity: refreshing ? undefined : Math.min(pullDistance / 50, 0.8),
-            transform: refreshing ? undefined : `rotate(${pullDistance * 3.6}deg)`,
-          }}
+          className={`w-6 h-6 text-primary mt-3 ${refreshing ? "animate-spin" : ""}`}
         />
       </div>
       {children}
