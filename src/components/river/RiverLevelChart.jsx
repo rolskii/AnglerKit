@@ -240,14 +240,26 @@ export default function RiverLevelChart({ hourly, field = 'level', unitLabel, no
             tzOffset: new Date().getTimezoneOffset(),
           });
           if (!cancelled) {
-            const hist = res.data?.historical || null;
-            setDayDataMap(prev => ({ ...prev, [date.dateStr]: { ...hist, _targetDateStr: date.dateStr } }));
-          }
-        } catch (e) {
+                const hist = res.data?.historical || null;
+                const newLen = hist?.time?.length || 0;
+                setDayDataMap(prev => {
+                  // Only override if the fetch returned more data than what
+                  // we already have from the live feed (or nothing exists yet).
+                  const existingLen = prev[date.dateStr]?.time?.length || 0;
+                  if (newLen < existingLen) return prev;
+                  return { ...prev, [date.dateStr]: { ...hist, _targetDateStr: date.dateStr } };
+                });
+              }
+          } catch (e) {
           if (!cancelled) {
-            setDayDataMap(prev => ({ ...prev, [date.dateStr]: { _targetDateStr: date.dateStr } }));
+            setDayDataMap(prev => {
+              // Don't clobber existing data on failure — keep whatever the
+              // live feed already populated.
+              if (prev[date.dateStr]?.time?.length) return prev;
+              return { ...prev, [date.dateStr]: { _targetDateStr: date.dateStr } };
+            });
           }
-        }
+          }
       }
     };
     load();
@@ -257,13 +269,32 @@ export default function RiverLevelChart({ hourly, field = 'level', unitLabel, no
   // Keep today's entry in sync with the live hourly prop.
   const todayDateStr = dates[dates.length - 1]?.dateStr;
   useEffect(() => {
-    if (hourly && todayDateStr) {
-      setDayDataMap(prev => ({
-        ...prev,
-        [todayDateStr]: { ...hourly, _targetDateStr: todayDateStr },
-      }));
-    }
-  }, [hourly, todayDateStr]);
+    if (!hourly?.time?.length) return;
+    // Group the live hourly feed by local date — this covers today and
+    // any recent days within the 50-hour realtime window, so they appear
+    // instantly without waiting for (or failing on) separate historical
+    // fetches. Don't override a complete historical fetch with partial
+    // live-feed data for days at the edge of the window.
+    const byDate = {};
+    hourly.time.forEach((t, i) => {
+      const d = new Date(t);
+      const dateStr = localDateStr(d);
+      if (!byDate[dateStr]) byDate[dateStr] = { time: [], level: [], discharge: [], _targetDateStr: dateStr };
+      byDate[dateStr].time.push(t);
+      byDate[dateStr].level.push(hourly.level?.[i] ?? null);
+      byDate[dateStr].discharge.push(hourly.discharge?.[i] ?? null);
+    });
+    setDayDataMap(prev => {
+      const updated = { ...prev };
+      for (const [dateStr, data] of Object.entries(byDate)) {
+        const existing = updated[dateStr];
+        if (!existing?.time || data.time.length >= existing.time.length) {
+          updated[dateStr] = data;
+        }
+      }
+      return updated;
+    });
+  }, [hourly]);
 
   // Scroll to today once data is available.
   useEffect(() => {
