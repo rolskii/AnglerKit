@@ -356,6 +356,26 @@ export default function RiverLevelChart({ hourly, field = 'level', unitLabel, no
         dischargeCounts[h]++;
       }
     });
+
+    // Forward-fill and back-fill missing hours so the overlay line spans the
+    // full 24-hour chart width. ECCC realtime data frequently has gaps (hours
+    // with no reading); without filling, the line starts/ends wherever data
+    // happens to exist, leaving the chart edges without a line.
+    const fillGaps = (fld) => {
+      let last = null;
+      for (let h = 0; h < 24; h++) {
+        if (buckets[h][fld] != null) last = buckets[h][fld];
+        else if (last != null) buckets[h][fld] = last;
+      }
+      let next = null;
+      for (let h = 23; h >= 0; h--) {
+        if (buckets[h][fld] != null) next = buckets[h][fld];
+        else if (next != null) buckets[h][fld] = next;
+      }
+    };
+    fillGaps('level');
+    fillGaps('discharge');
+
     const firstLevel = buckets.find(b => b.level != null)?.level ?? null;
     const firstDischarge = buckets.find(b => b.discharge != null)?.discharge ?? null;
     return [...buckets, { hour: 24, level: firstLevel, discharge: firstDischarge }];
