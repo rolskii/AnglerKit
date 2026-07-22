@@ -1,23 +1,60 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Loader2, Sun, Moon, ArrowLeftRight, BellRing, Ruler } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Loader2, Sun, Moon, Monitor, ArrowLeftRight, BellRing, Ruler, Trash2 } from "lucide-react";
 import { useUnits } from "@/lib/unitsContext";
 import ImportExportSection from "@/components/settings/ImportExportSection";
 import NotificationSetup from "@/components/settings/NotificationSetup";
 import AlarmSoundPicker from "@/components/settings/AlarmSoundPicker";
+import { toast } from "sonner";
 
 export default function Settings() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "light");
+  const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "system");
   const { system, setUnitSystem } = useUnits();
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [deleting, setDeleting] = useState(false);
+
+  const resolveDark = (t) => {
+    if (t === "dark") return true;
+    if (t === "light") return false;
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  };
 
   const applyTheme = (t) => {
     setTheme(t);
     localStorage.setItem("theme", t);
-    if (t === "dark") document.documentElement.classList.add("dark");
+    if (resolveDark(t)) document.documentElement.classList.add("dark");
     else document.documentElement.classList.remove("dark");
+  };
+
+  useEffect(() => {
+    if (theme !== "system") return;
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const handler = () => applyTheme("system");
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, [theme]);
+
+  const handleDeleteAccount = async () => {
+    setDeleting(true);
+    try {
+      await base44.functions.invoke("deleteAccount", {});
+      toast.success("Account deleted");
+      await base44.auth.logout("/");
+    } catch (e) {
+      toast.error(e.message || "Failed to delete account");
+      setDeleting(false);
+      setDeleteOpen(false);
+      setDeleteConfirm("");
+    }
   };
 
   useEffect(() => {
@@ -108,33 +145,85 @@ export default function Settings() {
       <div className="rounded-lg border-0 bg-primary/10 p-6 space-y-4">
         <div>
           <h2 className="font-heading font-semibold">Appearance</h2>
-          <p className="text-sm text-muted-foreground">Choose between light and dark mode.</p>
+          <p className="text-sm text-muted-foreground">Choose between light, dark, or system mode.</p>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           <button
             onClick={() => applyTheme("light")}
-            className={`flex items-center gap-3 rounded-lg border p-3 text-left transition-colors ${
+            className={`flex flex-col items-center gap-2 rounded-lg border p-3 text-center transition-colors ${
               theme === "light" ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:bg-accent/50"
             }`}
           >
             <div className={`flex h-9 w-9 items-center justify-center rounded-md ${theme === "light" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
               <Sun className="w-5 h-5" />
             </div>
-            <span className={`text-sm font-medium ${theme === "light" ? "text-primary" : ""}`}>Light</span>
+            <span className={`text-xs font-medium ${theme === "light" ? "text-primary" : ""}`}>Light</span>
           </button>
           <button
             onClick={() => applyTheme("dark")}
-            className={`flex items-center gap-3 rounded-lg border p-3 text-left transition-colors ${
+            className={`flex flex-col items-center gap-2 rounded-lg border p-3 text-center transition-colors ${
               theme === "dark" ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:bg-accent/50"
             }`}
           >
             <div className={`flex h-9 w-9 items-center justify-center rounded-md ${theme === "dark" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
               <Moon className="w-5 h-5" />
             </div>
-            <span className={`text-sm font-medium ${theme === "dark" ? "text-primary" : ""}`}>Dark</span>
+            <span className={`text-xs font-medium ${theme === "dark" ? "text-primary" : ""}`}>Dark</span>
+          </button>
+          <button
+            onClick={() => applyTheme("system")}
+            className={`flex flex-col items-center gap-2 rounded-lg border p-3 text-center transition-colors ${
+              theme === "system" ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:bg-accent/50"
+            }`}
+          >
+            <div className={`flex h-9 w-9 items-center justify-center rounded-md ${theme === "system" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+              <Monitor className="w-5 h-5" />
+            </div>
+            <span className={`text-xs font-medium ${theme === "system" ? "text-primary" : ""}`}>System</span>
           </button>
         </div>
       </div>
+
+      <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-6 space-y-4">
+        <div className="flex items-center gap-2">
+          <Trash2 className="w-5 h-5 text-destructive" />
+          <h2 className="font-heading font-semibold text-destructive">Delete Account</h2>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Permanently erase your account and all associated data, including gear logs, catch records, and photos. This action cannot be undone.
+        </p>
+        <Button variant="destructive" onClick={() => { setDeleteConfirm(""); setDeleteOpen(true); }}>
+          <Trash2 className="w-4 h-4 mr-2" /> Delete Account
+        </Button>
+      </div>
+
+      <AlertDialog open={deleteOpen} onOpenChange={(o) => { setDeleteOpen(o); if (!o) setDeleteConfirm(""); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This permanently erases all gear logs, catch records, photos, and settings. This action cannot be undone. Type <span className="font-bold text-destructive">DELETE</span> to confirm.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <Input
+            value={deleteConfirm}
+            onChange={(e) => setDeleteConfirm(e.target.value)}
+            placeholder="Type DELETE"
+            className="mt-2"
+          />
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAccount}
+              disabled={deleteConfirm !== "DELETE" || deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+              Delete Forever
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

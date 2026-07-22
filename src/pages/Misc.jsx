@@ -10,6 +10,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import GearMobileCard from "@/components/GearMobileCard";
 
 const conditionColor = {
   "New": "bg-emerald-100 text-emerald-700",
@@ -142,42 +143,29 @@ export default function Misc() {
           <p>No misc. items found. Add your first one!</p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-border">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/50 text-muted-foreground">
-              <tr>
-                <SortHeader label="Name" field="name" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Category" field="category" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Brand" field="brand" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Model / Size" field="model" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Colour" field="colour" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Qty" field="quantity" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Condition" field="condition" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Value" field="value" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((item) => (
-                <tr key={item.id} onClick={() => setViewTarget(item)} className="border-t border-border cursor-pointer hover:bg-accent/50 transition-colors">
-                  <td className="px-3 py-2.5 whitespace-nowrap font-medium">{item.name || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{item.category || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{item.brand || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{item.model || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{item.colour || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{item.quantity != null ? item.quantity : "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">
-                    {item.condition ? (
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${conditionColor[item.condition] || "bg-muted text-muted-foreground"}`}>
-                        {item.condition}
-                      </span>
-                    ) : "—"}
-                  </td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{item.value != null ? `$${item.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <>
+        <div className="hidden md:block overflow-x-auto rounded-lg border border-border">
+...
         </div>
+        <div className="md:hidden space-y-2">
+          {filtered.map((item) => (
+            <GearMobileCard
+              key={item.id}
+              onClick={() => setViewTarget(item)}
+              fields={[
+                { label: "Name", value: item.name },
+                { label: "Category", value: item.category },
+                { label: "Brand", value: item.brand },
+                { label: "Model / Size", value: item.model },
+                { label: "Colour", value: item.colour },
+                { label: "Qty", value: item.quantity != null ? item.quantity : "" },
+                { label: "Condition", value: item.condition, isCondition: true },
+                { label: "Value", value: item.value != null ? `$${item.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "" },
+              ]}
+            />
+          ))}
+        </div>
+        </>
       )}
 
       <MiscDetailDialog

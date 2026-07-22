@@ -5,9 +5,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
+import BottomSheetSelect from "@/components/ui/bottom-sheet-select";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import ImageUpload from "@/components/ImageUpload";
@@ -51,12 +49,12 @@ export default function MiscForm({ open, onOpenChange, onSubmit, initial, loadin
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label>Category</Label>
-              <Select value={form.category} onValueChange={(v) => set("category", v)}>
-                <SelectTrigger className="bg-muted"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <BottomSheetSelect
+                value={form.category}
+                onChange={(v) => set("category", v)}
+                options={CATEGORIES.map((c) => ({ value: c, label: c }))}
+                className="bg-muted"
+              />
             </div>
             <div className="space-y-1.5">
               <Label>Brand</Label>
@@ -76,12 +74,12 @@ export default function MiscForm({ open, onOpenChange, onSubmit, initial, loadin
             </div>
             <div className="space-y-1.5">
               <Label>Condition</Label>
-              <Select value={form.condition} onValueChange={(v) => set("condition", v)}>
-                <SelectTrigger className="bg-muted"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {CONDITIONS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <BottomSheetSelect
+                value={form.condition}
+                onChange={(v) => set("condition", v)}
+                options={CONDITIONS.map((c) => ({ value: c, label: c }))}
+                className="bg-muted"
+              />
             </div>
             <div className="space-y-1.5">
               <Label>Value ($)</Label>

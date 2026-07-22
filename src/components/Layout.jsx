@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Outlet, NavLink, useNavigate, useLocation, Link } from "react-router-dom";
 import {
-  LogOut, Menu, X,
+  LogOut, Menu, X, ChevronLeft,
   Home as HomeIcon, Camera, Cloud, Map as MapIcon, Waves,
   Settings as SettingsIcon, Info,
 } from "lucide-react";
@@ -30,6 +30,11 @@ export default function Layout() {
   const location = useLocation();
   const handleLogout = async () => {
     await base44.auth.logout();
+  };
+
+  const isChildScreen = () => {
+    const p = location.pathname;
+    return p !== "/" && p !== "/map" && p !== "/catches";
   };
   const NavLinks = () => {
     const location = useLocation();
@@ -90,10 +95,16 @@ export default function Layout() {
       </aside>
       {/* Mobile header */}
       <header className="md:hidden sticky top-0 z-30 flex items-center justify-between border-b border-border/60 bg-background/80 backdrop-blur-xl px-4 py-3">
-        <Link to="/" className="flex items-center gap-2.5">
-           <AppLogo className="w-9 h-9" />
-          <span className="font-heading font-semibold tracking-tight">{appName}</span>
-        </Link>
+        {isChildScreen() ? (
+          <Button variant="ghost" size="icon" className="rounded-full -ml-2" onClick={() => navigate(-1)}>
+            <ChevronLeft className="w-6 h-6" />
+          </Button>
+        ) : (
+          <Link to="/" className="flex items-center gap-2.5">
+             <AppLogo className="w-9 h-9" />
+            <span className="font-heading font-semibold tracking-tight">{appName}</span>
+          </Link>
+        )}
         <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setOpen(!open)}>
           {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </Button>

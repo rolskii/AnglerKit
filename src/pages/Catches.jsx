@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { useUnits } from "@/lib/unitsContext";
+import GearMobileCard from "@/components/GearMobileCard";
 
 export default function Catches() {
   const [catches, setCatches] = useState([]);
@@ -149,42 +150,29 @@ export default function Catches() {
           <p>No catches logged yet. Log your first one!</p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-border">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/50 text-muted-foreground">
-              <tr>
-                <SortHeader label="Species" field="species" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Date" field="date" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Body of Water</th>
-                <SortHeader label="Length" field="length" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Girth" field="girth" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Weight" field="weight" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Fly</th>
-                <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Released</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((c) => (
-                <tr
-                  key={c.id}
-                  onClick={() => setViewTarget(c)}
-                  className="border-t border-border cursor-pointer hover:bg-accent/50 transition-colors"
-                >
-                  <td className="px-3 py-2.5 whitespace-nowrap font-medium">{c.species || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">
-                    {c.date ? new Date(c.date + "T00:00:00").toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : "—"}
-                  </td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{c.location || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{c.length != null ? formatLength(c.length) : "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{c.girth != null ? formatLength(c.girth) : "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{c.weight != null ? formatWeight(c.weight) : "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{c.fly_used || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{c.released ? "Yes" : "No"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <>
+        <div className="hidden md:block overflow-x-auto rounded-lg border border-border">
+...
         </div>
+        <div className="md:hidden space-y-2">
+          {filtered.map((c) => (
+            <GearMobileCard
+              key={c.id}
+              onClick={() => setViewTarget(c)}
+              fields={[
+                { label: "Species", value: c.species },
+                { label: "Date", value: c.date ? new Date(c.date + "T00:00:00").toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : "" },
+                { label: "Body of Water", value: c.location },
+                { label: "Length", value: c.length != null ? formatLength(c.length) : "" },
+                { label: "Girth", value: c.girth != null ? formatLength(c.girth) : "" },
+                { label: "Weight", value: c.weight != null ? formatWeight(c.weight) : "" },
+                { label: "Fly", value: c.fly_used },
+                { label: "Released", value: c.released ? "Yes" : "No" },
+              ]}
+            />
+          ))}
+        </div>
+        </>
       )}
 
       <CatchDetailDialog

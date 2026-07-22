@@ -5,9 +5,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
+import BottomSheetSelect from "@/components/ui/bottom-sheet-select";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import ImageUpload from "@/components/ImageUpload";
@@ -78,12 +76,12 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label>Species</Label>
-                <Select value={form.species} onValueChange={(v) => set("species", v)}>
-                  <SelectTrigger className="bg-muted"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {speciesOptions.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <BottomSheetSelect
+                  value={form.species}
+                  onChange={(v) => set("species", v)}
+                  options={speciesOptions.map((s) => ({ value: s, label: s }))}
+                  className="bg-muted"
+                />
               </div>
               <div className="space-y-1.5 relative">
                 <Label>Brand</Label>
@@ -116,22 +114,25 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
             </div>
             <div className="space-y-1.5">
                <Label>Description</Label>
-               <Select value={form.type} onValueChange={(v) => set("type", v)}>
-                 <SelectTrigger className="bg-muted"><SelectValue /></SelectTrigger>
-                 <SelectContent>
-                   {typeOptions.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                 </SelectContent>
-               </Select>
+               <BottomSheetSelect
+                 value={form.type}
+                 onChange={(v) => set("type", v)}
+                 options={typeOptions.map((t) => ({ value: t, label: t }))}
+                 className="bg-muted"
+               />
              </div>
             <div className="space-y-1.5">
               <Label>Line Type</Label>
-              <Select value={form.rod_type} onValueChange={(v) => set("rod_type", v)}>
-                <SelectTrigger className="bg-muted"><SelectValue placeholder="Select..." /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={null}>None</SelectItem>
-                  {ROD_TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <BottomSheetSelect
+                value={form.rod_type || "_none"}
+                onChange={(v) => set("rod_type", v === "_none" ? "" : v)}
+                options={[
+                  { value: "_none", label: "None" },
+                  ...ROD_TYPES.map((t) => ({ value: t, label: t })),
+                ]}
+                placeholder="Select..."
+                className="bg-muted"
+              />
             </div>
             <div className="space-y-1.5 col-span-2 relative">
               <Label>Description</Label>
@@ -180,33 +181,39 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
             </div>
             <div className="space-y-1.5">
                <Label>Condition</Label>
-               <Select value={form.condition} onValueChange={(v) => set("condition", v)}>
-                 <SelectTrigger className="bg-muted"><SelectValue /></SelectTrigger>
-                 <SelectContent>
-                   {CONDITIONS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                 </SelectContent>
-               </Select>
+               <BottomSheetSelect
+                 value={form.condition}
+                 onChange={(v) => set("condition", v)}
+                 options={CONDITIONS.map((c) => ({ value: c, label: c }))}
+                 className="bg-muted"
+               />
              </div>
              <div className="space-y-1.5">
                <Label>Reel</Label>
-              <Select value={form.reel || "_none"} onValueChange={(v) => set("reel", v === "_none" ? "" : v)}>
-                <SelectTrigger className="bg-muted"><SelectValue placeholder="Spooled" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="_none">Spooled</SelectItem>
-                  {[...reels].sort((a, b) => a.name.localeCompare(b.name)).map((r) => <SelectItem key={r.id} value={r.name}>{r.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <BottomSheetSelect
+                value={form.reel || "_none"}
+                onChange={(v) => set("reel", v === "_none" ? "" : v)}
+                options={[
+                  { value: "_none", label: "Spooled" },
+                  ...[...reels].sort((a, b) => a.name.localeCompare(b.name)).map((r) => ({ value: r.name, label: r.name })),
+                ]}
+                placeholder="Spooled"
+                className="bg-muted"
+              />
             </div>
 
             <div className="space-y-1.5">
                <Label>Rod</Label>
-               <Select value={form.rod || "_none"} onValueChange={(v) => set("rod", v === "_none" ? "" : v)}>
-                 <SelectTrigger className="bg-muted"><SelectValue placeholder="None" /></SelectTrigger>
-                 <SelectContent>
-                   <SelectItem value="_none">None</SelectItem>
-                   {[...rods].sort((a, b) => a.name.localeCompare(b.name)).map((r) => <SelectItem key={r.id} value={r.name}>{r.name}</SelectItem>)}
-                 </SelectContent>
-               </Select>
+               <BottomSheetSelect
+                 value={form.rod || "_none"}
+                 onChange={(v) => set("rod", v === "_none" ? "" : v)}
+                 options={[
+                   { value: "_none", label: "None" },
+                   ...[...rods].sort((a, b) => a.name.localeCompare(b.name)).map((r) => ({ value: r.name, label: r.name })),
+                 ]}
+                 placeholder="None"
+                 className="bg-muted"
+               />
              </div>
              <div className="space-y-1.5">
                <Label>Value ($)</Label>

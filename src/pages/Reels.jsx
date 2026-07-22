@@ -10,6 +10,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import GearMobileCard from "@/components/GearMobileCard";
 
 const conditionColor = {
   "New": "bg-emerald-100 text-emerald-700",
@@ -168,40 +169,28 @@ export default function Reels() {
           <p>No reels found. Add your first one!</p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-border">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/50 text-muted-foreground">
-              <tr>
-                <SortHeader label="Species" field="species" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Type" field="type" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Name" field="name" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Model" field="model" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Size" field="size" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Condition" field="condition" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Value" field="value" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((reel) => (
-                <tr key={reel.id} onClick={() => setViewTarget(reel)} className="border-t border-border cursor-pointer hover:bg-accent/50 transition-colors">
-                   <td className="px-3 py-2.5 whitespace-nowrap">{reel.species || "—"}</td>
-                   <td className="px-3 py-2.5 whitespace-nowrap">{reel.type || "—"}</td>
-                   <td className="px-3 py-2.5 whitespace-nowrap font-medium">{reel.name || "—"}</td>
-                   <td className="px-3 py-2.5 whitespace-nowrap">{reel.model || "—"}</td>
-                   <td className="px-3 py-2.5 whitespace-nowrap">{reel.size || "—"}</td>
-                   <td className="px-3 py-2.5 whitespace-nowrap">
-                     {reel.condition ? (
-                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${conditionColor[reel.condition] || "bg-muted text-muted-foreground"}`}>
-                         {reel.condition}
-                       </span>
-                     ) : "—"}
-                   </td>
-                   <td className="px-3 py-2.5 whitespace-nowrap">{reel.value != null ? `$${reel.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}</td>
-                 </tr>
-              ))}
-            </tbody>
-          </table>
+        <>
+        <div className="hidden md:block overflow-x-auto rounded-lg border border-border">
+...
         </div>
+        <div className="md:hidden space-y-2">
+          {filtered.map((reel) => (
+            <GearMobileCard
+              key={reel.id}
+              onClick={() => setViewTarget(reel)}
+              fields={[
+                { label: "Species", value: reel.species },
+                { label: "Type", value: reel.type },
+                { label: "Name", value: reel.name },
+                { label: "Model", value: reel.model },
+                { label: "Size", value: reel.size },
+                { label: "Condition", value: reel.condition, isCondition: true },
+                { label: "Value", value: reel.value != null ? `$${reel.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "" },
+              ]}
+            />
+          ))}
+        </div>
+        </>
       )}
 
       <ReelDetailDialog

@@ -10,6 +10,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import GearMobileCard from "@/components/GearMobileCard";
 
 export default function Lines() {
   const [lines, setLines] = useState([]);
@@ -157,40 +158,30 @@ export default function Lines() {
           <p>No lines found. Add your first one!</p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-border">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/50 text-muted-foreground">
-              <tr>
-                <SortHeader label="Species" field="species" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Line Type" field="rod_type" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Brand" field="brand" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Model" field="model" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Description" field="type" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Line Wt" field="line_weight" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Grain Wt" field="grain_weight" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Value" field="value" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((line) => (
-                <tr
-                  key={line.id}
-                  onClick={() => setViewTarget(line)}
-                  className={`border-t border-border cursor-pointer hover:bg-accent/50 transition-colors ${line.reel && line.reel.toLowerCase() !== "spooled" && !line.spooled ? "bg-primary/15 border-l-4 border-l-primary" : ""}`}
-                >
-                  <td className="px-3 py-2.5 whitespace-nowrap">{line.species || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{line.rod_type || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap font-medium">{line.brand || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{line.model || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{line.type || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{line.line_weight || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{line.grain_weight || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{line.value != null ? `$${line.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <>
+        <div className="hidden md:block overflow-x-auto rounded-lg border border-border">
+...
         </div>
+        <div className="md:hidden space-y-2">
+          {filtered.map((line) => (
+            <GearMobileCard
+              key={line.id}
+              onClick={() => setViewTarget(line)}
+              highlight={line.reel && line.reel.toLowerCase() !== "spooled" && !line.spooled}
+              fields={[
+                { label: "Species", value: line.species },
+                { label: "Line Type", value: line.rod_type },
+                { label: "Brand", value: line.brand },
+                { label: "Model", value: line.model },
+                { label: "Description", value: line.type },
+                { label: "Line Wt", value: line.line_weight },
+                { label: "Grain Wt", value: line.grain_weight },
+                { label: "Value", value: line.value != null ? `$${line.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "" },
+              ]}
+            />
+          ))}
+        </div>
+        </>
       )}
 
       <LineDetailDialog

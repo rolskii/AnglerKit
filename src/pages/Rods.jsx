@@ -10,6 +10,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import GearMobileCard from "@/components/GearMobileCard";
 
 const conditionColor = {
   "New": "bg-emerald-100 text-emerald-700",
@@ -194,42 +195,29 @@ export default function Rods() {
           <p>No rods found. Add your first one!</p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-border">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/50 text-muted-foreground">
-              <tr>
-                <SortHeader label="Species" field="species" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Type" field="type" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Name" field="name" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Length" field="length" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Line Wt" field="line_weight" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Material" field="material" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Condition" field="condition" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Value" field="value" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((rod) => (
-                <tr key={rod.id} onClick={() => setViewTarget(rod)} className="border-t border-border cursor-pointer hover:bg-accent/50 transition-colors">
-                  <td className="px-3 py-2.5 whitespace-nowrap">{rod.species || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{rod.type || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap font-medium">{rod.name || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{rod.length || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{rod.line_weight || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{rod.material || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">
-                    {rod.condition ? (
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${conditionColor[rod.condition] || "bg-muted text-muted-foreground"}`}>
-                        {rod.condition}
-                      </span>
-                    ) : "—"}
-                  </td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{rod.value != null ? `$${rod.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <>
+        <div className="hidden md:block overflow-x-auto rounded-lg border border-border">
+...
         </div>
+        <div className="md:hidden space-y-2">
+          {filtered.map((rod) => (
+            <GearMobileCard
+              key={rod.id}
+              onClick={() => setViewTarget(rod)}
+              fields={[
+                { label: "Species", value: rod.species },
+                { label: "Type", value: rod.type },
+                { label: "Name", value: rod.name },
+                { label: "Length", value: rod.length },
+                { label: "Line Wt", value: rod.line_weight },
+                { label: "Material", value: rod.material },
+                { label: "Condition", value: rod.condition, isCondition: true },
+                { label: "Value", value: rod.value != null ? `$${rod.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "" },
+              ]}
+            />
+          ))}
+        </div>
+        </>
       )}
 
       <RodDetailDialog

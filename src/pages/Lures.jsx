@@ -10,6 +10,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import GearMobileCard from "@/components/GearMobileCard";
 
 const conditionColor = {
   "New": "bg-emerald-100 text-emerald-700",
@@ -142,42 +143,29 @@ export default function Lures() {
           <p>No lures or flies found. Add your first one!</p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-border">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/50 text-muted-foreground">
-              <tr>
-                <SortHeader label="Type" field="type" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Name" field="name" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Category" field="category" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Brand" field="brand" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Size" field="size" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Qty" field="quantity" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Condition" field="condition" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Value" field="value" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((lure) => (
-                <tr key={lure.id} onClick={() => setViewTarget(lure)} className="border-t border-border cursor-pointer hover:bg-accent/50 transition-colors">
-                  <td className="px-3 py-2.5 whitespace-nowrap">{lure.type || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap font-medium">{lure.name || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{lure.category || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{lure.brand || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{lure.size || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{lure.quantity != null ? lure.quantity : "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">
-                    {lure.condition ? (
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${conditionColor[lure.condition] || "bg-muted text-muted-foreground"}`}>
-                        {lure.condition}
-                      </span>
-                    ) : "—"}
-                  </td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{lure.value != null ? `$${lure.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <>
+        <div className="hidden md:block overflow-x-auto rounded-lg border border-border">
+...
         </div>
+        <div className="md:hidden space-y-2">
+          {filtered.map((lure) => (
+            <GearMobileCard
+              key={lure.id}
+              onClick={() => setViewTarget(lure)}
+              fields={[
+                { label: "Type", value: lure.type },
+                { label: "Name", value: lure.name },
+                { label: "Category", value: lure.category },
+                { label: "Brand", value: lure.brand },
+                { label: "Size", value: lure.size },
+                { label: "Qty", value: lure.quantity != null ? lure.quantity : "" },
+                { label: "Condition", value: lure.condition, isCondition: true },
+                { label: "Value", value: lure.value != null ? `$${lure.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "" },
+              ]}
+            />
+          ))}
+        </div>
+        </>
       )}
 
       <LureDetailDialog

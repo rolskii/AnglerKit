@@ -14,8 +14,9 @@
     <script>
       (function () {
         try {
-          var t = localStorage.getItem("theme") || "light";
-          if (t === "dark") document.documentElement.classList.add("dark");
+          var t = localStorage.getItem("theme") || "system";
+          var isDark = t === "dark" || (t === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+          if (isDark) document.documentElement.classList.add("dark");
         } catch (e) {}
       })();
     </script>
