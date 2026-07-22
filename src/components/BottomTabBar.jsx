@@ -115,19 +115,18 @@ export default function BottomTabBar() {
             ref={buttonRef}
             type="button"
             onClick={() => setConditionsOpen((open) => !open)}
-            className="relative flex flex-col items-center gap-0.5 py-2 px-1"
+            className={`flex flex-col items-center gap-0.5 py-2 px-1 transition-colors ${
+              isConditionsActive || conditionsOpen ? "text-primary" : "text-muted-foreground"
+            }`}
           >
-            <span className="w-5 h-5" aria-hidden="true" />
-            <span className="absolute left-1/2 -translate-x-1/2 -top-[22px] flex items-center justify-center w-11 h-11 rounded-full border-4 border-background bg-primary text-primary-foreground shadow-lg">
-              <Gauge className="w-5 h-5" strokeWidth={2} />
-            </span>
             <span
-              className={`text-[10px] font-medium whitespace-nowrap ${
-                isConditionsActive || conditionsOpen ? "text-primary" : "text-primary/80"
+              className={`flex items-center justify-center w-5 h-5 rounded-full transition-colors ${
+                isConditionsActive || conditionsOpen ? "bg-primary/15" : ""
               }`}
             >
-              Conditions
+              <Gauge className="w-5 h-5" strokeWidth={isConditionsActive || conditionsOpen ? 2.5 : 2} />
             </span>
+            <span className="text-[10px] font-medium whitespace-nowrap">Conditions</span>
           </button>
         </div>
 
