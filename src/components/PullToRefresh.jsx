@@ -5,6 +5,7 @@ export default function PullToRefresh({ onRefresh, children }) {
   const [refreshing, setRefreshing] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
   const startY = useRef(null);
+  const currentPullRef = useRef(0);
 
   const onTouchStart = (e) => {
     if (window.scrollY === 0 && !refreshing) {
@@ -16,23 +17,29 @@ export default function PullToRefresh({ onRefresh, children }) {
     if (startY.current === null || refreshing) return;
     const delta = e.touches[0].clientY - startY.current;
     if (delta > 0 && window.scrollY === 0) {
-      setPullDistance(Math.min(delta * 0.4, 60));
+      const dist = Math.min(delta * 0.4, 60);
+      currentPullRef.current = dist;
+      setPullDistance(dist);
     } else {
       startY.current = null;
+      currentPullRef.current = 0;
       setPullDistance(0);
     }
   };
 
   const onTouchEnd = async () => {
-    if (pullDistance > 50 && !refreshing) {
+    if (currentPullRef.current > 50 && !refreshing) {
       setRefreshing(true);
       setPullDistance(40);
+      currentPullRef.current = 40;
       try { await onRefresh(); } finally {
         setRefreshing(false);
         setPullDistance(0);
+        currentPullRef.current = 0;
       }
     } else {
       setPullDistance(0);
+      currentPullRef.current = 0;
     }
     startY.current = null;
   };
