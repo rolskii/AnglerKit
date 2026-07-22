@@ -5,7 +5,7 @@ import { useNowTick } from '@/hooks/useNowTick';
 import { Loader2 } from 'lucide-react';
 import ChartTooltip from './ChartTooltip';
 
-const CHART_HEIGHT = 120;
+const CHART_HEIGHT = 180;
 const CHART_WIDTH = 720;
 const PAD_TOP_PCT = 0.08;
 const PAD_BOTTOM_PCT = 0.08;
