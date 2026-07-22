@@ -304,7 +304,7 @@ export default function RiverConditions() {
                           <p className="text-sm font-semibold leading-tight">{data.current?.level != null ? `${data.current.level.toFixed(2)} m` : '—'}</p>
                           <TrendIndicator trend={data.trend?.level} />
                         </div>
-                        <span className="text-xs text-muted-foreground leading-tight">Water Level <span className="text-[10px] text-muted-foreground/70 ml-2">{data.current?.datetimeLocal ? new Date(data.current.datetimeLocal).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '—'}</span></span>
+                        <span className="text-xs text-muted-foreground leading-tight">Water Level</span>
                       </div>
                     </div>
                     <div className="bg-secondary rounded-xl flex items-center gap-2 p-2.5">
@@ -314,7 +314,7 @@ export default function RiverConditions() {
                           <p className="text-sm font-semibold leading-tight">{data.current?.discharge != null ? `${data.current.discharge.toFixed(1)} m³/s` : '—'}</p>
                           <TrendIndicator trend={data.trend?.discharge} />
                         </div>
-                        <span className="text-xs text-muted-foreground leading-tight">Flow <span className="text-[10px] text-muted-foreground/70 ml-2">{data.current?.datetimeLocal ? new Date(data.current.datetimeLocal).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '—'}</span></span>
+                        <span className="text-xs text-muted-foreground leading-tight">Flow</span>
                       </div>
                     </div>
                   </div>
