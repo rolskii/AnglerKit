@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useUnits } from '@/lib/unitsContext';
 
 const RANGES = [
   { key: '1d', label: '1D' },
@@ -30,6 +31,7 @@ function formatValue(v, field) {
 
 export default function HistoricalRangeChart({ stationId, stationName, field = 'level', unitLabel, currentValue, onDataChange, onRangeChange, onRangeKeyChange }) {
   const [range, setRange] = useState('1d');
+  const { isMetric } = useUnits();
 
   useEffect(() => {
     onRangeChange?.(RANGE_AGO_LABELS[range] || 'Historical');
@@ -94,8 +96,13 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
     return closest.v;
   })();
 
-  const comparison = oldestVal != null && currentValue != null
-    ? { oldVal: oldestVal, diff: currentValue - oldestVal, label: RANGE_AGO_LABELS[range] || 'Earlier' }
+  const convFactor = isMetric ? 1 : (field === 'discharge' ? 35.3147 : 3.28084);
+  const displayOldVal = oldestVal != null ? oldestVal * convFactor : null;
+  const displayCurrentVal = currentValue != null ? currentValue * convFactor : null;
+  const displayDiff = displayOldVal != null && displayCurrentVal != null ? displayCurrentVal - displayOldVal : null;
+
+  const comparison = displayOldVal != null && displayCurrentVal != null
+    ? { oldVal: displayOldVal, diff: displayDiff, label: RANGE_AGO_LABELS[range] || 'Earlier' }
     : null;
 
   return (

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,6 +14,7 @@ import RiverLevelChart from '@/components/river/RiverLevelChart';
 import HistoricalRangeChart from '@/components/river/HistoricalRangeChart';
 import PullToRefresh from '@/components/PullToRefresh';
 import { useAutoRefresh } from '@/hooks/useAutoRefresh';
+import { useUnits } from '@/lib/unitsContext';
 
 function TrendIndicator({ trend }) {
   if (!trend) return null;
@@ -97,6 +98,27 @@ export default function RiverConditions() {
   const [historicalHourly, setHistoricalHourly] = useState(null);
   const [overlayLabel, setOverlayLabel] = useState('1 day before');
   const [overlayRange, setOverlayRange] = useState('1d');
+  const { isMetric, formatLevel, formatDischarge, levelUnitLabel, convertLevelVal, convertDischargeVal } = useUnits();
+
+  const chartHourly = useMemo(() => {
+    if (!data?.hourly || isMetric) return data?.hourly;
+    return {
+      ...data.hourly,
+      level: data.hourly.level?.map(v => v != null ? convertLevelVal(v) : null),
+      discharge: data.hourly.discharge?.map(v => v != null ? convertDischargeVal(v) : null),
+    };
+  }, [data?.hourly, isMetric, convertLevelVal, convertDischargeVal]);
+
+  const chartOverlayHourly = useMemo(() => {
+    if (!historicalHourly || isMetric) return historicalHourly;
+    return {
+      ...historicalHourly,
+      level: historicalHourly.level?.map(v => v != null ? convertLevelVal(v) : null),
+      discharge: historicalHourly.discharge?.map(v => v != null ? convertDischargeVal(v) : null),
+    };
+  }, [historicalHourly, isMetric, convertLevelVal, convertDischargeVal]);
+
+  const chartNormalLevel = data?.normal?.median != null ? convertLevelVal(data.normal.median) : null;
 
 
   const fetchConditions = useCallback(async (lat, lon) => {
@@ -302,7 +324,7 @@ export default function RiverConditions() {
                       <Droplets className="w-6 h-6 shrink-0 text-primary" />
                       <div className="min-w-0">
                         <div className="flex items-center gap-1.5">
-                          <p className="text-xl font-semibold leading-tight">{data.current?.level != null ? `${data.current.level.toFixed(2)} m` : '—'}</p>
+                          <p className="text-xl font-semibold leading-tight">{data.current?.level != null ? formatLevel(data.current.level) : '—'}</p>
                           <TrendIndicator trend={data.trend?.level} />
                         </div>
                         <span className="text-xs text-muted-foreground leading-tight">Water Level</span>
@@ -312,7 +334,7 @@ export default function RiverConditions() {
                       <Gauge className="w-6 h-6 shrink-0 text-primary" />
                       <div className="min-w-0">
                         <div className="flex items-center gap-1.5">
-                          <p className="text-xl font-semibold leading-tight">{data.current?.discharge != null ? `${data.current.discharge.toFixed(1)} m³/s` : '—'}</p>
+                          <p className="text-xl font-semibold leading-tight">{data.current?.discharge != null ? formatDischarge(data.current.discharge) : '—'}</p>
                           <TrendIndicator trend={data.trend?.discharge} />
                         </div>
                         <span className="text-xs text-muted-foreground leading-tight">Flow</span>
@@ -329,7 +351,7 @@ export default function RiverConditions() {
                   <CardTitle className="text-base">Water Level (Last 24 Hours)</CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0 pb-2 px-3">
-                  <RiverLevelChart hourly={data.hourly} field="level" unitLabel="m" normalLevel={data.normal?.median} overlayHourly={historicalHourly} overlayLabel={overlayLabel} overlayRange={overlayRange} />
+                  <RiverLevelChart hourly={chartHourly || data.hourly} field="level" unitLabel={levelUnitLabel} normalLevel={chartNormalLevel ?? data.normal?.median} overlayHourly={chartOverlayHourly} overlayLabel={overlayLabel} overlayRange={overlayRange} />
                   {advisory && (
                     <div className={`rounded-lg p-2.5 flex items-start gap-2 mt-2 ${advisory.tone}`}>
                       <advisory.icon className="w-4 h-4 shrink-0 mt-0.5" />
@@ -337,7 +359,7 @@ export default function RiverConditions() {
                     </div>
                   )}
                   <div className="mt-2 pt-2 border-t border-border/60">
-                    <HistoricalRangeChart stationId={data.station.id} stationName={data.station.name} field="level" unitLabel="m" currentValue={data.current?.level} normalLevel={data.normal?.median} onDataChange={setHistoricalHourly} onRangeChange={setOverlayLabel} onRangeKeyChange={setOverlayRange} />
+                    <HistoricalRangeChart stationId={data.station.id} stationName={data.station.name} field="level" unitLabel={levelUnitLabel} currentValue={data.current?.level} normalLevel={data.normal?.median} onDataChange={setHistoricalHourly} onRangeChange={setOverlayLabel} onRangeKeyChange={setOverlayRange} />
                   </div>
                 </CardContent>
               </Card>
@@ -356,7 +378,7 @@ export default function RiverConditions() {
                         <div key={n.id} className="border-b border-border/60 last:border-b-0 pb-2 last:pb-0">
                           <div className="flex items-center justify-between mb-0.5">
                             <span className="text-xs font-medium text-muted-foreground">
-                              WL: {n.level != null ? `${n.level.toFixed(2)} m` : '—'} · Flow: {n.discharge != null ? `${n.discharge.toFixed(1)} m³/s` : '—'}{n.created_date ? ` · ${new Date(n.created_date.endsWith('Z') || n.created_date.includes('+') ? n.created_date : n.created_date + 'Z').toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}` : ''}
+                              WL: {n.level != null ? formatLevel(n.level) : '—'} · Flow: {n.discharge != null ? formatDischarge(n.discharge) : '—'}{n.created_date ? ` · ${new Date(n.created_date.endsWith('Z') || n.created_date.includes('+') ? n.created_date : n.created_date + 'Z').toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}` : ''}
                             </span>
                             <button
                               onClick={() => handleDeleteNote(n.id)}
@@ -420,7 +442,7 @@ export default function RiverConditions() {
               </DialogTitle>
             </DialogHeader>
             <p className="text-xs text-muted-foreground">
-              WL: {data.current?.level != null ? `${data.current.level.toFixed(2)} m` : '—'} · Flow: {data.current?.discharge != null ? `${data.current.discharge.toFixed(1)} m³/s` : '—'} (auto-captured on save)
+              WL: {data.current?.level != null ? formatLevel(data.current.level) : '—'} · Flow: {data.current?.discharge != null ? formatDischarge(data.current.discharge) : '—'} (auto-captured on save)
             </p>
             <Textarea
               value={noteText}

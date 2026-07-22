@@ -16,6 +16,7 @@ import AirQualityCard from '@/components/weather/AirQualityCard';
 import { formatTemp, formatWind, formatPrecip, formatPressure, formatVisibility } from '@/lib/weatherUnits';
 import PullToRefresh from '@/components/PullToRefresh';
 import { useAutoRefresh } from '@/hooks/useAutoRefresh';
+import { useUnits } from '@/lib/unitsContext';
 export default function Weather() {
   const sharedInit = getSharedLocation();
   const [weather, setWeather] = useState(null);
@@ -26,6 +27,7 @@ export default function Weather() {
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [tempUnit, setTempUnit] = useState(() => localStorage.getItem('weatherTempUnit') || 'celsius');
+  const { system, setUnitSystem } = useUnits();
   const [lastCoords, setLastCoords] = useState(sharedInit.coords);
   const [userCoords, setUserCoords] = useState(null);
   const [selectedDay, setSelectedDay] = useState(null);
@@ -139,14 +141,17 @@ export default function Weather() {
     }
   };
   const toggleTempUnit = () => {
-    const next = tempUnit === 'fahrenheit' ? 'celsius' : 'fahrenheit';
-    setTempUnit(next);
-    localStorage.setItem('weatherTempUnit', next);
-    window.dispatchEvent(new Event('weatherTempUnitChanged'));
-    if (lastCoords) {
-      fetchWeatherByCoords(lastCoords.lat, lastCoords.lon, lastCoords.name, next);
-    }
+    setUnitSystem(system === 'metric' ? 'imperial' : 'metric');
   };
+  useEffect(() => {
+    const newUnit = system === 'metric' ? 'celsius' : 'fahrenheit';
+    if (newUnit !== tempUnit) {
+      setTempUnit(newUnit);
+      if (lastCoords) {
+        fetchWeatherByCoords(lastCoords.lat, lastCoords.lon, lastCoords.name, newUnit);
+      }
+    }
+  }, [system]);
   const handleSuggestionSelect = (suggestion) => {
     setEditingLocation(suggestion.label);
     setShowSuggestions(false);
