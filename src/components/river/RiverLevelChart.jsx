@@ -194,7 +194,7 @@ function DayPanel({ day, field, isToday, unitLabel, normalLevel, overlayHours, s
             {areaD && <path d={areaD} fill={`url(#${gradId})`} stroke="none" />}
             {/* Historical overlay line — drawn behind the current line */}
             {overlayPathD && (
-              <path d={overlayPathD} fill="none" stroke="#b91c1c" strokeWidth="2" strokeLinecap="round" />
+              <path d={overlayPathD} fill="none" stroke="#b91c1c" strokeWidth="1" strokeLinecap="round" />
             )}
             {pathD && <path d={pathD} fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" />}
             {knownPoints.filter(p => p.isReal).map((p, i) => (
