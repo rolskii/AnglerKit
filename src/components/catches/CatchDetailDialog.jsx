@@ -3,9 +3,10 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Pencil, Trash2 } from "lucide-react";
 import CatchCard from "@/components/catches/CatchCard";
 
-export default function CatchDetailDialog({ open, onOpenChange, catchItem, onEdit, onDelete }) {
+export default function CatchDetailDialog({ open, onOpenChange, catchItem, onEdit, onDelete, lines = [], rods = [] }) {
   if (!catchItem) return null;
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -13,7 +14,7 @@ export default function CatchDetailDialog({ open, onOpenChange, catchItem, onEdi
         <DialogHeader>
           <DialogTitle>Catch Details</DialogTitle>
         </DialogHeader>
-        <CatchCard catchItem={catchItem} onEdit={onEdit} onDelete={onDelete} />
+        <CatchCard catchItem={catchItem} lines={lines} rods={rods} onEdit={onEdit} onDelete={onDelete} />
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
         </DialogFooter>
