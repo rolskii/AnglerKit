@@ -85,7 +85,7 @@ function RollingTimeAxis({ windowStartMs }) {
         const ts = windowStartMs + h * 3600000;
         const isMajor = h % 3 === 0;
         const isNow = h === WINDOW_HOURS;
-        const showLabel = isMajor || isNow;
+        const showLabel = (isMajor && h > 0) || isNow;
         return (
           <div
             key={h}
