@@ -101,6 +101,7 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
   return (
     <div className="space-y-1.5">
       {/* Range buttons */}
+      <p className="text-xs font-medium text-muted-foreground">Compare to history</p>
       <div className="flex items-center gap-1 flex-wrap">
         {RANGES.map(r => (
           <Button
