@@ -4,7 +4,6 @@ import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const RANGES = [
-  { key: '24h', label: '24H' },
   { key: '2d', label: '2D' },
   { key: '7d', label: '1W' },
   { key: '1m', label: '1M' },
@@ -14,7 +13,6 @@ const RANGES = [
 ];
 
 const RANGE_AGO_LABELS = {
-  '24h': 'This time yesterday',
   '2d': '2 days ago',
   '7d': '1 week ago',
   '1m': '1 month ago',
@@ -29,7 +27,7 @@ function formatValue(v, field) {
 }
 
 export default function HistoricalRangeChart({ stationId, stationName, field = 'level', unitLabel, currentValue, onDataChange }) {
-  const [range, setRange] = useState('24h');
+  const [range, setRange] = useState('2d');
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
