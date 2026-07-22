@@ -392,11 +392,18 @@ export default function RiverLevelChart({ hourly, field = 'level', unitLabel, no
   const yTicks = useMemo(() => {
     if (!bounds) return [];
     const { min, max, usableTop, usableBottom } = bounds;
-    if (field === 'discharge') {
-      const interval = pickTickInterval(max - min);
-      return generateFixedIntervalTicks(min, max, interval, usableTop, usableBottom);
+    const interval = pickTickInterval(max - min);
+    const ticks = generateFixedIntervalTicks(min, max, interval, usableTop, usableBottom);
+    // Drop ticks whose labels would visually overlap — keep the first (bottom)
+    // tick, then skip any within MIN_LABEL_SPACING of the last kept one.
+    const MIN_LABEL_SPACING = 18; // ~text-xs line height incl. unit label
+    const filtered = [];
+    for (const tick of ticks) {
+      if (filtered.length === 0 || Math.abs(tick.y - filtered[filtered.length - 1].y) >= MIN_LABEL_SPACING) {
+        filtered.push(tick);
+      }
     }
-    return generateFixedIntervalTicks(min, max, pickTickInterval(max - min), usableTop, usableBottom);
+    return filtered;
   }, [bounds, field]);
 
   const loading = !hourly?.time?.length;
