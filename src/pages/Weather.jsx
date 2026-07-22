@@ -346,13 +346,7 @@ export default function Weather() {
             <Cloudy className="w-6 h-6 md:w-8 md:h-8 text-primary" />
             Weather
           </h1>
-            <button
-              onClick={toggleTempUnit}
-              className="px-3 py-1 text-sm font-medium rounded-full bg-primary/15 text-primary hover:bg-primary/25 transition-colors"
-              title="Toggle temperature unit"
-            >
-              °{tempUnit === 'fahrenheit' ? 'F' : 'C'}
-            </button>
+
           </div>
         </div>
         {/* Current Weather Card */}
