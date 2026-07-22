@@ -157,13 +157,16 @@ function ChartPanel({ hourlyData, field, normalLevel, overlayBuckets, overlayLab
       if (val == null) continue;
       const hourDiff = (h - startHour + 24) % 24;
       const x = (hourDiff / WINDOW_HOURS) * CHART_WIDTH;
-      const y = usableBottom - ((val - min) / range) * usableHeight;
+      // Clamp y to the chart area so the overlay is always visible even when
+      // the historical value falls outside the current data's Y range.
+      const rawY = usableBottom - ((val - min) / range) * usableHeight;
+      const y = Math.max(usableTop, Math.min(usableBottom, rawY));
       pts.push({ x, y });
     }
     pts.sort((a, b) => a.x - b.x);
     if (pts.length < 2) return null;
     return buildSmoothPath(pts);
-  }, [overlayBuckets, overlayColor, field, windowStartMs, min, range, usableHeight, usableBottom]);
+  }, [overlayBuckets, overlayColor, field, windowStartMs, min, range, usableHeight, usableTop, usableBottom]);
   const gradId = `riverGradient-${field}`;
   const areaD = knownPoints.length > 0
     ? `${pathD} L ${knownPoints[knownPoints.length - 1].x} ${CHART_HEIGHT} L ${knownPoints[0].x} ${CHART_HEIGHT} Z`
@@ -357,16 +360,6 @@ export default function RiverLevelChart({ hourly, field = 'level', unitLabel, no
       const v = hourly[field]?.[i];
       if (v != null) allVals.push(v);
     });
-    // Include overlay historical values so the overlay line is always in view
-    // — long-range overlays (3M/6M/1Y) are flat daily averages that can sit
-    // well outside the current 24h range and would otherwise be clipped.
-    if (overlayBuckets) {
-      for (const b of overlayBuckets) {
-        const v = b?.[field];
-        if (v != null) allVals.push(v);
-      }
-    }
-
     if (allVals.length === 0) return null;
 
     let min = Math.min(...allVals);
@@ -386,7 +379,7 @@ export default function RiverLevelChart({ hourly, field = 'level', unitLabel, no
     const usableHeight = usableBottom - usableTop;
     const normalY = normalLevel != null ? usableBottom - ((normalLevel - min) / range) * usableHeight : null;
     return { min, max, normalY, usableTop, usableBottom };
-  }, [hourly, field, normalLevel, nowMs, overlayBuckets]);
+  }, [hourly, field, normalLevel, nowMs]);
 
   const yTicks = useMemo(() => {
     if (!bounds) return [];
