@@ -1,10 +1,8 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Loader2, Fish, ArrowUp, ArrowDown, Camera } from "lucide-react";
-import CatchCard from "@/components/catches/CatchCard";
+import { Plus, Search, Loader2, Fish, ArrowUp, ArrowDown, ArrowUpDown, Camera } from "lucide-react";
 import CatchDetailDialog from "@/components/catches/CatchDetailDialog";
 import CatchForm from "@/components/catches/CatchForm";
 import {
@@ -12,10 +10,11 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import { useUnits } from "@/lib/unitsContext";
 
 
 export default function Catches() {
-  const navigate = useNavigate();
+  const { formatWeight } = useUnits();
   const [catches, setCatches] = useState([]);
   const [rods, setRods] = useState([]);
   const [reels, setReels] = useState([]);
@@ -29,6 +28,7 @@ export default function Catches() {
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [viewTarget, setViewTarget] = useState(null);
+
   const load = async () => {
     setLoading(true);
     try {
@@ -52,14 +52,12 @@ export default function Catches() {
   useEffect(() => { load(); }, []);
 
   const filtered = useMemo(() => {
-    const result = catches.filter((c) => {
-      const q = search.toLowerCase();
-      const matchesSearch = !q ||
-        [c.species, c.location, c.fly_used, c.rod, c.reel, c.line, c.conditions, c.notes].some(
-          (v) => v && v.toLowerCase().includes(q)
-        );
-      return matchesSearch;
-    });
+    const q = search.toLowerCase();
+    const result = catches.filter((c) =>
+      !q || [c.species, c.location, c.fly_used, c.rod, c.reel, c.line, c.conditions, c.notes].some(
+        (v) => v && v.toLowerCase().includes(q)
+      )
+    );
     const dir = sortDir === "asc" ? 1 : -1;
     return result.sort((a, b) => {
       const av = a[sortBy];
@@ -71,6 +69,15 @@ export default function Catches() {
       return String(av).localeCompare(String(bv)) * dir;
     });
   }, [catches, search, sortBy, sortDir]);
+
+  const toggleSort = (field) => {
+    if (sortBy === field) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortBy(field);
+      setSortDir("asc");
+    }
+  };
 
   const handleSave = async (payload) => {
     setSaving(true);
@@ -128,16 +135,9 @@ export default function Catches() {
         </Button>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Search species, location, fly..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
-          />
-        </div>
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Input placeholder="Search species, location, fly..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
       </div>
 
       {loading ? (
@@ -148,32 +148,40 @@ export default function Catches() {
           <p>No catches logged yet. Log your first one!</p>
         </div>
       ) : (
-        <>
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-sm text-muted-foreground">{filtered.length} {filtered.length === 1 ? "catch" : "catches"}</p>
-          <div className="flex items-center gap-2">
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
-            >
-              <option value="date">Sort: Date</option>
-              <option value="species">Sort: Species</option>
-              <option value="weight">Sort: Weight</option>
-              <option value="length">Sort: Length</option>
-              <option value="location">Sort: Location</option>
-            </select>
-            <Button size="sm" variant="outline" className="h-9 px-3" onClick={() => setSortDir(d => d === "asc" ? "desc" : "asc")}>
-              {sortDir === "asc" ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />}
-            </Button>
-          </div>
+        <div className="overflow-x-auto rounded-lg border border-border">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/50">
+              <tr className="border-b">
+                <SortHeader label="Species" field="species" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Date" field="date" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Location" field="location" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Length" field="length" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Weight" field="weight" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Fly Used" field="fly_used" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Released" field="released" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((c) => (
+                <tr key={c.id} className="border-b hover:bg-muted/30 cursor-pointer" onClick={() => setViewTarget(c)}>
+                  <td className="px-3 py-2.5 font-medium">{c.species}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">{c.date}</td>
+                  <td className="px-3 py-2.5">{c.location}</td>
+                  <td className="px-3 py-2.5 tabular-nums">{c.length != null ? `${c.length} in` : ""}</td>
+                  <td className="px-3 py-2.5 tabular-nums">{c.weight != null ? formatWeight(c.weight) : ""}</td>
+                  <td className="px-3 py-2.5">{c.fly_used}</td>
+                  <td className="px-3 py-2.5">
+                    {c.released ? (
+                      <span className="px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-700">Released</span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-700">Kept</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((c) => (
-            <CatchCard key={c.id} catchItem={c} onView={(item) => setViewTarget(item)} onEdit={(item) => { setEditing(item); setFormOpen(true); }} onDelete={(item) => setDeleteTarget(item)} />
-          ))}
-        </div>
-        </>
       )}
 
       <CatchDetailDialog
@@ -212,5 +220,24 @@ export default function Catches() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+  );
+}
+
+function SortHeader({ label, field, sortBy, sortDir, onSort }) {
+  const active = sortBy === field;
+  return (
+    <th
+      className="text-left font-medium px-3 py-2.5 whitespace-nowrap cursor-pointer select-none hover:text-foreground"
+      onClick={() => onSort(field)}
+    >
+      <span className="inline-flex items-center gap-1">
+        {label}
+        {active ? (
+          sortDir === "asc" ? <ArrowUp className="w-3.5 h-3.5" /> : <ArrowDown className="w-3.5 h-3.5" />
+        ) : (
+          <ArrowUpDown className="w-3.5 h-3.5 opacity-40" />
+        )}
+      </span>
+    </th>
   );
 }
