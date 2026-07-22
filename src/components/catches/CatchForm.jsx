@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2 } from "lucide-react";
+import { Loader2, Calculator } from "lucide-react";
 import ImageUpload from "@/components/ImageUpload";
 import VideoUpload from "@/components/catches/VideoUpload";
 import AudioRecorder from "@/components/catches/AudioRecorder";
@@ -49,18 +49,21 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
   useEffect(() => {
     if (open) {
       const base = initial ? { ...emptyCatch, ...initial } : emptyCatch;
-      if (isMetric && initial) {
-        setForm({
-          ...base,
-          weight: base.weight != null ? (base.weight * 0.453592).toFixed(1) : "",
-        });
-      } else {
-        setForm(base);
-      }
+      setForm(base);
     }
-  }, [open, initial, isMetric]);
+  }, [open, initial]);
 
   const set = (field, value) => setForm((f) => ({ ...f, [field]: value }));
+
+  // Standard fish weight estimator: Weight (lb) = (Length × Girth²) / 800
+  const estimatedWeight = (() => {
+    const len = parseFloat(form.length);
+    const girth = parseFloat(form.girth);
+    if (len > 0 && girth > 0) {
+      return Number(((len * girth * girth) / 800).toFixed(1));
+    }
+    return null;
+  })();
 
   // Use unique entity ids as dropdown values (names can duplicate), but store
   // the display name on the catch so existing records and the card still work.
@@ -82,9 +85,6 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
     let length = numOrNull(form.length);
     let girth = numOrNull(form.girth);
     let weight = numOrNull(form.weight);
-    if (isMetric) {
-      weight = weight != null ? Number((weight / 0.453592).toFixed(2)) : null;
-    }
     const payload = {
       ...form,
       length, girth, weight,
@@ -160,15 +160,25 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Weight ({isMetric ? 'kg' : 'lb'})</Label>
+              <Label>Weight (lb)</Label>
               <Input
                 className="bg-muted"
                 type="number"
                 step="0.1"
                 value={form.weight ?? ""}
                 onChange={(e) => set("weight", e.target.value)}
-                placeholder={isMetric ? "2" : "4.5"}
+                placeholder="4.5"
               />
+              {estimatedWeight != null && (
+                <button
+                  type="button"
+                  onClick={() => set("weight", estimatedWeight)}
+                  className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors"
+                >
+                  <Calculator className="w-3.5 h-3.5" />
+                  Estimated: {estimatedWeight} lb — tap to fill
+                </button>
+              )}
             </div>
           </div>
 
