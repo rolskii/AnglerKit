@@ -179,12 +179,19 @@ export default function RiverStationMapPicker({ open, onOpenChange, initialCoord
     return () => {
       cancelled = true;
       clearTimeout(timer);
-      stationAnnotationsRef.current = [];
-      favoriteAnnotationsRef.current = [];
       if (mapRef.current) {
+        // Remove annotations BEFORE destroying so MapKit's internal async
+        // annotation rendering (_addAnnotationToMapAsync) doesn't try to
+        // touch a destroyed map instance (this._map becomes null).
+        try {
+          const anns = [...stationAnnotationsRef.current, ...favoriteAnnotationsRef.current];
+          if (anns.length) mapRef.current.removeAnnotations(anns);
+        } catch (e) {}
         try { mapRef.current.destroy(); } catch (e) {}
         mapRef.current = null;
       }
+      stationAnnotationsRef.current = [];
+      favoriteAnnotationsRef.current = [];
     };
   }, [open, retryTick]);
 

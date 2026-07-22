@@ -166,11 +166,18 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
     return () => {
       cancelled = true;
       clearTimeout(timer);
-      savedAnnotationsRef.current = [];
       if (mapRef.current) {
+        // Remove annotations BEFORE destroying so MapKit's internal async
+        // annotation rendering (_addAnnotationToMapAsync) doesn't try to
+        // touch a destroyed map instance (this._map becomes null).
+        try {
+          const anns = savedAnnotationsRef.current;
+          if (anns && anns.length) mapRef.current.removeAnnotations(anns);
+        } catch (e) {}
         try { mapRef.current.destroy(); } catch (e) {}
         mapRef.current = null;
       }
+      savedAnnotationsRef.current = [];
     };
   }, [open]);
 
