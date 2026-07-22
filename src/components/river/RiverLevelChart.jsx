@@ -284,7 +284,13 @@ export default function RiverLevelChart({ hourly, field = 'level', unitLabel, no
       }
       counts[h]++;
     });
-    return buckets;
+    // Hour 24 = right edge. Carry forward the last known value so the
+    // line reaches the panel edge and connects with the next day.
+    let lastVal = null;
+    for (let h = 23; h >= 0; h--) {
+      if (buckets[h].value != null) { lastVal = buckets[h].value; break; }
+    }
+    return [...buckets, { hour: 24, value: lastVal }];
   }, [overlayHourly, field]);
 
   // Shared Y bounds across all loaded days + overlay.
