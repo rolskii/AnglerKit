@@ -6,6 +6,7 @@ const THRESHOLD = 70;
 export default function PullToRefresh({ onRefresh, children }) {
   const [refreshing, setRefreshing] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
+  const [pulling, setPulling] = useState(false);
   const containerRef = useRef(null);
 
   // All synchronous gesture state lives in refs — no stale closures
@@ -45,13 +46,17 @@ export default function PullToRefresh({ onRefresh, children }) {
       if (delta > 0 && isAtTop()) {
         // Prevent the browser from scrolling / overscrolling so we own the gesture
         e.preventDefault();
-        pullingRef.current = true;
+        if (!pullingRef.current) {
+          pullingRef.current = true;
+          setPulling(true);
+        }
         const dist = calcDist(delta);
         pullDistRef.current = dist;
         setPullDistance(dist);
       } else if (delta <= 0) {
         pullingRef.current = false;
         pullDistRef.current = 0;
+        setPulling(false);
         setPullDistance(0);
       }
     };
@@ -61,6 +66,7 @@ export default function PullToRefresh({ onRefresh, children }) {
       startYRef.current = null;
       const shouldRefresh = pullingRef.current && pullDistRef.current > THRESHOLD;
       pullingRef.current = false;
+      setPulling(false);
       if (shouldRefresh && !refreshingRef.current) {
         refreshingRef.current = true;
         setRefreshing(true);
@@ -101,13 +107,13 @@ export default function PullToRefresh({ onRefresh, children }) {
         className="flex items-start justify-center overflow-hidden"
         style={{
           height: pullDistance,
-          transition: pullingRef.current
+          transition: pulling
             ? "none"
             : "height 0.32s cubic-bezier(0.34, 1.56, 0.64, 1)",
         }}
       >
         <ArrowDown
-          className={`text-primary/70 mt-4 transition-all duration-200 ${refreshing ? "animate-bounce" : ""}`}
+          className={`text-primary/70 mt-4 ${refreshing ? "animate-bounce" : ""} ${pulling ? "" : "transition-all duration-200"}`}
           style={{
             width: 18,
             height: 18,
