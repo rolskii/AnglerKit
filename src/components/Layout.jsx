@@ -15,11 +15,11 @@ import { motion } from "framer-motion";
 const navItems = [
   { to: "/", label: "Home", icon: HomeIcon },
   { to: "/gear/lines", label: "Gear", icon: ReelDiscIcon, matchPrefix: "/gear" },
-  { to: "/catches", label: "Fish Log", icon: Camera, matchPrefix: "/catches" },
   { to: "/moon", label: "Moon Phase", icon: MoonIcon },
   { to: "/weather", label: "Weather", icon: Cloud },
   { to: "/river", label: "River Conditions", icon: Waves },
   { to: "/map", label: "Maps", icon: MapIcon },
+  { to: "/catches", label: "Fish Log", icon: Camera, matchPrefix: "/catches" },
   { to: "/settings", label: "Settings", icon: SettingsIcon },
   { to: "/about", label: "About", icon: Info },
 ];

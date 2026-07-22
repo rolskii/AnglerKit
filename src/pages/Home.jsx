@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { ChevronRight, Camera, Moon as MoonIcon, Cloud, Bell, MapPin, ChevronDown, Map as MapIcon, Waves } from "lucide-react";
+import { ChevronRight, Camera, Moon as MoonIcon, Cloud, Bell, MapPin, ChevronDown, Map as MapIcon, Waves, Gauge } from "lucide-react";
 import WeatherGlyph from "@/components/weather/WeatherGlyph";
 import { ReelIcon as ReelDiscIcon } from "@/components/GearIcons";
 import FishIcon from "@/components/FishIcon";
@@ -73,11 +73,14 @@ const getNextBiteWindow = () => {
 };
 const items = [
   { to: "/gear/lines", title: "Gear", icon: ReelDiscIcon, tint: "orange", key: "gear" },
-  { to: "/catches", title: "Fish Log", icon: Camera, tint: "blue", key: "catch" },
-  { to: "/moon", title: "Moon Phase", icon: MoonIcon, tint: "purple", key: "moon" },
-  { to: "/weather", title: "Weather", icon: Cloud, tint: "teal", key: "weather" },
-  { to: "/river", title: "River", icon: Waves, tint: "cyan", key: "river" },
+  { title: "Conditions", icon: Gauge, tint: "gauge", key: "conditions" },
   { to: "/map", title: "Map", icon: MapIcon, tint: "green", key: "map" },
+  { to: "/catches", title: "Fish Log", icon: Camera, tint: "blue", key: "catch" },
+];
+const CONDITIONS_ITEMS = [
+  { to: "/moon", label: "Moon", icon: MoonIcon, tint: "purple" },
+  { to: "/weather", label: "Weather", icon: Cloud, tint: "teal" },
+  { to: "/river", label: "River", icon: Waves, tint: "cyan" },
 ];
 const tintClasses = {
   orange: "bg-tint-orange-bg text-tint-orange",
@@ -86,8 +89,10 @@ const tintClasses = {
   teal: "bg-tint-teal-bg text-tint-teal",
   cyan: "bg-cyan-100 text-cyan-600",
   green: "bg-green-100 text-green-600",
+  gauge: "bg-blue-100 text-blue-700",
 };
 export default function Home() {
+  const navigate = useNavigate();
   const [moonPhase, setMoonPhase] = useState(null);
   const [weatherInfo, setWeatherInfo] = useState(null);
   const [descriptions, setDescriptions] = useState({});
@@ -97,6 +102,27 @@ export default function Home() {
   const [location, setLocation] = useState(shared.name);
   const [locationDialogOpen, setLocationDialogOpen] = useState(false);
   const [coords, setCoords] = useState(shared.coords);
+  const [conditionsOpen, setConditionsOpen] = useState(false);
+  const conditionsPopupRef = useRef(null);
+  const conditionsButtonRef = useRef(null);
+  useEffect(() => {
+    if (!conditionsOpen) return undefined;
+    function handleOutside(event) {
+      if (conditionsPopupRef.current?.contains(event.target)) return;
+      if (conditionsButtonRef.current?.contains(event.target)) return;
+      setConditionsOpen(false);
+    }
+    document.addEventListener("mousedown", handleOutside);
+    document.addEventListener("touchstart", handleOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleOutside);
+      document.removeEventListener("touchstart", handleOutside);
+    };
+  }, [conditionsOpen]);
+  const handleSelectCondition = (to) => {
+    setConditionsOpen(false);
+    navigate(to);
+  };
   const todayStr = () => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
@@ -298,37 +324,79 @@ export default function Home() {
         </div>
       )}
       {/* Category grid */}
-      <div className="grid grid-cols-6 gap-1 md:gap-4">
+      <div className="grid grid-cols-4 gap-2 md:gap-4">
         {items.map((item) => {
           const Icon = item.icon;
           const isGear = item.to === "/gear/lines";
+          const isConditions = item.key === "conditions";
           const desc = descriptions[item.key];
+          const cardInner = (
+            <div className="flex flex-col gap-1 md:gap-3">
+              <div className={`flex h-7 w-7 md:h-11 md:w-11 items-center justify-center rounded-xl flex-shrink-0 ${tintClasses[item.tint]}`}>
+                <Icon className={isGear ? "w-5 md:w-10 h-5 md:h-10" : "w-4 md:w-8 h-4 md:h-8"} strokeWidth={2} />
+              </div>
+              <div className="space-y-0.5 md:space-y-1">
+                <h2 className="text-[10px] md:text-lg font-heading font-semibold tracking-tight leading-tight">{item.title}</h2>
+                {isConditions ? (
+                  <p className="text-[10px] md:text-sm text-muted-foreground leading-tight">Moon · Weather · River</p>
+                ) : Array.isArray(desc) ? (
+                  <div className="space-y-0.5">
+                    {desc.map((line, i) => (
+                      <p key={i} className="text-[10px] md:text-sm text-muted-foreground leading-tight">{line}</p>
+                    ))}
+                  </div>
+                ) : desc ? (
+                  <p className="text-[10px] md:text-sm text-muted-foreground leading-tight">{desc}</p>
+                ) : (
+                  <p className="text-[10px] md:text-sm text-muted-foreground/40">—</p>
+                )}
+              </div>
+            </div>
+          );
+          if (isConditions) {
+            return (
+              <div key={item.key} className="relative">
+                {conditionsOpen && (
+                  <div
+                    ref={conditionsPopupRef}
+                    className="absolute top-full mt-2 left-1/2 -translate-x-1/2 w-[220px] bg-card rounded-2xl shadow-xl border border-border/60 p-2 z-20"
+                  >
+                    <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-card border-l border-t border-border/60 rotate-45" />
+                    {CONDITIONS_ITEMS.map((sub) => {
+                      const SubIcon = sub.icon;
+                      return (
+                        <button
+                          key={sub.to}
+                          type="button"
+                          onClick={() => handleSelectCondition(sub.to)}
+                          className="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-accent active:bg-accent transition-colors text-left"
+                        >
+                          <span className={`flex items-center justify-center w-9 h-9 rounded-xl flex-shrink-0 ${tintClasses[sub.tint]}`}>
+                            <SubIcon className="w-[18px] h-[18px]" strokeWidth={2} />
+                          </span>
+                          <span className="text-sm font-semibold text-foreground">{sub.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+                <button
+                  ref={conditionsButtonRef}
+                  type="button"
+                  onClick={() => setConditionsOpen((open) => !open)}
+                  className="group w-full text-left"
+                >
+                  <Card className="relative p-1.5 md:p-5 h-full rounded-2xl border-0 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer bg-card">
+                    {cardInner}
+                  </Card>
+                </button>
+              </div>
+            );
+          }
           return (
-            <Link key={item.to} to={item.to} className="group">
+            <Link key={item.key} to={item.to} className="group">
               <Card className="relative p-1.5 md:p-5 h-full rounded-2xl border-0 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer bg-card">
-                <div className="flex flex-col gap-1 md:gap-3">
-                  <div className={`flex h-7 w-7 md:h-11 md:w-11 items-center justify-center rounded-xl flex-shrink-0 ${tintClasses[item.tint]}`}>
-                    <Icon className={isGear ? "w-5 md:w-10 h-5 md:h-10" : "w-4 md:w-8 h-4 md:h-8"} strokeWidth={2} />
-                  </div>
-                  <div className="space-y-0.5 md:space-y-1">
-                    <h2 className="text-[10px] md:text-lg font-heading font-semibold tracking-tight leading-tight">{item.title}</h2>
-                    {item.key === "weather" && weatherInfo ? (
-                      <p className="text-[10px] md:text-sm text-muted-foreground leading-tight">{weatherInfo.temp} · {weatherInfo.windLabel} · {weatherInfo.desc}</p>
-                    ) : item.key === "moon" && moonPhase ? (
-                      <p className="text-[10px] md:text-sm text-muted-foreground leading-tight">{moonPhase.name} · {moonPhase.illumination}% lit</p>
-                    ) : Array.isArray(desc) ? (
-                      <div className="space-y-0.5">
-                        {desc.map((line, i) => (
-                          <p key={i} className="text-[10px] md:text-sm text-muted-foreground leading-tight">{line}</p>
-                        ))}
-                      </div>
-                    ) : desc ? (
-                      <p className="text-[10px] md:text-sm text-muted-foreground leading-tight">{desc}</p>
-                    ) : (
-                      <p className="text-[10px] md:text-sm text-muted-foreground/40">—</p>
-                    )}
-                  </div>
-                </div>
+                {cardInner}
               </Card>
             </Link>
           );

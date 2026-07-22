@@ -1,45 +1,139 @@
-import React from "react";
-import { NavLink, useLocation } from "react-router-dom";
-import { Home as HomeIcon, Camera, Cloud, Moon as MoonIcon, Map as MapIcon, Waves } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { Home as HomeIcon, Camera, Cloud, Moon as MoonIcon, Map as MapIcon, Waves, Gauge } from "lucide-react";
 import { ReelIcon as ReelDiscIcon } from "@/components/GearIcons";
 
 const tabs = [
   { to: "/", label: "Home", icon: HomeIcon, matchExact: true },
   { to: "/gear/lines", label: "Gear", icon: ReelDiscIcon, matchPrefix: "/gear" },
-  { to: "/catches", label: "FishLog", icon: Camera, matchPrefix: "/catches" },
-  { to: "/moon", label: "Moon", icon: MoonIcon, matchExact: true },
-  { to: "/weather", label: "Weather", icon: Cloud, matchExact: true },
-  { to: "/river", label: "River", icon: Waves, matchExact: true },
   { to: "/map", label: "Map", icon: MapIcon, matchExact: true },
+  { to: "/catches", label: "Fish Log", icon: Camera, matchPrefix: "/catches" },
 ];
+
+const CONDITIONS_ITEMS = [
+  { to: "/moon", label: "Moon", icon: MoonIcon, tint: "bg-purple-100 text-purple-600" },
+  { to: "/weather", label: "Weather", icon: Cloud, tint: "bg-teal-100 text-teal-600" },
+  { to: "/river", label: "River", icon: Waves, tint: "bg-cyan-100 text-cyan-600" },
+];
+
+const CONDITIONS_PATHS = CONDITIONS_ITEMS.map((item) => item.to);
+
+function TabLink({ tab }) {
+  const location = useLocation();
+  const Icon = tab.icon;
+  const isGear = tab.to === "/gear/lines";
+  const isActive = tab.matchPrefix
+    ? location.pathname.startsWith(tab.matchPrefix)
+    : location.pathname === tab.to;
+  return (
+    <NavLink
+      to={tab.to}
+      className={`flex flex-col items-center gap-0.5 py-2 px-1 flex-1 transition-colors ${
+        isActive ? "text-primary" : "text-muted-foreground"
+      }`}
+    >
+      <Icon className={isGear ? "w-6 h-6" : "w-5 h-5"} strokeWidth={isActive ? 2.5 : 2} />
+      <span className="text-[10px] font-medium whitespace-nowrap">{tab.label}</span>
+    </NavLink>
+  );
+}
 
 export default function BottomTabBar() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const [conditionsOpen, setConditionsOpen] = useState(false);
+  const popupRef = useRef(null);
+  const buttonRef = useRef(null);
+
+  const isConditionsActive = CONDITIONS_PATHS.includes(location.pathname);
+
+  useEffect(() => {
+    setConditionsOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (!conditionsOpen) return undefined;
+    function handleOutside(event) {
+      if (popupRef.current?.contains(event.target)) return;
+      if (buttonRef.current?.contains(event.target)) return;
+      setConditionsOpen(false);
+    }
+    document.addEventListener("mousedown", handleOutside);
+    document.addEventListener("touchstart", handleOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleOutside);
+      document.removeEventListener("touchstart", handleOutside);
+    };
+  }, [conditionsOpen]);
+
+  const handleSelectCondition = (to) => {
+    setConditionsOpen(false);
+    navigate(to);
+  };
 
   return (
-    <nav
-      className="md:hidden fixed bottom-0 left-0 right-0 z-[600] flex items-center justify-around px-1.5 border-t border-border/60 bg-background/90 backdrop-blur-xl"
-      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-    >
-      {tabs.map((tab) => {
-        const Icon = tab.icon;
-        const isGear = tab.to === "/gear/lines";
-        const isActive = tab.matchPrefix
-          ? location.pathname.startsWith(tab.matchPrefix)
-          : location.pathname === tab.to;
-        return (
-          <NavLink
-            key={tab.to}
-            to={tab.to}
-            className={`flex flex-col items-center gap-0.5 py-2 px-1 flex-1 transition-colors ${
-              isActive ? "text-primary" : "text-muted-foreground"
-            }`}
+    <>
+      {conditionsOpen && (
+        <div
+          className="md:hidden fixed inset-0 z-[590] bg-black/15"
+          onClick={() => setConditionsOpen(false)}
+        />
+      )}
+      <nav
+        className="md:hidden fixed bottom-0 left-0 right-0 z-[600] flex items-center justify-around px-1.5 border-t border-border/60 bg-background/90 backdrop-blur-xl"
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      >
+        {conditionsOpen && (
+          <div
+            ref={popupRef}
+            className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-card rounded-2xl shadow-xl border border-border/60 p-2 flex gap-1.5 z-[601]"
           >
-            <Icon className={isGear ? "w-6 h-6" : "w-5 h-5"} strokeWidth={isActive ? 2.5 : 2} />
-            <span className="text-[10px] font-medium whitespace-nowrap">{tab.label}</span>
-          </NavLink>
-        );
-      })}
-    </nav>
+            {CONDITIONS_ITEMS.map((item) => {
+              const Icon = item.icon;
+              return (
+                <button
+                  key={item.to}
+                  type="button"
+                  onClick={() => handleSelectCondition(item.to)}
+                  className="flex flex-col items-center gap-1.5 w-[68px] py-2 px-1 rounded-xl active:bg-accent transition-colors"
+                >
+                  <span className={`flex items-center justify-center w-9 h-9 rounded-xl ${item.tint}`}>
+                    <Icon className="w-5 h-5" strokeWidth={2} />
+                  </span>
+                  <span className="text-[11px] font-semibold text-foreground">{item.label}</span>
+                </button>
+              );
+            })}
+            <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-card border-r border-b border-border/60 rotate-45" />
+          </div>
+        )}
+
+        <TabLink tab={tabs[0]} />
+        <TabLink tab={tabs[1]} />
+
+        <div className="relative flex flex-col items-center flex-1">
+          <button
+            ref={buttonRef}
+            type="button"
+            onClick={() => setConditionsOpen((open) => !open)}
+            className="flex flex-col items-center gap-0.5 py-2 px-1"
+          >
+            <span className="flex items-center justify-center w-11 h-11 rounded-full -mt-[22px] border-4 border-background bg-primary text-primary-foreground shadow-lg">
+              <Gauge className="w-5 h-5" strokeWidth={2} />
+            </span>
+            <span
+              className={`text-[10px] font-medium whitespace-nowrap ${
+                isConditionsActive || conditionsOpen ? "text-primary" : "text-primary/80"
+              }`}
+            >
+              Conditions
+            </span>
+          </button>
+        </div>
+
+        <TabLink tab={tabs[2]} />
+        <TabLink tab={tabs[3]} />
+      </nav>
+    </>
   );
 }
