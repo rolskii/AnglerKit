@@ -131,10 +131,20 @@ function DayPanel({ hourlyData, field, unitLabel, normalLevel, overlayHours, sha
     return { x: p.x, y: null, isReal: false };
   }).filter(p => p.y != null);
 
-  const pathD = buildSmoothPath(filledPoints);
+  // For today, end the line at the current time instead of extending to midnight.
+  const nowX = isToday && nowHour != null ? (nowHour / 24) * CHART_WIDTH : null;
+  let visiblePoints = filledPoints;
+  if (nowX != null) {
+    visiblePoints = filledPoints.filter(p => p.x <= nowX + 0.5);
+    if (visiblePoints.length > 0 && visiblePoints[visiblePoints.length - 1].x < nowX) {
+      visiblePoints = [...visiblePoints, { x: nowX, y: visiblePoints[visiblePoints.length - 1].y, isReal: false }];
+    }
+  }
+
+  const pathD = buildSmoothPath(visiblePoints);
   const gradId = `riverGradient-${field}-${isToday ? 'today' : hourlyData?._targetDateStr || 'hist'}`;
-  const areaD = filledPoints.length > 0
-    ? `${pathD} L ${filledPoints[filledPoints.length - 1].x} ${CHART_HEIGHT} L ${filledPoints[0].x} ${CHART_HEIGHT} Z`
+  const areaD = visiblePoints.length > 0
+    ? `${pathD} L ${visiblePoints[visiblePoints.length - 1].x} ${CHART_HEIGHT} L ${visiblePoints[0].x} ${CHART_HEIGHT} Z`
     : '';
 
   const overlayKnown = (() => {
