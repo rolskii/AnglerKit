@@ -34,7 +34,10 @@ export default function Layout() {
 
   const isChildScreen = () => {
     const p = location.pathname;
-    return p !== "/" && p !== "/map" && p !== "/catches";
+    const rootPaths = ["/", "/map", "/catches", "/moon", "/weather", "/river", "/settings", "/about", "/login", "/register"];
+    if (rootPaths.includes(p)) return false;
+    if (p.startsWith("/gear")) return false;
+    return true;
   };
   const NavLinks = () => {
     const location = useLocation();

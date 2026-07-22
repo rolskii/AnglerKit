@@ -24,9 +24,16 @@ function TabLink({ tab }) {
   const isActive = tab.matchPrefix
     ? location.pathname.startsWith(tab.matchPrefix)
     : location.pathname === tab.to;
+  const handleClick = (e) => {
+    if (isActive) {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
   return (
     <NavLink
       to={tab.to}
+      onClick={handleClick}
       className={`flex flex-col items-center gap-0.5 py-2 px-1 flex-1 transition-colors ${
         isActive ? "text-primary" : "text-muted-foreground"
       }`}
