@@ -31,8 +31,8 @@ export default function MoonPhaseSymbol({ phase, className = "" }) {
   const rx = Math.abs(1 - 2 * illum);
   const outerSweep = isWaxing ? 1 : 0;
   const termSweep = isWaxing
-    ? (illum > 0.5 ? 0 : 1)
-    : (illum > 0.5 ? 1 : 0);
+    ? (illum > 0.5 ? 1 : 0)
+    : (illum > 0.5 ? 0 : 1);
 
   const path = `M 0 -1 A 1 1 0 0 ${outerSweep} 0 1 A ${rx} 1 0 0 ${termSweep} 0 -1 Z`;
 
