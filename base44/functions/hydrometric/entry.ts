@@ -255,28 +255,36 @@ async function fetchHistoricalSeries(stationId, range, startDateStr, endDateStr,
     // fall through to daily mean
   }
 
-  // Fallback: daily mean for that day
-  try {
-    const params = new URLSearchParams({
-      f: 'json',
-      STATION_NUMBER: stationId,
-      datetime: `${start.toISOString()}/${end.toISOString()}`,
-      limit: '10',
-    });
-    const data = await ogcFetch('hydrometric-daily-mean', params);
-    const points = (data.features || [])
-      .map(f => ({ time: f.properties.DATE || f.properties.DATETIME, level: f.properties.LEVEL ?? null, discharge: f.properties.DISCHARGE ?? null }))
-      .filter(p => p.time && (p.level != null || p.discharge != null));
-    if (points.length > 0) {
-      return {
-        granularity: 'daily',
-        time: points.map(p => p.time),
-        level: points.map(p => p.level),
-        discharge: points.map(p => p.discharge),
-      };
+  // Fallback: daily mean. The ECCC daily-mean collection is published with
+  // a multi-month-to-year lag, so the target year (especially the current
+  // one) often has no data. Search the same calendar day in progressively
+  // older years until we find one that has readings.
+  for (let yearOffset = 0; yearOffset < 5; yearOffset++) {
+    const tryYear = targetDate.getUTCFullYear() - yearOffset;
+    const tryStart = new Date(Date.UTC(tryYear, targetDate.getUTCMonth(), targetDate.getUTCDate(), 0, 0, 0) + startTzOffsetMs);
+    const tryEnd = new Date(tryStart.getTime() + 86400000);
+    try {
+      const params = new URLSearchParams({
+        f: 'json',
+        STATION_NUMBER: stationId,
+        datetime: `${tryStart.toISOString()}/${tryEnd.toISOString()}`,
+        limit: '10',
+      });
+      const data = await ogcFetch('hydrometric-daily-mean', params);
+      const points = (data.features || [])
+        .map(f => ({ time: f.properties.DATE || f.properties.DATETIME, level: f.properties.LEVEL ?? null, discharge: f.properties.DISCHARGE ?? null }))
+        .filter(p => p.time && (p.level != null || p.discharge != null));
+      if (points.length > 0) {
+        return {
+          granularity: 'daily',
+          time: points.map(p => p.time),
+          level: points.map(p => p.level),
+          discharge: points.map(p => p.discharge),
+        };
+      }
+    } catch (e) {
+      // try next older year
     }
-  } catch (e) {
-    // fall through
   }
 
   return { granularity: 'hourly', time: [], level: [], discharge: [] };
