@@ -5,7 +5,8 @@ import { ChevronRight, Camera, Moon as MoonIcon, Cloud, Bell, MapPin, ChevronDow
 import WeatherGlyph from "@/components/weather/WeatherGlyph";
 import { ReelIcon as ReelDiscIcon } from "@/components/GearIcons";
 import FishIcon from "@/components/FishIcon";
-import MoonPhaseSymbol from "@/components/MoonPhaseSymbol";
+import RealisticMoon from "@/components/RealisticMoon";
+import RealisticSun from "@/components/RealisticSun";
 import { base44 } from "@/api/base44Client";
 import PullToRefresh from "@/components/PullToRefresh";
 import FeaturedImage from "@/components/FeaturedImage";
@@ -319,11 +320,13 @@ export default function Home() {
               <p className="text-xs text-foreground">8:54–9:24 PM</p>
             </div>
             <div className="flex flex-col items-center justify-end gap-0.5">
-              {moonPhase && <MoonPhaseSymbol phase={moonPhase} className="w-[50px] h-[50px]" />}
+              {moonPhase && <RealisticMoon illumination={moonPhase.illumination} phase={moonPhase.name} className="w-[50px] h-[50px]" />}
               {moonPhase && <span className="text-[10px] text-muted-foreground leading-tight whitespace-nowrap">{moonPhase.illumination}% Lit</span>}
             </div>
             <div className="flex flex-col items-center justify-end gap-0.5">
-              {weatherInfo && <WeatherGlyph code={weatherInfo.code} isNight={weatherInfo.isNight} animated className="w-[50px] h-[50px]" />}
+              {weatherInfo && (weatherInfo.code <= 1 && !weatherInfo.isNight
+                ? <RealisticSun className="w-[50px] h-[50px]" />
+                : <WeatherGlyph code={weatherInfo.code} isNight={weatherInfo.isNight} animated className="w-[50px] h-[50px]" />)}
               {weatherInfo && <span className="text-[10px] text-muted-foreground leading-tight whitespace-nowrap">{weatherInfo.desc}</span>}
             </div>
           </div>
