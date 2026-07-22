@@ -31,9 +31,9 @@ export function RodIcon({ className, ...props }) {
 export function ReelIcon({ className, ...props }) {
   return (
     <svg {...baseProps} className={className} {...props}>
-      <line x1="7.5" y1="6" x2="16.5" y2="6" />
-      <circle cx="12" cy="14" r="7" />
-      <circle cx="12" cy="14" r="2.5" />
+      <line x1="6.5" y1="4" x2="17.5" y2="4" />
+      <circle cx="12" cy="13" r="8" />
+      <circle cx="12" cy="13" r="3" />
     </svg>
   );
 }
