@@ -68,6 +68,13 @@ export default function FeaturedImage() {
                 item.length != null ? `${item.length}"` : null,
                 item.location,
               ].filter(Boolean).join(" ") || "Catch";
+            } else if (type === "Rod") {
+              label = [
+                item.brand,
+                item.model,
+                item.length,
+                item.line_weight,
+              ].filter(Boolean).join(" ") || "Rod";
             } else {
               label = `${item.brand || ""} ${item.name || ""}`.trim() || type;
             }
