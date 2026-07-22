@@ -10,7 +10,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import GearMobileCard from "@/components/GearMobileCard";
+import GearMobileRow from "@/components/GearMobileRow";
 import MobileSortControl from "@/components/MobileSortControl";
 
 const conditionColor = {
@@ -197,21 +197,14 @@ export default function Misc() {
             { label: "Value", value: "value" },
           ]}
         />
-        <div className="md:hidden space-y-2">
+        <div className="md:hidden space-y-1.5">
           {filtered.map((item) => (
-            <GearMobileCard
+            <GearMobileRow
               key={item.id}
               onClick={() => setViewTarget(item)}
-              fields={[
-                { label: "Name", value: item.name },
-                { label: "Category", value: item.category },
-                { label: "Brand", value: item.brand },
-                { label: "Model / Size", value: item.model },
-                { label: "Colour", value: item.colour },
-                { label: "Qty", value: item.quantity != null ? item.quantity : "" },
-                { label: "Condition", value: item.condition, isCondition: true },
-                { label: "Value", value: item.value != null ? `$${item.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "" },
-              ]}
+              title={item.name || "—"}
+              subtitle={[item.category, item.brand, item.model, item.colour, item.quantity != null ? `Qty ${item.quantity}` : ""].filter(Boolean).join(" · ") || "—"}
+              condition={item.condition}
             />
           ))}
         </div>

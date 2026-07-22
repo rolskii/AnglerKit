@@ -10,7 +10,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import GearMobileCard from "@/components/GearMobileCard";
+import GearMobileRow from "@/components/GearMobileRow";
 import MobileSortControl from "@/components/MobileSortControl";
 
 const conditionColor = {
@@ -225,20 +225,14 @@ export default function Reels() {
             { label: "Value", value: "value" },
           ]}
         />
-        <div className="md:hidden space-y-2">
+        <div className="md:hidden space-y-1.5">
           {filtered.map((reel) => (
-            <GearMobileCard
+            <GearMobileRow
               key={reel.id}
               onClick={() => setViewTarget(reel)}
-              fields={[
-                { label: "Species", value: reel.species },
-                { label: "Type", value: reel.type },
-                { label: "Name", value: reel.name },
-                { label: "Model", value: reel.model },
-                { label: "Size", value: reel.size },
-                { label: "Condition", value: reel.condition, isCondition: true },
-                { label: "Value", value: reel.value != null ? `$${reel.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "" },
-              ]}
+              title={reel.name || "—"}
+              subtitle={[reel.species, reel.brand, reel.model, reel.size, reel.type].filter(Boolean).join(" · ") || "—"}
+              condition={reel.condition}
             />
           ))}
         </div>

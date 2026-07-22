@@ -10,7 +10,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import GearMobileCard from "@/components/GearMobileCard";
+import GearMobileRow from "@/components/GearMobileRow";
 import MobileSortControl from "@/components/MobileSortControl";
 
 const conditionColor = {
@@ -254,21 +254,14 @@ export default function Rods() {
             { label: "Value", value: "value" },
           ]}
         />
-        <div className="md:hidden space-y-2">
+        <div className="md:hidden space-y-1.5">
           {filtered.map((rod) => (
-            <GearMobileCard
+            <GearMobileRow
               key={rod.id}
               onClick={() => setViewTarget(rod)}
-              fields={[
-                { label: "Species", value: rod.species },
-                { label: "Type", value: rod.type },
-                { label: "Name", value: rod.name },
-                { label: "Length", value: rod.length },
-                { label: "Line Wt", value: rod.line_weight },
-                { label: "Material", value: rod.material },
-                { label: "Condition", value: rod.condition, isCondition: true },
-                { label: "Value", value: rod.value != null ? `$${rod.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "" },
-              ]}
+              title={rod.name || "—"}
+              subtitle={[rod.species, rod.brand, rod.length, rod.line_weight ? `${rod.line_weight}wt` : "", rod.type, rod.material].filter(Boolean).join(" · ") || "—"}
+              condition={rod.condition}
             />
           ))}
         </div>

@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { useUnits } from "@/lib/unitsContext";
-import GearMobileCard from "@/components/GearMobileCard";
+import GearMobileRow from "@/components/GearMobileRow";
 import MobileSortControl from "@/components/MobileSortControl";
 
 export default function Catches() {
@@ -199,21 +199,20 @@ export default function Catches() {
             { label: "Fly Used", value: "fly_used" },
           ]}
         />
-        <div className="md:hidden space-y-2">
+        <div className="md:hidden space-y-1.5">
           {filtered.map((c) => (
-            <GearMobileCard
+            <GearMobileRow
               key={c.id}
               onClick={() => navigate(`/catches/${c.id}`)}
-              fields={[
-                { label: "Species", value: c.species },
-                { label: "Date", value: c.date ? new Date(c.date + "T00:00:00").toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : "" },
-                { label: "Body of Water", value: c.location },
-                { label: "Length", value: c.length != null ? formatLength(c.length) : "" },
-                { label: "Girth", value: c.girth != null ? formatLength(c.girth) : "" },
-                { label: "Weight", value: c.weight != null ? formatWeight(c.weight) : "" },
-                { label: "Fly", value: c.fly_used },
-                { label: "Released", value: c.released ? "Yes" : "No" },
-              ]}
+              title={c.species || "—"}
+              subtitle={[
+                c.date ? new Date(c.date + "T00:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "",
+                c.location,
+                c.length != null ? formatLength(c.length) : "",
+                c.weight != null ? formatWeight(c.weight) : "",
+                c.fly_used,
+              ].filter(Boolean).join(" · ") || "—"}
+              right={c.released ? "Released" : "Kept"}
             />
           ))}
         </div>

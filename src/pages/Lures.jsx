@@ -10,7 +10,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import GearMobileCard from "@/components/GearMobileCard";
+import GearMobileRow from "@/components/GearMobileRow";
 import MobileSortControl from "@/components/MobileSortControl";
 
 const conditionColor = {
@@ -197,21 +197,14 @@ export default function Lures() {
             { label: "Value", value: "value" },
           ]}
         />
-        <div className="md:hidden space-y-2">
+        <div className="md:hidden space-y-1.5">
           {filtered.map((lure) => (
-            <GearMobileCard
+            <GearMobileRow
               key={lure.id}
               onClick={() => setViewTarget(lure)}
-              fields={[
-                { label: "Type", value: lure.type },
-                { label: "Name", value: lure.name },
-                { label: "Category", value: lure.category },
-                { label: "Brand", value: lure.brand },
-                { label: "Size", value: lure.size },
-                { label: "Qty", value: lure.quantity != null ? lure.quantity : "" },
-                { label: "Condition", value: lure.condition, isCondition: true },
-                { label: "Value", value: lure.value != null ? `$${lure.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "" },
-              ]}
+              title={lure.name || "—"}
+              subtitle={[lure.type, lure.category, lure.brand, lure.size, lure.quantity != null ? `Qty ${lure.quantity}` : ""].filter(Boolean).join(" · ") || "—"}
+              condition={lure.condition}
             />
           ))}
         </div>

@@ -10,7 +10,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import GearMobileCard from "@/components/GearMobileCard";
+import GearMobileRow from "@/components/GearMobileRow";
 import MobileSortControl from "@/components/MobileSortControl";
 
 export default function Lines() {
@@ -203,22 +203,15 @@ export default function Lines() {
             { label: "Value", value: "value" },
           ]}
         />
-        <div className="md:hidden space-y-2">
+        <div className="md:hidden space-y-1.5">
           {filtered.map((line) => (
-            <GearMobileCard
+            <GearMobileRow
               key={line.id}
               onClick={() => setViewTarget(line)}
               highlight={line.reel && line.reel.toLowerCase() !== "spooled" && !line.spooled}
-              fields={[
-                { label: "Species", value: line.species },
-                { label: "Line Type", value: line.rod_type },
-                { label: "Brand", value: line.brand },
-                { label: "Model", value: line.model },
-                { label: "Description", value: line.type },
-                { label: "Line Wt", value: line.line_weight },
-                { label: "Grain Wt", value: line.grain_weight },
-                { label: "Value", value: line.value != null ? `$${line.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "" },
-              ]}
+              title={`${line.brand || ""} ${line.model || ""}`.trim() || "—"}
+              subtitle={[line.species, line.type, line.line_weight ? `${line.line_weight}wt` : "", line.grain_weight ? `${line.grain_weight}gr` : ""].filter(Boolean).join(" · ") || "—"}
+              right={line.value != null ? `$${line.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ""}
             />
           ))}
         </div>
