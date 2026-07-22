@@ -110,7 +110,7 @@ export default function BottomTabBar() {
         <TabLink tab={tabs[0]} />
         <TabLink tab={tabs[1]} />
 
-        <div className="flex flex-col items-center flex-1">
+        <div className="flex-1">
           <button
             ref={buttonRef}
             type="button"
@@ -119,13 +119,7 @@ export default function BottomTabBar() {
               isConditionsActive || conditionsOpen ? "text-primary" : "text-muted-foreground"
             }`}
           >
-            <span
-              className={`flex items-center justify-center w-5 h-5 rounded-full transition-colors ${
-                isConditionsActive || conditionsOpen ? "bg-primary/15" : ""
-              }`}
-            >
-              <Gauge className="w-5 h-5" strokeWidth={isConditionsActive || conditionsOpen ? 2.5 : 2} />
-            </span>
+            <Gauge className="w-5 h-5" strokeWidth={isConditionsActive || conditionsOpen ? 2.5 : 2} />
             <span className="text-[10px] font-medium whitespace-nowrap">Conditions</span>
           </button>
         </div>
