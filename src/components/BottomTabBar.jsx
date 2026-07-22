@@ -110,19 +110,18 @@ export default function BottomTabBar() {
         <TabLink tab={tabs[0]} />
         <TabLink tab={tabs[1]} />
 
-        <div className="flex-1">
-          <button
-            ref={buttonRef}
-            type="button"
-            onClick={() => setConditionsOpen((open) => !open)}
-            className={`flex flex-col items-center gap-0.5 py-2 px-1 transition-colors ${
-              isConditionsActive || conditionsOpen ? "text-primary" : "text-muted-foreground"
-            }`}
-          >
-            <Gauge className="w-5 h-5" strokeWidth={isConditionsActive || conditionsOpen ? 2.5 : 2} />
-            <span className="text-[10px] font-medium whitespace-nowrap">Conditions</span>
-          </button>
-        </div>
+        <a
+          ref={buttonRef}
+          role="button"
+          href={location.pathname}
+          onClick={(e) => { e.preventDefault(); setConditionsOpen((open) => !open); }}
+          className={`flex flex-col items-center gap-0.5 py-2 px-1 flex-1 transition-colors cursor-pointer ${
+            isConditionsActive || conditionsOpen ? "text-primary" : "text-muted-foreground"
+          }`}
+        >
+          <Gauge className="w-5 h-5" strokeWidth={isConditionsActive || conditionsOpen ? 2.5 : 2} />
+          <span className="text-[10px] font-medium whitespace-nowrap">Conditions</span>
+        </a>
 
         <TabLink tab={tabs[2]} />
         <TabLink tab={tabs[3]} />
