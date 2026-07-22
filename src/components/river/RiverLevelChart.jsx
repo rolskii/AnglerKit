@@ -121,6 +121,7 @@ function formatHourLabel(h) {
 
 function DayPanel({ hourlyData, field, unitLabel, normalLevel, overlayHours, overlayBuckets, overlayLabel, sharedBounds, isToday, nowHour, loading }) {
   const [activeHour, setActiveHour] = useState(null);
+  const lastTapRef = useRef(0);
   const hours = useMemo(() => buildHours(hourlyData, field, hourlyData?._targetDateStr || ''), [hourlyData, field]);
   const hoursLevel = useMemo(() => buildHours(hourlyData, 'level', hourlyData?._targetDateStr || ''), [hourlyData]);
   const hoursDischarge = useMemo(() => buildHours(hourlyData, 'discharge', hourlyData?._targetDateStr || ''), [hourlyData]);
@@ -207,6 +208,13 @@ function DayPanel({ hourlyData, field, unitLabel, normalLevel, overlayHours, ove
   const activeLevelY = activeLevel != null ? usableBottom - ((activeLevel - min) / range) * usableHeight : null;
 
   const handleChartClick = (e) => {
+    const now = Date.now();
+    if (now - lastTapRef.current < 300) {
+      lastTapRef.current = 0;
+      setActiveHour(null);
+      return;
+    }
+    lastTapRef.current = now;
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const pct = Math.max(0, Math.min(1, x / rect.width));
