@@ -95,7 +95,7 @@ export default function RiverConditions() {
   const [savingNote, setSavingNote] = useState(false);
   const [noteDialogOpen, setNoteDialogOpen] = useState(false);
   const [historicalHourly, setHistoricalHourly] = useState(null);
-  const [overlayLabel, setOverlayLabel] = useState('2 days ago');
+  const [overlayLabel, setOverlayLabel] = useState('Yesterday');
   const [overlayRange, setOverlayRange] = useState('1d');
 
 

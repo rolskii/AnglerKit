@@ -14,7 +14,7 @@ const RANGES = [
 ];
 
 const RANGE_AGO_LABELS = {
-  '1d': '2 days ago',
+  '1d': 'Yesterday',
   '2d': '2 days ago',
   '7d': '1 week ago',
   '1m': '1 month ago',
