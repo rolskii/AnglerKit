@@ -116,6 +116,10 @@ function RollingTimeAxis({ windowStartMs, nowMs }) {
         </div>
       ))}
 
+      {/* Last reading timestamp at the right edge */}
+      <span className="absolute right-0 top-0 text-[11px] whitespace-nowrap text-muted-foreground">
+        {formatTimeLabel(nowMs)}
+      </span>
     </div>
   );
 }
