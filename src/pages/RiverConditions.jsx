@@ -325,10 +325,10 @@ export default function RiverConditions() {
               {/* Hourly chart + historical overlay */}
               <Card>
                 <CardHeader className="pt-3 pb-2 px-3">
-                  <CardTitle className="text-base">Water Level (Today / Yesterday)</CardTitle>
+                  <CardTitle className="text-base">Water Level (Today)</CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0 pb-2 px-3">
-                  <RiverLevelChart hourly={data.hourly} field="level" unitLabel="m" normalLevel={data.normal?.median} overlayHourly={historicalHourly} overlayLabel={overlayLabel} stationId={data.station.id} stationName={data.station.name} />
+                  <RiverLevelChart hourly={data.hourly} field="level" unitLabel="m" normalLevel={data.normal?.median} overlayHourly={historicalHourly} overlayLabel={overlayLabel} />
                   {advisory && (
                     <div className={`rounded-lg p-2.5 flex items-start gap-2 mt-2 ${advisory.tone}`}>
                       <advisory.icon className="w-4 h-4 shrink-0 mt-0.5" />
