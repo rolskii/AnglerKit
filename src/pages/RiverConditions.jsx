@@ -319,7 +319,7 @@ export default function RiverConditions() {
                       <Droplets className="w-6 h-6 shrink-0 text-primary" />
                       <div className="min-w-0">
                         <p className="text-xl font-semibold leading-tight">{data.current?.level != null ? formatLevel(data.current.level) : '—'}</p>
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 whitespace-nowrap">
                           <span className="text-xs text-muted-foreground leading-tight">Water Level</span>
                           <TrendIndicator trend={data.trend?.level} />
                         </div>
@@ -329,7 +329,7 @@ export default function RiverConditions() {
                       <Gauge className="w-6 h-6 shrink-0 text-primary" />
                       <div className="min-w-0">
                         <p className="text-xl font-semibold leading-tight">{data.current?.discharge != null ? formatDischarge(data.current.discharge) : '—'}</p>
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 whitespace-nowrap">
                           <span className="text-xs text-muted-foreground leading-tight">Flow</span>
                           <TrendIndicator trend={data.trend?.discharge} />
                         </div>
