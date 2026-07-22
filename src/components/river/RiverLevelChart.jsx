@@ -165,7 +165,12 @@ function ChartPanel({ hourlyData, field, normalLevel, overlayBuckets, overlayLab
     }
     pts.sort((a, b) => a.x - b.x);
     if (pts.length < 2) return null;
-    return buildSmoothPath(pts);
+    // Use a simple polyline (not a smooth spline) for the overlay — with only
+    // 24 hourly points (or fewer for sparse ranges like 1M), buildSmoothPath's
+    // Catmull-Rom tangents overshoot between widely-spaced points, creating
+    // wavy artifacts that look "wonky."  Straight segments show the actual
+    // historical values without interpolation artifacts.
+    return pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
   }, [overlayBuckets, overlayColor, field, windowStartMs, min, range, usableHeight, usableTop, usableBottom]);
   const gradId = `riverGradient-${field}`;
   const areaD = knownPoints.length > 0

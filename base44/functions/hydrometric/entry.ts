@@ -205,7 +205,7 @@ async function fetchRealtimeSpan(stationId, fromDate, toDate) {
     .filter(p => {
       if (!p.time) return false;
       const t = new Date(p.time).getTime();
-      return !isNaN(t) && t >= startMs && t <= endMs;
+      return !isNaN(t) && t >= startMs && t < endMs;
     })
     .sort((a, b) => new Date(a.time) - new Date(b.time));
   return { granularity: 'hourly', time: points.map(p => p.time), level: points.map(p => p.level), discharge: points.map(p => p.discharge) };
