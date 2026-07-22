@@ -43,6 +43,9 @@ function HourAxis({ nowHour }) {
         const isMajor = h % 3 === 0;
         const leftPct = (h / 24) * 100;
         const isNowLabel = isMajor && h === nearestMajor;
+        // h=24 is the same midnight as the next panel's h=0 — skip the label
+        // so there's only one "12am" at each day boundary.
+        const hideLabel = h === 24;
         return (
           <div
             key={h}
@@ -50,7 +53,7 @@ function HourAxis({ nowHour }) {
             style={{ left: `${leftPct}%`, transform: 'translateX(-50%)' }}
           >
             <div className={isMajor ? 'w-px h-1.5 bg-muted-foreground/50' : 'w-px h-1 bg-muted-foreground/25'} />
-            {isMajor && (
+            {isMajor && !hideLabel && (
               <span className={`text-[11px] mt-0.5 whitespace-nowrap ${isNowLabel ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
                 {isNowLabel ? 'Now' : labelFor(h)}
               </span>
