@@ -6,7 +6,7 @@ import { Pencil, Trash2, MapPin, Calendar, Fish, ChevronLeft, ChevronRight } fro
 import { getItemImages } from "@/components/ImageGallery";
 import { useUnits } from "@/lib/unitsContext";
 
-export default function CatchCard({ catchItem, onEdit, onDelete }) {
+export default function CatchCard({ catchItem, onView, onEdit, onDelete }) {
   const cardRef = useRef(null);
   const { formatLength, formatWeight } = useUnits();
   const images = getItemImages(catchItem);
@@ -44,7 +44,7 @@ export default function CatchCard({ catchItem, onEdit, onDelete }) {
   const nextPhoto = (e) => { e.stopPropagation(); setPhotoIdx(i => (i + 1) % images.length); };
 
   return (
-    <Card ref={cardRef} className="overflow-hidden flex flex-col bg-stone-100 dark:bg-stone-900 border-stone-300 dark:border-stone-700 hover:shadow-lg transition-shadow">
+    <Card ref={cardRef} onClick={() => onView?.(catchItem)} className="overflow-hidden flex flex-col bg-stone-100 dark:bg-stone-900 border-stone-300 dark:border-stone-700 hover:shadow-lg transition-shadow cursor-pointer">
       {/* Large photo window */}
       <div className="relative aspect-[4/3] bg-stone-200 dark:bg-stone-800 overflow-hidden">
         {hasPhotos ? (
@@ -118,11 +118,13 @@ export default function CatchCard({ catchItem, onEdit, onDelete }) {
         )}
 
         <div className="flex gap-1.5 mt-auto pt-1.5" data-html2canvas-ignore="true">
-          <Button size="sm" variant="outline" className="flex-1 h-8 text-xs" onClick={() => onEdit(catchItem)}>
+          <Button size="sm" variant="outline" className="flex-1 h-8 text-xs" onClick={(e) => { e.stopPropagation(); onEdit(catchItem); }}>
             <Pencil className="w-3 h-3 mr-1" /> Edit
           </Button>
-          <ShareButton card={card} photoUrls={images} />
-          <Button size="sm" variant="outline" className="h-8 text-destructive hover:text-destructive px-2" onClick={() => onDelete(catchItem)}>
+          <span onClick={(e) => e.stopPropagation()}>
+            <ShareButton card={card} photoUrls={images} />
+          </span>
+          <Button size="sm" variant="outline" className="h-8 text-destructive hover:text-destructive px-2" onClick={(e) => { e.stopPropagation(); onDelete(catchItem); }}>
             <Trash2 className="w-3 h-3" />
           </Button>
         </div>

@@ -170,7 +170,7 @@ export default function Catches() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((c) => (
-            <CatchCard key={c.id} catchItem={c} onEdit={(item) => { setEditing(item); setFormOpen(true); }} onDelete={(item) => setDeleteTarget(item)} />
+            <CatchCard key={c.id} catchItem={c} onView={(item) => setViewTarget(item)} onEdit={(item) => { setEditing(item); setFormOpen(true); }} onDelete={(item) => setDeleteTarget(item)} />
           ))}
         </div>
         </>
