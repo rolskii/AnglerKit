@@ -387,7 +387,7 @@ export default function RiverLevelChart({ hourly, field = 'level', unitLabel, no
     const usableHeight = usableBottom - usableTop;
     const normalY = normalLevel != null ? usableBottom - ((normalLevel - min) / range) * usableHeight : null;
     return { min, max, normalY, usableTop, usableBottom };
-  }, [hourly, field, normalLevel, nowMs]);
+  }, [hourly, field, normalLevel, nowMs, overlayBuckets]);
 
   const yTicks = useMemo(() => {
     if (!bounds) return [];
