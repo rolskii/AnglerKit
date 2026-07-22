@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Loader2 } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 
 export default function PullToRefresh({ onRefresh, children }) {
   const [refreshing, setRefreshing] = useState(false);
@@ -54,7 +54,10 @@ export default function PullToRefresh({ onRefresh, children }) {
         className="flex justify-center overflow-hidden transition-all duration-200"
         style={{ height: pullDistance }}
       >
-        <Loader2 className={`w-5 h-5 text-muted-foreground mt-2 animate-spin ${refreshing ? "" : "opacity-50"}`} />
+        <RefreshCw
+          className={`w-5 h-5 text-muted-foreground mt-2 transition-opacity ${refreshing ? "animate-spin" : ""} ${pullDistance > 10 ? "opacity-60" : "opacity-0"}`}
+          style={!refreshing ? { transform: `rotate(${pullDistance * 3.6}deg)` } : undefined}
+        />
       </div>
       {children}
     </div>
