@@ -296,13 +296,13 @@ function ChartPanel({ hourlyData, field, normalLevel, overlayBuckets, overlayLab
 }
 
 const OVERLAY_COLORS = {
-  '1d': '#64748b',
-  '2d': '#f59e0b',
-  '7d': '#10b981',
-  '1m': '#3b82f6',
-  '3m': '#8b5cf6',
-  '6m': '#ec4899',
-  '1y': '#ef4444',
+  '1d': '#991b1b',
+  '2d': '#991b1b',
+  '7d': '#991b1b',
+  '1m': '#991b1b',
+  '3m': '#991b1b',
+  '6m': '#991b1b',
+  '1y': '#991b1b',
 };
 
 export default function RiverLevelChart({ hourly, field = 'level', unitLabel, normalLevel, overlayHourly, overlayLabel, overlayRange }) {

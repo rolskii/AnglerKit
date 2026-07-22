@@ -258,29 +258,40 @@ async function fetchHistoricalSeries(stationId, range, startDateStr, endDateStr,
   // Fallback: daily mean. The ECCC daily-mean collection is published with
   // a multi-month-to-year lag, so the target year (especially the current
   // one) often has no data. Search the same calendar day in progressively
-  // older years until we find one that has readings.
+  // older years until we find one that has readings. Fetch a 7-day window
+  // around the target date to get multiple daily averages, then return them
+  // as 24 hourly points (at the average value) so the overlay can render a
+  // reference line on the 24-hour chart.
   for (let yearOffset = 0; yearOffset < 5; yearOffset++) {
     const tryYear = targetDate.getUTCFullYear() - yearOffset;
-    const tryStart = new Date(Date.UTC(tryYear, targetDate.getUTCMonth(), targetDate.getUTCDate(), 0, 0, 0) + startTzOffsetMs);
-    const tryEnd = new Date(tryStart.getTime() + 86400000);
+    const tryCenter = new Date(Date.UTC(tryYear, targetDate.getUTCMonth(), targetDate.getUTCDate(), 0, 0, 0) + startTzOffsetMs);
+    const tryStart = new Date(tryCenter.getTime() - 3 * 86400000);
+    const tryEnd = new Date(tryCenter.getTime() + 4 * 86400000);
     try {
       const params = new URLSearchParams({
         f: 'json',
         STATION_NUMBER: stationId,
         datetime: `${tryStart.toISOString()}/${tryEnd.toISOString()}`,
-        limit: '10',
+        limit: '100',
       });
       const data = await ogcFetch('hydrometric-daily-mean', params);
       const points = (data.features || [])
         .map(f => ({ time: f.properties.DATE || f.properties.DATETIME, level: f.properties.LEVEL ?? null, discharge: f.properties.DISCHARGE ?? null }))
         .filter(p => p.time && (p.level != null || p.discharge != null));
       if (points.length > 0) {
-        return {
-          granularity: 'daily',
-          time: points.map(p => p.time),
-          level: points.map(p => p.level),
-          discharge: points.map(p => p.discharge),
-        };
+        const levelVals = points.map(p => p.level).filter(v => v != null);
+        const dischargeVals = points.map(p => p.discharge).filter(v => v != null);
+        const avgLevel = levelVals.length > 0 ? levelVals.reduce((a, b) => a + b, 0) / levelVals.length : null;
+        const avgDischarge = dischargeVals.length > 0 ? dischargeVals.reduce((a, b) => a + b, 0) / dischargeVals.length : null;
+        const times = [];
+        const levels = [];
+        const discharges = [];
+        for (let h = 0; h < 24; h++) {
+          times.push(new Date(start.getTime() + h * 3600000).toISOString());
+          levels.push(avgLevel);
+          discharges.push(avgDischarge);
+        }
+        return { granularity: 'hourly', time: times, level: levels, discharge: discharges };
       }
     } catch (e) {
       // try next older year
