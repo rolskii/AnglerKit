@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useRef } from 'react';
-import { buildSmoothPath, buildMidpointSmoothPath, generateFixedIntervalTicks } from '@/lib/chartUtils';
+import { buildSmoothPath, generateFixedIntervalTicks } from '@/lib/chartUtils';
 import { useNowTick } from '@/hooks/useNowTick';
 import { Loader2 } from 'lucide-react';
 import ChartTooltip from './ChartTooltip';
@@ -165,7 +165,7 @@ function ChartPanel({ hourlyData, field, normalLevel, overlayBuckets, overlayLab
     }
     pts.sort((a, b) => a.x - b.x);
     if (pts.length < 2) return null;
-    return buildMidpointSmoothPath(pts);
+    return pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
   }, [overlayBuckets, overlayColor, field, windowStartMs, min, range, usableHeight, usableTop, usableBottom]);
   const gradId = `riverGradient-${field}`;
   const areaD = knownPoints.length > 0

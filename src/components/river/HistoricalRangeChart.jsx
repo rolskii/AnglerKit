@@ -14,7 +14,7 @@ const RANGES = [
 ];
 
 const RANGE_AGO_LABELS = {
-  '1d': '1 day before chart',
+  '1d': 'This time yesterday',
   '2d': '2 days ago',
   '7d': '1 week ago',
   '1m': '1 month ago',
@@ -67,7 +67,7 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
     };
     load();
     return () => { cancelled = true; };
-  }, [stationId, stationName, range, onDataChange, currentValue]);
+  }, [stationId, stationName, range, onDataChange]);
 
   // Find the hour bucket closest to "this time" for the comparison text.
   const oldestVal = (() => {
