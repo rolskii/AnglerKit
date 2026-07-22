@@ -238,7 +238,7 @@ function ChartPanel({ hourlyData, field, normalLevel, overlayBuckets, overlayLab
         {yTicks.map((tick, i) => (
           <span
             key={`ylabel-${i}`}
-            className="absolute left-0 text-[10px] text-muted-foreground/80 whitespace-nowrap bg-background/60 px-0.5 rounded-sm"
+            className="absolute left-0 text-[10px] text-muted-foreground/80 whitespace-nowrap"
             style={{ top: `${(tick.y / CHART_HEIGHT) * 100}%`, transform: 'translateY(-50%)' }}
           >
             {tick.label}{unitLabel ? ` ${unitLabel}` : ''}
