@@ -360,6 +360,14 @@ export default function RiverLevelChart({ hourly, field = 'level', unitLabel, no
       const v = hourly[field]?.[i];
       if (v != null) allVals.push(v);
     });
+    // Include overlay values to prevent flat-line clipping when
+    // historical data falls outside the current data's Y range.
+    if (overlayBuckets) {
+      overlayBuckets.forEach(b => {
+        if (b?.[field] != null) allVals.push(b[field]);
+      });
+    }
+
     if (allVals.length === 0) return null;
 
     let min = Math.min(...allVals);
