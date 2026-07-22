@@ -223,25 +223,28 @@ async function fetchHistoricalSeries(stationId, range, startDateStr, endDateStr,
     const [y, m, d] = startDateStr.split('-').map(Number);
     targetDate = new Date(y, m - 1, d);
   } else {
-    const now = new Date();
+    // Shift "now" to the user's local timezone so date extraction gives the
+    // correct local date — the server runs in UTC, so without this shift
+    // "24 hours ago" resolves to today's date in negative-offset timezones
+    // (e.g. EDT at 10pm sees tomorrow's UTC date), fetching the wrong day.
+    const tzOffsetMs = tzOffsetMin * 60000;
+    const localNow = new Date(Date.now() - tzOffsetMs);
     switch (range) {
-      case '24h': targetDate = new Date(now.getTime() - 86400000); break; // yesterday
-      case '2d': targetDate = new Date(now.getTime() - 2 * 86400000); break;
-      case '1w': case '7d': targetDate = new Date(now.getTime() - 7 * 86400000); break;
-      case '1m': targetDate = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate()); break;
-      case '3m': targetDate = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate()); break;
-      case '6m': targetDate = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate()); break;
-      case '1y': targetDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate()); break;
-      default: targetDate = new Date(now.getTime() - 86400000);
+      case '1d': case '24h': targetDate = new Date(localNow.getTime() - 86400000); break;
+      case '2d': targetDate = new Date(localNow.getTime() - 2 * 86400000); break;
+      case '1w': case '7d': targetDate = new Date(localNow.getTime() - 7 * 86400000); break;
+      case '1m': targetDate = new Date(localNow.getUTCFullYear(), localNow.getUTCMonth() - 1, localNow.getUTCDate()); break;
+      case '3m': targetDate = new Date(localNow.getUTCFullYear(), localNow.getUTCMonth() - 3, localNow.getUTCDate()); break;
+      case '6m': targetDate = new Date(localNow.getUTCFullYear(), localNow.getUTCMonth() - 6, localNow.getUTCDate()); break;
+      case '1y': targetDate = new Date(localNow.getUTCFullYear() - 1, localNow.getUTCMonth(), localNow.getUTCDate()); break;
+      default: targetDate = new Date(localNow.getTime() - 86400000);
     }
   }
 
-  // Compute local midnight (not UTC midnight) — the backend runs in UTC, so
-  // we shift by the caller's timezone offset to get midnight in the user's
-  // local timezone. Without this, UTC midnight = 8pm EDT and the data
-  // wraps around when the frontend converts to local hours.
-  const tzOffsetMs = tzOffsetMin * 60000;
-  const start = new Date(Date.UTC(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 0, 0, 0) + tzOffsetMs);
+  // Compute local midnight using UTC getters — targetDate was built from
+  // the shifted localNow so its UTC components are the user's local date.
+  const startTzOffsetMs = tzOffsetMin * 60000;
+  const start = new Date(Date.UTC(targetDate.getUTCFullYear(), targetDate.getUTCMonth(), targetDate.getUTCDate(), 0, 0, 0) + startTzOffsetMs);
   const end = new Date(start.getTime() + 86400000); // next local midnight
 
   // Try hourly realtime data for the target day
