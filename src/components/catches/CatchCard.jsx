@@ -6,6 +6,13 @@ import { Pencil, Trash2, Fish, ChevronLeft, ChevronRight } from "lucide-react";
 import { getItemImages } from "@/components/ImageGallery";
 import { useUnits } from "@/lib/unitsContext";
 
+const CRAFT = "#c9b9a6";
+const CRAFT_DARK = "#4a3f33";
+const INK = "#3e362e";
+const INK_LIGHT = "#7a6e61";
+const RULE = "#7a6e61";
+const PAPER = "#f5f0e6";
+
 export default function CatchCard({ catchItem, onView, onEdit, onDelete }) {
   const cardRef = useRef(null);
   const { formatWeight } = useUnits();
@@ -20,16 +27,16 @@ export default function CatchCard({ catchItem, onView, onEdit, onDelete }) {
 
   const statRows = [
     [
-      { label: "Length", value: catchItem.length != null ? `${catchItem.length} in` : null },
-      { label: "Girth", value: catchItem.girth != null ? `${catchItem.girth} in` : null },
+      { label: "LENGTH", value: catchItem.length != null ? `${catchItem.length} in` : null },
+      { label: "GIRTH", value: catchItem.girth != null ? `${catchItem.girth} in` : null },
     ],
     [
-      { label: "Weight", value: catchItem.weight != null ? formatWeight(catchItem.weight) : null },
-      { label: "Fly", value: catchItem.fly_used },
+      { label: "WEIGHT", value: catchItem.weight != null ? formatWeight(catchItem.weight) : null },
+      { label: "FLY", value: catchItem.fly_used },
     ],
     [
-      { label: "Water", value: catchItem.water_temp != null ? `${catchItem.water_temp}°` : null },
-      { label: "Date", value: fmtDate(catchItem.date) },
+      { label: "WATER", value: catchItem.water_temp != null ? `${catchItem.water_temp}°` : null },
+      { label: "DATE", value: fmtDate(catchItem.date) },
     ],
   ];
 
@@ -51,15 +58,16 @@ export default function CatchCard({ catchItem, onView, onEdit, onDelete }) {
     <Card
       ref={cardRef}
       onClick={() => onView?.(catchItem)}
-      className="overflow-hidden flex flex-col cursor-pointer border border-[#7a6e61]/30 bg-[#c9b9a6] dark:bg-[#4a3f33] dark:border-[#a89880]/30 hover:shadow-xl transition-shadow rounded-lg"
+      className="overflow-hidden flex flex-col cursor-pointer hover:shadow-xl transition-shadow rounded-lg"
+      style={{ background: CRAFT, borderColor: INK_LIGHT + "55", color: INK }}
     >
       {/* Photo with white torn-paper frame */}
-      <div className="p-3 pb-0">
+      <div style={{ padding: "12px 12px 0 12px" }}>
         <div
-          className="relative bg-[#f5f0e6] dark:bg-stone-300 p-2 shadow-md"
-          style={{ borderRadius: "4px 6px 3px 7px / 6px 3px 7px 4px" }}
+          className="relative p-2 shadow-md"
+          style={{ background: PAPER, borderRadius: "4px 6px 3px 7px / 6px 3px 7px 4px" }}
         >
-          <div className="relative aspect-[4/5] bg-[#dcdada] dark:bg-stone-500 overflow-hidden">
+          <div className="relative aspect-[4/5] overflow-hidden" style={{ background: "#dcdada" }}>
             {hasPhotos ? (
               <img
                 src={images[photoIdx]}
@@ -68,12 +76,31 @@ export default function CatchCard({ catchItem, onView, onEdit, onDelete }) {
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
-                <Fish className="w-16 h-16 text-[#7a6e61]" />
+                <Fish className="w-16 h-16" style={{ color: INK_LIGHT }} />
               </div>
             )}
 
-            {/* Released/Kept stamp — upper right, tilted */}
-            <div className="absolute top-3 right-3 flex items-center justify-center w-16 h-16 rounded-full bg-[#3e362e]/85 dark:bg-[#2a241c]/90 text-[#f0ebe0] text-[8px] font-bold uppercase tracking-widest border-[3px] border-[#f0ebe0]/30 dark:border-stone-200/30 shadow-lg -rotate-12 leading-tight text-center">
+            {/* Released/Kept stamp — upper right, tilted ~45deg */}
+            <div
+              className="absolute flex items-center justify-center rounded-full shadow-lg"
+              style={{
+                top: "10px",
+                right: "10px",
+                width: "62px",
+                height: "62px",
+                background: INK + "d9",
+                color: "#f0ebe0",
+                border: "3px solid #f0ebe04d",
+                boxShadow: "inset 0 0 0 2px #f0ebe033, 0 2px 6px rgba(0,0,0,0.4)",
+                transform: "rotate(-45deg)",
+                fontSize: "8px",
+                fontWeight: 700,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                textAlign: "center",
+                lineHeight: 1.1,
+              }}
+            >
               {catchItem.released ? "Released" : "Kept"}
             </div>
 
@@ -97,27 +124,31 @@ export default function CatchCard({ catchItem, onView, onEdit, onDelete }) {
         </div>
       </div>
 
-      {/* Title — centered serif */}
+      {/* Title — centered typewriter */}
       <div className="px-4 pt-3 pb-1 text-center">
-        <h3 className="font-serif text-xl font-bold tracking-wide text-[#3e362e] dark:text-[#e8e0d0]">
+        <h3 className="font-mono text-xl font-bold tracking-wide" style={{ color: INK }}>
           {catchItem.species || "Catch"}
         </h3>
       </div>
 
       {/* Stat grid — 2 columns × 3 rows with rules */}
       <div className="px-4 pb-1">
-        <div className="border-t border-[#7a6e61]/50 dark:border-[#a89880]/40" />
+        <div style={{ borderTop: `1px solid ${RULE}` }} />
         {statRows.map((row, ri) => (
-          <div key={ri} className="grid grid-cols-2 border-b border-[#7a6e61]/50 dark:border-[#a89880]/40">
+          <div key={ri} className="grid grid-cols-2" style={{ borderBottom: `1px solid ${RULE}` }}>
             {row.map((stat, si) => (
               <div
                 key={stat.label}
-                className={`flex items-baseline gap-1.5 py-1.5 px-1 ${si === 1 ? "border-l border-[#7a6e61]/50 dark:border-[#a89880]/40" : ""}`}
+                className="flex items-baseline gap-1.5 py-1.5 px-1"
+                style={si === 1 ? { borderLeft: `1px solid ${RULE}` } : undefined}
               >
-                <span className="text-[9px] font-bold uppercase tracking-wider text-[#3e362e]/65 dark:text-[#e8e0d0]/65 whitespace-nowrap">
+                <span
+                  className="text-[9px] font-bold uppercase tracking-wider whitespace-nowrap"
+                  style={{ color: INK + "aa" }}
+                >
                   {stat.label}
                 </span>
-                <span className="text-[11px] font-medium text-[#3e362e] dark:text-[#e8e0d0] truncate">
+                <span className="text-[11px] font-medium truncate" style={{ color: INK }}>
                   {stat.value || "—"}
                 </span>
               </div>
@@ -129,7 +160,7 @@ export default function CatchCard({ catchItem, onView, onEdit, onDelete }) {
       {/* Footer — location centered */}
       {catchItem.location && (
         <div className="px-4 pt-1.5 pb-2 text-center">
-          <p className="font-serif text-sm italic text-[#3e362e] dark:text-[#e8e0d0]">
+          <p className="font-mono text-sm italic" style={{ color: INK }}>
             {catchItem.location}
           </p>
         </div>
@@ -137,13 +168,13 @@ export default function CatchCard({ catchItem, onView, onEdit, onDelete }) {
 
       {/* Action buttons */}
       <div className="flex gap-1.5 px-3 pb-3 pt-1 mt-auto" data-html2canvas-ignore="true">
-        <Button size="sm" variant="outline" className="flex-1 h-8 text-xs bg-[#3e362e]/5 dark:bg-white/5 border-[#7a6e61]/30 dark:border-[#a89880]/30" onClick={(e) => { e.stopPropagation(); onEdit(catchItem); }}>
+        <Button size="sm" variant="outline" className="flex-1 h-8 text-xs" style={{ background: INK + "0d", borderColor: INK_LIGHT + "55" }} onClick={(e) => { e.stopPropagation(); onEdit(catchItem); }}>
           <Pencil className="w-3 h-3 mr-1" /> Edit
         </Button>
         <span onClick={(e) => e.stopPropagation()}>
           <ShareButton card={card} photoUrls={images} />
         </span>
-        <Button size="sm" variant="outline" className="h-8 text-destructive hover:text-destructive px-2 bg-[#3e362e]/5 dark:bg-white/5 border-[#7a6e61]/30 dark:border-[#a89880]/30" onClick={(e) => { e.stopPropagation(); onDelete(catchItem); }}>
+        <Button size="sm" variant="outline" className="h-8 text-destructive hover:text-destructive px-2" style={{ background: INK + "0d", borderColor: INK_LIGHT + "55" }} onClick={(e) => { e.stopPropagation(); onDelete(catchItem); }}>
           <Trash2 className="w-3 h-3" />
         </Button>
       </div>
