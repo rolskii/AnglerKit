@@ -22,10 +22,9 @@ export default function PullToRefresh({ onRefresh, children }) {
     return (el?.scrollTop || window.scrollY) <= 0;
   }, []);
 
-  // Elastic damping: pull feels free but naturally slows with distance
+  // Elastic rubber-band: pull feels free with gentle diminishing returns
   const calcDist = (delta) => {
-    // No hard cap — diminishing returns past ~120px
-    return delta * 0.5 * (1 - Math.min(delta / 800, 0.6));
+    return (delta * 0.5) / (1 + delta / 320);
   };
 
   useEffect(() => {
@@ -108,20 +107,16 @@ export default function PullToRefresh({ onRefresh, children }) {
         }}
       >
         <RefreshCw
-          className="text-primary mt-3 transition-transform duration-150"
+          className={`text-primary mt-3 transition-transform duration-150 ${refreshing ? "animate-spin" : ""}`}
           style={{
             width: 24,
             height: 24,
-            opacity: Math.min(pullProgress * 1.5, 1),
-            transform: `rotate(${pullProgress * 360}deg) scale(${0.6 + pullProgress * 0.4})`,
+            opacity: refreshing ? 1 : Math.min(pullProgress * 1.5, 1),
+            transform: refreshing
+              ? undefined
+              : `rotate(${pullProgress * 360}deg) scale(${0.6 + pullProgress * 0.4})`,
           }}
         />
-        {refreshing && (
-          <RefreshCw
-            className="w-6 h-6 text-primary mt-3 animate-spin"
-            style={{ position: "absolute" }}
-          />
-        )}
       </div>
       {children}
     </div>
