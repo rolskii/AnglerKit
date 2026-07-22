@@ -228,7 +228,7 @@ async function fetchHistoricalSeries(stationId, range, startDateStr, endDateStr,
     // "24 hours ago" resolves to today's date in negative-offset timezones
     // (e.g. EDT at 10pm sees tomorrow's UTC date), fetching the wrong day.
     const tzOffsetMs = tzOffsetMin * 60000;
-    const localNow = new Date(Date.now() + tzOffsetMs);
+    const localNow = new Date(Date.now() - tzOffsetMs);
     switch (range) {
       case '1d': case '24h': targetDate = new Date(localNow.getTime() - 86400000); break;
       case '2d': targetDate = new Date(localNow.getTime() - 2 * 86400000); break;
@@ -244,8 +244,18 @@ async function fetchHistoricalSeries(stationId, range, startDateStr, endDateStr,
   // Compute local midnight using UTC getters — targetDate was built from
   // the shifted localNow so its UTC components are the user's local date.
   const startTzOffsetMs = tzOffsetMin * 60000;
-  const start = new Date(Date.UTC(targetDate.getUTCFullYear(), targetDate.getUTCMonth(), targetDate.getUTCDate(), 0, 0, 0) - startTzOffsetMs);
-  const end = new Date(start.getTime() + 86400000); // next local midnight
+  let start, end;
+  if (range === '1d' || range === '24h' || range === '2d') {
+    // Rolling 24-hour window ending 24h/48h before now — avoids overlap
+    // with the chart's current 24-hour realtime window. Uses actual UTC
+    // timestamps so no timezone conversion is needed.
+    const daysBack = range === '2d' ? 2 : 1;
+    end = new Date(Date.now() - daysBack * 86400000);
+    start = new Date(end.getTime() - 86400000);
+  } else {
+    start = new Date(Date.UTC(targetDate.getUTCFullYear(), targetDate.getUTCMonth(), targetDate.getUTCDate(), 0, 0, 0) + startTzOffsetMs);
+    end = new Date(start.getTime() + 86400000); // next local midnight
+  }
 
   // Try hourly realtime data for the target day.
   // Require at least 12 hours of readings — the ECCC realtime API only
@@ -272,7 +282,7 @@ async function fetchHistoricalSeries(stationId, range, startDateStr, endDateStr,
   // reference line on the 24-hour chart.
   for (let yearOffset = 0; yearOffset < 5; yearOffset++) {
     const tryYear = targetDate.getUTCFullYear() - yearOffset;
-    const tryCenter = new Date(Date.UTC(tryYear, targetDate.getUTCMonth(), targetDate.getUTCDate(), 0, 0, 0) - startTzOffsetMs);
+    const tryCenter = new Date(Date.UTC(tryYear, targetDate.getUTCMonth(), targetDate.getUTCDate(), 0, 0, 0) + startTzOffsetMs);
     const tryStart = new Date(tryCenter.getTime() - 3 * 86400000);
     const tryEnd = new Date(tryCenter.getTime() + 4 * 86400000);
     try {
