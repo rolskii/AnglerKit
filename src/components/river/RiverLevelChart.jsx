@@ -108,7 +108,7 @@ function RollingTimeAxis({ windowStartMs, nowMs }) {
         >
           <div className={tick.isMajor ? 'w-px h-1.5 bg-muted-foreground/50' : 'w-px h-1 bg-muted-foreground/25'} />
           {tick.isMajor && (
-            <span className="text-[11px] mt-0.5 whitespace-nowrap text-muted-foreground">
+            <span className="text-xs mt-0.5 whitespace-nowrap text-muted-foreground">
               {labelFor(tick.hourOfDay)}
             </span>
           )}
@@ -263,7 +263,7 @@ function ChartPanel({ hourlyData, field, normalLevel, overlayBuckets, overlayLab
         {yTicks.map((tick, i) => (
           <span
             key={`ylabel-${i}`}
-            className="absolute left-0 text-[10px] text-muted-foreground/80 whitespace-nowrap"
+            className="absolute left-0 text-xs text-muted-foreground/80 whitespace-nowrap"
             style={{ top: `${(tick.y / CHART_HEIGHT) * 100}%`, transform: 'translateY(-50%)' }}
           >
             {tick.label}{unitLabel ? ` ${unitLabel}` : ''}
