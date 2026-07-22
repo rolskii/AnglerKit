@@ -113,7 +113,7 @@ export default function PullToRefresh({ onRefresh, children }) {
         }}
       >
         <RefreshCw
-          className={`text-primary/70 mt-4 ${refreshing ? "animate-spin" : ""} ${!pulling && !refreshing ? "transition-transform duration-150" : ""}`}
+          className={`text-primary/70 mt-4 ${refreshing ? "ptr-spin" : ""} ${!pulling && !refreshing ? "transition-transform duration-150" : ""}`}
           style={{
             width: 18,
             height: 18,
