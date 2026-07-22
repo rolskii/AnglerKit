@@ -187,101 +187,137 @@ function computeTrend(readings, field, hoursBack = 6) {
 }
 
 // --- Historical range support ---
-const RANGE_DAYS = { '24h': 1, '2d': 2, '1w': 7, '1m': 30, '3m': 90, '6m': 180, '1y': 365 };
+async function fetchRealtimeSpan(stationId, fromDate, toDate) {
+  const params = new URLSearchParams({
+    f: 'json',
+    STATION_NUMBER: stationId,
+    datetime: `${fromDate.toISOString()}/${toDate.toISOString()}`,
+    limit: '2000',
+  });
+  const data = await ogcFetch('hydrometric-realtime', params);
+  // Client-side range filter — the realtime API sometimes ignores the
+  // datetime filter and returns recent data instead of the requested
+  // historical window. Reject anything outside [fromDate, toDate].
+  const startMs = fromDate.getTime();
+  const endMs = toDate.getTime();
+  const points = (data.features || [])
+    .map(f => ({ time: f.properties.DATETIME, level: f.properties.LEVEL ?? null, discharge: f.properties.DISCHARGE ?? null }))
+    .filter(p => {
+      if (!p.time) return false;
+      const t = new Date(p.time).getTime();
+      return !isNaN(t) && t >= startMs && t < endMs;
+    })
+    .sort((a, b) => new Date(a.time) - new Date(b.time));
+  return { granularity: 'hourly', time: points.map(p => p.time), level: points.map(p => p.level), discharge: points.map(p => p.discharge) };
+}
 
-async function fetchHistoricalSeries(stationId, range, startDateStr, endDateStr) {
-  let start, end;
-  if (range === 'custom' && startDateStr && endDateStr) {
-    start = new Date(startDateStr);
-    end = new Date(endDateStr);
+async function fetchHistoricalSeries(stationId, range, startDateStr, endDateStr, tzOffsetMin = 0) {
+  // Each range selects a specific historical day; the chart always shows
+  // that day's 24h on a fixed 12am→12am axis.
+  let targetDate;
+  if (range === 'custom' && startDateStr) {
+    // Parse as local midnight — new Date("2026-07-21") is UTC midnight,
+    // and getDate() returns the local date, which shifts the window one
+    // day early in negative-UTC timezones (e.g. EDT sees July 20 instead
+    // of July 21), leaving yesterday's panel empty.
+    const [y, m, d] = startDateStr.split('-').map(Number);
+    targetDate = new Date(y, m - 1, d);
   } else {
-    const days = RANGE_DAYS[range] || 7;
-    end = new Date();
-    start = new Date(end.getTime() - days * 86400000);
-  }
-  const spanDays = (end.getTime() - start.getTime()) / 86400000;
-
-  async function fetchRealtimeSpan(fromDate, toDate) {
-    const params = new URLSearchParams({
-      f: 'json',
-      STATION_NUMBER: stationId,
-      datetime: `${fromDate.toISOString()}/${toDate.toISOString()}`,
-      limit: '2000',
-    });
-    const data = await ogcFetch('hydrometric-realtime', params);
-    const points = (data.features || [])
-      .map(f => ({ time: f.properties.DATETIME, level: f.properties.LEVEL ?? null, discharge: f.properties.DISCHARGE ?? null }))
-      .sort((a, b) => new Date(a.time) - new Date(b.time));
-    return { granularity: 'hourly', time: points.map(p => p.time), level: points.map(p => p.level), discharge: points.map(p => p.discharge) };
+    // Shift "now" to the user's local timezone so date extraction gives the
+    // correct local date — the server runs in UTC, so without this shift
+    // "24 hours ago" resolves to today's date in negative-offset timezones
+    // (e.g. EDT at 10pm sees tomorrow's UTC date), fetching the wrong day.
+    const tzOffsetMs = tzOffsetMin * 60000;
+    const localNow = new Date(Date.now() - tzOffsetMs);
+    switch (range) {
+      case '1d': case '24h': targetDate = new Date(localNow.getTime() - 86400000); break;
+      case '2d': targetDate = new Date(localNow.getTime() - 2 * 86400000); break;
+      case '1w': case '7d': targetDate = new Date(localNow.getTime() - 7 * 86400000); break;
+      case '1m': targetDate = new Date(localNow.getUTCFullYear(), localNow.getUTCMonth() - 1, localNow.getUTCDate()); break;
+      case '3m': targetDate = new Date(localNow.getUTCFullYear(), localNow.getUTCMonth() - 3, localNow.getUTCDate()); break;
+      case '6m': targetDate = new Date(localNow.getUTCFullYear(), localNow.getUTCMonth() - 6, localNow.getUTCDate()); break;
+      case '1y': targetDate = new Date(localNow.getUTCFullYear() - 1, localNow.getUTCMonth(), localNow.getUTCDate()); break;
+      default: targetDate = new Date(localNow.getTime() - 86400000);
+    }
   }
 
-  if (spanDays <= 2.5) {
-    return fetchRealtimeSpan(start, end);
+  // Compute local midnight using UTC getters — targetDate was built from
+  // the shifted localNow so its UTC components are the user's local date.
+  const startTzOffsetMs = tzOffsetMin * 60000;
+  let start, end;
+  if (range === '1d' || range === '24h' || range === '2d') {
+    // Rolling 24-hour window ending 24h/48h before now — avoids overlap
+    // with the chart's current 24-hour realtime window. Uses actual UTC
+    // timestamps so no timezone conversion is needed.
+    const daysBack = range === '2d' ? 2 : 1;
+    end = new Date(Date.now() - daysBack * 86400000);
+    start = new Date(end.getTime() - 86400000);
+  } else {
+    start = new Date(Date.UTC(targetDate.getUTCFullYear(), targetDate.getUTCMonth(), targetDate.getUTCDate(), 0, 0, 0) + startTzOffsetMs);
+    end = new Date(start.getTime() + 86400000); // next local midnight
   }
 
-  // Longer spans: page through the daily-mean collection in ~1-year chunks.
-  // Confirmed field names live: DATE, LEVEL, DISCHARGE (STATION_NUMBER identifies
-  // the station). The datetime filter must be a full RFC3339 timestamp — a
-  // bare "YYYY-MM-DD/YYYY-MM-DD" interval gets silently ignored by this API
-  // and it just returns whatever it has for the station instead of erroring,
-  // so we also filter client-side below as a safety net regardless of what
-  // the server actually honoured.
-  const allPoints = [];
-  let chunkStart = new Date(start);
-  while (chunkStart < end) {
-    const chunkEnd = new Date(Math.min(chunkStart.getTime() + 365 * 86400000, end.getTime()));
-    const params = new URLSearchParams({
-      f: 'json',
-      STATION_NUMBER: stationId,
-      datetime: `${chunkStart.toISOString()}/${chunkEnd.toISOString()}`,
-      sortby: 'DATE',
-      limit: '2000',
-    });
+  // Try hourly realtime data for the target day.
+  // Require at least 12 hours of readings — the ECCC realtime API only
+  // retains ~30 days of data, so ranges near that edge (e.g. 1M) return
+  // a partial day (sometimes just a few hours).  Rendering a few sparse
+  // points as a line looks broken; fall through to daily-mean instead.
+  try {
+    const hourly = await fetchRealtimeSpan(stationId, start, end);
+    const hourBuckets = new Set();
+    for (const t of hourly.time) {
+      hourBuckets.add(new Date(t).getUTCHours());
+    }
+    if (hourBuckets.size >= 12) return hourly;
+  } catch (e) {
+    // fall through to daily mean
+  }
+
+  // Fallback: daily mean. The ECCC daily-mean collection is published with
+  // a multi-month-to-year lag, so the target year (especially the current
+  // one) often has no data. Search the same calendar day in progressively
+  // older years until we find one that has readings. Fetch a 7-day window
+  // around the target date to get multiple daily averages, then return them
+  // as 24 hourly points (at the average value) so the overlay can render a
+  // reference line on the 24-hour chart.
+  for (let yearOffset = 0; yearOffset < 5; yearOffset++) {
+    const tryYear = targetDate.getUTCFullYear() - yearOffset;
+    const tryCenter = new Date(Date.UTC(tryYear, targetDate.getUTCMonth(), targetDate.getUTCDate(), 0, 0, 0) + startTzOffsetMs);
+    const tryStart = new Date(tryCenter.getTime() - 3 * 86400000);
+    const tryEnd = new Date(tryCenter.getTime() + 4 * 86400000);
     try {
+      const params = new URLSearchParams({
+        f: 'json',
+        STATION_NUMBER: stationId,
+        datetime: `${tryStart.toISOString()}/${tryEnd.toISOString()}`,
+        limit: '100',
+      });
       const data = await ogcFetch('hydrometric-daily-mean', params);
-      for (const f of (data.features || [])) {
-        const p = f.properties;
-        allPoints.push({
-          time: p.DATE || p.DATETIME || p.DATE_TIME || null,
-          level: p.LEVEL ?? p.DAILY_MEAN_LEVEL ?? p.MEAN_LEVEL ?? p.VALUE ?? null,
-          discharge: p.DISCHARGE ?? p.DAILY_MEAN_DISCHARGE ?? p.MEAN_DISCHARGE ?? null,
-        });
+      const points = (data.features || [])
+        .map(f => ({ time: f.properties.DATE || f.properties.DATETIME, level: f.properties.LEVEL ?? null, discharge: f.properties.DISCHARGE ?? null }))
+        .filter(p => p.time && (p.level != null || p.discharge != null));
+      if (points.length > 0) {
+        // Distribute the actual daily-mean values across the 24-hour chart
+        // window so the overlay line shows the historical trend with
+        // variation, rather than a single flat average.
+        const times = [];
+        const levels = [];
+        const discharges = [];
+        const step = 24 / points.length;
+        for (let i = 0; i < points.length; i++) {
+          const h = Math.min(23, Math.floor(i * step));
+          times.push(new Date(start.getTime() + h * 3600000).toISOString());
+          levels.push(points[i].level ?? null);
+          discharges.push(points[i].discharge ?? null);
+        }
+        return { granularity: 'daily-mean', time: times, level: levels, discharge: discharges };
       }
     } catch (e) {
-      // this chunk unavailable — continue with what we have
+      // try next older year
     }
-    chunkStart = chunkEnd;
-  }
-  // Client-side range filter — belt-and-suspenders against the API ignoring
-  // the datetime filter and handing back out-of-range data for the station.
-  const startMs = start.getTime();
-  const endMs = end.getTime();
-  const validPoints = allPoints.filter(p => {
-    if (!p.time || (p.level == null && p.discharge == null)) return false;
-    const t = new Date(p.time).getTime();
-    return !isNaN(t) && t >= startMs && t <= endMs;
-  });
-  validPoints.sort((a, b) => new Date(a.time) - new Date(b.time));
-
-  if (validPoints.length > 0) {
-    return {
-      granularity: 'daily',
-      time: validPoints.map(p => p.time),
-      level: validPoints.map(p => p.level),
-      discharge: validPoints.map(p => p.discharge),
-    };
   }
 
-  // Fallback: the daily-mean collection returned nothing usable for this
-  // range (wrong field names, no coverage for this station, etc.) — rather
-  // than show a blank chart, fall back to whatever the realtime feed still
-  // has for the tail end of the requested range. This will typically only
-  // cover the last day or two, but that's still more useful than nothing.
-  try {
-    return await fetchRealtimeSpan(new Date(end.getTime() - 2 * 86400000), end);
-  } catch (e) {
-    return { granularity: 'daily', time: [], level: [], discharge: [] };
-  }
+  return { granularity: 'hourly', time: [], level: [], discharge: [] };
 }
 
 // Shared response builder for "here's one specific station's current
@@ -321,11 +357,11 @@ async function buildStationResponse(chosen, readings) {
 Deno.serve(async (req) => {
   try {
     const body = await req.json();
-    const { lat, lon, stationId, historicalRange, startDate, endDate, stationName, searchQuery, listStations } = body;
+    const { lat, lon, stationId, historicalRange, startDate, endDate, stationName, searchQuery, listStations, tzOffset } = body;
 
     // --- Historical range mode: skip nearest-station search, query directly ---
     if (historicalRange && stationId) {
-      const historical = await fetchHistoricalSeries(stationId, historicalRange, startDate, endDate);
+      const historical = await fetchHistoricalSeries(stationId, historicalRange, startDate, endDate, tzOffset);
       return Response.json({ station: { id: stationId, name: stationName || null }, historical });
     }
 

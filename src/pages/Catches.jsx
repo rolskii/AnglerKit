@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Loader2, Fish, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
+import { Plus, Search, Loader2, Fish, ArrowUp, ArrowDown, ArrowUpDown, Camera } from "lucide-react";
 import CatchDetailDialog from "@/components/catches/CatchDetailDialog";
 import CatchForm from "@/components/catches/CatchForm";
 import {
@@ -10,6 +10,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import { useUnits } from "@/lib/unitsContext";
 
 export default function Catches() {
   const [catches, setCatches] = useState([]);
@@ -25,6 +26,7 @@ export default function Catches() {
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [viewTarget, setViewTarget] = useState(null);
+  const { formatLength, formatWeight } = useUnits();
 
   const load = async () => {
     setLoading(true);
@@ -114,6 +116,7 @@ export default function Catches() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="font-heading text-2xl font-bold flex items-center gap-2">
+            <Camera className="w-6 h-6 text-primary" />
             Fish Log
           </h1>
           <p className="text-muted-foreground text-sm">Log in your catches with measurements, photos and gear used.</p>
@@ -172,9 +175,9 @@ export default function Catches() {
                     {c.date ? new Date(c.date + "T00:00:00").toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : "—"}
                   </td>
                   <td className="px-3 py-2.5 whitespace-nowrap">{c.location || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{c.length != null ? `${c.length} in` : "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{c.girth != null ? `${c.girth} in` : "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{c.weight != null ? `${c.weight} lb` : "—"}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">{c.length != null ? formatLength(c.length) : "—"}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">{c.girth != null ? formatLength(c.girth) : "—"}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">{c.weight != null ? formatWeight(c.weight) : "—"}</td>
                   <td className="px-3 py-2.5 whitespace-nowrap">{c.fly_used || "—"}</td>
                   <td className="px-3 py-2.5 whitespace-nowrap">{c.released ? "Yes" : "No"}</td>
                 </tr>

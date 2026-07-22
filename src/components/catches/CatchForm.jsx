@@ -14,6 +14,7 @@ import AudioRecorder from "@/components/catches/AudioRecorder";
 import LineSelect from "@/components/catches/LineSelect";
 import RodSelect from "@/components/catches/RodSelect";
 import ReelSelect from "@/components/catches/ReelSelect";
+import { useUnits } from "@/lib/unitsContext";
 
 
 const SPECIES_OPTIONS = [
@@ -43,12 +44,23 @@ const emptyCatch = {
 
 export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods, reels, lines, loading }) {
   const [form, setForm] = useState(emptyCatch);
+  const { isMetric, tempLabel } = useUnits();
 
   useEffect(() => {
     if (open) {
-      setForm(initial ? { ...emptyCatch, ...initial } : emptyCatch);
+      const base = initial ? { ...emptyCatch, ...initial } : emptyCatch;
+      if (isMetric && initial) {
+        setForm({
+          ...base,
+          length: base.length != null ? (base.length * 2.54).toFixed(1) : "",
+          girth: base.girth != null ? (base.girth * 2.54).toFixed(1) : "",
+          weight: base.weight != null ? (base.weight * 0.453592).toFixed(1) : "",
+        });
+      } else {
+        setForm(base);
+      }
     }
-  }, [open, initial]);
+  }, [open, initial, isMetric]);
 
   const set = (field, value) => setForm((f) => ({ ...f, [field]: value }));
 
@@ -69,11 +81,17 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    let length = numOrNull(form.length);
+    let girth = numOrNull(form.girth);
+    let weight = numOrNull(form.weight);
+    if (isMetric) {
+      length = length != null ? Number((length / 2.54).toFixed(2)) : null;
+      girth = girth != null ? Number((girth / 2.54).toFixed(2)) : null;
+      weight = weight != null ? Number((weight / 0.453592).toFixed(2)) : null;
+    }
     const payload = {
       ...form,
-      length: numOrNull(form.length),
-      girth: numOrNull(form.girth),
-      weight: numOrNull(form.weight),
+      length, girth, weight,
       water_temp: numOrNull(form.water_temp),
     };
     onSubmit(payload);
@@ -124,36 +142,36 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label>Length (in)</Label>
+              <Label>Length ({isMetric ? 'cm' : 'in'})</Label>
               <Input
                 className="bg-muted"
                 type="number"
                 step="0.1"
                 value={form.length ?? ""}
                 onChange={(e) => set("length", e.target.value)}
-                placeholder="22"
+                placeholder={isMetric ? "55" : "22"}
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Girth (in)</Label>
+              <Label>Girth ({isMetric ? 'cm' : 'in'})</Label>
               <Input
                 className="bg-muted"
                 type="number"
                 step="0.1"
                 value={form.girth ?? ""}
                 onChange={(e) => set("girth", e.target.value)}
-                placeholder="12"
+                placeholder={isMetric ? "30" : "12"}
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Weight (lb)</Label>
+              <Label>Weight ({isMetric ? 'kg' : 'lb'})</Label>
               <Input
                 className="bg-muted"
                 type="number"
                 step="0.1"
                 value={form.weight ?? ""}
                 onChange={(e) => set("weight", e.target.value)}
-                placeholder="4.5"
+                placeholder={isMetric ? "2" : "4.5"}
               />
             </div>
           </div>
@@ -207,7 +225,7 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Water Temp ({localStorage.getItem('weatherTempUnit') === 'fahrenheit' ? '°F' : '°C'})</Label>
+              <Label>Water Temp ({tempLabel})</Label>
               <Input
                 className="bg-muted"
                 type="number"

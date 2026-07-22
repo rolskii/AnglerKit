@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Loader2, Sun, Moon, ArrowLeftRight, BellRing } from "lucide-react";
+import { Loader2, Sun, Moon, ArrowLeftRight, BellRing, Ruler } from "lucide-react";
+import { useUnits } from "@/lib/unitsContext";
 import ImportExportSection from "@/components/settings/ImportExportSection";
 import NotificationSetup from "@/components/settings/NotificationSetup";
 import AlarmSoundPicker from "@/components/settings/AlarmSoundPicker";
@@ -10,6 +11,7 @@ export default function Settings() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "light");
+  const { system, setUnitSystem } = useUnits();
 
   const applyTheme = (t) => {
     setTheme(t);
@@ -72,6 +74,34 @@ export default function Settings() {
             <p className="text-sm font-medium mb-2">Alarm sound</p>
             <AlarmSoundPicker />
           </div>
+        </div>
+      </div>
+
+      <div className="rounded-lg border-0 bg-primary/10 p-6 space-y-4">
+        <div className="flex items-center gap-2">
+          <Ruler className="w-5 h-5 text-primary" />
+          <h2 className="font-heading font-semibold">Units</h2>
+        </div>
+        <p className="text-sm text-muted-foreground -mt-2">Choose between metric and imperial measurements across the app.</p>
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={() => setUnitSystem("metric")}
+            className={`flex flex-col items-start rounded-lg border p-3 text-left transition-colors ${
+              system === "metric" ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:bg-accent/50"
+            }`}
+          >
+            <span className={`text-sm font-semibold ${system === "metric" ? "text-primary" : ""}`}>Metric</span>
+            <span className="text-xs text-muted-foreground">°C, cm, kg, m</span>
+          </button>
+          <button
+            onClick={() => setUnitSystem("imperial")}
+            className={`flex flex-col items-start rounded-lg border p-3 text-left transition-colors ${
+              system === "imperial" ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:bg-accent/50"
+            }`}
+          >
+            <span className={`text-sm font-semibold ${system === "imperial" ? "text-primary" : ""}`}>Imperial</span>
+            <span className="text-xs text-muted-foreground">°F, in, lb, ft</span>
+          </button>
         </div>
       </div>
 

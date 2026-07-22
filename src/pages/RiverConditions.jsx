@@ -1,18 +1,21 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import {
-  Waves, MapPin, ChevronDown, TrendingUp, TrendingDown, Minus, Search,
-  Droplets, Gauge, StickyNote, Plus, AlertTriangle, Info, CheckCircle2,
+  Waves, MapPin, ChevronDown, TrendingUp, TrendingDown, Minus,
+  Droplets, Gauge, StickyNote, Plus, AlertTriangle, Info, CheckCircle2, Trash2, Pen,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
-import { getSharedLocation, setSharedLocation } from '@/lib/sharedLocation';
+import { getRiverLocation, setRiverLocation } from '@/lib/riverLocation';
 import RiverStationMapPicker from '@/components/river/RiverStationMapPicker';
 import RiverLevelChart from '@/components/river/RiverLevelChart';
 import HistoricalRangeChart from '@/components/river/HistoricalRangeChart';
 import PullToRefresh from '@/components/PullToRefresh';
 import { useAutoRefresh } from '@/hooks/useAutoRefresh';
+import { useUnits } from '@/lib/unitsContext';
+import ShareStatusButton from '@/components/ShareStatusButton';
 
 function TrendIndicator({ trend }) {
   if (!trend) return null;
@@ -82,7 +85,7 @@ function buildAdvisory(data) {
 }
 
 export default function RiverConditions() {
-  const sharedInit = getSharedLocation();
+  const sharedInit = getRiverLocation();
   const [locationName, setLocationName] = useState(sharedInit.name);
   const [coords, setCoords] = useState(sharedInit.coords);
   const [data, setData] = useState(null);
@@ -92,11 +95,33 @@ export default function RiverConditions() {
   const [notes, setNotes] = useState([]);
   const [noteText, setNoteText] = useState('');
   const [savingNote, setSavingNote] = useState(false);
-  const [stationQuery, setStationQuery] = useState('');
-  const [stationResults, setStationResults] = useState([]);
-  const [stationSearchOpen, setStationSearchOpen] = useState(false);
-  const [searchingStations, setSearchingStations] = useState(false);
-  const searchDebounceRef = useRef(null);
+  const [noteDialogOpen, setNoteDialogOpen] = useState(false);
+  const [historicalHourly, setHistoricalHourly] = useState(null);
+  const [overlayLabel, setOverlayLabel] = useState('1 day before');
+  const [overlayRange, setOverlayRange] = useState('1d');
+  const { isMetric, formatLevel, formatDischarge, levelUnitLabel, convertLevelVal, convertDischargeVal } = useUnits();
+  const contentRef = useRef(null);
+
+  const chartHourly = useMemo(() => {
+    if (!data?.hourly || isMetric) return data?.hourly;
+    return {
+      ...data.hourly,
+      level: data.hourly.level?.map(v => v != null ? convertLevelVal(v) : null),
+      discharge: data.hourly.discharge?.map(v => v != null ? convertDischargeVal(v) : null),
+    };
+  }, [data?.hourly, isMetric, convertLevelVal, convertDischargeVal]);
+
+  const chartOverlayHourly = useMemo(() => {
+    if (!historicalHourly || isMetric) return historicalHourly;
+    return {
+      ...historicalHourly,
+      level: historicalHourly.level?.map(v => v != null ? convertLevelVal(v) : null),
+      discharge: historicalHourly.discharge?.map(v => v != null ? convertDischargeVal(v) : null),
+    };
+  }, [historicalHourly, isMetric, convertLevelVal, convertDischargeVal]);
+
+  const chartNormalLevel = data?.normal?.median != null ? convertLevelVal(data.normal.median) : null;
+
 
   const fetchConditions = useCallback(async (lat, lon) => {
     if (!lat || !lon) return;
@@ -146,6 +171,23 @@ export default function RiverConditions() {
     // handled by the sharedLocationChanged listener below.
   }, []);
 
+  // Refresh immediately when the tab/app becomes visible again — the
+  // interval-based auto-refresh skips ticks while hidden, so without this
+  // a user returning to the page would see stale data until the next tick.
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') {
+        fetchConditions(coords?.lat, coords?.lon);
+      }
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', onVisible);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', onVisible);
+    };
+  }, [fetchConditions, coords]);
+
   useEffect(() => {
     const onLocationChange = (e) => {
       const { name, lat, lon } = e.detail || {};
@@ -155,33 +197,9 @@ export default function RiverConditions() {
         fetchConditions(lat, lon);
       }
     };
-    window.addEventListener('sharedLocationChanged', onLocationChange);
-    return () => window.removeEventListener('sharedLocationChanged', onLocationChange);
+    window.addEventListener('riverLocationChanged', onLocationChange);
+    return () => window.removeEventListener('riverLocationChanged', onLocationChange);
   }, [fetchConditions]);
-
-  // Debounced river/station name search — e.g. typing "Credit River" lists
-  // every ECCC station with that text in its name, regardless of distance.
-  useEffect(() => {
-    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
-    const q = stationQuery.trim();
-    if (q.length < 2) {
-      setStationResults([]);
-      setSearchingStations(false);
-      return;
-    }
-    setSearchingStations(true);
-    searchDebounceRef.current = setTimeout(async () => {
-      try {
-        const res = await base44.functions.invoke('hydrometric', { searchQuery: q });
-        setStationResults(res.data?.stations || []);
-      } catch (e) {
-        setStationResults([]);
-      } finally {
-        setSearchingStations(false);
-      }
-    }, 350);
-    return () => clearTimeout(searchDebounceRef.current);
-  }, [stationQuery]);
 
   const loadNotes = useCallback(async (stationId) => {
     if (!stationId) { setNotes([]); return; }
@@ -201,15 +219,22 @@ export default function RiverConditions() {
   // rows — jumps straight to that exact station rather than re-searching
   // for the nearest one to a point.
   const selectStation = (station) => {
-    setStationQuery('');
-    setStationResults([]);
-    setStationSearchOpen(false);
     setLocationName(station.name);
     if (station.lat != null && station.lon != null) {
-      setSharedLocation(station.name, station.lat, station.lon);
+      setRiverLocation(station.name, station.lat, station.lon);
       setCoords({ lat: station.lat, lon: station.lon, name: station.name });
     }
     fetchConditionsForStation(station.id, station.name);
+  };
+
+  const handleDeleteNote = async (noteId) => {
+    if (!noteId) return;
+    try {
+      await base44.entities.RiverNote.delete(noteId);
+      await loadNotes(data?.station?.id);
+    } catch (e) {
+      // keep silent — the note stays in the list
+    }
   };
 
   const handleSaveNote = async () => {
@@ -227,6 +252,7 @@ export default function RiverConditions() {
         note: noteText.trim(),
       });
       setNoteText('');
+      setNoteDialogOpen(false);
       await loadNotes(data.station.id);
     } catch (e) {
       // leave the text in place so the user doesn't lose what they typed
@@ -248,56 +274,22 @@ export default function RiverConditions() {
   return (
     <PullToRefresh onRefresh={refresh}>
       <div className="space-y-3 md:space-y-4 -mt-4 md:-mt-8">
-        <div className="max-w-2xl mx-auto space-y-3">
+        <div ref={contentRef} className="max-w-2xl mx-auto space-y-3">
           {/* Header */}
-          <div className="flex items-center justify-between px-1 mb-2">
+          <div className="px-1 mb-2 flex items-center justify-between">
             <h1 className="text-2xl md:text-[34px] font-heading font-extrabold tracking-tight leading-tight flex items-center gap-2">
               <Waves className="w-6 h-6 md:w-8 md:h-8 text-primary" />
               River Conditions
             </h1>
-            <button
-              onClick={() => setMapPickerOpen(true)}
-              className="text-xs text-muted-foreground flex items-center gap-1 hover:text-primary transition-colors"
-            >
-              <MapPin className="w-3.5 h-3.5" />
-              <span className="max-w-[120px] truncate">{locationName}</span>
-              <ChevronDown className="w-3 h-3 opacity-60" />
-            </button>
-          </div>
-
-          {/* River / station name search */}
-          <div className="relative px-1">
-            <div className="relative">
-              <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <input
-                type="text"
-                value={stationQuery}
-                onChange={(e) => { setStationQuery(e.target.value); setStationSearchOpen(true); }}
-                onFocus={() => setStationSearchOpen(true)}
-                onBlur={() => setTimeout(() => setStationSearchOpen(false), 150)}
-                placeholder="Search for a river or station…"
-                className="w-full text-sm bg-secondary rounded-full pl-8 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/40"
-              />
-            </div>
-            {stationSearchOpen && stationQuery.trim().length >= 2 && (
-              <div className="absolute z-30 left-0 right-0 mt-1 bg-card border border-border rounded-xl shadow-md max-h-64 overflow-y-auto">
-                {searchingStations ? (
-                  <p className="text-xs text-muted-foreground px-3 py-2">Searching…</p>
-                ) : stationResults.length === 0 ? (
-                  <p className="text-xs text-muted-foreground px-3 py-2">No stations found.</p>
-                ) : (
-                  stationResults.map((s) => (
-                    <button
-                      key={s.id}
-                      onClick={() => selectStation(s)}
-                      className="w-full text-left px-3 py-2 text-sm hover:bg-secondary transition-colors flex items-center justify-between gap-2"
-                    >
-                      <span className="truncate">{s.name}</span>
-                      {s.prov && <span className="text-xs text-muted-foreground shrink-0">{s.prov}</span>}
-                    </button>
-                  ))
-                )}
-              </div>
+            {data && !error && (
+              <button
+                onClick={() => setMapPickerOpen(true)}
+                className="text-xs text-muted-foreground flex items-center gap-1 hover:text-primary transition-colors shrink-0"
+              >
+                <MapPin className="w-3.5 h-3.5" />
+                <span className="max-w-[120px] truncate">{locationName}</span>
+                <ChevronDown className="w-3 h-3 opacity-60" />
+              </button>
             )}
           </div>
 
@@ -315,14 +307,11 @@ export default function RiverConditions() {
               {/* Nearest station card */}
               <Card className="bg-primary/10">
                 <CardContent className="p-3 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="min-w-0">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1.5">
                       <p className="text-sm font-semibold truncate">{data.station.name}</p>
-                      <p className="text-xs text-muted-foreground">Station {data.station.id} · {data.station.distanceKm} km away</p>
                     </div>
-                    <span className="text-[10px] text-muted-foreground text-right shrink-0">
-                      Updated {data.current?.datetimeLocal ? new Date(data.current.datetimeLocal).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '—'}
-                    </span>
+                    <p className="text-xs text-muted-foreground">Station {data.station.id} · {data.station.distanceKm} km away · <span className="font-semibold text-foreground">Updated {data.current?.datetimeLocal ? new Date(data.current.datetimeLocal).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '—'}</span></p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2">
@@ -330,7 +319,7 @@ export default function RiverConditions() {
                       <Droplets className="w-6 h-6 shrink-0 text-primary" />
                       <div className="min-w-0">
                         <div className="flex items-center gap-1.5">
-                          <p className="text-sm font-semibold leading-tight">{data.current?.level != null ? `${data.current.level.toFixed(2)} m` : '—'}</p>
+                          <p className="text-xl font-semibold leading-tight">{data.current?.level != null ? formatLevel(data.current.level) : '—'}</p>
                           <TrendIndicator trend={data.trend?.level} />
                         </div>
                         <span className="text-xs text-muted-foreground leading-tight">Water Level</span>
@@ -340,7 +329,7 @@ export default function RiverConditions() {
                       <Gauge className="w-6 h-6 shrink-0 text-primary" />
                       <div className="min-w-0">
                         <div className="flex items-center gap-1.5">
-                          <p className="text-sm font-semibold leading-tight">{data.current?.discharge != null ? `${data.current.discharge.toFixed(1)} m³/s` : '—'}</p>
+                          <p className="text-xl font-semibold leading-tight">{data.current?.discharge != null ? formatDischarge(data.current.discharge) : '—'}</p>
                           <TrendIndicator trend={data.trend?.discharge} />
                         </div>
                         <span className="text-xs text-muted-foreground leading-tight">Flow</span>
@@ -348,74 +337,43 @@ export default function RiverConditions() {
                     </div>
                   </div>
 
-                  {data.normal && (
-                    <div className="bg-secondary/60 rounded-lg p-2.5">
-                      <div className="mb-1">
-                        <span className="text-xs font-medium text-muted-foreground">Compared to Normal</span>
-                      </div>
-                      <p className="text-xs text-foreground leading-snug mb-1.5">
-                        {buildNormalSummary(data.normal, data.trend?.level)}
-                      </p>
-                      <div className="h-1.5 rounded-full bg-muted overflow-hidden relative">
-                        <div className="absolute inset-y-0 left-0 bg-primary rounded-full" style={{ width: `${data.normal.percentile}%` }} />
-                      </div>
-                    </div>
-                  )}
+                </CardContent>
+              </Card>
 
+              {/* Hourly chart + historical overlay */}
+              <Card>
+                <CardHeader className="pt-3 pb-2 px-3">
+                  <CardTitle className="text-base">Water Level (Last 24 Hours)</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0 pb-2 px-3">
+                  <RiverLevelChart hourly={chartHourly || data.hourly} field="level" unitLabel={levelUnitLabel} normalLevel={chartNormalLevel ?? data.normal?.median} overlayHourly={chartOverlayHourly} overlayLabel={overlayLabel} overlayRange={overlayRange} />
                   {advisory && (
-                    <div className={`rounded-lg p-2.5 flex items-start gap-2 ${advisory.tone}`}>
+                    <div className={`rounded-lg p-2.5 flex items-start gap-2 mt-2 ${advisory.tone}`}>
                       <advisory.icon className="w-4 h-4 shrink-0 mt-0.5" />
                       <p className="text-xs leading-snug">{advisory.text}</p>
                     </div>
                   )}
-                </CardContent>
-              </Card>
-
-              {/* Hourly chart */}
-              <Card>
-                <CardHeader className="pt-3 pb-2">
-                  <CardTitle className="text-base">Water Level (Today / Yesterday)</CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <RiverLevelChart hourly={data.hourly} field="level" unitLabel="m" />
-                </CardContent>
-              </Card>
-
-              {/* Historical chart */}
-              <Card>
-                <CardHeader className="pt-3 pb-2">
-                  <CardTitle className="text-base">Historical Water Level</CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <HistoricalRangeChart stationId={data.station.id} stationName={data.station.name} field="level" unitLabel="m" currentValue={data.current?.level} />
+                  <div className="mt-2 pt-2 border-t border-border/60">
+                    <HistoricalRangeChart stationId={data.station.id} stationName={data.station.name} field="level" unitLabel={levelUnitLabel} currentValue={data.current?.level} normalLevel={data.normal?.median} onDataChange={setHistoricalHourly} onRangeChange={setOverlayLabel} onRangeKeyChange={setOverlayRange} />
+                  </div>
                 </CardContent>
               </Card>
 
               {/* Notes */}
               <Card>
-                <CardHeader className="pt-3 pb-2">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <StickyNote className="w-4 h-4 text-primary" />
+                <CardHeader className="pt-3 pb-2 px-3">
+                  <CardTitle className="text-base flex items-center gap-1.5">
                     Notes for this location
+                    <button
+                      onClick={() => setNoteDialogOpen(true)}
+                      className="text-muted-foreground hover:text-primary transition-colors shrink-0"
+                      aria-label="Add note"
+                    >
+                      <Pen className="w-3.5 h-3.5" />
+                    </button>
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="pt-0 space-y-3">
-                  <div className="bg-secondary/60 rounded-lg p-2.5 space-y-2">
-                    <p className="text-xs text-muted-foreground">
-                      WL: {data.current?.level != null ? `${data.current.level.toFixed(2)} m` : '—'} · Flow: {data.current?.discharge != null ? `${data.current.discharge.toFixed(1)} m³/s` : '—'} (auto-captured on save)
-                    </p>
-                    <Textarea
-                      value={noteText}
-                      onChange={(e) => setNoteText(e.target.value)}
-                      placeholder="e.g. water conditions were green but not clear, fishing conditions were ideal..."
-                      className="text-sm min-h-[70px]"
-                    />
-                    <Button size="sm" onClick={handleSaveNote} disabled={!noteText.trim() || savingNote} className="gap-1.5">
-                      <Plus className="w-3.5 h-3.5" />
-                      {savingNote ? 'Saving…' : 'Add Note'}
-                    </Button>
-                  </div>
-
+                <CardContent className="pt-0 pb-2 px-3 space-y-3">
                   {notes.length === 0 ? (
                     <p className="text-xs text-muted-foreground text-center py-2">No notes yet for this location.</p>
                   ) : (
@@ -424,11 +382,15 @@ export default function RiverConditions() {
                         <div key={n.id} className="border-b border-border/60 last:border-b-0 pb-2 last:pb-0">
                           <div className="flex items-center justify-between mb-0.5">
                             <span className="text-xs font-medium text-muted-foreground">
-                              WL: {n.level != null ? `${n.level.toFixed(2)} m` : '—'} · Flow: {n.discharge != null ? `${n.discharge.toFixed(1)} m³/s` : '—'}
+                              WL: {n.level != null ? formatLevel(n.level) : '—'} · Flow: {n.discharge != null ? formatDischarge(n.discharge) : '—'}{n.created_date ? ` · ${new Date(n.created_date.endsWith('Z') || n.created_date.includes('+') ? n.created_date : n.created_date + 'Z').toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}` : ''}
                             </span>
-                            <span className="text-[10px] text-muted-foreground">
-                              {n.created_date ? new Date(n.created_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''}
-                            </span>
+                            <button
+                              onClick={() => handleDeleteNote(n.id)}
+                              className="text-muted-foreground hover:text-destructive transition-colors shrink-0"
+                              aria-label="Delete note"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
                           </div>
                           <p className="text-sm text-foreground leading-snug">{n.note}</p>
                         </div>
@@ -441,16 +403,16 @@ export default function RiverConditions() {
               {/* Nearby stations */}
               {data.nearbyStations?.length > 0 && (
                 <Card>
-                  <CardHeader className="pt-3 pb-2">
+                  <CardHeader className="pt-3 pb-2 px-3">
                     <CardTitle className="text-base">Nearby Stations</CardTitle>
                   </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="flex flex-col gap-1">
+                  <CardContent className="pt-0 pb-2 px-3">
+                    <div className="flex flex-col">
                       {data.nearbyStations.map((s) => (
                         <button
                           key={s.id}
                           onClick={() => selectStation(s)}
-                          className="w-full flex items-center justify-between py-1.5 px-1 rounded-lg hover:bg-secondary transition-colors text-left"
+                          className="w-full flex items-center justify-between py-1 px-1 rounded-lg hover:bg-secondary transition-colors text-left"
                         >
                           <span className="text-sm text-foreground">{s.name}</span>
                           <span className="text-xs text-muted-foreground">{s.distanceKm} km</span>
@@ -468,12 +430,56 @@ export default function RiverConditions() {
           )}
         </div>
 
+        {data && !error && (
+          <div className="px-1 max-w-2xl mx-auto">
+            <ShareStatusButton
+              targetRef={contentRef}
+              title={`River Conditions — ${data.station?.name || locationName}`}
+              text={[
+                `📍 ${data.station?.name || locationName} (Station ${data.station?.id || '—'})`,
+                `💧 Water Level: ${data.current?.level != null ? formatLevel(data.current.level) : '—'}`,
+                `🌊 Flow: ${data.current?.discharge != null ? formatDischarge(data.current.discharge) : '—'}`,
+                data.trend?.level?.direction ? `📈 Level Trend: ${data.trend.level.direction} (${Math.abs(Math.round(data.trend.level.changePct))}%)` : '',
+                data.trend?.discharge?.direction ? `📈 Flow Trend: ${data.trend.discharge.direction} (${Math.abs(Math.round(data.trend.discharge.changePct))}%)` : '',
+                `🔄 Updated ${data.current?.datetimeLocal ? new Date(data.current.datetimeLocal).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '—'}`,
+              ].filter(Boolean).join('\n')}
+            />
+          </div>
+        )}
+
         <RiverStationMapPicker
           open={mapPickerOpen}
           onOpenChange={setMapPickerOpen}
           initialCoords={coords}
           onSelect={selectStation}
         />
+
+        <Dialog open={noteDialogOpen} onOpenChange={setNoteDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Pen className="w-4 h-4 text-primary" />
+                Add Note
+              </DialogTitle>
+            </DialogHeader>
+            <p className="text-xs text-muted-foreground">
+              WL: {data.current?.level != null ? formatLevel(data.current.level) : '—'} · Flow: {data.current?.discharge != null ? formatDischarge(data.current.discharge) : '—'} (auto-captured on save)
+            </p>
+            <Textarea
+              value={noteText}
+              onChange={(e) => setNoteText(e.target.value)}
+              placeholder="e.g. water conditions were green but not clear, fishing conditions were ideal..."
+              className="text-sm min-h-[100px]"
+              autoFocus
+            />
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setNoteDialogOpen(false)}>Cancel</Button>
+              <Button onClick={handleSaveNote} disabled={!noteText.trim() || savingNote} className="gap-1.5">
+                {savingNote ? 'Saving…' : 'Save Note'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </PullToRefresh>
   );

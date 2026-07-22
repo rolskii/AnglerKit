@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Droplets, MapPin, ChevronDown, Thermometer, Eye, Wind, Gauge, TrendingUp, TrendingDown, Minus, Sunrise, Sunset, Sun, Moon, CloudSun, CloudMoon, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, CloudLightning } from 'lucide-react';
+import { Droplets, MapPin, ChevronDown, Thermometer, Eye, Wind, Gauge, TrendingUp, TrendingDown, Minus, Sunrise, Sunset, Sun, Moon, CloudSun, CloudMoon, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, CloudLightning, Cloudy } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { searchLocations, geocodeLocation } from '@/lib/geocode';
 import { getSharedLocation, setSharedLocation, initDefaultLocationFromGPS } from '@/lib/sharedLocation';
@@ -16,6 +16,7 @@ import AirQualityCard from '@/components/weather/AirQualityCard';
 import { formatTemp, formatWind, formatPrecip, formatPressure, formatVisibility } from '@/lib/weatherUnits';
 import PullToRefresh from '@/components/PullToRefresh';
 import { useAutoRefresh } from '@/hooks/useAutoRefresh';
+import { useUnits } from '@/lib/unitsContext';
 export default function Weather() {
   const sharedInit = getSharedLocation();
   const [weather, setWeather] = useState(null);
@@ -26,6 +27,7 @@ export default function Weather() {
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [tempUnit, setTempUnit] = useState(() => localStorage.getItem('weatherTempUnit') || 'celsius');
+  const { system, setUnitSystem } = useUnits();
   const [lastCoords, setLastCoords] = useState(sharedInit.coords);
   const [userCoords, setUserCoords] = useState(null);
   const [selectedDay, setSelectedDay] = useState(null);
@@ -139,14 +141,17 @@ export default function Weather() {
     }
   };
   const toggleTempUnit = () => {
-    const next = tempUnit === 'fahrenheit' ? 'celsius' : 'fahrenheit';
-    setTempUnit(next);
-    localStorage.setItem('weatherTempUnit', next);
-    window.dispatchEvent(new Event('weatherTempUnitChanged'));
-    if (lastCoords) {
-      fetchWeatherByCoords(lastCoords.lat, lastCoords.lon, lastCoords.name, next);
-    }
+    setUnitSystem(system === 'metric' ? 'imperial' : 'metric');
   };
+  useEffect(() => {
+    const newUnit = system === 'metric' ? 'celsius' : 'fahrenheit';
+    if (newUnit !== tempUnit) {
+      setTempUnit(newUnit);
+      if (lastCoords) {
+        fetchWeatherByCoords(lastCoords.lat, lastCoords.lon, lastCoords.name, newUnit);
+      }
+    }
+  }, [system]);
   const handleSuggestionSelect = (suggestion) => {
     setEditingLocation(suggestion.label);
     setShowSuggestions(false);
@@ -337,14 +342,11 @@ export default function Weather() {
         {/* Header */}
         <div className="space-y-2 px-1 mb-2">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl md:text-[34px] font-heading font-extrabold tracking-tight leading-tight">Weather</h1>
-            <button
-              onClick={toggleTempUnit}
-              className="px-3 py-1 text-sm font-medium rounded-full bg-primary/15 text-primary hover:bg-primary/25 transition-colors"
-              title="Toggle temperature unit"
-            >
-              °{tempUnit === 'fahrenheit' ? 'F' : 'C'}
-            </button>
+            <h1 className="text-2xl md:text-[34px] font-heading font-extrabold tracking-tight leading-tight flex items-center gap-2">
+            <Cloudy className="w-6 h-6 md:w-8 md:h-8 text-primary" />
+            Weather
+          </h1>
+
           </div>
         </div>
         {/* Current Weather Card */}

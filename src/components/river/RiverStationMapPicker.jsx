@@ -137,8 +137,12 @@ export default function RiverStationMapPicker({ open, onOpenChange, initialCoord
             });
             return annotation;
           });
-        map.addAnnotations(stationAnnotations);
-        stationAnnotationsRef.current = stationAnnotations;
+        try {
+          map.addAnnotations(stationAnnotations);
+          stationAnnotationsRef.current = stationAnnotations;
+        } catch (e) {
+          // Map may have been torn down during async init
+        }
 
         // Favorited stations — never clustered, always visible as stars.
         const favAnnotations = favs.filter(f => f.lat != null && f.lon != null).map(f => {
@@ -155,8 +159,12 @@ export default function RiverStationMapPicker({ open, onOpenChange, initialCoord
           });
           return annotation;
         });
-        map.addAnnotations(favAnnotations);
-        favoriteAnnotationsRef.current = favAnnotations;
+        try {
+          map.addAnnotations(favAnnotations);
+          favoriteAnnotationsRef.current = favAnnotations;
+        } catch (e) {
+          // Map may have been torn down during async init
+        }
 
         setMapLoading(false);
       } catch (e) {
@@ -171,12 +179,19 @@ export default function RiverStationMapPicker({ open, onOpenChange, initialCoord
     return () => {
       cancelled = true;
       clearTimeout(timer);
-      stationAnnotationsRef.current = [];
-      favoriteAnnotationsRef.current = [];
       if (mapRef.current) {
+        // Remove annotations BEFORE destroying so MapKit's internal async
+        // annotation rendering (_addAnnotationToMapAsync) doesn't try to
+        // touch a destroyed map instance (this._map becomes null).
+        try {
+          const anns = [...stationAnnotationsRef.current, ...favoriteAnnotationsRef.current];
+          if (anns.length) mapRef.current.removeAnnotations(anns);
+        } catch (e) {}
         try { mapRef.current.destroy(); } catch (e) {}
         mapRef.current = null;
       }
+      stationAnnotationsRef.current = [];
+      favoriteAnnotationsRef.current = [];
     };
   }, [open, retryTick]);
 

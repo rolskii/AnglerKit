@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LinesIcon, ReelIcon, RodIcon, LureIcon } from "@/components/GearIcons";
 import { Package } from "lucide-react";
+import { ReelIcon as ReelDiscIcon } from "@/components/GearIcons";
 import Lines from "@/pages/Lines";
 import Reels from "@/pages/Reels";
 import Rods from "@/pages/Rods";
@@ -46,7 +47,10 @@ export default function Gear() {
     <PullToRefresh onRefresh={handleRefresh}>
     <div className="space-y-6 md:space-y-8 -mt-4 md:-mt-8">
       <div className="space-y-2 px-1">
-        <h1 className="text-2xl md:text-[34px] font-heading font-bold tracking-tight leading-tight">Gear</h1>
+        <h1 className="text-2xl md:text-[34px] font-heading font-bold tracking-tight leading-tight flex items-center gap-2">
+        <ReelDiscIcon className="w-6 h-6 md:w-8 md:h-8 text-primary" />
+        Gear
+      </h1>
         <p className="text-sm md:text-[17px] text-muted-foreground">
           Everything in your fishing arsenal, in one place.
         </p>
