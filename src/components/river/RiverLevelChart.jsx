@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { buildSmoothPath, generateFixedIntervalTicks } from '@/lib/chartUtils';
 import { useNowTick } from '@/hooks/useNowTick';
 import { Loader2 } from 'lucide-react';
@@ -121,6 +121,18 @@ function RollingTimeAxis({ windowStartMs, nowMs }) {
 function ChartPanel({ hourlyData, field, normalLevel, overlayBuckets, overlayLabel, overlayColor, bounds, loading, yTicks, unitLabel, nowMs }) {
   const [activeX, setActiveX] = useState(null);
   const lastTapRef = useRef(0);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    if (activeX == null) return;
+    const handleOutside = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setActiveX(null);
+      }
+    };
+    document.addEventListener('pointerdown', handleOutside);
+    return () => document.removeEventListener('pointerdown', handleOutside);
+  }, [activeX]);
 
   const points = useMemo(() => buildRollingPoints(hourlyData, nowMs), [hourlyData, nowMs]);
   const windowStartMs = nowMs - WINDOW_HOURS * 3600000;
@@ -228,7 +240,7 @@ function ChartPanel({ hourlyData, field, normalLevel, overlayBuckets, overlayLab
   }
 
   return (
-    <div className="w-full relative">
+    <div className="w-full relative" ref={containerRef}>
       <div className="relative" style={{ height: CHART_HEIGHT }}>
         <svg viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`} className="w-full cursor-pointer" style={{ height: CHART_HEIGHT, touchAction: 'none' }} preserveAspectRatio="none" onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp}>
           <defs>
