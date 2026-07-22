@@ -2,12 +2,13 @@ import React, { useMemo, useEffect, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { buildSmoothPath, generateFixedIntervalTicks } from '@/lib/chartUtils';
 import { useNowTick } from '@/hooks/useNowTick';
-import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 const CHART_HEIGHT = 120;
 const CHART_WIDTH = 720;
 const PAD_TOP_PCT = 0.08;
 const PAD_BOTTOM_PCT = 0.08;
+const FETCH_DAYS = 7;
 
 function localDateStr(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -61,140 +62,30 @@ function HourAxis({ nowHour }) {
   );
 }
 
-export default function RiverLevelChart({ hourly, field = 'level', unitLabel, normalLevel, overlayHourly, stationId, stationName }) {
-  const now = useNowTick(60000);
-  const [dayOffset, setDayOffset] = useState(0); // 0 = today, -1 = yesterday, etc.
-  const [historicalData, setHistoricalData] = useState(null);
-  const [loadingHistorical, setLoadingHistorical] = useState(false);
-  const touchStartX = useRef(null);
-  const touchStartY = useRef(null);
+// Build a 24-hour array (12am–12am) for a given day from hourly readings.
+function buildHours(hourlyData, field, targetDateStr) {
+  if (!hourlyData?.time?.length) return new Array(24).fill(null).map((_, h) => ({ hour: h, value: null, isReal: false }));
+  const byDate = {};
+  hourlyData.time.forEach((t, i) => {
+    const d = new Date(t);
+    const dateStr = localDateStr(d);
+    if (!byDate[dateStr]) byDate[dateStr] = new Array(24).fill(null).map((_, h) => ({ hour: h, value: null, isReal: false }));
+    const hour = d.getHours();
+    byDate[dateStr][hour] = { hour, value: hourlyData[field]?.[i] ?? null, isReal: true };
+  });
+  return byDate[targetDateStr] || new Array(24).fill(null).map((_, h) => ({ hour: h, value: null, isReal: false }));
+}
 
-  // Fetch the target day's hourly data when panning away from today.
-  useEffect(() => {
-    if (dayOffset === 0 || !stationId) {
-      setHistoricalData(null);
-      return;
-    }
-    let cancelled = false;
-    const load = async () => {
-      setLoadingHistorical(true);
-      try {
-        const targetDate = new Date(now.getTime() + dayOffset * 86400000);
-        const startDateStr = localDateStr(targetDate);
-        const res = await base44.functions.invoke('hydrometric', {
-          stationId,
-          stationName,
-          historicalRange: 'custom',
-          startDate: startDateStr,
-          tzOffset: new Date().getTimezoneOffset(),
-        });
-        if (!cancelled) {
-          setHistoricalData(res.data?.historical || null);
-        }
-      } catch (e) {
-        if (!cancelled) setHistoricalData(null);
-      } finally {
-        if (!cancelled) setLoadingHistorical(false);
-      }
-    };
-    load();
-    return () => { cancelled = true; };
-  }, [dayOffset, stationId, stationName, now]);
+function DayPanel({ hourlyData, field, unitLabel, normalLevel, overlayHours, sharedBounds, isToday, nowHour, loading }) {
+  const hours = useMemo(() => buildHours(hourlyData, field, hourlyData?._targetDateStr || ''), [hourlyData, field]);
 
-  // Horizontal swipe to pan between days; ignore vertical scrolls.
-  const onTouchStart = (e) => {
-    touchStartX.current = e.touches[0].clientX;
-    touchStartY.current = e.touches[0].clientY;
-  };
-  const onTouchEnd = (e) => {
-    if (touchStartX.current == null) return;
-    const deltaX = e.changedTouches[0].clientX - touchStartX.current;
-    const deltaY = e.changedTouches[0].clientY - (touchStartY.current ?? 0);
-    const threshold = 50;
-    // Only pan if the swipe is predominantly horizontal
-    if (Math.abs(deltaX) > threshold && Math.abs(deltaX) > Math.abs(deltaY)) {
-      if (deltaX < 0) {
-        setDayOffset(d => d - 1); // swipe left → further back
-      } else if (dayOffset < 0) {
-        setDayOffset(d => Math.min(0, d + 1)); // swipe right → toward today
-      }
-    }
-    touchStartX.current = null;
-    touchStartY.current = null;
-  };
-
-  const isToday = dayOffset === 0;
-  const effectiveHourly = isToday ? hourly : historicalData;
-
-  const targetDate = new Date(now.getTime() + dayOffset * 86400000);
-  const targetDateStr = localDateStr(targetDate);
-  const dayLabel = isToday
-    ? 'Today'
-    : dayOffset === -1
-      ? 'Yesterday'
-      : targetDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-
-  // Build the 24-hour array (12am–12am) for the target day.
-  const hours = useMemo(() => {
-    if (!effectiveHourly?.time?.length) return new Array(24).fill(null).map((_, h) => ({ hour: h, value: null, isReal: false }));
-    const byDate = {};
-    effectiveHourly.time.forEach((t, i) => {
-      const d = new Date(t);
-      const dateStr = localDateStr(d);
-      if (!byDate[dateStr]) byDate[dateStr] = new Array(24).fill(null).map((_, h) => ({ hour: h, value: null, isReal: false }));
-      const hour = d.getHours();
-      byDate[dateStr][hour] = { hour, value: effectiveHourly[field]?.[i] ?? null, isReal: true };
-    });
-    return byDate[targetDateStr] || new Array(24).fill(null).map((_, h) => ({ hour: h, value: null, isReal: false }));
-  }, [effectiveHourly, field, targetDateStr]);
-
-  // Suppress the historical overlay line when viewing a non-today day.
-  const effectiveOverlay = isToday ? overlayHourly : null;
-  const overlayHours = useMemo(() => {
-    if (!effectiveOverlay?.time?.length) return null;
-    const values = effectiveOverlay[field] || [];
-    const buckets = new Array(24).fill(null).map((_, h) => ({ hour: h, value: null }));
-    const counts = new Array(24).fill(0);
-    effectiveOverlay.time.forEach((t, i) => {
-      const v = values[i];
-      if (v == null) return;
-      const h = new Date(t).getHours();
-      if (buckets[h].value == null) {
-        buckets[h].value = v;
-      } else {
-        buckets[h].value = (buckets[h].value * counts[h] + v) / (counts[h] + 1);
-      }
-      counts[h]++;
-    });
-    return buckets;
-  }, [effectiveOverlay, field]);
-
-  if (!effectiveHourly?.time?.length && !loadingHistorical) {
-    return <p className="text-sm text-muted-foreground py-4 text-center">No hourly data available yet.</p>;
-  }
-
-  const withValues = hours.filter(p => p.value != null);
-  const gradId = `riverGradient-${field}-${dayOffset}`;
-
-  const allVals = [];
-  withValues.forEach(p => allVals.push(p.value));
-  if (overlayHours) overlayHours.forEach(p => { if (p.value != null) allVals.push(p.value); });
-
-  let min = allVals.length > 0 ? Math.min(...allVals) : 0;
-  let max = allVals.length > 0 ? Math.max(...allVals) : 1;
-  if (normalLevel != null) {
-    min = Math.min(min, normalLevel);
-    max = Math.max(max, normalLevel);
-  }
-  if (field === 'level') {
-    const interval = pickTickInterval(max - min);
-    max = Math.floor(max / interval) * interval + interval;
-  }
-  const range = max - min || 1;
   const usableTop = CHART_HEIGHT * PAD_TOP_PCT;
   const usableBottom = CHART_HEIGHT * (1 - PAD_BOTTOM_PCT);
+
+  const bounds = sharedBounds || { min: 0, max: 1, normalY: null, usableTop, usableBottom };
+  const { min, max, normalY } = bounds;
+  const range = max - min || 1;
   const usableHeight = usableBottom - usableTop;
-  const normalY = normalLevel != null ? usableBottom - ((normalLevel - min) / range) * usableHeight : null;
 
   const svgPoints = hours.map(p => {
     const x = (p.hour / 24) * CHART_WIDTH;
@@ -214,6 +105,7 @@ export default function RiverLevelChart({ hourly, field = 'level', unitLabel, no
 
   const knownPoints = svgPoints.filter(p => p.y != null);
   const pathD = buildSmoothPath(knownPoints);
+  const gradId = `riverGradient-${field}-${isToday ? 'today' : hourlyData?._targetDateStr || 'hist'}`;
   const areaD = knownPoints.length > 0
     ? `${pathD} L ${knownPoints[knownPoints.length - 1].x} ${CHART_HEIGHT} L ${knownPoints[0].x} ${CHART_HEIGHT} Z`
     : '';
@@ -239,87 +131,231 @@ export default function RiverLevelChart({ hourly, field = 'level', unitLabel, no
   const lastReal = isToday ? [...knownPoints].reverse().find(p => p.isReal) : null;
 
   return (
+    <div className="flex items-stretch gap-1.5">
+      <div className="relative w-9 shrink-0" style={{ height: CHART_HEIGHT }}>
+        {yTicks.map((tick, i) => (
+          <span
+            key={i}
+            className="absolute right-0 text-[11px] text-muted-foreground whitespace-nowrap"
+            style={{ top: `${(tick.y / CHART_HEIGHT) * 100}%`, transform: 'translateY(-50%)' }}
+          >
+            {tick.label}{unitLabel ? ` ${unitLabel}` : ''}
+          </span>
+        ))}
+      </div>
+      <div className="flex-1 min-w-0 relative">
+        {loading ? (
+          <div className="flex items-center justify-center" style={{ height: CHART_HEIGHT }}>
+            <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <>
+            <svg viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`} className="w-full" style={{ height: CHART_HEIGHT }} preserveAspectRatio="none">
+              <defs>
+                <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.45" />
+                  <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.05" />
+                </linearGradient>
+              </defs>
+              {normalY != null && (
+                <line x1="0" y1={normalY} x2={CHART_WIDTH} y2={normalY} stroke="#22c55e" strokeWidth="1.5" strokeDasharray="5 3" />
+              )}
+              {areaD && <path d={areaD} fill={`url(#${gradId})`} stroke="none" />}
+              {overlayPathD && (
+                <path d={overlayPathD} fill="none" stroke="#b91c1c" strokeWidth="1" strokeLinecap="round" />
+              )}
+              {pathD && <path d={pathD} fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" />}
+              {knownPoints.filter(p => p.isReal).map((p, i) => (
+                <circle key={i} cx={p.x} cy={p.y} r={2} fill="hsl(var(--primary))" />
+              ))}
+              {lastReal && (
+                <circle cx={lastReal.x} cy={lastReal.y} r={4} fill="hsl(var(--background))" stroke="hsl(var(--primary))" strokeWidth="2" />
+              )}
+            </svg>
+            <HourAxis nowHour={nowHour} />
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default function RiverLevelChart({ hourly, field = 'level', unitLabel, normalLevel, overlayHourly, stationId, stationName }) {
+  const now = useNowTick(60000);
+  const scrollRef = useRef(null);
+  const didInitialScroll = useRef(false);
+  const mountDate = useRef(new Date());
+
+  // Build the date list once on mount — stable reference.
+  const dates = useMemo(() => {
+    const arr = [];
+    const today = mountDate.current;
+    for (let i = FETCH_DAYS - 1; i >= 0; i--) {
+      const d = new Date(today.getTime() - i * 86400000);
+      const dateStr = localDateStr(d);
+      arr.push({
+        dateStr,
+        label: i === 0 ? 'Today' : i === 1 ? 'Yesterday' : d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
+        isToday: i === 0,
+      });
+    }
+    return arr;
+  }, []);
+
+  // Fetch each historical day sequentially (most recent first) so the user
+  // can start scrolling back as soon as yesterday is loaded.
+  const [dayDataMap, setDayDataMap] = useState({});
+  useEffect(() => {
+    if (!stationId) return;
+    let cancelled = false;
+    setDayDataMap({});
+    didInitialScroll.current = false;
+
+    const load = async () => {
+      for (const date of [...dates].reverse()) {
+        if (date.isToday) continue;
+        if (cancelled) return;
+        try {
+          const res = await base44.functions.invoke('hydrometric', {
+            stationId,
+            stationName,
+            historicalRange: 'custom',
+            startDate: date.dateStr,
+            tzOffset: new Date().getTimezoneOffset(),
+          });
+          if (!cancelled) {
+            const hist = res.data?.historical || null;
+            setDayDataMap(prev => ({ ...prev, [date.dateStr]: { ...hist, _targetDateStr: date.dateStr } }));
+          }
+        } catch (e) {
+          if (!cancelled) {
+            setDayDataMap(prev => ({ ...prev, [date.dateStr]: { _targetDateStr: date.dateStr } }));
+          }
+        }
+      }
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [stationId, stationName, dates]);
+
+  // Keep today's entry in sync with the live hourly prop.
+  const todayDateStr = dates[dates.length - 1]?.dateStr;
+  useEffect(() => {
+    if (hourly && todayDateStr) {
+      setDayDataMap(prev => ({
+        ...prev,
+        [todayDateStr]: { ...hourly, _targetDateStr: todayDateStr },
+      }));
+    }
+  }, [hourly, todayDateStr]);
+
+  // Scroll to today once data is available.
+  useEffect(() => {
+    if (didInitialScroll.current || !scrollRef.current) return;
+    const todayEntry = dayDataMap[todayDateStr];
+    if (!todayEntry) return;
+    const lastChild = scrollRef.current.children[dates.length - 1];
+    if (lastChild) {
+      scrollRef.current.scrollLeft = lastChild.offsetLeft - scrollRef.current.offsetLeft;
+      didInitialScroll.current = true;
+    }
+  }, [dayDataMap, todayDateStr, dates]);
+
+  // Bucket overlay into hourly averages (today only).
+  const overlayHours = useMemo(() => {
+    if (!overlayHourly?.time?.length) return null;
+    const values = overlayHourly[field] || [];
+    const buckets = new Array(24).fill(null).map((_, h) => ({ hour: h, value: null }));
+    const counts = new Array(24).fill(0);
+    overlayHourly.time.forEach((t, i) => {
+      const v = values[i];
+      if (v == null) return;
+      const h = new Date(t).getHours();
+      if (buckets[h].value == null) {
+        buckets[h].value = v;
+      } else {
+        buckets[h].value = (buckets[h].value * counts[h] + v) / (counts[h] + 1);
+      }
+      counts[h]++;
+    });
+    return buckets;
+  }, [overlayHourly, field]);
+
+  // Shared Y bounds across all loaded days + overlay.
+  const sharedBounds = useMemo(() => {
+    const allVals = [];
+    dates.forEach(d => {
+      const data = dayDataMap[d.dateStr];
+      if (!data?.time) return;
+      const values = data[field] || [];
+      values.forEach(v => { if (v != null) allVals.push(v); });
+    });
+    if (overlayHours) overlayHours.forEach(p => { if (p.value != null) allVals.push(p.value); });
+    if (allVals.length === 0) return null;
+
+    let min = Math.min(...allVals);
+    let max = Math.max(...allVals);
+    if (normalLevel != null) {
+      min = Math.min(min, normalLevel);
+      max = Math.max(max, normalLevel);
+    }
+    if (field === 'level') {
+      const interval = pickTickInterval(max - min);
+      max = Math.floor(max / interval) * interval + interval;
+    }
+    const range = max - min || 1;
+    const usableTop = CHART_HEIGHT * PAD_TOP_PCT;
+    const usableBottom = CHART_HEIGHT * (1 - PAD_BOTTOM_PCT);
+    const usableHeight = usableBottom - usableTop;
+    const normalY = normalLevel != null ? usableBottom - ((normalLevel - min) / range) * usableHeight : null;
+    return { min, max, normalY, usableTop, usableBottom };
+  }, [dates, dayDataMap, field, normalLevel, overlayHours]);
+
+  const hasOverlay = overlayHours?.some(p => p.value != null);
+
+  return (
     <div className="w-full">
-      {/* Day label + navigation arrows */}
-      <div className="flex items-center justify-between mb-1">
-        <button
-          onClick={() => setDayOffset(d => d - 1)}
-          className="p-1 -ml-1 text-muted-foreground hover:text-primary transition-colors"
-          aria-label="Previous day"
-        >
-          <ChevronLeft className="w-4 h-4" />
-        </button>
-        <span className="text-xs font-medium text-foreground">{dayLabel}</span>
-        <button
-          onClick={() => setDayOffset(d => Math.min(0, d + 1))}
-          disabled={isToday}
-          className="p-1 -mr-1 text-muted-foreground hover:text-primary transition-colors disabled:opacity-30 disabled:pointer-events-none"
-          aria-label="Next day"
-        >
-          <ChevronRight className="w-4 h-4" />
-        </button>
+      <div
+        ref={scrollRef}
+        className="overflow-x-auto snap-x snap-mandatory flex scrollbar-hide"
+      >
+        {dates.map(date => {
+          const data = dayDataMap[date.dateStr];
+          const loading = !data;
+          return (
+            <div key={date.dateStr} className="snap-start shrink-0 w-full pr-0">
+              <p className="text-xs font-medium text-muted-foreground text-center mb-1">{date.label}</p>
+              <DayPanel
+                hourlyData={data}
+                field={field}
+                unitLabel={unitLabel}
+                normalLevel={normalLevel}
+                overlayHours={date.isToday ? overlayHours : null}
+                sharedBounds={sharedBounds}
+                isToday={date.isToday}
+                nowHour={date.isToday ? new Date().getHours() + new Date().getMinutes() / 60 : null}
+                loading={loading}
+              />
+            </div>
+          );
+        })}
       </div>
 
-      <div
-        className="flex items-stretch gap-1.5 relative"
-        onTouchStart={onTouchStart}
-        onTouchEnd={onTouchEnd}
-      >
-        {loadingHistorical && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/40">
-            <Loader2 className="w-5 h-5 animate-spin text-primary" />
-          </div>
+      {/* Legend */}
+      <div className="flex items-center gap-3 mt-1 pl-10">
+        {normalLevel != null && (
+          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-green-600 whitespace-nowrap">
+            <span className="inline-block w-3 border-t border-dashed border-green-500" />
+            Normal level ({normalLevel.toFixed(2)}{unitLabel ? ` ${unitLabel}` : ''})
+          </span>
         )}
-        <div className="relative w-9 shrink-0" style={{ height: CHART_HEIGHT }}>
-          {yTicks.map((tick, i) => (
-            <span
-              key={i}
-              className="absolute right-0 text-[11px] text-muted-foreground whitespace-nowrap"
-              style={{ top: `${(tick.y / CHART_HEIGHT) * 100}%`, transform: 'translateY(-50%)' }}
-            >
-              {tick.label}{unitLabel ? ` ${unitLabel}` : ''}
-            </span>
-          ))}
-        </div>
-        <div className="flex-1 min-w-0 relative">
-          <svg viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`} className="w-full" style={{ height: CHART_HEIGHT }} preserveAspectRatio="none">
-            <defs>
-              <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.45" />
-                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.05" />
-              </linearGradient>
-            </defs>
-            {normalY != null && (
-              <line x1="0" y1={normalY} x2={CHART_WIDTH} y2={normalY} stroke="#22c55e" strokeWidth="1.5" strokeDasharray="5 3" />
-            )}
-            {areaD && <path d={areaD} fill={`url(#${gradId})`} stroke="none" />}
-            {overlayPathD && (
-              <path d={overlayPathD} fill="none" stroke="#b91c1c" strokeWidth="1" strokeLinecap="round" />
-            )}
-            {pathD && <path d={pathD} fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" />}
-            {knownPoints.filter(p => p.isReal).map((p, i) => (
-              <circle key={i} cx={p.x} cy={p.y} r={2} fill="hsl(var(--primary))" />
-            ))}
-            {lastReal && (
-              <circle cx={lastReal.x} cy={lastReal.y} r={4} fill="hsl(var(--background))" stroke="hsl(var(--primary))" strokeWidth="2" />
-            )}
-          </svg>
-          <HourAxis nowHour={isToday ? new Date().getHours() + new Date().getMinutes() / 60 : null} />
-          <div className="flex items-center gap-3 mt-0.5">
-            {normalY != null && normalLevel != null && (
-              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-green-600 whitespace-nowrap">
-                <span className="inline-block w-3 border-t border-dashed border-green-500" />
-                Normal level ({normalLevel.toFixed(2)}{unitLabel ? ` ${unitLabel}` : ''})
-              </span>
-            )}
-            {overlayPathD && (
-              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-red-700 whitespace-nowrap">
-                <span className="inline-block w-3 border-t border-red-700" />
-                Historical
-              </span>
-            )}
-          </div>
-        </div>
+        {hasOverlay && (
+          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-red-700 whitespace-nowrap">
+            <span className="inline-block w-3 border-t border-red-700" />
+            Historical
+          </span>
+        )}
+        <span className="text-[11px] text-muted-foreground ml-auto">← Swipe to pan</span>
       </div>
     </div>
   );
