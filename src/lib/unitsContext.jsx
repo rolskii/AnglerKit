@@ -14,7 +14,7 @@ export function UnitsProvider({ children }) {
     const wtu = localStorage.getItem('weatherTempUnit');
     if (wtu === 'fahrenheit') return 'imperial';
     if (wtu === 'celsius') return 'metric';
-    return 'imperial';
+    return 'metric';
   });
 
   const setUnitSystem = useCallback((s) => {
