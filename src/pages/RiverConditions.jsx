@@ -369,7 +369,16 @@ export default function RiverConditions() {
               {/* Notes */}
               <Card>
                 <CardHeader className="pt-3 pb-2 px-3">
-                  <CardTitle className="text-base">Notes for this location</CardTitle>
+                  <CardTitle className="text-base flex items-center gap-1.5">
+                    Notes for this location
+                    <button
+                      onClick={() => setNoteDialogOpen(true)}
+                      className="text-muted-foreground hover:text-primary transition-colors shrink-0"
+                      aria-label="Add note"
+                    >
+                      <Pen className="w-3.5 h-3.5" />
+                    </button>
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0 pb-2 px-3 space-y-3">
                   {notes.length === 0 ? (
