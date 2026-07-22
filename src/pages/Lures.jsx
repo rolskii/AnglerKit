@@ -10,8 +10,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import GearMobileRow from "@/components/GearMobileRow";
-import MobileSortControl from "@/components/MobileSortControl";
+
 
 const conditionColor = {
   "New": "bg-emerald-100 text-emerald-700",
@@ -145,7 +144,7 @@ export default function Lures() {
         </div>
       ) : (
         <>
-        <div className="hidden md:block overflow-x-auto rounded-lg border border-border">
+        <div className="overflow-x-auto rounded-lg border border-border">
           <table className="w-full text-sm">
             <thead className="bg-muted/50">
               <tr className="border-b">
@@ -180,33 +179,6 @@ export default function Lures() {
               ))}
             </tbody>
           </table>
-        </div>
-        <MobileSortControl
-          sortBy={sortBy}
-          sortDir={sortDir}
-          onSortField={toggleSort}
-          onToggleDir={() => toggleSort(sortBy)}
-          fields={[
-            { label: "Name", value: "name" },
-            { label: "Type", value: "type" },
-            { label: "Category", value: "category" },
-            { label: "Brand", value: "brand" },
-            { label: "Size", value: "size" },
-            { label: "Quantity", value: "quantity" },
-            { label: "Condition", value: "condition" },
-            { label: "Value", value: "value" },
-          ]}
-        />
-        <div className="md:hidden space-y-1.5">
-          {filtered.map((lure) => (
-            <GearMobileRow
-              key={lure.id}
-              onClick={() => setViewTarget(lure)}
-              title={lure.name || "—"}
-              subtitle={[lure.type, lure.category, lure.brand, lure.size, lure.quantity != null ? `Qty ${lure.quantity}` : ""].filter(Boolean).join(" · ") || "—"}
-              condition={lure.condition}
-            />
-          ))}
         </div>
         </>
       )}

@@ -10,8 +10,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import GearMobileRow from "@/components/GearMobileRow";
-import MobileSortControl from "@/components/MobileSortControl";
+
 
 const conditionColor = {
   "New": "bg-emerald-100 text-emerald-700",
@@ -145,7 +144,7 @@ export default function Misc() {
         </div>
       ) : (
         <>
-        <div className="hidden md:block overflow-x-auto rounded-lg border border-border">
+        <div className="overflow-x-auto rounded-lg border border-border">
           <table className="w-full text-sm">
             <thead className="bg-muted/50">
               <tr className="border-b">
@@ -180,33 +179,6 @@ export default function Misc() {
               ))}
             </tbody>
           </table>
-        </div>
-        <MobileSortControl
-          sortBy={sortBy}
-          sortDir={sortDir}
-          onSortField={toggleSort}
-          onToggleDir={() => toggleSort(sortBy)}
-          fields={[
-            { label: "Name", value: "name" },
-            { label: "Category", value: "category" },
-            { label: "Brand", value: "brand" },
-            { label: "Model", value: "model" },
-            { label: "Colour", value: "colour" },
-            { label: "Quantity", value: "quantity" },
-            { label: "Condition", value: "condition" },
-            { label: "Value", value: "value" },
-          ]}
-        />
-        <div className="md:hidden space-y-1.5">
-          {filtered.map((item) => (
-            <GearMobileRow
-              key={item.id}
-              onClick={() => setViewTarget(item)}
-              title={item.name || "—"}
-              subtitle={[item.category, item.brand, item.model, item.colour, item.quantity != null ? `Qty ${item.quantity}` : ""].filter(Boolean).join(" · ") || "—"}
-              condition={item.condition}
-            />
-          ))}
         </div>
         </>
       )}

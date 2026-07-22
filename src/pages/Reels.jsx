@@ -10,8 +10,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import GearMobileRow from "@/components/GearMobileRow";
-import MobileSortControl from "@/components/MobileSortControl";
+
 
 const conditionColor = {
   "New": "bg-emerald-100 text-emerald-700",
@@ -171,7 +170,7 @@ export default function Reels() {
         </div>
       ) : (
         <>
-        <div className="hidden md:block overflow-x-auto rounded-lg border border-border">
+        <div className="overflow-x-auto rounded-lg border border-border">
           <table className="w-full text-sm">
             <thead className="bg-muted/50">
               <tr className="border-b">
@@ -208,33 +207,6 @@ export default function Reels() {
               ))}
             </tbody>
           </table>
-        </div>
-        <MobileSortControl
-          sortBy={sortBy}
-          sortDir={sortDir}
-          onSortField={toggleSort}
-          onToggleDir={() => toggleSort(sortBy)}
-          fields={[
-            { label: "Species", value: "species" },
-            { label: "Name", value: "name" },
-            { label: "Brand", value: "brand" },
-            { label: "Model", value: "model" },
-            { label: "Size", value: "size" },
-            { label: "Type", value: "type" },
-            { label: "Condition", value: "condition" },
-            { label: "Value", value: "value" },
-          ]}
-        />
-        <div className="md:hidden space-y-1.5">
-          {filtered.map((reel) => (
-            <GearMobileRow
-              key={reel.id}
-              onClick={() => setViewTarget(reel)}
-              title={reel.name || "—"}
-              subtitle={[reel.species, reel.brand, reel.model, reel.size, reel.type].filter(Boolean).join(" · ") || "—"}
-              condition={reel.condition}
-            />
-          ))}
         </div>
         </>
       )}

@@ -12,8 +12,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { useUnits } from "@/lib/unitsContext";
-import GearMobileRow from "@/components/GearMobileRow";
-import MobileSortControl from "@/components/MobileSortControl";
+
 
 export default function Catches() {
   const navigate = useNavigate();
@@ -154,7 +153,7 @@ export default function Catches() {
         </div>
       ) : (
         <>
-        <div className="hidden md:block overflow-x-auto rounded-lg border border-border">
+        <div className="overflow-x-auto rounded-lg border border-border">
           <table className="w-full text-sm">
             <thead className="bg-muted/50">
               <tr className="border-b">
@@ -183,38 +182,6 @@ export default function Catches() {
               ))}
             </tbody>
           </table>
-        </div>
-        <MobileSortControl
-          sortBy={sortBy}
-          sortDir={sortDir}
-          onSortField={toggleSort}
-          onToggleDir={() => toggleSort(sortBy)}
-          fields={[
-            { label: "Species", value: "species" },
-            { label: "Date", value: "date" },
-            { label: "Location", value: "location" },
-            { label: "Length", value: "length" },
-            { label: "Girth", value: "girth" },
-            { label: "Weight", value: "weight" },
-            { label: "Fly Used", value: "fly_used" },
-          ]}
-        />
-        <div className="md:hidden space-y-1.5">
-          {filtered.map((c) => (
-            <GearMobileRow
-              key={c.id}
-              onClick={() => navigate(`/catches/${c.id}`)}
-              title={c.species || "—"}
-              subtitle={[
-                c.date ? new Date(c.date + "T00:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "",
-                c.location,
-                c.length != null ? formatLength(c.length) : "",
-                c.weight != null ? formatWeight(c.weight) : "",
-                c.fly_used,
-              ].filter(Boolean).join(" · ") || "—"}
-              right={c.released ? "Released" : "Kept"}
-            />
-          ))}
         </div>
         </>
       )}

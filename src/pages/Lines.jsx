@@ -10,8 +10,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import GearMobileRow from "@/components/GearMobileRow";
-import MobileSortControl from "@/components/MobileSortControl";
+
 
 export default function Lines() {
   const [lines, setLines] = useState([]);
@@ -160,7 +159,7 @@ export default function Lines() {
         </div>
       ) : (
         <>
-        <div className="hidden md:block overflow-x-auto rounded-lg border border-border">
+        <div className="overflow-x-auto rounded-lg border border-border">
           <table className="w-full text-sm">
             <thead className="bg-muted/50">
               <tr className="border-b">
@@ -187,33 +186,6 @@ export default function Lines() {
               ))}
             </tbody>
           </table>
-        </div>
-        <MobileSortControl
-          sortBy={sortBy}
-          sortDir={sortDir}
-          onSortField={toggleSort}
-          onToggleDir={() => toggleSort(sortBy)}
-          fields={[
-            { label: "Species", value: "species" },
-            { label: "Brand", value: "brand" },
-            { label: "Model", value: "model" },
-            { label: "Type", value: "type" },
-            { label: "Line Weight", value: "line_weight" },
-            { label: "Grain Weight", value: "grain_weight" },
-            { label: "Value", value: "value" },
-          ]}
-        />
-        <div className="md:hidden space-y-1.5">
-          {filtered.map((line) => (
-            <GearMobileRow
-              key={line.id}
-              onClick={() => setViewTarget(line)}
-              highlight={line.reel && line.reel.toLowerCase() !== "spooled" && !line.spooled}
-              title={`${line.brand || ""} ${line.model || ""}`.trim() || "—"}
-              subtitle={[line.species, line.type, line.line_weight ? `${line.line_weight}wt` : "", line.grain_weight ? `${line.grain_weight}gr` : ""].filter(Boolean).join(" · ") || "—"}
-              right={line.value != null ? `$${line.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ""}
-            />
-          ))}
         </div>
         </>
       )}
