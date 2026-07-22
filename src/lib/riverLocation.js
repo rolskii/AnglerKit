@@ -6,15 +6,25 @@
 const DEFAULT_LOCATION = { name: 'Toronto, ON', lat: 43.6532, lon: -79.3832 };
 
 export function getRiverLocation() {
-  // Fall back to the shared location if no river-specific location has been
-  // saved yet, so the first visit starts from wherever the user already is.
-  const name =
-    localStorage.getItem('riverLocationName') ||
-    localStorage.getItem('sharedLocationName') ||
-    DEFAULT_LOCATION.name;
-  const coordsStr =
-    localStorage.getItem('riverLocationCoords') ||
-    localStorage.getItem('sharedLocationCoords');
+  // River location is fully independent from the shared (Home/Moon/Weather)
+  // location. On first visit (no river station saved yet), seed from the
+  // shared location once so the user starts nearby — but never write back
+  // to the shared store.
+  let name = localStorage.getItem('riverLocationName');
+  let coordsStr = localStorage.getItem('riverLocationCoords');
+
+  if (!name || !coordsStr) {
+    // Seed from shared location on very first visit only
+    const sharedName = localStorage.getItem('sharedLocationName');
+    const sharedCoordsStr = localStorage.getItem('sharedLocationCoords');
+    if (sharedName && sharedCoordsStr) {
+      name = sharedName;
+      coordsStr = sharedCoordsStr;
+    }
+  }
+
+  if (!name) name = DEFAULT_LOCATION.name;
+
   let coords = DEFAULT_LOCATION;
   try {
     if (coordsStr) coords = JSON.parse(coordsStr);
