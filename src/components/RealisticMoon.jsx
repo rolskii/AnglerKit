@@ -4,10 +4,11 @@ import React from "react";
  * A realistic moon with craters and surface texture, visually
  * shaded to reflect the current illumination percentage.
  */
-export default function RealisticMoon({ illumination = 100, className = "" }) {
+export default function RealisticMoon({ illumination = 100, phase = "", className = "" }) {
   const pct = Math.max(0, Math.min(100, illumination));
-  // Shadow covers from the right side inward (waxing) — simple approach:
-  // the lit fraction = pct% of the diameter from the left edge.
+  // Lit fraction = pct% of the diameter. Waxing phases are lit on the right
+  // (shadow on the left); waning phases are lit on the left (shadow on the right).
+  const isWaxing = /waxing|first quarter/i.test(phase);
   const shadowWidth = 100 - pct;
 
   return (
@@ -58,7 +59,7 @@ export default function RealisticMoon({ illumination = 100, className = "" }) {
       {/* Shadow overlay (dark side) */}
       {shadowWidth > 0 && (
         <rect
-          x={pct}
+          x={isWaxing ? 0 : pct}
           y="0"
           width={shadowWidth}
           height="100"
@@ -71,9 +72,9 @@ export default function RealisticMoon({ illumination = 100, className = "" }) {
       {/* Subtle terminator line */}
       {pct > 0 && pct < 100 && (
         <line
-          x1={pct}
+          x1={isWaxing ? shadowWidth : pct}
           y1="0"
-          x2={pct}
+          x2={isWaxing ? shadowWidth : pct}
           y2="100"
           stroke="#5a5a6e"
           strokeWidth="0.5"
