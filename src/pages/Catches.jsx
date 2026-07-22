@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +16,7 @@ import GearMobileCard from "@/components/GearMobileCard";
 import MobileSortControl from "@/components/MobileSortControl";
 
 export default function Catches() {
+  const navigate = useNavigate();
   const [catches, setCatches] = useState([]);
   const [rods, setRods] = useState([]);
   const [reels, setReels] = useState([]);
@@ -201,7 +203,7 @@ export default function Catches() {
           {filtered.map((c) => (
             <GearMobileCard
               key={c.id}
-              onClick={() => setViewTarget(c)}
+              onClick={() => navigate(`/catches/${c.id}`)}
               fields={[
                 { label: "Species", value: c.species },
                 { label: "Date", value: c.date ? new Date(c.date + "T00:00:00").toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : "" },
