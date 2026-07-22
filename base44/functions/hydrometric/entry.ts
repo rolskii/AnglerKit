@@ -291,7 +291,7 @@ async function fetchHistoricalSeries(stationId, range, startDateStr, endDateStr,
           levels.push(avgLevel);
           discharges.push(avgDischarge);
         }
-        return { granularity: 'hourly', time: times, level: levels, discharge: discharges };
+        return { granularity: 'daily-mean', time: times, level: levels, discharge: discharges };
       }
     } catch (e) {
       // try next older year

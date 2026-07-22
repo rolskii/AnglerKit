@@ -54,7 +54,12 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
         });
         if (!cancelled) {
           setData(res.data.historical);
-          onDataChange?.(res.data.historical);
+          // Only draw the overlay line for actual hourly readings — the
+          // daily-mean fallback (3M/6M/1Y) produces a flat line that looks
+          // broken on the 24h chart. The comparison text below still uses
+          // the daily-mean value.
+          const isHourly = res.data.historical?.granularity !== 'daily-mean';
+          onDataChange?.(isHourly ? res.data.historical : null);
         }
       } catch (e) {
         if (!cancelled) {
