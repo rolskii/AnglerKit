@@ -34,7 +34,7 @@ export default function MiscCard({ item, onEdit, onDelete }) {
   };
   return (
     <Card ref={cardRef} className="p-4 flex flex-col gap-3">
-      <ImageGallery images={getItemImages(item)} featuredLabel={item.name} featuredSubtitle="Misc" featuredLink="/gear/misc" />
+      <ImageGallery images={getItemImages(item)} featuredLabel={[item.brand, item.model, item.colour].filter(Boolean).join(" ") || item.name} featuredSubtitle="Misc" featuredLink="/gear/misc" />
       <div className="flex items-start justify-between gap-2">
         <div>
           <h3 className="font-heading font-semibold">{item.name}</h3>

@@ -81,6 +81,12 @@ export default function FeaturedImage() {
                 item.model,
                 item.size,
               ].filter(Boolean).join(" ") || "Reel";
+            } else if (type === "MiscItem") {
+              label = [
+                item.brand,
+                item.model,
+                item.colour,
+              ].filter(Boolean).join(" ") || "Misc";
             } else {
               label = `${item.brand || ""} ${item.name || ""}`.trim() || type;
             }

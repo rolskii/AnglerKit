@@ -7,7 +7,7 @@ const entityConfigs = [
   { entity: "Reel", label: "Reel", link: "/gear/reels", nameField: (item) => [item.brand, item.model, item.size].filter(Boolean).join(" ") || "Reel" },
   { entity: "Rod", label: "Rod", link: "/gear/rods", nameField: (item) => [item.brand, item.model, item.length, item.line_weight ? `${item.line_weight}wt` : null].filter(Boolean).join(" ") || "Rod" },
   { entity: "Lure", label: "Lure", link: "/gear/lures", nameField: (item) => `${item.brand || ""} ${item.name || ""}`.trim() || "Lure" },
-  { entity: "MiscItem", label: "Misc", link: "/gear/misc", nameField: (item) => `${item.brand || ""} ${item.name || ""}`.trim() || "Item" },
+  { entity: "MiscItem", label: "Misc", link: "/gear/misc", nameField: (item) => [item.brand, item.model, item.colour].filter(Boolean).join(" ") || "Item" },
   { entity: "Catch", label: "Fish Log", link: "/catches", nameField: (item) => [item.species, item.length != null ? `${item.length}"` : null, item.location].filter(Boolean).join(" ") || "Catch" },
 ];
 
