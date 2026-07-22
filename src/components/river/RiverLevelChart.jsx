@@ -76,23 +76,28 @@ function interpolateValue(dataArray, targetIdx, field) {
 }
 
 function RollingTimeAxis({ windowStartMs }) {
-  const tickHours = [0, 2, 4, 6, 8, 10, 12];
+  // Major labels every 3 hours; minor ticks for the hours in between.
+  const allHours = Array.from({ length: WINDOW_HOURS + 1 }, (_, h) => h);
   return (
     <div className="relative h-6 mt-1">
-      {tickHours.map((h) => {
+      {allHours.map((h) => {
         const leftPct = (h / WINDOW_HOURS) * 100;
         const ts = windowStartMs + h * 3600000;
+        const isMajor = h % 3 === 0;
         const isNow = h === WINDOW_HOURS;
+        const showLabel = isMajor || isNow;
         return (
           <div
             key={h}
             className="absolute top-0 flex flex-col items-center"
             style={{ left: `${leftPct}%`, transform: 'translateX(-50%)' }}
           >
-            <div className="w-px h-1.5 bg-muted-foreground/50" />
-            <span className={`text-[11px] mt-0.5 whitespace-nowrap ${isNow ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
-              {isNow ? 'Now' : formatTimeLabel(ts)}
-            </span>
+            <div className={isMajor ? 'w-px h-1.5 bg-muted-foreground/50' : 'w-px h-1 bg-muted-foreground/25'} />
+            {showLabel && (
+              <span className={`text-[11px] mt-0.5 whitespace-nowrap ${isNow ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
+                {isNow ? 'Now' : formatTimeLabel(ts)}
+              </span>
+            )}
           </div>
         );
       })}
