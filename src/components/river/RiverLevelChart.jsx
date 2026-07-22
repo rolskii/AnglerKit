@@ -95,8 +95,7 @@ function RollingTimeAxis({ windowStartMs, nowMs }) {
     const hourOfDay = d.getHours();
     const leftPct = ((ts - windowStartMs) / (WINDOW_HOURS * 3600000)) * 100;
     const isMajor = hourOfDay % 3 === 0;
-    const hideLabel = leftPct > 93; // avoid overlap with "Now"
-    ticks.push({ ts, leftPct, isMajor, hourOfDay, hideLabel });
+    ticks.push({ ts, leftPct, isMajor, hourOfDay });
   }
 
   return (
@@ -108,18 +107,13 @@ function RollingTimeAxis({ windowStartMs, nowMs }) {
           style={{ left: `${tick.leftPct}%`, transform: 'translateX(-50%)' }}
         >
           <div className={tick.isMajor ? 'w-px h-1.5 bg-muted-foreground/50' : 'w-px h-1 bg-muted-foreground/25'} />
-          {tick.isMajor && !tick.hideLabel && (
+          {tick.isMajor && (
             <span className="text-[11px] mt-0.5 whitespace-nowrap text-muted-foreground">
               {labelFor(tick.hourOfDay)}
             </span>
           )}
         </div>
       ))}
-
-      {/* Last reading timestamp at the right edge */}
-      <span className="absolute right-0 top-0 text-[11px] whitespace-nowrap text-muted-foreground">
-        {formatTimeLabel(nowMs)}
-      </span>
     </div>
   );
 }
