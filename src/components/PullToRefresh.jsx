@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { RefreshCw } from "lucide-react";
 
-const THRESHOLD = 50;
-const MAX_PULL = 70;
+const THRESHOLD = 70;
 
 export default function PullToRefresh({ onRefresh, children }) {
   const [refreshing, setRefreshing] = useState(false);
@@ -23,6 +22,12 @@ export default function PullToRefresh({ onRefresh, children }) {
     return (el?.scrollTop || window.scrollY) <= 0;
   }, []);
 
+  // Elastic damping: pull feels free but naturally slows with distance
+  const calcDist = (delta) => {
+    // No hard cap — diminishing returns past ~120px
+    return delta * 0.5 * (1 - Math.min(delta / 800, 0.6));
+  };
+
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -42,7 +47,7 @@ export default function PullToRefresh({ onRefresh, children }) {
         // Prevent the browser from scrolling / overscrolling so we own the gesture
         e.preventDefault();
         pullingRef.current = true;
-        const dist = Math.min(delta * 0.4, MAX_PULL);
+        const dist = calcDist(delta);
         pullDistRef.current = dist;
         setPullDistance(dist);
       } else if (delta <= 0) {
@@ -60,7 +65,7 @@ export default function PullToRefresh({ onRefresh, children }) {
       if (shouldRefresh && !refreshingRef.current) {
         refreshingRef.current = true;
         setRefreshing(true);
-        setPullDistance(THRESHOLD - 10);
+        setPullDistance(48);
         try {
           await onRefreshRef.current();
         } finally {
@@ -89,13 +94,34 @@ export default function PullToRefresh({ onRefresh, children }) {
     };
   }, [isAtTop]);
 
+  const pullProgress = Math.min(pullDistance / THRESHOLD, 1);
+
   return (
     <div ref={containerRef}>
       <div
-        className="flex items-start justify-center overflow-hidden transition-[height] duration-200"
-        style={{ height: pullDistance }}
+        className="flex items-start justify-center overflow-hidden"
+        style={{
+          height: pullDistance,
+          transition: pullingRef.current
+            ? "none"
+            : "height 0.32s cubic-bezier(0.34, 1.56, 0.64, 1)",
+        }}
       >
-        <RefreshCw className={`w-6 h-6 text-primary mt-3 ${refreshing ? "animate-spin" : ""}`} />
+        <RefreshCw
+          className="text-primary mt-3 transition-transform duration-150"
+          style={{
+            width: 24,
+            height: 24,
+            opacity: Math.min(pullProgress * 1.5, 1),
+            transform: `rotate(${pullProgress * 360}deg) scale(${0.6 + pullProgress * 0.4})`,
+          }}
+        />
+        {refreshing && (
+          <RefreshCw
+            className="w-6 h-6 text-primary mt-3 animate-spin"
+            style={{ position: "absolute" }}
+          />
+        )}
       </div>
       {children}
     </div>
