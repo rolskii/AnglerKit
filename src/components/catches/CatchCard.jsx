@@ -2,181 +2,128 @@ import React, { useRef, useState } from "react";
 import ShareButton from "@/components/ShareButton";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, Fish, ChevronLeft, ChevronRight } from "lucide-react";
+import { Pencil, Trash2, MapPin, Calendar, Fish, ChevronLeft, ChevronRight } from "lucide-react";
 import { getItemImages } from "@/components/ImageGallery";
 import { useUnits } from "@/lib/unitsContext";
 
-const CRAFT = "#c9b9a6";
-const CRAFT_DARK = "#4a3f33";
-const INK = "#3e362e";
-const INK_LIGHT = "#7a6e61";
-const RULE = "#7a6e61";
-const PAPER = "#f5f0e6";
-
 export default function CatchCard({ catchItem, onView, onEdit, onDelete }) {
   const cardRef = useRef(null);
-  const { formatWeight } = useUnits();
+  const { formatLength, formatWeight } = useUnits();
   const images = getItemImages(catchItem);
   const [photoIdx, setPhotoIdx] = useState(0);
 
-  const fmtDate = (d) => {
-    if (!d) return null;
-    try { return new Date(d + "T00:00:00").toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }); }
-    catch { return d; }
-  };
-
-  const statRows = [
-    [
-      { label: "LENGTH", value: catchItem.length != null ? `${catchItem.length} in` : null },
-      { label: "GIRTH", value: catchItem.girth != null ? `${catchItem.girth} in` : null },
-    ],
-    [
-      { label: "WEIGHT", value: catchItem.weight != null ? formatWeight(catchItem.weight) : null },
-      { label: "FLY", value: catchItem.fly_used },
-    ],
-    [
-      { label: "WATER", value: catchItem.water_temp != null ? `${catchItem.water_temp}°` : null },
-      { label: "DATE", value: fmtDate(catchItem.date) },
-    ],
-  ];
-
-  const hasPhotos = images.length > 0;
-
-  const prevPhoto = (e) => { e.stopPropagation(); setPhotoIdx(i => (i - 1 + images.length) % images.length); };
-  const nextPhoto = (e) => { e.stopPropagation(); setPhotoIdx(i => (i + 1) % images.length); };
+  const fmtDate = (d) =>!d ? null : new Date(d + "T00:00:00").toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
 
   const card = {
     title: catchItem.species || "Catch",
     subtitle: [fmtDate(catchItem.date), catchItem.location].filter(Boolean).join(" · "),
     badge: catchItem.released ? "Released" : "Kept",
-    details: statRows.flat().filter(Boolean),
+    details: [
+      { label: "Length", value: catchItem.length ? `${catchItem.length} in` : null },
+      { label: "Girth", value: catchItem.girth ? `${catchItem.girth} in` : null },
+      { label: "Weight", value: catchItem.weight ? formatWeight(catchItem.weight) : null },
+      { label: "Fly", value: catchItem.fly_used },
+      { label: "Water Temp", value: catchItem.water_temp != null ? `${catchItem.water_temp}°` : null },
+      { label: "Rod", value: catchItem.rod },
+      { label: "Reel", value: catchItem.reel },
+      { label: "Line", value: catchItem.line },
+      { label: "Conditions", value: catchItem.conditions },
+    ],
     sections: [],
     notes: catchItem.notes,
   };
 
+  const stats = card.details.filter(d => d.value);
+  const hasPhotos = images.length > 0;
+
+  const prevPhoto = (e) => { e.stopPropagation(); setPhotoIdx(i => (i - 1 + images.length) % images.length); };
+  const nextPhoto = (e) => { e.stopPropagation(); setPhotoIdx(i => (i + 1) % images.length); };
+
   return (
-    <Card
-      ref={cardRef}
-      onClick={() => onView?.(catchItem)}
-      className="overflow-hidden flex flex-col cursor-pointer hover:shadow-xl transition-shadow rounded-lg"
-      style={{ background: CRAFT, borderColor: INK_LIGHT + "55", color: INK }}
-    >
-      {/* Photo with white torn-paper frame */}
-      <div style={{ padding: "12px 12px 0 12px" }}>
-        <div
-          className="relative p-2 shadow-md"
-          style={{ background: PAPER, borderRadius: "4px 6px 3px 7px / 6px 3px 7px 4px" }}
-        >
-          <div className="relative aspect-[4/5] overflow-hidden" style={{ background: "#dcdada" }}>
-            {hasPhotos ? (
-              <img
-                src={images[photoIdx]}
-                alt={catchItem.species || "Catch"}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <Fish className="w-16 h-16" style={{ color: INK_LIGHT }} />
-              </div>
-            )}
+    <Card ref={cardRef} onClick={() => onView?.(catchItem)} className="overflow-hidden flex flex-col bg-stone-100 dark:bg-stone-900 border-stone-300 dark:border-stone-700 hover:shadow-lg transition-shadow cursor-pointer">
+      {/* Large photo window */}
+      <div className="relative aspect-[4/3] bg-stone-200 dark:bg-stone-800 overflow-hidden">
+        {hasPhotos ? (
+          <img
+            src={images[photoIdx]}
+            alt={catchItem.species || "Catch"}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <Fish className="w-16 h-16 text-stone-400 dark:text-stone-600" />
+          </div>
+        )}
 
-            {/* Released/Kept stamp — upper right, tilted ~45deg */}
-            <div
-              className="absolute flex items-center justify-center rounded-full shadow-lg"
-              style={{
-                top: "10px",
-                right: "10px",
-                width: "62px",
-                height: "62px",
-                background: INK + "d9",
-                color: "#f0ebe0",
-                border: "3px solid #f0ebe04d",
-                boxShadow: "inset 0 0 0 2px #f0ebe033, 0 2px 6px rgba(0,0,0,0.4)",
-                transform: "rotate(-45deg)",
-                fontSize: "8px",
-                fontWeight: 700,
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                textAlign: "center",
-                lineHeight: 1.1,
-              }}
-            >
-              {catchItem.released ? "Released" : "Kept"}
+        {/* Released/Kept stamp */}
+        <div className="absolute top-2.5 left-2.5 flex items-center justify-center w-14 h-14 rounded-full bg-stone-800/85 dark:bg-amber-50/90 text-amber-50 dark:text-stone-900 text-[8px] font-bold uppercase tracking-wider transform -rotate-6 border-2 border-amber-50/30 dark:border-stone-900/30 shadow-md leading-tight text-center">
+          {catchItem.released ? "Released" : "Kept"}
+        </div>
+
+        {/* Photo navigation */}
+        {hasPhotos && images.length > 1 && (
+          <>
+            <button onClick={prevPhoto} className="absolute left-1 top-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-7 rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors" aria-label="Previous photo">
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button onClick={nextPhoto} className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-7 rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors" aria-label="Next photo">
+              <ChevronRight className="w-4 h-4" />
+            </button>
+            <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex gap-1">
+              {images.map((_, i) => (
+                <span key={i} className={`w-1.5 h-1.5 rounded-full ${i === photoIdx ? 'bg-white' : 'bg-white/40'}`} />
+              ))}
             </div>
+          </>
+        )}
+      </div>
 
-            {/* Photo navigation */}
-            {hasPhotos && images.length > 1 && (
-              <>
-                <button onClick={prevPhoto} className="absolute left-1 top-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-7 rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors" aria-label="Previous photo">
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-                <button onClick={nextPhoto} className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-7 rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors" aria-label="Next photo">
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-                <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex gap-1">
-                  {images.map((_, i) => (
-                    <span key={i} className={`w-1.5 h-1.5 rounded-full ${i === photoIdx ? "bg-white" : "bg-white/40"}`} />
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
+      {/* Compact details section */}
+      <div className="p-3 space-y-1.5 flex-1 flex flex-col">
+        <div>
+          <h3 className="font-serif text-lg font-bold leading-tight text-stone-800 dark:text-stone-100">
+            {catchItem.species || "Catch"}
+          </h3>
+          <div className="border-b border-stone-300 dark:border-stone-700 mt-1" />
         </div>
-      </div>
 
-      {/* Title — centered typewriter */}
-      <div className="px-4 pt-3 pb-1 text-center">
-        <h3 className="font-mono text-xl font-bold tracking-wide" style={{ color: INK }}>
-          {catchItem.species || "Catch"}
-        </h3>
-      </div>
-
-      {/* Stat grid — 2 columns × 3 rows with rules */}
-      <div className="px-4 pb-1">
-        <div style={{ borderTop: `1px solid ${RULE}` }} />
-        {statRows.map((row, ri) => (
-          <div key={ri} className="grid grid-cols-2" style={{ borderBottom: `1px solid ${RULE}` }}>
-            {row.map((stat, si) => (
-              <div
-                key={stat.label}
-                className="flex items-baseline gap-1.5 py-1.5 px-1"
-                style={si === 1 ? { borderLeft: `1px solid ${RULE}` } : undefined}
-              >
-                <span
-                  className="text-[9px] font-bold uppercase tracking-wider whitespace-nowrap"
-                  style={{ color: INK + "aa" }}
-                >
-                  {stat.label}
-                </span>
-                <span className="text-[11px] font-medium truncate" style={{ color: INK }}>
-                  {stat.value || "—"}
-                </span>
-              </div>
-            ))}
-          </div>
-        ))}
-      </div>
-
-      {/* Footer — location centered */}
-      {catchItem.location && (
-        <div className="px-4 pt-1.5 pb-2 text-center">
-          <p className="font-mono text-sm italic" style={{ color: INK }}>
-            {catchItem.location}
-          </p>
+        <div className="flex items-center gap-2 text-[11px] text-stone-500 dark:text-stone-400 flex-wrap">
+          {fmtDate(catchItem.date) && (
+            <span className="flex items-center gap-0.5">
+              <Calendar className="w-3 h-3" /> {fmtDate(catchItem.date)}
+            </span>
+          )}
+          {catchItem.location && (
+            <span className="flex items-center gap-0.5">
+              <MapPin className="w-3 h-3" /> {catchItem.location}
+            </span>
+          )}
         </div>
-      )}
 
-      {/* Action buttons */}
-      <div className="flex gap-1.5 px-3 pb-3 pt-1 mt-auto" data-html2canvas-ignore="true">
-        <Button size="sm" variant="outline" className="flex-1 h-8 text-xs" style={{ background: INK + "0d", borderColor: INK_LIGHT + "55" }} onClick={(e) => { e.stopPropagation(); onEdit(catchItem); }}>
-          <Pencil className="w-3 h-3 mr-1" /> Edit
-        </Button>
-        <span onClick={(e) => e.stopPropagation()}>
-          <ShareButton card={card} photoUrls={images} />
-        </span>
-        <Button size="sm" variant="outline" className="h-8 text-destructive hover:text-destructive px-2" style={{ background: INK + "0d", borderColor: INK_LIGHT + "55" }} onClick={(e) => { e.stopPropagation(); onDelete(catchItem); }}>
-          <Trash2 className="w-3 h-3" />
-        </Button>
+        <div className="grid grid-cols-2 gap-x-3 gap-y-0">
+          {stats.map((s) => (
+            <div key={s.label} className="flex justify-between gap-1.5 border-b border-stone-200 dark:border-stone-800 py-1">
+              <span className="uppercase tracking-wide text-stone-500 dark:text-stone-400 text-[9px] font-semibold shrink-0 self-center">{s.label}</span>
+              <span className="font-medium text-stone-800 dark:text-stone-100 tabular-nums text-[11px] text-right break-words">{s.value}</span>
+            </div>
+          ))}
+        </div>
+
+        {catchItem.notes && (
+          <p className="text-[11px] text-stone-600 dark:text-stone-400 italic border-t border-stone-300 dark:border-stone-700 pt-1.5 leading-snug">{catchItem.notes}</p>
+        )}
+
+        <div className="flex gap-1.5 mt-auto pt-1.5" data-html2canvas-ignore="true">
+          <Button size="sm" variant="outline" className="flex-1 h-8 text-xs" onClick={(e) => { e.stopPropagation(); onEdit(catchItem); }}>
+            <Pencil className="w-3 h-3 mr-1" /> Edit
+          </Button>
+          <span onClick={(e) => e.stopPropagation()}>
+            <ShareButton card={card} photoUrls={images} />
+          </span>
+          <Button size="sm" variant="outline" className="h-8 text-destructive hover:text-destructive px-2" onClick={(e) => { e.stopPropagation(); onDelete(catchItem); }}>
+            <Trash2 className="w-3 h-3" />
+          </Button>
+        </div>
       </div>
     </Card>
   );
