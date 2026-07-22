@@ -29,6 +29,7 @@ export default function FeaturedImage() {
   const [loading, setLoading] = useState(true);
   const [labelColor, setLabelColor] = useState("white");
   const imgRef = useRef(null);
+  const prevUrlRef = useRef(null);
 
   const computeBrightness = (img) => {
     try {
@@ -82,6 +83,7 @@ export default function FeaturedImage() {
       if (userStored) {
         const parsed = JSON.parse(userStored);
         if (!isExcluded(parsed)) {
+          prevUrlRef.current = parsed.image_url;
           setFeatured(parsed);
           setLoading(false);
           return;
@@ -95,6 +97,7 @@ export default function FeaturedImage() {
       if (dailyStored) {
         const parsed = JSON.parse(dailyStored);
         if (parsed.date === todayStr() && parsed.image && !isExcluded(parsed.image)) {
+          prevUrlRef.current = parsed.image.image_url;
           setFeatured(parsed.image);
           setLoading(false);
           return;
@@ -103,7 +106,13 @@ export default function FeaturedImage() {
       }
       const allImages = await fetchAllGearImages();
       if (allImages.length === 0) { setLoading(false); return; }
-      const random = allImages[Math.floor(Math.random() * allImages.length)];
+      // Exclude the currently-shown image so refresh always rotates to a different photo
+      const pool = prevUrlRef.current
+        ? allImages.filter(img => img.image_url !== prevUrlRef.current)
+        : allImages;
+      const pickFrom = pool.length > 0 ? pool : allImages;
+      const random = pickFrom[Math.floor(Math.random() * pickFrom.length)];
+      prevUrlRef.current = random.image_url;
       localStorage.setItem("featuredImageDaily", JSON.stringify({ date: todayStr(), image: random }));
       setFeatured(random);
     } catch (e) {} finally {
