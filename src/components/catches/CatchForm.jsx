@@ -52,8 +52,6 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
       if (isMetric && initial) {
         setForm({
           ...base,
-          length: base.length != null ? (base.length * 2.54).toFixed(1) : "",
-          girth: base.girth != null ? (base.girth * 2.54).toFixed(1) : "",
           weight: base.weight != null ? (base.weight * 0.453592).toFixed(1) : "",
         });
       } else {
@@ -85,8 +83,6 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
     let girth = numOrNull(form.girth);
     let weight = numOrNull(form.weight);
     if (isMetric) {
-      length = length != null ? Number((length / 2.54).toFixed(2)) : null;
-      girth = girth != null ? Number((girth / 2.54).toFixed(2)) : null;
       weight = weight != null ? Number((weight / 0.453592).toFixed(2)) : null;
     }
     const payload = {
@@ -142,25 +138,25 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label>Length ({isMetric ? 'cm' : 'in'})</Label>
+              <Label>Length (in)</Label>
               <Input
                 className="bg-muted"
                 type="number"
                 step="0.1"
                 value={form.length ?? ""}
                 onChange={(e) => set("length", e.target.value)}
-                placeholder={isMetric ? "55" : "22"}
+                placeholder="22"
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Girth ({isMetric ? 'cm' : 'in'})</Label>
+              <Label>Girth (in)</Label>
               <Input
                 className="bg-muted"
                 type="number"
                 step="0.1"
                 value={form.girth ?? ""}
                 onChange={(e) => set("girth", e.target.value)}
-                placeholder={isMetric ? "30" : "12"}
+                placeholder="12"
               />
             </div>
             <div className="space-y-1.5">

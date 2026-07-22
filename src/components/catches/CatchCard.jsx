@@ -20,8 +20,8 @@ export default function CatchCard({ catchItem, onEdit, onDelete }) {
     subtitle: [fmtDate(catchItem.date), catchItem.location].filter(Boolean).join(" · "),
     badge: catchItem.released ? "Released" : "Kept",
     details: [
-      { label: "Length", value: catchItem.length ? formatLength(catchItem.length) : null },
-      { label: "Girth", value: catchItem.girth ? formatLength(catchItem.girth) : null },
+      { label: "Length", value: catchItem.length ? `${catchItem.length} in` : null },
+      { label: "Girth", value: catchItem.girth ? `${catchItem.girth} in` : null },
       { label: "Weight", value: catchItem.weight ? formatWeight(catchItem.weight) : null },
       { label: "Fly", value: catchItem.fly_used },
       { label: "Water Temp", value: catchItem.water_temp != null ? `${catchItem.water_temp}°` : null },
@@ -62,8 +62,8 @@ export default function CatchCard({ catchItem, onEdit, onDelete }) {
       </div>
 
       <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
-        <Detail label="Length" value={catchItem.length ? formatLength(catchItem.length) : null} />
-        <Detail label="Girth" value={catchItem.girth ? formatLength(catchItem.girth) : null} />
+        <Detail label="Length" value={catchItem.length ? `${catchItem.length} in` : null} />
+        <Detail label="Girth" value={catchItem.girth ? `${catchItem.girth} in` : null} />
         <Detail label="Weight" value={catchItem.weight ? formatWeight(catchItem.weight) : null} />
         <Detail label="Fly" value={catchItem.fly_used} />
         <Detail label="Water Temp" value={catchItem.water_temp != null ? `${catchItem.water_temp}°` : null} />
