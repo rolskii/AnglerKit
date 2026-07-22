@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { base44 } from '@/api/base44Client';
 import { getMoonTimes } from '@/lib/moonTimes';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Sun, Waves, MapPin, Bell, BellOff, Save, Star, Moon as MoonIcon, ChevronDown } from 'lucide-react';
+import { Sun, MapPin, Bell, BellOff, Save, Star, Moon as MoonIcon, ChevronDown } from 'lucide-react';
 import FishIcon from '@/components/FishIcon';
 import { searchLocations, geocodeLocation } from '@/lib/geocode';
 import { getSharedLocation, setSharedLocation, initDefaultLocationFromGPS } from '@/lib/sharedLocation';
@@ -540,7 +540,6 @@ export default function Moon() {
           <CardHeader className="pt-3 pb-2">
             <CardTitle className="flex items-center gap-2 text-base">
               Solunar Feeding Times
-              <Waves className="w-5 h-5 text-primary" />
             </CardTitle>
             <CardDescription>Major & minor feeding windows for {moonData.date}</CardDescription>
           </CardHeader>
