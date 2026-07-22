@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { buildSmoothPath, generateFixedIntervalTicks } from '@/lib/chartUtils';
 import { useNowTick } from '@/hooks/useNowTick';
 import { Loader2 } from 'lucide-react';
+import ChartTooltip from './ChartTooltip';
 
 const CHART_HEIGHT = 120;
 const CHART_WIDTH = 720;
@@ -83,8 +84,46 @@ function buildHours(hourlyData, field, targetDateStr) {
   return [...dayHours, { hour: 24, value: null, isReal: false }];
 }
 
-function DayPanel({ hourlyData, field, unitLabel, normalLevel, overlayHours, sharedBounds, isToday, nowHour, loading }) {
+function interpolateValue(dataArray, targetIdx, field) {
+  if (targetIdx == null || !dataArray?.length) return null;
+  const point = dataArray[targetIdx];
+  const val = field ? point?.[field] : point?.value;
+  if (val != null) return val;
+  let prevIdx = targetIdx - 1;
+  while (prevIdx >= 0) {
+    const v = field ? dataArray[prevIdx]?.[field] : dataArray[prevIdx]?.value;
+    if (v != null) break;
+    prevIdx--;
+  }
+  let nextIdx = targetIdx + 1;
+  while (nextIdx < dataArray.length) {
+    const v = field ? dataArray[nextIdx]?.[field] : dataArray[nextIdx]?.value;
+    if (v != null) break;
+    nextIdx++;
+  }
+  const prev = prevIdx >= 0 ? (field ? dataArray[prevIdx]?.[field] : dataArray[prevIdx]?.value) : null;
+  const next = nextIdx < dataArray.length ? (field ? dataArray[nextIdx]?.[field] : dataArray[nextIdx]?.value) : null;
+  if (prev != null && next != null) {
+    const t = (targetIdx - prevIdx) / (nextIdx - prevIdx || 1);
+    return prev + t * (next - prev);
+  }
+  if (prev != null) return prev;
+  if (next != null) return next;
+  return null;
+}
+
+function formatHourLabel(h) {
+  const hh = h % 24;
+  if (hh === 0) return '12:00 AM';
+  if (hh === 12) return '12:00 PM';
+  return hh > 12 ? `${hh - 12}:00 PM` : `${hh}:00 AM`;
+}
+
+function DayPanel({ hourlyData, field, unitLabel, normalLevel, overlayHours, overlayBuckets, overlayLabel, sharedBounds, isToday, nowHour, loading }) {
+  const [activeHour, setActiveHour] = useState(null);
   const hours = useMemo(() => buildHours(hourlyData, field, hourlyData?._targetDateStr || ''), [hourlyData, field]);
+  const hoursLevel = useMemo(() => buildHours(hourlyData, 'level', hourlyData?._targetDateStr || ''), [hourlyData]);
+  const hoursDischarge = useMemo(() => buildHours(hourlyData, 'discharge', hourlyData?._targetDateStr || ''), [hourlyData]);
 
   const usableTop = CHART_HEIGHT * PAD_TOP_PCT;
   const usableBottom = CHART_HEIGHT * (1 - PAD_BOTTOM_PCT);
@@ -159,6 +198,23 @@ function DayPanel({ hourlyData, field, unitLabel, normalLevel, overlayHours, sha
 
   const lastReal = isToday ? [...knownPoints].reverse().find(p => p.isReal) : null;
 
+  const activeLevel = activeHour != null ? interpolateValue(hoursLevel, activeHour) : null;
+  const activeDischarge = activeHour != null ? interpolateValue(hoursDischarge, activeHour) : null;
+  const hasOverlayData = overlayBuckets?.some(b => b.level != null || b.discharge != null);
+  const activeOverlayLevel = activeHour != null && hasOverlayData ? interpolateValue(overlayBuckets, activeHour, 'level') : null;
+  const activeOverlayDischarge = activeHour != null && hasOverlayData ? interpolateValue(overlayBuckets, activeHour, 'discharge') : null;
+  const activeX = activeHour != null ? (activeHour / 24) * CHART_WIDTH : null;
+  const activeLevelY = activeLevel != null ? usableBottom - ((activeLevel - min) / range) * usableHeight : null;
+
+  const handleChartClick = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const pct = Math.max(0, Math.min(1, x / rect.width));
+    const hour = Math.round(pct * 24);
+    if (hour > 24) return;
+    setActiveHour(prev => prev === hour ? null : hour);
+  };
+
   return (
     <div className="w-full relative">
       {loading ? (
@@ -167,7 +223,7 @@ function DayPanel({ hourlyData, field, unitLabel, normalLevel, overlayHours, sha
         </div>
       ) : (
         <>
-          <svg viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`} className="w-full" style={{ height: CHART_HEIGHT }} preserveAspectRatio="none">
+          <svg viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`} className="w-full cursor-pointer" style={{ height: CHART_HEIGHT, touchAction: 'manipulation' }} preserveAspectRatio="none" onClick={handleChartClick}>
               <defs>
                 <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.45" />
@@ -188,15 +244,41 @@ function DayPanel({ hourlyData, field, unitLabel, normalLevel, overlayHours, sha
               {lastReal && (
                 <circle cx={lastReal.x} cy={lastReal.y} r={4} fill="hsl(var(--background))" stroke="hsl(var(--primary))" strokeWidth="2" />
               )}
+              {activeX != null && (
+                <line x1={activeX} y1="0" x2={activeX} y2={CHART_HEIGHT} stroke="hsl(var(--foreground))" strokeWidth="1" strokeDasharray="4 3" opacity="0.4" vectorEffect="non-scaling-stroke" />
+              )}
+              {activeX != null && activeLevelY != null && (
+                <circle cx={activeX} cy={activeLevelY} r="4" fill="hsl(var(--background))" stroke="hsl(var(--primary))" strokeWidth="2" />
+              )}
             </svg>
             <HourAxis nowHour={nowHour} />
+            {activeHour != null && (
+              <div
+                className="absolute z-20 pointer-events-none"
+                style={{
+                  left: `${(activeHour / 24) * 100}%`,
+                  top: '2px',
+                  transform: `translateX(${activeHour >= 18 ? '-100%' : activeHour >= 7 ? '-50%' : '0'})`,
+                }}
+              >
+                <ChartTooltip
+                  hourLabel={formatHourLabel(activeHour)}
+                  level={activeLevel}
+                  discharge={activeDischarge}
+                  overlayLabel={overlayLabel}
+                  overlayLevel={hasOverlayData ? activeOverlayLevel : null}
+                  overlayDischarge={hasOverlayData ? activeOverlayDischarge : null}
+                  hasOverlay={hasOverlayData}
+                />
+              </div>
+            )}
           </>
         )}
     </div>
   );
 }
 
-export default function RiverLevelChart({ hourly, field = 'level', unitLabel, normalLevel, overlayHourly, stationId, stationName }) {
+export default function RiverLevelChart({ hourly, field = 'level', unitLabel, normalLevel, overlayHourly, overlayLabel, stationId, stationName }) {
   const now = useNowTick(60000);
   const scrollRef = useRef(null);
   const didInitialScroll = useRef(false);
@@ -308,28 +390,38 @@ export default function RiverLevelChart({ hourly, field = 'level', unitLabel, no
     }
   }, [dayDataMap, todayDateStr, dates]);
 
-  // Bucket overlay into hourly averages (today only).
-  const overlayHours = useMemo(() => {
+  // Bucket overlay into hourly averages — both level and discharge so
+  // the tooltip can show both fields regardless of which is charted.
+  const overlayBuckets = useMemo(() => {
     if (!overlayHourly?.time?.length) return null;
-    const values = overlayHourly[field] || [];
-    const buckets = new Array(24).fill(null).map((_, h) => ({ hour: h, value: null }));
-    const counts = new Array(24).fill(0);
+    const buckets = new Array(24).fill(null).map((_, h) => ({ hour: h, level: null, discharge: null }));
+    const levelCounts = new Array(24).fill(0);
+    const dischargeCounts = new Array(24).fill(0);
     overlayHourly.time.forEach((t, i) => {
-      const v = values[i];
-      if (v == null) return;
       const h = new Date(t).getHours();
-      if (buckets[h].value == null) {
-        buckets[h].value = v;
-      } else {
-        buckets[h].value = (buckets[h].value * counts[h] + v) / (counts[h] + 1);
+      const lv = overlayHourly.level?.[i];
+      const dv = overlayHourly.discharge?.[i];
+      if (lv != null) {
+        if (buckets[h].level == null) buckets[h].level = lv;
+        else buckets[h].level = (buckets[h].level * levelCounts[h] + lv) / (levelCounts[h] + 1);
+        levelCounts[h]++;
       }
-      counts[h]++;
+      if (dv != null) {
+        if (buckets[h].discharge == null) buckets[h].discharge = dv;
+        else buckets[h].discharge = (buckets[h].discharge * dischargeCounts[h] + dv) / (dischargeCounts[h] + 1);
+        dischargeCounts[h]++;
+      }
     });
-    // Hour 24 wraps to hour 0's value so the red line connects seamlessly
-    // across day boundaries (the overlay repeats on every panel).
-    const firstVal = buckets.find(b => b.value != null)?.value ?? null;
-    return [...buckets, { hour: 24, value: firstVal }];
-  }, [overlayHourly, field]);
+    const firstLevel = buckets.find(b => b.level != null)?.level ?? null;
+    const firstDischarge = buckets.find(b => b.discharge != null)?.discharge ?? null;
+    return [...buckets, { hour: 24, level: firstLevel, discharge: firstDischarge }];
+  }, [overlayHourly]);
+
+  // Derive the selected field's overlay points from the combined buckets.
+  const overlayHours = useMemo(() => {
+    if (!overlayBuckets) return null;
+    return overlayBuckets.map(b => ({ hour: b.hour, value: b[field] }));
+  }, [overlayBuckets, field]);
 
   // Shared Y bounds across all loaded days + overlay.
   const sharedBounds = useMemo(() => {
@@ -407,6 +499,8 @@ export default function RiverLevelChart({ hourly, field = 'level', unitLabel, no
                     unitLabel={unitLabel}
                     normalLevel={normalLevel}
                     overlayHours={overlayHours}
+                    overlayBuckets={overlayBuckets}
+                    overlayLabel={overlayLabel}
                     sharedBounds={sharedBounds}
                     isToday={date.isToday}
                     nowHour={date.isToday ? new Date().getHours() + new Date().getMinutes() / 60 : null}
