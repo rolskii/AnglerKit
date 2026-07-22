@@ -194,7 +194,7 @@ function DayPanel({ day, field, isToday, unitLabel, normalLevel, overlayHours, s
             {areaD && <path d={areaD} fill={`url(#${gradId})`} stroke="none" />}
             {/* Historical overlay line — drawn behind the current line */}
             {overlayPathD && (
-              <path d={overlayPathD} fill="none" stroke="#b91c1c" strokeWidth="1" strokeLinecap="round" />
+              <path d={overlayPathD} fill="none" stroke="#b91c1c" strokeWidth="2" strokeLinecap="round" />
             )}
             {pathD && <path d={pathD} fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" />}
             {knownPoints.filter(p => p.isReal).map((p, i) => (
@@ -204,22 +204,20 @@ function DayPanel({ day, field, isToday, unitLabel, normalLevel, overlayHours, s
               <circle cx={lastReal.x} cy={lastReal.y} r={4} fill="hsl(var(--background))" stroke="hsl(var(--primary))" strokeWidth="2" />
             )}
           </svg>
-          {(bounds?.normalY != null && normalLevel != null) || overlayPathD ? (
-            <div className="absolute right-1 top-1 flex flex-col items-end gap-1">
-              {bounds?.normalY != null && normalLevel != null && (
-                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-green-600 bg-background/80 px-1 rounded whitespace-nowrap">
-                  <span className="inline-block w-3 border-t border-dashed border-green-500" />
-                  Normal level ({normalLevel.toFixed(2)}{unitLabel ? ` ${unitLabel}` : ''})
-                </span>
-              )}
-              {overlayPathD && (
-                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-red-700 bg-background/80 px-1 rounded whitespace-nowrap">
-                  <span className="inline-block w-3 border-t border-red-700" />
-                  Historical
-                </span>
-              )}
-            </div>
-          ) : null}
+          {bounds?.normalY != null && normalLevel != null && (
+            <span
+            className="absolute right-1 top-1 inline-flex items-center gap-1 text-[11px] font-medium text-green-600 bg-background/80 px-1 rounded whitespace-nowrap"
+            >
+              <span className="inline-block w-3 border-t border-dashed border-green-500" />
+              Normal level ({normalLevel.toFixed(2)}{unitLabel ? ` ${unitLabel}` : ''})
+            </span>
+          )}
+          {overlayPathD && (
+            <span className="absolute left-1 top-1 inline-flex items-center gap-1 text-[11px] font-medium text-red-700 bg-background/80 px-1 rounded whitespace-nowrap">
+              <span className="inline-block w-3 border-t border-red-700" />
+              Historical
+            </span>
+          )}
           <HourAxis nowHour={isToday ? new Date().getHours() + new Date().getMinutes() / 60 : null} />
         </div>
       </div>
