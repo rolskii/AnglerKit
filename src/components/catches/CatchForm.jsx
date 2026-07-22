@@ -11,9 +11,6 @@ import { Loader2, Calculator } from "lucide-react";
 import ImageUpload from "@/components/ImageUpload";
 import VideoUpload from "@/components/catches/VideoUpload";
 import AudioRecorder from "@/components/catches/AudioRecorder";
-import LineSelect from "@/components/catches/LineSelect";
-import RodSelect from "@/components/catches/RodSelect";
-import ReelSelect from "@/components/catches/ReelSelect";
 import { useUnits } from "@/lib/unitsContext";
 
 
@@ -195,29 +192,44 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label>Rod</Label>
-              <RodSelect
-                rods={sortedRods}
+              <select
+                className="flex h-9 w-full rounded-md border border-input bg-muted px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
                 value={form.rod ? (rodIdByName[form.rod] || "") : ""}
-                onChange={(id) => set("rod", id === "" ? "" : (rodById[id] || ""))}
-              />
+                onChange={(e) => set("rod", e.target.value === "" ? "" : (rodById[e.target.value] || ""))}
+              >
+                <option value="">Select a rod (optional)</option>
+                {sortedRods.map((r) => (
+                  <option key={r.id} value={r.id}>{r.name}</option>
+                ))}
+              </select>
             </div>
             <div className="space-y-1.5">
               <Label>Reel</Label>
-              <ReelSelect
-                reels={sortedReels}
+              <select
+                className="flex h-9 w-full rounded-md border border-input bg-muted px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
                 value={form.reel ? (reelIdByName[form.reel] || "") : ""}
-                onChange={(id) => set("reel", id === "" ? "" : (reelById[id] || ""))}
-              />
+                onChange={(e) => set("reel", e.target.value === "" ? "" : (reelById[e.target.value] || ""))}
+              >
+                <option value="">Select a reel (optional)</option>
+                {sortedReels.map((r) => (
+                  <option key={r.id} value={r.id}>{r.name}</option>
+                ))}
+              </select>
             </div>
           </div>
 
           <div className="space-y-1.5">
             <Label>Line</Label>
-            <LineSelect
-              lines={sortedLines}
+            <select
+              className="flex h-9 w-full rounded-md border border-input bg-muted px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
               value={form.line ? (sortedLines.find((l) => `${l.brand} ${l.model}`.trim() === form.line)?.id || "") : ""}
-              onChange={(id) => set("line", id === "" ? "" : (lineById[id] || ""))}
-            />
+              onChange={(e) => set("line", e.target.value === "" ? "" : (lineById[e.target.value] || ""))}
+            >
+              <option value="">Select a line (optional)</option>
+              {sortedLines.map((l) => (
+                <option key={l.id} value={l.id}>{`${l.brand} ${l.model}`.trim()}</option>
+              ))}
+            </select>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
