@@ -179,7 +179,16 @@ function ChartPanel({ hourlyData, field, normalLevel, overlayBuckets, overlayLab
   const activeX = activeHour != null ? (activeHour / 24) * CHART_WIDTH : null;
   const activeLevelY = activeLevel != null ? usableBottom - ((activeLevel - min) / range) * usableHeight : null;
 
-  const handleChartClick = (e) => {
+  const draggingRef = useRef(false);
+
+  const hourFromEvent = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const pct = Math.max(0, Math.min(1, x / rect.width));
+    return Math.round(pct * 24);
+  };
+
+  const handlePointerDown = (e) => {
     const now = Date.now();
     if (now - lastTapRef.current < 300) {
       lastTapRef.current = 0;
@@ -187,12 +196,21 @@ function ChartPanel({ hourlyData, field, normalLevel, overlayBuckets, overlayLab
       return;
     }
     lastTapRef.current = now;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const pct = Math.max(0, Math.min(1, x / rect.width));
-    const hour = Math.round(pct * 24);
-    if (hour > 24) return;
-    setActiveHour(prev => prev === hour ? null : hour);
+    draggingRef.current = true;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    const hour = hourFromEvent(e);
+    if (hour <= 24) setActiveHour(hour);
+  };
+
+  const handlePointerMove = (e) => {
+    if (!draggingRef.current) return;
+    const hour = hourFromEvent(e);
+    if (hour <= 24) setActiveHour(hour);
+  };
+
+  const handlePointerUp = (e) => {
+    draggingRef.current = false;
+    try { e.currentTarget.releasePointerCapture(e.pointerId); } catch (_) {}
   };
 
   if (loading) {
@@ -206,7 +224,7 @@ function ChartPanel({ hourlyData, field, normalLevel, overlayBuckets, overlayLab
   return (
     <div className="w-full relative">
       <div className="relative" style={{ height: CHART_HEIGHT }}>
-        <svg viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`} className="w-full cursor-pointer" style={{ height: CHART_HEIGHT, touchAction: 'manipulation' }} preserveAspectRatio="none" onClick={handleChartClick}>
+        <svg viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`} className="w-full cursor-pointer" style={{ height: CHART_HEIGHT, touchAction: 'none' }} preserveAspectRatio="none" onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp}>
           <defs>
             <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.45" />
