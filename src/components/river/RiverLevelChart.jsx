@@ -144,20 +144,8 @@ function ChartPanel({ hourlyData, field, normalLevel, overlayBuckets, overlayLab
 
   const pathD = buildSmoothPath(knownPoints);
 
-  // Detect flat (daily-mean) overlay: all values identical → render as a
-  // dashed reference line instead of a smooth path, so it's visually clear
-  // this is a single daily average, not hourly data.
-  const overlayVals = useMemo(() => {
-    if (!overlayBuckets) return [];
-    return overlayBuckets.map(b => b?.[field]).filter(v => v != null);
-  }, [overlayBuckets, field]);
-  const isFlatOverlay = overlayVals.length > 0 && overlayVals.every(v => v === overlayVals[0]);
-  const overlayRefY = isFlatOverlay
-    ? Math.max(usableTop, Math.min(usableBottom, usableBottom - ((overlayVals[0] - min) / range) * usableHeight))
-    : null;
-
   const overlayPath = useMemo(() => {
-    if (!overlayBuckets || !overlayColor || isFlatOverlay) return null;
+    if (!overlayBuckets || !overlayColor) return null;
     const hasData = overlayBuckets.some(b => b[field] != null);
     if (!hasData) return null;
     const startHour = new Date(windowStartMs).getHours();
@@ -178,7 +166,7 @@ function ChartPanel({ hourlyData, field, normalLevel, overlayBuckets, overlayLab
     pts.sort((a, b) => a.x - b.x);
     if (pts.length < 2) return null;
     return buildSmoothPath(pts);
-  }, [overlayBuckets, overlayColor, field, windowStartMs, min, range, usableHeight, usableTop, usableBottom, isFlatOverlay]);
+  }, [overlayBuckets, overlayColor, field, windowStartMs, min, range, usableHeight, usableTop, usableBottom]);
   const gradId = `riverGradient-${field}`;
   const areaD = knownPoints.length > 0
     ? `${pathD} L ${knownPoints[knownPoints.length - 1].x} ${CHART_HEIGHT} L ${knownPoints[0].x} ${CHART_HEIGHT} Z`
@@ -258,9 +246,6 @@ function ChartPanel({ hourlyData, field, normalLevel, overlayBuckets, overlayLab
           {areaD && <path d={areaD} fill={`url(#${gradId})`} stroke="none" />}
           {overlayPath && overlayColor && (
             <path d={overlayPath} fill="none" stroke={overlayColor} strokeWidth="2" strokeLinecap="round" opacity="0.8" vectorEffect="non-scaling-stroke" />
-          )}
-          {overlayRefY != null && overlayColor && (
-            <line x1="0" y1={overlayRefY} x2={CHART_WIDTH} y2={overlayRefY} stroke={overlayColor} strokeWidth="2.5" strokeDasharray="6 3" opacity="0.75" vectorEffect="non-scaling-stroke" />
           )}
           {pathD && <path d={pathD} fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" />}
           {lastReal && (
@@ -406,14 +391,6 @@ export default function RiverLevelChart({ hourly, field = 'level', unitLabel, no
     return generateFixedIntervalTicks(min, max, pickTickInterval(max - min), usableTop, usableBottom);
   }, [bounds, field]);
 
-  // Detect flat (daily-mean) overlay in the parent so the legend can match
-  // the dashed reference line drawn in ChartPanel.
-  const isFlatOverlay = useMemo(() => {
-    if (!overlayBuckets) return false;
-    const vals = overlayBuckets.map(b => b?.[field]).filter(v => v != null);
-    return vals.length > 0 && vals.every(v => v === vals[0]);
-  }, [overlayBuckets, field]);
-
   const loading = !hourly?.time?.length;
 
   return (
@@ -442,8 +419,8 @@ export default function RiverLevelChart({ hourly, field = 'level', unitLabel, no
         )}
         {OVERLAY_COLORS[overlayRange] && overlayBuckets?.some(b => b.level != null || b.discharge != null) && overlayLabel && (
           <span className="inline-flex items-center gap-1 text-[11px] font-medium whitespace-nowrap" style={{ color: OVERLAY_COLORS[overlayRange] }}>
-            <span className={`inline-block w-3 border-t ${isFlatOverlay ? 'border-dashed' : ''}`} style={{ borderColor: OVERLAY_COLORS[overlayRange] }} />
-            {overlayLabel}{isFlatOverlay ? ' (daily mean)' : ''}
+            <span className="inline-block w-3 border-t" style={{ borderColor: OVERLAY_COLORS[overlayRange] }} />
+            {overlayLabel}
           </span>
         )}
       </div>

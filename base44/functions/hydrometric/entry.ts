@@ -279,17 +279,18 @@ async function fetchHistoricalSeries(stationId, range, startDateStr, endDateStr,
         .map(f => ({ time: f.properties.DATE || f.properties.DATETIME, level: f.properties.LEVEL ?? null, discharge: f.properties.DISCHARGE ?? null }))
         .filter(p => p.time && (p.level != null || p.discharge != null));
       if (points.length > 0) {
-        const levelVals = points.map(p => p.level).filter(v => v != null);
-        const dischargeVals = points.map(p => p.discharge).filter(v => v != null);
-        const avgLevel = levelVals.length > 0 ? levelVals.reduce((a, b) => a + b, 0) / levelVals.length : null;
-        const avgDischarge = dischargeVals.length > 0 ? dischargeVals.reduce((a, b) => a + b, 0) / dischargeVals.length : null;
+        // Distribute the actual daily-mean values across the 24-hour chart
+        // window so the overlay line shows the historical trend with
+        // variation, rather than a single flat average.
         const times = [];
         const levels = [];
         const discharges = [];
-        for (let h = 0; h < 24; h++) {
+        const step = 24 / points.length;
+        for (let i = 0; i < points.length; i++) {
+          const h = Math.min(23, Math.floor(i * step));
           times.push(new Date(start.getTime() + h * 3600000).toISOString());
-          levels.push(avgLevel);
-          discharges.push(avgDischarge);
+          levels.push(points[i].level ?? null);
+          discharges.push(points[i].discharge ?? null);
         }
         return { granularity: 'daily-mean', time: times, level: levels, discharge: discharges };
       }
