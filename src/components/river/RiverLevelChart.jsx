@@ -67,7 +67,7 @@ function HourAxis({ nowHour }) {
 
 // Build a 24-hour array (12am–12am) for a given day from hourly readings.
 function buildHours(hourlyData, field, targetDateStr) {
-  if (!hourlyData?.time?.length) return new Array(24).fill(null).map((_, h) => ({ hour: h, value: null, isReal: false }));
+  if (!hourlyData?.time?.length) return new Array(25).fill(null).map((_, h) => ({ hour: h, value: null, isReal: false }));
   const byDate = {};
   hourlyData.time.forEach((t, i) => {
     const d = new Date(t);
@@ -76,7 +76,11 @@ function buildHours(hourlyData, field, targetDateStr) {
     const hour = d.getHours();
     byDate[dateStr][hour] = { hour, value: hourlyData[field]?.[i] ?? null, isReal: true };
   });
-  return byDate[targetDateStr] || new Array(24).fill(null).map((_, h) => ({ hour: h, value: null, isReal: false }));
+  const dayHours = byDate[targetDateStr] || new Array(24).fill(null).map((_, h) => ({ hour: h, value: null, isReal: false }));
+  // Hour 24 = midnight at the right edge. Value is null so the interpolation
+  // carries forward the last known reading — this makes the line reach the
+  // panel edge and line up with the next day's hour 0 (same midnight tick).
+  return [...dayHours, { hour: 24, value: null, isReal: false }];
 }
 
 function DayPanel({ hourlyData, field, unitLabel, normalLevel, overlayHours, sharedBounds, isToday, nowHour, loading }) {
