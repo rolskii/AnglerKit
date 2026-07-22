@@ -4,6 +4,7 @@ import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const RANGES = [
+  { key: '1d', label: '1D' },
   { key: '2d', label: '2D' },
   { key: '7d', label: '1W' },
   { key: '1m', label: '1M' },
@@ -13,6 +14,7 @@ const RANGES = [
 ];
 
 const RANGE_AGO_LABELS = {
+  '1d': 'This time yesterday',
   '2d': '2 days ago',
   '7d': '1 week ago',
   '1m': '1 month ago',
@@ -27,7 +29,7 @@ function formatValue(v, field) {
 }
 
 export default function HistoricalRangeChart({ stationId, stationName, field = 'level', unitLabel, currentValue, onDataChange }) {
-  const [range, setRange] = useState('2d');
+  const [range, setRange] = useState('1d');
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -47,7 +49,10 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
         });
         if (!cancelled) {
           setData(res.data.historical);
-          onDataChange?.(res.data.historical);
+          // For 1D, yesterday's data is already shown as the "Yesterday"
+          // panel on the main chart — drawing the overlay would duplicate
+          // it, so suppress the line but keep the comparison text.
+          onDataChange?.(range === '1d' ? null : res.data.historical);
         }
       } catch (e) {
         if (!cancelled) {
