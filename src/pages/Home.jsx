@@ -319,11 +319,11 @@ export default function Home() {
               <p className="text-xs text-foreground">8:54–9:24 PM</p>
             </div>
             <div className="flex flex-col items-center justify-end gap-0.5">
-              {moonPhase && <MoonPhaseSymbol phase={moonPhase} className="w-12 h-12" />}
+              {moonPhase && <MoonPhaseSymbol phase={moonPhase} className="w-14 h-14" />}
               {moonPhase && <span className="text-[10px] text-muted-foreground leading-tight whitespace-nowrap">{moonPhase.illumination}% Lit</span>}
             </div>
             <div className="flex flex-col items-center justify-end gap-0.5">
-              {weatherInfo && <WeatherGlyph code={weatherInfo.code} isNight={weatherInfo.isNight} animated className="w-16 h-20" />}
+              {weatherInfo && <WeatherGlyph code={weatherInfo.code} isNight={weatherInfo.isNight} animated className="w-14 h-14" />}
               {weatherInfo && <span className="text-[10px] text-muted-foreground leading-tight whitespace-nowrap">{weatherInfo.desc}</span>}
             </div>
           </div>
