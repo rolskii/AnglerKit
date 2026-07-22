@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Droplets, MapPin, ChevronDown, Thermometer, Eye, Wind, Gauge, TrendingUp, TrendingDown, Minus, Sunrise, Sunset, Sun, Moon, CloudSun, CloudMoon, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, CloudLightning } from 'lucide-react';
+import { Droplets, MapPin, ChevronDown, Thermometer, Eye, Wind, Gauge, TrendingUp, TrendingDown, Minus, Sunrise, Sunset, Sun, Moon, CloudSun, CloudMoon, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, CloudLightning, Cloudy } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { searchLocations, geocodeLocation } from '@/lib/geocode';
 import { getSharedLocation, setSharedLocation, initDefaultLocationFromGPS } from '@/lib/sharedLocation';
@@ -337,7 +337,10 @@ export default function Weather() {
         {/* Header */}
         <div className="space-y-2 px-1 mb-2">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl md:text-[34px] font-heading font-extrabold tracking-tight leading-tight">Weather</h1>
+            <h1 className="text-2xl md:text-[34px] font-heading font-extrabold tracking-tight leading-tight flex items-center gap-2">
+            <Cloudy className="w-6 h-6 md:w-8 md:h-8 text-primary" />
+            Weather
+          </h1>
             <button
               onClick={toggleTempUnit}
               className="px-3 py-1 text-sm font-medium rounded-full bg-primary/15 text-primary hover:bg-primary/25 transition-colors"

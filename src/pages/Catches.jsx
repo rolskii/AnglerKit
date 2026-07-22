@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Loader2, Fish, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
+import { Plus, Search, Loader2, Fish, ArrowUp, ArrowDown, ArrowUpDown, NotebookPen } from "lucide-react";
 import CatchDetailDialog from "@/components/catches/CatchDetailDialog";
 import CatchForm from "@/components/catches/CatchForm";
 import {
@@ -114,6 +114,7 @@ export default function Catches() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="font-heading text-2xl font-bold flex items-center gap-2">
+            <NotebookPen className="w-6 h-6 text-primary" />
             Fish Log
           </h1>
           <p className="text-muted-foreground text-sm">Log in your catches with measurements, photos and gear used.</p>

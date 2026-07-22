@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { base44 } from '@/api/base44Client';
 import { getMoonTimes } from '@/lib/moonTimes';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Sun, Waves, MapPin, Bell, BellOff, Save, Star } from 'lucide-react';
+import { Sun, Waves, MapPin, Bell, BellOff, Save, Star, Moon as MoonIcon } from 'lucide-react';
 import FishIcon from '@/components/FishIcon';
 import { searchLocations, geocodeLocation } from '@/lib/geocode';
 import { getSharedLocation, setSharedLocation, initDefaultLocationFromGPS } from '@/lib/sharedLocation';
@@ -434,7 +434,10 @@ export default function Moon() {
       <div ref={contentRef} className="space-y-4">
         {/* Header */}
         <div className="space-y-2 px-1">
-          <h1 className="text-2xl md:text-[34px] font-heading font-extrabold tracking-tight leading-tight">Moon Phase</h1>
+          <h1 className="text-2xl md:text-[34px] font-heading font-extrabold tracking-tight leading-tight flex items-center gap-2">
+          <MoonIcon className="w-6 h-6 md:w-8 md:h-8 text-primary" />
+          Moon Phase
+        </h1>
         </div>
         {/* Day Rating Card */}
         <Card>
