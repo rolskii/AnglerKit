@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import GearMobileCard from "@/components/GearMobileCard";
+import MobileSortControl from "@/components/MobileSortControl";
 
 const conditionColor = {
   "New": "bg-emerald-100 text-emerald-700",
@@ -197,8 +198,62 @@ export default function Rods() {
       ) : (
         <>
         <div className="hidden md:block overflow-x-auto rounded-lg border border-border">
-...
+          <table className="w-full text-sm">
+            <thead className="bg-muted/50">
+              <tr className="border-b">
+                <SortHeader label="Species" field="species" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Name" field="name" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Brand" field="brand" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Length" field="length" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Line Wt" field="line_weight" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Type" field="type" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Material" field="material" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <th className="px-3 py-2.5 text-left font-medium whitespace-nowrap">Lines</th>
+                <SortHeader label="Condition" field="condition" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Value" field="value" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((rod) => (
+                <tr key={rod.id} className="border-b hover:bg-muted/30 cursor-pointer" onClick={() => setViewTarget(rod)}>
+                  <td className="px-3 py-2.5">{rod.species}</td>
+                  <td className="px-3 py-2.5 font-medium">{rod.name}</td>
+                  <td className="px-3 py-2.5">{rod.brand}</td>
+                  <td className="px-3 py-2.5">{rod.length}</td>
+                  <td className="px-3 py-2.5">{rod.line_weight}</td>
+                  <td className="px-3 py-2.5">{rod.type}</td>
+                  <td className="px-3 py-2.5">{rod.material}</td>
+                  <td className="px-3 py-2.5 text-muted-foreground">{linesByRod[rod.name] || 0}</td>
+                  <td className="px-3 py-2.5">
+                    {rod.condition && (
+                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${conditionColor[rod.condition] || ""}`}>
+                        {rod.condition}
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-3 py-2.5">{rod.value != null ? `$${rod.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ""}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
+        <MobileSortControl
+          sortBy={sortBy}
+          sortDir={sortDir}
+          onSortField={toggleSort}
+          onToggleDir={() => toggleSort(sortBy)}
+          fields={[
+            { label: "Species", value: "species" },
+            { label: "Name", value: "name" },
+            { label: "Brand", value: "brand" },
+            { label: "Length", value: "length" },
+            { label: "Line Weight", value: "line_weight" },
+            { label: "Type", value: "type" },
+            { label: "Material", value: "material" },
+            { label: "Condition", value: "condition" },
+            { label: "Value", value: "value" },
+          ]}
+        />
         <div className="md:hidden space-y-2">
           {filtered.map((rod) => (
             <GearMobileCard

@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import GearMobileCard from "@/components/GearMobileCard";
+import MobileSortControl from "@/components/MobileSortControl";
 
 export default function Lines() {
   const [lines, setLines] = useState([]);
@@ -160,8 +161,48 @@ export default function Lines() {
       ) : (
         <>
         <div className="hidden md:block overflow-x-auto rounded-lg border border-border">
-...
+          <table className="w-full text-sm">
+            <thead className="bg-muted/50">
+              <tr className="border-b">
+                <SortHeader label="Species" field="species" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Brand" field="brand" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Model" field="model" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Type" field="type" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Line Wt" field="line_weight" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Grain Wt" field="grain_weight" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Value" field="value" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((line) => (
+                <tr key={line.id} className="border-b hover:bg-muted/30 cursor-pointer" onClick={() => setViewTarget(line)}>
+                  <td className="px-3 py-2.5">{line.species}</td>
+                  <td className="px-3 py-2.5 font-medium">{line.brand}</td>
+                  <td className="px-3 py-2.5">{line.model}</td>
+                  <td className="px-3 py-2.5">{line.type}</td>
+                  <td className="px-3 py-2.5">{line.line_weight}</td>
+                  <td className="px-3 py-2.5">{line.grain_weight}</td>
+                  <td className="px-3 py-2.5">{line.value != null ? `$${line.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ""}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
+        <MobileSortControl
+          sortBy={sortBy}
+          sortDir={sortDir}
+          onSortField={toggleSort}
+          onToggleDir={() => toggleSort(sortBy)}
+          fields={[
+            { label: "Species", value: "species" },
+            { label: "Brand", value: "brand" },
+            { label: "Model", value: "model" },
+            { label: "Type", value: "type" },
+            { label: "Line Weight", value: "line_weight" },
+            { label: "Grain Weight", value: "grain_weight" },
+            { label: "Value", value: "value" },
+          ]}
+        />
         <div className="md:hidden space-y-2">
           {filtered.map((line) => (
             <GearMobileCard

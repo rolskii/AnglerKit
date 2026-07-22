@@ -12,6 +12,7 @@ import {
 import { toast } from "sonner";
 import { useUnits } from "@/lib/unitsContext";
 import GearMobileCard from "@/components/GearMobileCard";
+import MobileSortControl from "@/components/MobileSortControl";
 
 export default function Catches() {
   const [catches, setCatches] = useState([]);
@@ -152,8 +153,50 @@ export default function Catches() {
       ) : (
         <>
         <div className="hidden md:block overflow-x-auto rounded-lg border border-border">
-...
+          <table className="w-full text-sm">
+            <thead className="bg-muted/50">
+              <tr className="border-b">
+                <SortHeader label="Species" field="species" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Date" field="date" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Location" field="location" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Length" field="length" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Girth" field="girth" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Weight" field="weight" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Fly" field="fly_used" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Released" field="released" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((c) => (
+                <tr key={c.id} className="border-b hover:bg-muted/30 cursor-pointer" onClick={() => setViewTarget(c)}>
+                  <td className="px-3 py-2.5 font-medium">{c.species}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">{c.date ? new Date(c.date + "T00:00:00").toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : ""}</td>
+                  <td className="px-3 py-2.5">{c.location}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">{c.length != null ? formatLength(c.length) : ""}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">{c.girth != null ? formatLength(c.girth) : ""}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">{c.weight != null ? formatWeight(c.weight) : ""}</td>
+                  <td className="px-3 py-2.5">{c.fly_used}</td>
+                  <td className="px-3 py-2.5">{c.released ? "Yes" : "No"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
+        <MobileSortControl
+          sortBy={sortBy}
+          sortDir={sortDir}
+          onSortField={toggleSort}
+          onToggleDir={() => toggleSort(sortBy)}
+          fields={[
+            { label: "Species", value: "species" },
+            { label: "Date", value: "date" },
+            { label: "Location", value: "location" },
+            { label: "Length", value: "length" },
+            { label: "Girth", value: "girth" },
+            { label: "Weight", value: "weight" },
+            { label: "Fly Used", value: "fly_used" },
+          ]}
+        />
         <div className="md:hidden space-y-2">
           {filtered.map((c) => (
             <GearMobileCard

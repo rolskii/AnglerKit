@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import GearMobileCard from "@/components/GearMobileCard";
+import MobileSortControl from "@/components/MobileSortControl";
 
 const conditionColor = {
   "New": "bg-emerald-100 text-emerald-700",
@@ -171,8 +172,59 @@ export default function Reels() {
       ) : (
         <>
         <div className="hidden md:block overflow-x-auto rounded-lg border border-border">
-...
+          <table className="w-full text-sm">
+            <thead className="bg-muted/50">
+              <tr className="border-b">
+                <SortHeader label="Species" field="species" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Name" field="name" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Brand" field="brand" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Model" field="model" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Size" field="size" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Type" field="type" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <th className="px-3 py-2.5 text-left font-medium whitespace-nowrap">Lines</th>
+                <SortHeader label="Condition" field="condition" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Value" field="value" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((reel) => (
+                <tr key={reel.id} className="border-b hover:bg-muted/30 cursor-pointer" onClick={() => setViewTarget(reel)}>
+                  <td className="px-3 py-2.5">{reel.species}</td>
+                  <td className="px-3 py-2.5 font-medium">{reel.name}</td>
+                  <td className="px-3 py-2.5">{reel.brand}</td>
+                  <td className="px-3 py-2.5">{reel.model}</td>
+                  <td className="px-3 py-2.5">{reel.size}</td>
+                  <td className="px-3 py-2.5">{reel.type}</td>
+                  <td className="px-3 py-2.5 text-muted-foreground">{linesByReel[reel.name] || 0}</td>
+                  <td className="px-3 py-2.5">
+                    {reel.condition && (
+                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${conditionColor[reel.condition] || ""}`}>
+                        {reel.condition}
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-3 py-2.5">{reel.value != null ? `$${reel.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ""}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
+        <MobileSortControl
+          sortBy={sortBy}
+          sortDir={sortDir}
+          onSortField={toggleSort}
+          onToggleDir={() => toggleSort(sortBy)}
+          fields={[
+            { label: "Species", value: "species" },
+            { label: "Name", value: "name" },
+            { label: "Brand", value: "brand" },
+            { label: "Model", value: "model" },
+            { label: "Size", value: "size" },
+            { label: "Type", value: "type" },
+            { label: "Condition", value: "condition" },
+            { label: "Value", value: "value" },
+          ]}
+        />
         <div className="md:hidden space-y-2">
           {filtered.map((reel) => (
             <GearMobileCard

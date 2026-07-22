@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import GearMobileCard from "@/components/GearMobileCard";
+import MobileSortControl from "@/components/MobileSortControl";
 
 const conditionColor = {
   "New": "bg-emerald-100 text-emerald-700",
@@ -145,8 +146,57 @@ export default function Misc() {
       ) : (
         <>
         <div className="hidden md:block overflow-x-auto rounded-lg border border-border">
-...
+          <table className="w-full text-sm">
+            <thead className="bg-muted/50">
+              <tr className="border-b">
+                <SortHeader label="Name" field="name" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Category" field="category" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Brand" field="brand" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Model" field="model" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Colour" field="colour" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Qty" field="quantity" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Condition" field="condition" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Value" field="value" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((item) => (
+                <tr key={item.id} className="border-b hover:bg-muted/30 cursor-pointer" onClick={() => setViewTarget(item)}>
+                  <td className="px-3 py-2.5 font-medium">{item.name}</td>
+                  <td className="px-3 py-2.5">{item.category}</td>
+                  <td className="px-3 py-2.5">{item.brand}</td>
+                  <td className="px-3 py-2.5">{item.model}</td>
+                  <td className="px-3 py-2.5">{item.colour}</td>
+                  <td className="px-3 py-2.5">{item.quantity}</td>
+                  <td className="px-3 py-2.5">
+                    {item.condition && (
+                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${conditionColor[item.condition] || ""}`}>
+                        {item.condition}
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-3 py-2.5">{item.value != null ? `$${item.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ""}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
+        <MobileSortControl
+          sortBy={sortBy}
+          sortDir={sortDir}
+          onSortField={toggleSort}
+          onToggleDir={() => toggleSort(sortBy)}
+          fields={[
+            { label: "Name", value: "name" },
+            { label: "Category", value: "category" },
+            { label: "Brand", value: "brand" },
+            { label: "Model", value: "model" },
+            { label: "Colour", value: "colour" },
+            { label: "Quantity", value: "quantity" },
+            { label: "Condition", value: "condition" },
+            { label: "Value", value: "value" },
+          ]}
+        />
         <div className="md:hidden space-y-2">
           {filtered.map((item) => (
             <GearMobileCard
