@@ -38,7 +38,7 @@ export default function WeatherGlyph({ code, isNight = false, className = 'w-7 h
   const anim = (cls) => (animated ? cls : '');
 
   // Reusable SVG sub-shapes
-  const SunShape = ({ cx = 32, cy = 28, r = 13 }) => (
+  const SunShape = ({ cx = 32, cy = 32, r = 22 }) => (
     <g>
       {/* Rays — rotate when animated */}
       <g className={anim('wx-anim-rays')}>
@@ -59,7 +59,7 @@ export default function WeatherGlyph({ code, isNight = false, className = 'w-7 h
     </g>
   );
 
-  const MoonShape = ({ cx = 32, cy = 26, r = 11 }) => (
+  const MoonShape = ({ cx = 32, cy = 32, r = 22 }) => (
     <g>
       <circle cx={cx} cy={cy} r={r} fill={moonFill} stroke={moonStroke} strokeWidth={darkOutline ? 2 : 1}
         className={anim('wx-anim-moon')} />
@@ -131,7 +131,7 @@ export default function WeatherGlyph({ code, isNight = false, className = 'w-7 h
 
   const Lightning = () => (
     <path
-      d="M 36 46 L 30 56 L 34 56 L 30 66 L 40 53 L 35 53 L 39 46 Z"
+      d="M 36 44 L 30 54 L 34 54 L 30 64 L 40 51 L 35 51 L 39 44 Z"
       fill={lightning}
       stroke="#EAB308"
       strokeWidth="1"
@@ -215,7 +215,7 @@ export default function WeatherGlyph({ code, isNight = false, className = 'w-7 h
 
   return (
     <svg
-      viewBox="0 0 64 72"
+      viewBox="0 0 64 64"
       width="100%"
       height="100%"
       className={className}
