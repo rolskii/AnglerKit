@@ -103,11 +103,31 @@ function DayPanel({ hourlyData, field, unitLabel, normalLevel, overlayHours, sha
       })
     : [];
 
+  // Interpolate null hours so the line is continuous across the full 24h
+  // axis — gaps between sparse readings are filled with linear
+  // interpolation, and edges carry forward/backward the nearest known value.
   const knownPoints = svgPoints.filter(p => p.y != null);
-  const pathD = buildSmoothPath(knownPoints);
+  const filledPoints = svgPoints.map((p, i) => {
+    if (p.y != null) return p;
+    let prevIdx = i - 1;
+    while (prevIdx >= 0 && svgPoints[prevIdx].y == null) prevIdx--;
+    let nextIdx = i + 1;
+    while (nextIdx < svgPoints.length && svgPoints[nextIdx].y == null) nextIdx++;
+    const prev = prevIdx >= 0 ? svgPoints[prevIdx] : null;
+    const next = nextIdx < svgPoints.length ? svgPoints[nextIdx] : null;
+    if (prev && next) {
+      const t = (p.x - prev.x) / (next.x - prev.x || 1);
+      return { x: p.x, y: prev.y + t * (next.y - prev.y), isReal: false };
+    }
+    if (prev) return { x: p.x, y: prev.y, isReal: false };
+    if (next) return { x: p.x, y: next.y, isReal: false };
+    return { x: p.x, y: null, isReal: false };
+  }).filter(p => p.y != null);
+
+  const pathD = buildSmoothPath(filledPoints);
   const gradId = `riverGradient-${field}-${isToday ? 'today' : hourlyData?._targetDateStr || 'hist'}`;
-  const areaD = knownPoints.length > 0
-    ? `${pathD} L ${knownPoints[knownPoints.length - 1].x} ${CHART_HEIGHT} L ${knownPoints[0].x} ${CHART_HEIGHT} Z`
+  const areaD = filledPoints.length > 0
+    ? `${pathD} L ${filledPoints[filledPoints.length - 1].x} ${CHART_HEIGHT} L ${filledPoints[0].x} ${CHART_HEIGHT} Z`
     : '';
 
   const overlayKnown = (() => {
