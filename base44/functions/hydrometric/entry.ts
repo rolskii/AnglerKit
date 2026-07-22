@@ -230,7 +230,12 @@ async function fetchHistoricalSeries(stationId, range, startDateStr, endDateStr,
     const tzOffsetMs = tzOffsetMin * 60000;
     const localNow = new Date(Date.now() - tzOffsetMs);
     switch (range) {
-      case '1d': case '24h': targetDate = new Date(localNow.getTime() - 86400000); break;
+      case '1d': case '24h':
+        // Shift one extra day back so the overlay falls BEFORE the chart's
+        // rolling 24-hour window — otherwise the overlay is the same data
+        // already shown on the chart (they overlap, looking like a doubled
+        // line).  2 days back ensures a distinct day for comparison.
+        targetDate = new Date(localNow.getTime() - 2 * 86400000); break;
       case '2d': targetDate = new Date(localNow.getTime() - 2 * 86400000); break;
       case '1w': case '7d': targetDate = new Date(localNow.getTime() - 7 * 86400000); break;
       case '1m': targetDate = new Date(localNow.getUTCFullYear(), localNow.getUTCMonth() - 1, localNow.getUTCDate()); break;
@@ -247,10 +252,18 @@ async function fetchHistoricalSeries(stationId, range, startDateStr, endDateStr,
   const start = new Date(Date.UTC(targetDate.getUTCFullYear(), targetDate.getUTCMonth(), targetDate.getUTCDate(), 0, 0, 0) + startTzOffsetMs);
   const end = new Date(start.getTime() + 86400000); // next local midnight
 
-  // Try hourly realtime data for the target day
+  // Try hourly realtime data for the target day.
+  // Require at least 12 hours of readings — the ECCC realtime API only
+  // retains ~30 days of data, so ranges near that edge (e.g. 1M) return
+  // a partial day (sometimes just a few hours).  Rendering a few sparse
+  // points as a line looks broken; fall through to daily-mean instead.
   try {
     const hourly = await fetchRealtimeSpan(stationId, start, end);
-    if (hourly.time.length > 0) return hourly;
+    const hourBuckets = new Set();
+    for (const t of hourly.time) {
+      hourBuckets.add(new Date(t).getUTCHours());
+    }
+    if (hourBuckets.size >= 12) return hourly;
   } catch (e) {
     // fall through to daily mean
   }
