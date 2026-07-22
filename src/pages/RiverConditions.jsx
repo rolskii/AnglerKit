@@ -293,7 +293,7 @@ export default function RiverConditions() {
                         <Pen className="w-3.5 h-3.5" />
                       </button>
                     </div>
-                    <p className="text-xs text-muted-foreground">Station {data.station.id} · {data.station.distanceKm} km away · Updated {data.current?.datetimeLocal ? new Date(data.current.datetimeLocal).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '—'}</p>
+                    <p className="text-xs text-muted-foreground">Station {data.station.id} · {data.station.distanceKm} km away · <span className="font-semibold text-foreground">Updated {data.current?.datetimeLocal ? new Date(data.current.datetimeLocal).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '—'}</span></p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2">
