@@ -2,13 +2,13 @@ import React, { useRef, useState } from "react";
 import ShareButton from "@/components/ShareButton";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, MapPin, Calendar, Fish, ChevronLeft, ChevronRight } from "lucide-react";
+import { Pencil, Trash2, Fish, ChevronLeft, ChevronRight } from "lucide-react";
 import { getItemImages } from "@/components/ImageGallery";
 import { useUnits } from "@/lib/unitsContext";
 
 export default function CatchCard({ catchItem, onView, onEdit, onDelete }) {
   const cardRef = useRef(null);
-  const { formatLength, formatWeight } = useUnits();
+  const { formatWeight } = useUnits();
   const images = getItemImages(catchItem);
   const [photoIdx, setPhotoIdx] = useState(0);
 
@@ -18,116 +18,134 @@ export default function CatchCard({ catchItem, onView, onEdit, onDelete }) {
     catch { return d; }
   };
 
-  const card = {
-    title: catchItem.species || "Catch",
-    subtitle: [fmtDate(catchItem.date), catchItem.location].filter(Boolean).join(" · "),
-    badge: catchItem.released ? "Released" : "Kept",
-    details: [
-      { label: "Length", value: catchItem.length ? `${catchItem.length} in` : null },
-      { label: "Girth", value: catchItem.girth ? `${catchItem.girth} in` : null },
-      { label: "Weight", value: catchItem.weight ? formatWeight(catchItem.weight) : null },
-      { label: "Fly", value: catchItem.fly_used },
-      { label: "Water Temp", value: catchItem.water_temp != null ? `${catchItem.water_temp}°` : null },
-      { label: "Rod", value: catchItem.rod },
-      { label: "Reel", value: catchItem.reel },
-      { label: "Line", value: catchItem.line },
-      { label: "Conditions", value: catchItem.conditions },
+  const statRows = [
+    [
+      { label: "Length", value: catchItem.length != null ? `${catchItem.length} in` : null },
+      { label: "Girth", value: catchItem.girth != null ? `${catchItem.girth} in` : null },
     ],
-    sections: [],
-    notes: catchItem.notes,
-  };
+    [
+      { label: "Weight", value: catchItem.weight != null ? formatWeight(catchItem.weight) : null },
+      { label: "Fly", value: catchItem.fly_used },
+    ],
+    [
+      { label: "Water", value: catchItem.water_temp != null ? `${catchItem.water_temp}°` : null },
+      { label: "Date", value: fmtDate(catchItem.date) },
+    ],
+  ];
 
-  const stats = card.details.filter(d => d.value);
   const hasPhotos = images.length > 0;
 
   const prevPhoto = (e) => { e.stopPropagation(); setPhotoIdx(i => (i - 1 + images.length) % images.length); };
   const nextPhoto = (e) => { e.stopPropagation(); setPhotoIdx(i => (i + 1) % images.length); };
 
+  const card = {
+    title: catchItem.species || "Catch",
+    subtitle: [fmtDate(catchItem.date), catchItem.location].filter(Boolean).join(" · "),
+    badge: catchItem.released ? "Released" : "Kept",
+    details: statRows.flat().filter(Boolean),
+    sections: [],
+    notes: catchItem.notes,
+  };
+
   return (
-    <Card ref={cardRef} onClick={() => onView?.(catchItem)} className="overflow-hidden flex flex-col bg-stone-100 dark:bg-stone-900 border-stone-300 dark:border-stone-700 hover:shadow-lg transition-shadow cursor-pointer">
-      {/* Large photo window */}
-      <div className="relative aspect-[4/3] bg-stone-200 dark:bg-stone-800 overflow-hidden">
-        {hasPhotos ? (
-          <img
-            src={images[photoIdx]}
-            alt={catchItem.species || "Catch"}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <Fish className="w-16 h-16 text-stone-400 dark:text-stone-600" />
-          </div>
-        )}
+    <Card
+      ref={cardRef}
+      onClick={() => onView?.(catchItem)}
+      className="overflow-hidden flex flex-col cursor-pointer border border-[#7a6e61]/30 bg-[#c9b9a6] dark:bg-[#4a3f33] dark:border-[#a89880]/30 hover:shadow-xl transition-shadow rounded-lg"
+    >
+      {/* Photo with white torn-paper frame */}
+      <div className="p-3 pb-0">
+        <div
+          className="relative bg-[#f5f0e6] dark:bg-stone-300 p-2 shadow-md"
+          style={{ borderRadius: "4px 6px 3px 7px / 6px 3px 7px 4px" }}
+        >
+          <div className="relative aspect-[4/5] bg-[#dcdada] dark:bg-stone-500 overflow-hidden">
+            {hasPhotos ? (
+              <img
+                src={images[photoIdx]}
+                alt={catchItem.species || "Catch"}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <Fish className="w-16 h-16 text-[#7a6e61]" />
+              </div>
+            )}
 
-        {/* Released/Kept stamp */}
-        <div className="absolute top-2.5 left-2.5 flex items-center justify-center w-14 h-14 rounded-full bg-stone-800/85 dark:bg-amber-50/90 text-amber-50 dark:text-stone-900 text-[8px] font-bold uppercase tracking-wider transform -rotate-6 border-2 border-amber-50/30 dark:border-stone-900/30 shadow-md leading-tight text-center">
-          {catchItem.released ? "Released" : "Kept"}
-        </div>
-
-        {/* Photo navigation */}
-        {hasPhotos && images.length > 1 && (
-          <>
-            <button onClick={prevPhoto} className="absolute left-1 top-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-7 rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors" aria-label="Previous photo">
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <button onClick={nextPhoto} className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-7 rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors" aria-label="Next photo">
-              <ChevronRight className="w-4 h-4" />
-            </button>
-            <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex gap-1">
-              {images.map((_, i) => (
-                <span key={i} className={`w-1.5 h-1.5 rounded-full ${i === photoIdx ? 'bg-white' : 'bg-white/40'}`} />
-              ))}
+            {/* Released/Kept stamp — upper right, tilted */}
+            <div className="absolute top-3 right-3 flex items-center justify-center w-16 h-16 rounded-full bg-[#3e362e]/85 dark:bg-[#2a241c]/90 text-[#f0ebe0] text-[8px] font-bold uppercase tracking-widest border-[3px] border-[#f0ebe0]/30 dark:border-stone-200/30 shadow-lg -rotate-12 leading-tight text-center">
+              {catchItem.released ? "Released" : "Kept"}
             </div>
-          </>
-        )}
+
+            {/* Photo navigation */}
+            {hasPhotos && images.length > 1 && (
+              <>
+                <button onClick={prevPhoto} className="absolute left-1 top-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-7 rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors" aria-label="Previous photo">
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button onClick={nextPhoto} className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-7 rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors" aria-label="Next photo">
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+                <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex gap-1">
+                  {images.map((_, i) => (
+                    <span key={i} className={`w-1.5 h-1.5 rounded-full ${i === photoIdx ? "bg-white" : "bg-white/40"}`} />
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* Compact details section */}
-      <div className="p-3 space-y-1.5 flex-1 flex flex-col">
-        <div>
-          <h3 className="font-serif text-lg font-bold leading-tight text-stone-800 dark:text-stone-100">
-            {catchItem.species || "Catch"}
-          </h3>
-          <div className="border-b border-stone-300 dark:border-stone-700 mt-1" />
-        </div>
+      {/* Title — centered serif */}
+      <div className="px-4 pt-3 pb-1 text-center">
+        <h3 className="font-serif text-xl font-bold tracking-wide text-[#3e362e] dark:text-[#e8e0d0]">
+          {catchItem.species || "Catch"}
+        </h3>
+      </div>
 
-        <div className="flex items-center gap-2 text-[11px] text-stone-500 dark:text-stone-400 flex-wrap">
-          {fmtDate(catchItem.date) && (
-            <span className="flex items-center gap-0.5">
-              <Calendar className="w-3 h-3" /> {fmtDate(catchItem.date)}
-            </span>
-          )}
-          {catchItem.location && (
-            <span className="flex items-center gap-0.5">
-              <MapPin className="w-3 h-3" /> {catchItem.location}
-            </span>
-          )}
-        </div>
+      {/* Stat grid — 2 columns × 3 rows with rules */}
+      <div className="px-4 pb-1">
+        <div className="border-t border-[#7a6e61]/50 dark:border-[#a89880]/40" />
+        {statRows.map((row, ri) => (
+          <div key={ri} className="grid grid-cols-2 border-b border-[#7a6e61]/50 dark:border-[#a89880]/40">
+            {row.map((stat, si) => (
+              <div
+                key={stat.label}
+                className={`flex items-baseline gap-1.5 py-1.5 px-1 ${si === 1 ? "border-l border-[#7a6e61]/50 dark:border-[#a89880]/40" : ""}`}
+              >
+                <span className="text-[9px] font-bold uppercase tracking-wider text-[#3e362e]/65 dark:text-[#e8e0d0]/65 whitespace-nowrap">
+                  {stat.label}
+                </span>
+                <span className="text-[11px] font-medium text-[#3e362e] dark:text-[#e8e0d0] truncate">
+                  {stat.value || "—"}
+                </span>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
 
-        <div className="grid grid-cols-2 gap-x-3 gap-y-0">
-          {stats.map((s) => (
-            <div key={s.label} className="flex justify-between gap-1.5 border-b border-stone-200 dark:border-stone-800 py-1">
-              <span className="uppercase tracking-wide text-stone-500 dark:text-stone-400 text-[9px] font-semibold shrink-0 self-center">{s.label}</span>
-              <span className="font-medium text-stone-800 dark:text-stone-100 tabular-nums text-[11px] text-right break-words">{s.value}</span>
-            </div>
-          ))}
+      {/* Footer — location centered */}
+      {catchItem.location && (
+        <div className="px-4 pt-1.5 pb-2 text-center">
+          <p className="font-serif text-sm italic text-[#3e362e] dark:text-[#e8e0d0]">
+            {catchItem.location}
+          </p>
         </div>
+      )}
 
-        {catchItem.notes && (
-          <p className="text-[11px] text-stone-600 dark:text-stone-400 italic border-t border-stone-300 dark:border-stone-700 pt-1.5 leading-snug">{catchItem.notes}</p>
-        )}
-
-        <div className="flex gap-1.5 mt-auto pt-1.5" data-html2canvas-ignore="true">
-          <Button size="sm" variant="outline" className="flex-1 h-8 text-xs" onClick={(e) => { e.stopPropagation(); onEdit(catchItem); }}>
-            <Pencil className="w-3 h-3 mr-1" /> Edit
-          </Button>
-          <span onClick={(e) => e.stopPropagation()}>
-            <ShareButton card={card} photoUrls={images} />
-          </span>
-          <Button size="sm" variant="outline" className="h-8 text-destructive hover:text-destructive px-2" onClick={(e) => { e.stopPropagation(); onDelete(catchItem); }}>
-            <Trash2 className="w-3 h-3" />
-          </Button>
-        </div>
+      {/* Action buttons */}
+      <div className="flex gap-1.5 px-3 pb-3 pt-1 mt-auto" data-html2canvas-ignore="true">
+        <Button size="sm" variant="outline" className="flex-1 h-8 text-xs bg-[#3e362e]/5 dark:bg-white/5 border-[#7a6e61]/30 dark:border-[#a89880]/30" onClick={(e) => { e.stopPropagation(); onEdit(catchItem); }}>
+          <Pencil className="w-3 h-3 mr-1" /> Edit
+        </Button>
+        <span onClick={(e) => e.stopPropagation()}>
+          <ShareButton card={card} photoUrls={images} />
+        </span>
+        <Button size="sm" variant="outline" className="h-8 text-destructive hover:text-destructive px-2 bg-[#3e362e]/5 dark:bg-white/5 border-[#7a6e61]/30 dark:border-[#a89880]/30" onClick={(e) => { e.stopPropagation(); onDelete(catchItem); }}>
+          <Trash2 className="w-3 h-3" />
+        </Button>
       </div>
     </Card>
   );
