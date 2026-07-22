@@ -115,11 +115,7 @@ function RollingTimeAxis({ windowStartMs, nowMs }) {
           )}
         </div>
       ))}
-      {/* "Now" at the right edge */}
-      <div className="absolute top-0 flex flex-col items-center" style={{ left: '100%', transform: 'translateX(-50%)' }}>
-        <div className="w-px h-1.5 bg-muted-foreground/50" />
-        <span className="text-[11px] mt-0.5 whitespace-nowrap text-primary font-semibold">Now</span>
-      </div>
+
     </div>
   );
 }
