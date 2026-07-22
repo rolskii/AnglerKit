@@ -334,7 +334,7 @@ export default function RiverConditions() {
                       <p className="text-xs leading-snug">{advisory.text}</p>
                     </div>
                   )}
-                  <div className="mt-2 pt-2 border-t border-border/60">
+                  <div className="pt-2 border-t border-border/60">
                     <HistoricalRangeChart stationId={data.station.id} stationName={data.station.name} field="level" unitLabel="m" currentValue={data.current?.level} normalLevel={data.normal?.median} onDataChange={setHistoricalHourly} />
                   </div>
                 </CardContent>
