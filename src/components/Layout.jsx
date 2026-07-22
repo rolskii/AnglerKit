@@ -65,7 +65,7 @@ export default function Layout() {
   return (
     <div
       className="min-h-screen bg-background"
-      style={{ paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)" }}
+      style={{ paddingTop: "env(safe-area-inset-top)" }}
     >
       {/* Desktop sidebar */}
       <aside className="hidden md:flex fixed inset-y-0 left-0 w-64 flex-col border-r border-border/60 bg-sidebar/80 backdrop-blur-xl p-4">
@@ -121,7 +121,7 @@ export default function Layout() {
         </div>
       )}
       <main className="md:pl-64">
-        <div className="mx-auto max-w-6xl px-4 py-6 pb-16 md:px-8 md:py-10 md:pb-10">
+        <div className="mx-auto max-w-6xl px-4 pb-16 md:px-8 md:pb-10">
           <motion.div
             key={location.pathname}
             initial={{ opacity: 0, x: 20 }}
