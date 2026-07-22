@@ -141,15 +141,6 @@ function DayPanel({ hourlyData, field, unitLabel, normalLevel, overlayHours, ove
     return { x, y, isReal: p.isReal };
   });
 
-  const overlaySvgPoints = overlayHours
-    ? overlayHours.map(p => {
-        const x = (p.hour / 24) * CHART_WIDTH;
-        if (p.value == null) return { x, y: null };
-        const y = usableBottom - ((p.value - min) / range) * usableHeight;
-        return { x, y };
-      })
-    : [];
-
   // Interpolate null hours so the line is continuous across the full 24h
   // axis — gaps between sparse readings are filled with linear
   // interpolation, and edges carry forward/backward the nearest known value.
@@ -186,16 +177,6 @@ function DayPanel({ hourlyData, field, unitLabel, normalLevel, overlayHours, ove
   const areaD = visiblePoints.length > 0
     ? `${pathD} L ${visiblePoints[visiblePoints.length - 1].x} ${CHART_HEIGHT} L ${visiblePoints[0].x} ${CHART_HEIGHT} Z`
     : '';
-
-  const overlayKnown = (() => {
-    const known = overlaySvgPoints.filter(p => p.y != null);
-    if (known.length === 0) return [];
-    const extended = [...known];
-    if (known[0].x > 0) extended.unshift({ x: 0, y: known[0].y });
-    if (known[known.length - 1].x < CHART_WIDTH) extended.push({ x: CHART_WIDTH, y: known[known.length - 1].y });
-    return extended;
-  })();
-  const overlayPathD = buildSmoothPath(overlayKnown);
 
   const lastReal = isToday ? [...knownPoints].reverse().find(p => p.isReal) : null;
 
@@ -242,9 +223,6 @@ function DayPanel({ hourlyData, field, unitLabel, normalLevel, overlayHours, ove
                 <line x1="0" y1={normalY} x2={CHART_WIDTH} y2={normalY} stroke="#22c55e" strokeWidth="1.5" strokeDasharray="5 3" />
               )}
               {areaD && <path d={areaD} fill={`url(#${gradId})`} stroke="none" />}
-              {overlayPathD && (
-                <path d={overlayPathD} fill="none" stroke="#b91c1c" strokeWidth="1" strokeLinecap="round" />
-              )}
               {pathD && <path d={pathD} fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" />}
               {knownPoints.filter(p => p.isReal).map((p, i) => (
                 <circle key={i} cx={p.x} cy={p.y} r={2} fill="hsl(var(--primary))" />
@@ -440,7 +418,6 @@ export default function RiverLevelChart({ hourly, field = 'level', unitLabel, no
       const values = data[field] || [];
       values.forEach(v => { if (v != null) allVals.push(v); });
     });
-    if (overlayHours) overlayHours.forEach(p => { if (p.value != null) allVals.push(p.value); });
     if (allVals.length === 0) return null;
 
     let min = Math.min(...allVals);
@@ -506,7 +483,6 @@ export default function RiverLevelChart({ hourly, field = 'level', unitLabel, no
                     field={field}
                     unitLabel={unitLabel}
                     normalLevel={normalLevel}
-                    overlayHours={overlayHours}
                     overlayBuckets={overlayBuckets}
                     overlayLabel={overlayLabel}
                     sharedBounds={sharedBounds}
@@ -527,12 +503,6 @@ export default function RiverLevelChart({ hourly, field = 'level', unitLabel, no
           <span className="inline-flex items-center gap-1 text-[11px] font-medium text-green-600 whitespace-nowrap">
             <span className="inline-block w-3 border-t border-dashed border-green-500" />
             Normal level ({normalLevel.toFixed(2)}{unitLabel ? ` ${unitLabel}` : ''})
-          </span>
-        )}
-        {hasOverlay && (
-          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-red-700 whitespace-nowrap">
-            <span className="inline-block w-3 border-t border-red-700" />
-            Historical
           </span>
         )}
         <span className="text-[11px] text-muted-foreground ml-auto">← Swipe to pan</span>
