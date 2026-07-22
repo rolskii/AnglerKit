@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { ArrowDown } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 
 const THRESHOLD = 70;
 
@@ -112,13 +112,13 @@ export default function PullToRefresh({ onRefresh, children }) {
             : "height 0.32s cubic-bezier(0.34, 1.56, 0.64, 1)",
         }}
       >
-        <ArrowDown
-          className={`text-primary/70 mt-4 ${refreshing ? "animate-bounce" : ""} ${pulling ? "" : "transition-all duration-200"}`}
+        <RefreshCw
+          className={`text-primary/70 mt-4 ${refreshing ? "animate-spin" : ""} ${pulling ? "" : "transition-transform duration-150"}`}
           style={{
             width: 18,
             height: 18,
             opacity: refreshing ? 1 : Math.min(pullProgress * 1.2, 1),
-            transform: refreshing ? undefined : `scale(${0.7 + pullProgress * 0.3})`,
+            transform: refreshing ? undefined : `scale(${0.7 + pullProgress * 0.3}) rotate(${pullProgress * 360}deg)`,
           }}
         />
       </div>
