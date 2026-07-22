@@ -120,7 +120,7 @@ function RollingTimeAxis({ windowStartMs, nowMs }) {
   );
 }
 
-function ChartPanel({ hourlyData, field, normalLevel, overlayBuckets, overlayLabel, bounds, loading, yTicks, unitLabel, nowMs }) {
+function ChartPanel({ hourlyData, field, normalLevel, overlayBuckets, overlayLabel, overlayColor, bounds, loading, yTicks, unitLabel, nowMs }) {
   const [activeX, setActiveX] = useState(null);
   const lastTapRef = useRef(0);
 
@@ -145,6 +145,27 @@ function ChartPanel({ hourlyData, field, normalLevel, overlayBuckets, overlayLab
   }, [points, field, min, range, usableHeight, usableBottom]);
 
   const pathD = buildSmoothPath(knownPoints);
+
+  const overlayPath = useMemo(() => {
+    if (!overlayBuckets || !overlayColor) return null;
+    const hasData = overlayBuckets.some(b => b[field] != null);
+    if (!hasData) return null;
+    const startHour = new Date(windowStartMs).getHours();
+    const pts = [];
+    for (let h = 0; h < 24; h++) {
+      const bucket = overlayBuckets[h];
+      if (!bucket) continue;
+      const val = bucket[field];
+      if (val == null) continue;
+      const hourDiff = (h - startHour + 24) % 24;
+      const x = (hourDiff / WINDOW_HOURS) * CHART_WIDTH;
+      const y = usableBottom - ((val - min) / range) * usableHeight;
+      pts.push({ x, y });
+    }
+    pts.sort((a, b) => a.x - b.x);
+    if (pts.length < 2) return null;
+    return buildSmoothPath(pts);
+  }, [overlayBuckets, overlayColor, field, windowStartMs, min, range, usableHeight, usableBottom]);
   const gradId = `riverGradient-${field}`;
   const areaD = knownPoints.length > 0
     ? `${pathD} L ${knownPoints[knownPoints.length - 1].x} ${CHART_HEIGHT} L ${knownPoints[0].x} ${CHART_HEIGHT} Z`
@@ -222,6 +243,9 @@ function ChartPanel({ hourlyData, field, normalLevel, overlayBuckets, overlayLab
             <line x1="0" y1={normalY} x2={CHART_WIDTH} y2={normalY} stroke="#22c55e" strokeWidth="1.5" strokeDasharray="5 3" />
           )}
           {areaD && <path d={areaD} fill={`url(#${gradId})`} stroke="none" />}
+          {overlayPath && overlayColor && (
+            <path d={overlayPath} fill="none" stroke={overlayColor} strokeWidth="1" strokeLinecap="round" opacity="0.75" vectorEffect="non-scaling-stroke" />
+          )}
           {pathD && <path d={pathD} fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" />}
           {lastReal && (
             <circle cx={lastReal.x} cy={lastReal.y} r={4} fill="hsl(var(--background))" stroke="hsl(var(--primary))" strokeWidth="2" />
@@ -271,7 +295,17 @@ function ChartPanel({ hourlyData, field, normalLevel, overlayBuckets, overlayLab
   );
 }
 
-export default function RiverLevelChart({ hourly, field = 'level', unitLabel, normalLevel, overlayHourly, overlayLabel }) {
+const OVERLAY_COLORS = {
+  '1d': '#64748b',
+  '2d': '#f59e0b',
+  '7d': '#10b981',
+  '1m': '#3b82f6',
+  '3m': '#8b5cf6',
+  '6m': '#ec4899',
+  '1y': '#ef4444',
+};
+
+export default function RiverLevelChart({ hourly, field = 'level', unitLabel, normalLevel, overlayHourly, overlayLabel, overlayRange }) {
   // Re-render every 60s so the window can advance when fresh readings arrive.
   const now = useNowTick(60000);
   // End the rolling window at the last actual reading's timestamp rather
@@ -367,6 +401,7 @@ export default function RiverLevelChart({ hourly, field = 'level', unitLabel, no
         normalLevel={normalLevel}
         overlayBuckets={overlayBuckets}
         overlayLabel={overlayLabel}
+        overlayColor={OVERLAY_COLORS[overlayRange] || null}
         bounds={bounds}
         loading={loading}
         yTicks={yTicks}
@@ -374,14 +409,20 @@ export default function RiverLevelChart({ hourly, field = 'level', unitLabel, no
       />
 
       {/* Legend */}
-      {normalLevel != null && (
-        <div className="flex items-center gap-3 mt-1">
+      <div className="flex items-center gap-3 mt-1 flex-wrap">
+        {normalLevel != null && (
           <span className="inline-flex items-center gap-1 text-[11px] font-medium text-green-600 whitespace-nowrap">
             <span className="inline-block w-3 border-t border-dashed border-green-500" />
             Normal level ({normalLevel.toFixed(2)}{unitLabel ? ` ${unitLabel}` : ''})
           </span>
-        </div>
-      )}
+        )}
+        {OVERLAY_COLORS[overlayRange] && overlayBuckets?.some(b => b.level != null || b.discharge != null) && overlayLabel && (
+          <span className="inline-flex items-center gap-1 text-[11px] font-medium whitespace-nowrap" style={{ color: OVERLAY_COLORS[overlayRange] }}>
+            <span className="inline-block w-3 border-t" style={{ borderColor: OVERLAY_COLORS[overlayRange] }} />
+            {overlayLabel}
+          </span>
+        )}
+      </div>
     </div>
   );
 }

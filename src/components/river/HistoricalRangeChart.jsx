@@ -28,12 +28,13 @@ function formatValue(v, field) {
   return field === 'discharge' ? v.toFixed(1) : v.toFixed(2);
 }
 
-export default function HistoricalRangeChart({ stationId, stationName, field = 'level', unitLabel, currentValue, onDataChange, onRangeChange }) {
+export default function HistoricalRangeChart({ stationId, stationName, field = 'level', unitLabel, currentValue, onDataChange, onRangeChange, onRangeKeyChange }) {
   const [range, setRange] = useState('1d');
 
   useEffect(() => {
     onRangeChange?.(RANGE_AGO_LABELS[range] || 'Historical');
-  }, [range, onRangeChange]);
+    onRangeKeyChange?.(range);
+  }, [range, onRangeChange, onRangeKeyChange]);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
