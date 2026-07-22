@@ -49,10 +49,7 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
         });
         if (!cancelled) {
           setData(res.data.historical);
-          // For 1D, yesterday's data is already shown as the "Yesterday"
-          // panel on the main chart — drawing the overlay would duplicate
-          // it, so suppress the line but keep the comparison text.
-          onDataChange?.(range === '1d' ? null : res.data.historical);
+          onDataChange?.(res.data.historical);
         }
       } catch (e) {
         if (!cancelled) {
