@@ -8,7 +8,7 @@ import {
   Droplets, Gauge, StickyNote, Plus, AlertTriangle, Info, CheckCircle2, Trash2, Pen,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
-import { getSharedLocation, setSharedLocation } from '@/lib/sharedLocation';
+import { getRiverLocation, setRiverLocation } from '@/lib/riverLocation';
 import RiverStationMapPicker from '@/components/river/RiverStationMapPicker';
 import RiverLevelChart from '@/components/river/RiverLevelChart';
 import HistoricalRangeChart from '@/components/river/HistoricalRangeChart';
@@ -84,7 +84,7 @@ function buildAdvisory(data) {
 }
 
 export default function RiverConditions() {
-  const sharedInit = getSharedLocation();
+  const sharedInit = getRiverLocation();
   const [locationName, setLocationName] = useState(sharedInit.name);
   const [coords, setCoords] = useState(sharedInit.coords);
   const [data, setData] = useState(null);
@@ -195,8 +195,8 @@ export default function RiverConditions() {
         fetchConditions(lat, lon);
       }
     };
-    window.addEventListener('sharedLocationChanged', onLocationChange);
-    return () => window.removeEventListener('sharedLocationChanged', onLocationChange);
+    window.addEventListener('riverLocationChanged', onLocationChange);
+    return () => window.removeEventListener('riverLocationChanged', onLocationChange);
   }, [fetchConditions]);
 
   const loadNotes = useCallback(async (stationId) => {
@@ -219,7 +219,7 @@ export default function RiverConditions() {
   const selectStation = (station) => {
     setLocationName(station.name);
     if (station.lat != null && station.lon != null) {
-      setSharedLocation(station.name, station.lat, station.lon);
+      setRiverLocation(station.name, station.lat, station.lon);
       setCoords({ lat: station.lat, lon: station.lon, name: station.name });
     }
     fetchConditionsForStation(station.id, station.name);
