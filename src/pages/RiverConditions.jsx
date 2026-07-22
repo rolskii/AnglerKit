@@ -423,7 +423,7 @@ export default function RiverConditions() {
                 </Card>
               )}
 
-              <p className="text-[10px] text-muted-foreground text-center px-4 pb-2">
+              <p className="text-[10px] text-muted-foreground text-center px-4 pb-2">Read ECCC Disclaimer
                 Hydrometric data from Environment and Climate Change Canada (ECCC). Water level/flow only — no official water temperature is published for these stations.
               </p>
             </>
