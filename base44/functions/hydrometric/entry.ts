@@ -230,7 +230,13 @@ async function fetchHistoricalSeries(stationId, range, startDateStr, endDateStr,
     const tzOffsetMs = tzOffsetMin * 60000;
     const localNow = new Date(Date.now() - tzOffsetMs);
     switch (range) {
-      case '1d': case '24h': targetDate = new Date(localNow.getTime() - 86400000); break;
+      case '1d': case '24h':
+        // The chart shows a rolling 24h window ending at the latest reading
+        // (effectively "today").  Shifting only 1 day back fetches yesterday,
+        // which overlaps the chart's window almost entirely — the overlay
+        // would be the same data already shown.  2 days back ensures a
+        // distinct day for comparison.
+        targetDate = new Date(localNow.getTime() - 2 * 86400000); break;
       case '2d': targetDate = new Date(localNow.getTime() - 2 * 86400000); break;
       case '1w': case '7d': targetDate = new Date(localNow.getTime() - 7 * 86400000); break;
       case '1m': targetDate = new Date(localNow.getUTCFullYear(), localNow.getUTCMonth() - 1, localNow.getUTCDate()); break;

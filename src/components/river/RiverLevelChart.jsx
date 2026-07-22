@@ -244,10 +244,10 @@ function ChartPanel({ hourlyData, field, normalLevel, overlayBuckets, overlayLab
             <line x1="0" y1={normalY} x2={CHART_WIDTH} y2={normalY} stroke="#22c55e" strokeWidth="1.5" strokeDasharray="5 3" />
           )}
           {areaD && <path d={areaD} fill={`url(#${gradId})`} stroke="none" />}
-          {overlayPath && overlayColor && (
-            <path d={overlayPath} fill="none" stroke={overlayColor} strokeWidth="2" strokeLinecap="round" opacity="0.8" vectorEffect="non-scaling-stroke" />
-          )}
           {pathD && <path d={pathD} fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" />}
+          {overlayPath && overlayColor && (
+            <path d={overlayPath} fill="none" stroke={overlayColor} strokeWidth="2" strokeLinecap="round" opacity="0.85" vectorEffect="non-scaling-stroke" />
+          )}
           {lastReal && (
             <circle cx={lastReal.x} cy={lastReal.y} r={4} fill="hsl(var(--background))" stroke="hsl(var(--primary))" strokeWidth="2" />
           )}
