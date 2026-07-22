@@ -137,8 +137,12 @@ export default function RiverStationMapPicker({ open, onOpenChange, initialCoord
             });
             return annotation;
           });
-        map.addAnnotations(stationAnnotations);
-        stationAnnotationsRef.current = stationAnnotations;
+        try {
+          map.addAnnotations(stationAnnotations);
+          stationAnnotationsRef.current = stationAnnotations;
+        } catch (e) {
+          // Map may have been torn down during async init
+        }
 
         // Favorited stations — never clustered, always visible as stars.
         const favAnnotations = favs.filter(f => f.lat != null && f.lon != null).map(f => {
@@ -155,8 +159,12 @@ export default function RiverStationMapPicker({ open, onOpenChange, initialCoord
           });
           return annotation;
         });
-        map.addAnnotations(favAnnotations);
-        favoriteAnnotationsRef.current = favAnnotations;
+        try {
+          map.addAnnotations(favAnnotations);
+          favoriteAnnotationsRef.current = favAnnotations;
+        } catch (e) {
+          // Map may have been torn down during async init
+        }
 
         setMapLoading(false);
       } catch (e) {

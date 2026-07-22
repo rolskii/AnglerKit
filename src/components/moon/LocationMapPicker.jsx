@@ -107,6 +107,7 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
 
         // Add saved location markers (star annotations) — read fresh from entity
         const freshSaved = await loadSavedLocations();
+        if (cancelled) return;
         if (freshSaved && freshSaved.length > 0) {
           const annotations = freshSaved.map((loc) => {
             const coord = new mapkit.Coordinate(loc.lat, loc.lon);
@@ -126,8 +127,12 @@ export default function LocationMapPicker({ open, onOpenChange, initialCoords, s
             });
             return annotation;
           });
-          map.addAnnotations(annotations);
-          savedAnnotationsRef.current = annotations;
+          try {
+            map.addAnnotations(annotations);
+            savedAnnotationsRef.current = annotations;
+          } catch (e) {
+            // Map may have been destroyed while we were loading saved locations
+          }
         }
 
         map.addEventListener('region-change-end', async () => {
