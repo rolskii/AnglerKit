@@ -8,6 +8,7 @@ export default function PullToRefresh({ onRefresh, children }) {
   const [refreshing, setRefreshing] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
   const startYRef = useRef(null);
+  const pullDistRef = useRef(0);
   const pullingRef = useRef(false);
   const activePointerRef = useRef(null);
 
@@ -22,6 +23,7 @@ export default function PullToRefresh({ onRefresh, children }) {
     if (!isAtTop()) return;
     startYRef.current = e.clientY;
     pullingRef.current = false;
+    pullDistRef.current = 0;
     activePointerRef.current = e.pointerId;
   };
 
@@ -33,20 +35,21 @@ export default function PullToRefresh({ onRefresh, children }) {
       if (isAtTop()) {
         pullingRef.current = true;
         const dist = Math.min(delta * 0.4, MAX_PULL);
+        pullDistRef.current = dist;
         setPullDistance(dist);
       } else {
-        // scrolled away from top mid-pull — reset
         startYRef.current = null;
+        pullDistRef.current = 0;
         setPullDistance(0);
       }
     }
   };
 
-  const finishPull = async (e) => {
+  const finishPull = async () => {
     if (startYRef.current === null) return;
     startYRef.current = null;
     activePointerRef.current = null;
-    const shouldRefresh = pullingRef.current && pullDistance > THRESHOLD;
+    const shouldRefresh = pullingRef.current && pullDistRef.current > THRESHOLD;
     pullingRef.current = false;
     if (shouldRefresh && !refreshing) {
       setRefreshing(true);
@@ -56,9 +59,11 @@ export default function PullToRefresh({ onRefresh, children }) {
       } finally {
         setRefreshing(false);
         setPullDistance(0);
+        pullDistRef.current = 0;
       }
     } else {
       setPullDistance(0);
+      pullDistRef.current = 0;
     }
   };
 
