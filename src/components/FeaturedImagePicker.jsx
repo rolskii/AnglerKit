@@ -3,11 +3,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { base44 } from "@/api/base44Client";
 
 const entityConfigs = [
-  { entity: "FlyLine", label: "Lines", nameField: (item) => `${item.brand || ""} ${item.model || ""}`.trim() || "Lines" },
-  { entity: "Reel", label: "Reel", nameField: (item) => item.name || "Reel" },
-  { entity: "Rod", label: "Rod", nameField: (item) => item.name || "Rod" },
-  { entity: "Lure", label: "Lure", nameField: (item) => item.name || "Lure" },
-  { entity: "MiscItem", label: "Misc", nameField: (item) => item.name || "Item" },
+  { entity: "FlyLine", label: "Lines", link: "/gear/lines", nameField: (item) => `${item.brand || ""} ${item.model || ""}`.trim() || "Lines" },
+  { entity: "Reel", label: "Reel", link: "/gear/reels", nameField: (item) => `${item.brand || ""} ${item.name || ""}`.trim() || "Reel" },
+  { entity: "Rod", label: "Rod", link: "/gear/rods", nameField: (item) => `${item.brand || ""} ${item.name || ""}`.trim() || "Rod" },
+  { entity: "Lure", label: "Lure", link: "/gear/lures", nameField: (item) => `${item.brand || ""} ${item.name || ""}`.trim() || "Lure" },
+  { entity: "MiscItem", label: "Misc", link: "/gear/misc", nameField: (item) => `${item.brand || ""} ${item.name || ""}`.trim() || "Item" },
+  { entity: "Catch", label: "Fish Log", link: "/catches", nameField: (item) => [item.species, item.length != null ? `${item.length}"` : null, item.location].filter(Boolean).join(" ") || "Catch" },
 ];
 
 export default function FeaturedImagePicker({ open, onClose, onSelect }) {
@@ -29,6 +30,7 @@ export default function FeaturedImagePicker({ open, onClose, onSelect }) {
                 image_url: img,
                 label: cfg.nameField(item),
                 subtitle: cfg.label,
+                link: cfg.link,
               });
             }
           }

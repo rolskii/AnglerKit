@@ -9,6 +9,7 @@ const entityRoutes = {
   Rod: "/gear/rods",
   Lure: "/gear/lures",
   MiscItem: "/gear/misc",
+  Catch: "/catches",
 };
 
 const entityLabels = {
@@ -17,6 +18,7 @@ const entityLabels = {
   Rod: "Rod",
   Lure: "Lure",
   MiscItem: "Misc",
+  Catch: "Fish Log",
 };
 
 const todayStr = () => {
@@ -51,7 +53,7 @@ export default function FeaturedImage() {
   };
 
   const fetchAllGearImages = async () => {
-    const entityTypes = ["Reel", "Rod", "Lure", "MiscItem"];
+    const entityTypes = ["Reel", "Rod", "Lure", "MiscItem", "Catch"];
     const allImages = [];
     for (const type of entityTypes) {
       try {
@@ -59,11 +61,19 @@ export default function FeaturedImage() {
         for (const item of items) {
           const imgs = item.images || (item.image_url ? [item.image_url] : []);
           for (const img of imgs) {
+            let label;
+            if (type === "Catch") {
+              label = [
+                item.species,
+                item.length != null ? `${item.length}"` : null,
+                item.location,
+              ].filter(Boolean).join(" ") || "Catch";
+            } else {
+              label = `${item.brand || ""} ${item.name || ""}`.trim() || type;
+            }
             allImages.push({
               image_url: img,
-              label: type === "FlyLine"
-                ? `${item.brand || ""} ${item.model || ""}`.trim() || "Line"
-                : (item.name || type),
+              label,
               subtitle: entityLabels[type],
               link: entityRoutes[type],
             });
