@@ -246,7 +246,7 @@ function ChartPanel({ hourlyData, field, normalLevel, overlayBuckets, overlayLab
           {areaD && <path d={areaD} fill={`url(#${gradId})`} stroke="none" />}
           {pathD && <path d={pathD} fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" />}
           {overlayPath && overlayColor && (
-            <path d={overlayPath} fill="none" stroke={overlayColor} strokeWidth="2" strokeLinecap="round" opacity="0.85" vectorEffect="non-scaling-stroke" />
+            <path d={overlayPath} fill="none" stroke={overlayColor} strokeWidth="2" strokeLinecap="round" strokeDasharray="6 4" opacity="0.9" vectorEffect="non-scaling-stroke" />
           )}
           {lastReal && (
             <circle cx={lastReal.x} cy={lastReal.y} r={4} fill="hsl(var(--background))" stroke="hsl(var(--primary))" strokeWidth="2" />
@@ -427,7 +427,7 @@ export default function RiverLevelChart({ hourly, field = 'level', unitLabel, no
         )}
         {OVERLAY_COLORS[overlayRange] && overlayBuckets?.some(b => b.level != null || b.discharge != null) && overlayLabel && (
           <span className="inline-flex items-center gap-1 text-[11px] font-medium whitespace-nowrap" style={{ color: OVERLAY_COLORS[overlayRange] }}>
-            <span className="inline-block w-3 border-t" style={{ borderColor: OVERLAY_COLORS[overlayRange] }} />
+            <span className="inline-block w-3 border-t-2 border-dashed" style={{ borderColor: OVERLAY_COLORS[overlayRange] }} />
             {overlayLabel}
           </span>
         )}
