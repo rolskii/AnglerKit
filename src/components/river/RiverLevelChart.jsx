@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useRef } from 'react';
 import { buildSmoothPath, generateFixedIntervalTicks } from '@/lib/chartUtils';
+import { useNowTick } from '@/hooks/useNowTick';
 import { Loader2 } from 'lucide-react';
 import ChartTooltip from './ChartTooltip';
 
@@ -7,10 +8,7 @@ const CHART_HEIGHT = 180;
 const CHART_WIDTH = 720;
 const PAD_TOP_PCT = 0.08;
 const PAD_BOTTOM_PCT = 0.08;
-
-function localDateStr(d) {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
+const WINDOW_HOURS = 12;
 
 function pickTickInterval(dataRange) {
   if (dataRange <= 0.01) return 0.002;
@@ -23,60 +21,30 @@ function pickTickInterval(dataRange) {
   return 0.20;
 }
 
-function formatElevation(v, field) {
-  if (v == null || isNaN(v)) return '—';
-  return field === 'discharge' ? v.toFixed(1) : v.toFixed(2);
+function formatTimeLabel(ts) {
+  if (ts == null) return '—';
+  return new Date(ts).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 }
 
-function HourAxis({ nowHour }) {
-  const majorHours = [0, 3, 6, 9, 12, 15, 18, 21, 24];
-  const labelFor = (h) => {
-    const hh = h % 24;
-    if (hh === 0) return '12am';
-    if (hh === 12) return '12pm';
-    return hh > 12 ? `${hh - 12}pm` : `${hh}am`;
-  };
-  const nearestMajor = nowHour != null ? majorHours.reduce((best, h) => (Math.abs(h - nowHour) < Math.abs(best - nowHour) ? h : best), 0) : null;
-
-  return (
-    <div className="relative h-6 mt-1">
-      {Array.from({ length: 25 }, (_, h) => h).map((h) => {
-        const isMajor = h % 3 === 0;
-        const leftPct = (h / 24) * 100;
-        const isNowLabel = isMajor && h === nearestMajor;
-        const hideLabel = h === 24;
-        return (
-          <div
-            key={h}
-            className="absolute top-0 flex flex-col items-center"
-            style={{ left: `${leftPct}%`, transform: 'translateX(-50%)' }}
-          >
-            <div className={isMajor ? 'w-px h-1.5 bg-muted-foreground/50' : 'w-px h-1 bg-muted-foreground/25'} />
-            {isMajor && !hideLabel && (
-              <span className={`text-[11px] mt-0.5 whitespace-nowrap ${isNowLabel ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
-                {isNowLabel ? 'Now' : labelFor(h)}
-              </span>
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-// Build a 24-hour array (12am–12am) for today from hourly readings.
-function buildHours(hourlyData, field, targetDateStr) {
-  if (!hourlyData?.time?.length) return new Array(25).fill(null).map((_, h) => ({ hour: h, value: null, isReal: false }));
-  const byDate = {};
+// Build raw points within the rolling 12-hour window ending at nowMs.
+// Each point carries both level and discharge so the tooltip can show
+// both fields regardless of which is charted.
+function buildRollingPoints(hourlyData, nowMs) {
+  if (!hourlyData?.time?.length) return [];
+  const windowStartMs = nowMs - WINDOW_HOURS * 3600000;
+  const points = [];
   hourlyData.time.forEach((t, i) => {
-    const d = new Date(t);
-    const dateStr = localDateStr(d);
-    if (!byDate[dateStr]) byDate[dateStr] = new Array(24).fill(null).map((_, h) => ({ hour: h, value: null, isReal: false }));
-    const hour = d.getHours();
-    byDate[dateStr][hour] = { hour, value: hourlyData[field]?.[i] ?? null, isReal: true };
+    const ts = new Date(t).getTime();
+    if (ts < windowStartMs || ts > nowMs) return;
+    const x = ((ts - windowStartMs) / (WINDOW_HOURS * 3600000)) * CHART_WIDTH;
+    points.push({
+      x,
+      ts,
+      level: hourlyData.level?.[i] ?? null,
+      discharge: hourlyData.discharge?.[i] ?? null,
+    });
   });
-  const dayHours = byDate[targetDateStr] || new Array(24).fill(null).map((_, h) => ({ hour: h, value: null, isReal: false }));
-  return [...dayHours, { hour: 24, value: null, isReal: false }];
+  return points.sort((a, b) => a.ts - b.ts);
 }
 
 function interpolateValue(dataArray, targetIdx, field) {
@@ -107,105 +75,101 @@ function interpolateValue(dataArray, targetIdx, field) {
   return null;
 }
 
-function formatHourLabel(h) {
-  const hh = h % 24;
-  if (hh === 0) return '12:00 AM';
-  if (hh === 12) return '12:00 PM';
-  return hh > 12 ? `${hh - 12}:00 PM` : `${hh}:00 AM`;
+function RollingTimeAxis({ windowStartMs }) {
+  const tickHours = [0, 2, 4, 6, 8, 10, 12];
+  return (
+    <div className="relative h-6 mt-1">
+      {tickHours.map((h) => {
+        const leftPct = (h / WINDOW_HOURS) * 100;
+        const ts = windowStartMs + h * 3600000;
+        const isNow = h === WINDOW_HOURS;
+        return (
+          <div
+            key={h}
+            className="absolute top-0 flex flex-col items-center"
+            style={{ left: `${leftPct}%`, transform: 'translateX(-50%)' }}
+          >
+            <div className="w-px h-1.5 bg-muted-foreground/50" />
+            <span className={`text-[11px] mt-0.5 whitespace-nowrap ${isNow ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
+              {isNow ? 'Now' : formatTimeLabel(ts)}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
-function ChartPanel({ hourlyData, field, normalLevel, overlayBuckets, overlayLabel, bounds, isToday, nowHour, loading, yTicks, unitLabel }) {
-  const [activeHour, setActiveHour] = useState(null);
+function ChartPanel({ hourlyData, field, normalLevel, overlayBuckets, overlayLabel, bounds, loading, yTicks, unitLabel, nowMs }) {
+  const [activeX, setActiveX] = useState(null);
   const lastTapRef = useRef(0);
-  const targetDateStr = hourlyData?._targetDateStr || localDateStr(new Date());
-  const hours = useMemo(() => buildHours(hourlyData, field, targetDateStr), [hourlyData, field, targetDateStr]);
-  const hoursLevel = useMemo(() => buildHours(hourlyData, 'level', targetDateStr), [hourlyData, targetDateStr]);
-  const hoursDischarge = useMemo(() => buildHours(hourlyData, 'discharge', targetDateStr), [hourlyData, targetDateStr]);
+
+  const points = useMemo(() => buildRollingPoints(hourlyData, nowMs), [hourlyData, nowMs]);
+  const windowStartMs = nowMs - WINDOW_HOURS * 3600000;
 
   const usableTop = CHART_HEIGHT * PAD_TOP_PCT;
   const usableBottom = CHART_HEIGHT * (1 - PAD_BOTTOM_PCT);
-
-  const { min, max, normalY } = bounds || { min: 0, max: 1, normalY: null, usableTop, usableBottom };
+  const { min, max, normalY } = bounds || { min: 0, max: 1, normalY: null };
   const range = max - min || 1;
   const usableHeight = usableBottom - usableTop;
 
-  const svgPoints = hours.map(p => {
-    const x = (p.hour / 24) * CHART_WIDTH;
-    if (p.value == null) return { x, y: null, isReal: p.isReal };
-    const y = usableBottom - ((p.value - min) / range) * usableHeight;
-    return { x, y, isReal: p.isReal };
-  });
+  // Map raw points to SVG coordinates for the charted field.
+  const knownPoints = useMemo(() => {
+    return points
+      .map(p => {
+        const val = p[field];
+        const y = val != null ? usableBottom - ((val - min) / range) * usableHeight : null;
+        return { ...p, y };
+      })
+      .filter(p => p.y != null);
+  }, [points, field, min, range, usableHeight, usableBottom]);
 
-  const knownPoints = svgPoints.filter(p => p.y != null);
-  const filledPoints = svgPoints.map((p, i) => {
-    if (p.y != null) return p;
-    let prevIdx = i - 1;
-    while (prevIdx >= 0 && svgPoints[prevIdx].y == null) prevIdx--;
-    let nextIdx = i + 1;
-    while (nextIdx < svgPoints.length && svgPoints[nextIdx].y == null) nextIdx++;
-    const prev = prevIdx >= 0 ? svgPoints[prevIdx] : null;
-    const next = nextIdx < svgPoints.length ? svgPoints[nextIdx] : null;
-    if (prev && next) {
-      const t = (p.x - prev.x) / (next.x - prev.x || 1);
-      return { x: p.x, y: prev.y + t * (next.y - prev.y), isReal: false };
-    }
-    if (prev) return { x: p.x, y: prev.y, isReal: false };
-    if (next) return { x: p.x, y: next.y, isReal: false };
-    return { x: p.x, y: null, isReal: false };
-  }).filter(p => p.y != null);
-
-  const nowX = isToday && nowHour != null ? (nowHour / 24) * CHART_WIDTH : null;
-  let visiblePoints = filledPoints;
-  if (nowX != null) {
-    visiblePoints = filledPoints.filter(p => p.x <= nowX + 0.5);
-    if (visiblePoints.length > 0 && visiblePoints[visiblePoints.length - 1].x < nowX) {
-      visiblePoints = [...visiblePoints, { x: nowX, y: visiblePoints[visiblePoints.length - 1].y, isReal: false }];
-    }
-  }
-
-  const pathD = buildSmoothPath(visiblePoints);
+  const pathD = buildSmoothPath(knownPoints);
   const gradId = `riverGradient-${field}`;
-  const areaD = visiblePoints.length > 0
-    ? `${pathD} L ${visiblePoints[visiblePoints.length - 1].x} ${CHART_HEIGHT} L ${visiblePoints[0].x} ${CHART_HEIGHT} Z`
+  const areaD = knownPoints.length > 0
+    ? `${pathD} L ${knownPoints[knownPoints.length - 1].x} ${CHART_HEIGHT} L ${knownPoints[0].x} ${CHART_HEIGHT} Z`
     : '';
 
-  const lastReal = isToday ? [...knownPoints].reverse().find(p => p.isReal) : null;
+  const lastReal = knownPoints.length > 0 ? knownPoints[knownPoints.length - 1] : null;
 
-  const activeLevel = activeHour != null ? interpolateValue(hoursLevel, activeHour) : null;
-  const activeDischarge = activeHour != null ? interpolateValue(hoursDischarge, activeHour) : null;
+  // Find nearest data point to the active x position for the tooltip.
+  const activePoint = activeX != null && knownPoints.length > 0
+    ? knownPoints.reduce((best, p) => (Math.abs(p.x - activeX) < Math.abs(best.x - activeX) ? p : best), knownPoints[0])
+    : null;
+
+  const activeLevel = activePoint?.level ?? null;
+  const activeDischarge = activePoint?.discharge ?? null;
   const hasOverlayData = overlayBuckets?.some(b => b.level != null || b.discharge != null);
-  const activeOverlayLevel = activeHour != null && hasOverlayData ? interpolateValue(overlayBuckets, activeHour, 'level') : null;
-  const activeOverlayDischarge = activeHour != null && hasOverlayData ? interpolateValue(overlayBuckets, activeHour, 'discharge') : null;
-  const activeX = activeHour != null ? (activeHour / 24) * CHART_WIDTH : null;
+  const activeHourOfDay = activePoint ? new Date(activePoint.ts).getHours() : null;
+  const activeOverlayLevel = activeHourOfDay != null && hasOverlayData ? interpolateValue(overlayBuckets, activeHourOfDay, 'level') : null;
+  const activeOverlayDischarge = activeHourOfDay != null && hasOverlayData ? interpolateValue(overlayBuckets, activeHourOfDay, 'discharge') : null;
   const activeLevelY = activeLevel != null ? usableBottom - ((activeLevel - min) / range) * usableHeight : null;
 
   const draggingRef = useRef(false);
 
-  const hourFromEvent = (e) => {
+  const xFromEvent = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const pct = Math.max(0, Math.min(1, x / rect.width));
-    return Math.round(pct * 24);
+    return pct * CHART_WIDTH;
   };
 
   const handlePointerDown = (e) => {
     const now = Date.now();
     if (now - lastTapRef.current < 300) {
       lastTapRef.current = 0;
-      setActiveHour(null);
+      setActiveX(null);
       return;
     }
     lastTapRef.current = now;
     draggingRef.current = true;
     e.currentTarget.setPointerCapture(e.pointerId);
-    const hour = hourFromEvent(e);
-    if (hour <= 24) setActiveHour(hour);
+    setActiveX(xFromEvent(e));
   };
 
   const handlePointerMove = (e) => {
     if (!draggingRef.current) return;
-    const hour = hourFromEvent(e);
-    if (hour <= 24) setActiveHour(hour);
+    setActiveX(xFromEvent(e));
   };
 
   const handlePointerUp = (e) => {
@@ -231,7 +195,6 @@ function ChartPanel({ hourlyData, field, normalLevel, overlayBuckets, overlayLab
               <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.05" />
             </linearGradient>
           </defs>
-          {/* Horizontal grid lines for more visual y-axis intervals */}
           {yTicks.map((tick, i) => (
             <line key={`grid-${i}`} x1="0" y1={tick.y} x2={CHART_WIDTH} y2={tick.y} stroke="hsl(var(--border))" strokeWidth="0.5" opacity="0.5" vectorEffect="non-scaling-stroke" />
           ))}
@@ -240,17 +203,14 @@ function ChartPanel({ hourlyData, field, normalLevel, overlayBuckets, overlayLab
           )}
           {areaD && <path d={areaD} fill={`url(#${gradId})`} stroke="none" />}
           {pathD && <path d={pathD} fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" />}
-          {knownPoints.filter(p => p.isReal).map((p, i) => (
-            <circle key={i} cx={p.x} cy={p.y} r={2} fill="hsl(var(--primary))" />
-          ))}
           {lastReal && (
             <circle cx={lastReal.x} cy={lastReal.y} r={4} fill="hsl(var(--background))" stroke="hsl(var(--primary))" strokeWidth="2" />
           )}
-          {activeX != null && (
-            <line x1={activeX} y1="0" x2={activeX} y2={CHART_HEIGHT} stroke="hsl(var(--foreground))" strokeWidth="1" strokeDasharray="4 3" opacity="0.4" vectorEffect="non-scaling-stroke" />
+          {activePoint && (
+            <line x1={activePoint.x} y1="0" x2={activePoint.x} y2={CHART_HEIGHT} stroke="hsl(var(--foreground))" strokeWidth="1" strokeDasharray="4 3" opacity="0.4" vectorEffect="non-scaling-stroke" />
           )}
-          {activeX != null && activeLevelY != null && (
-            <circle cx={activeX} cy={activeLevelY} r="4" fill="hsl(var(--background))" stroke="hsl(var(--primary))" strokeWidth="2" />
+          {activePoint && activeLevelY != null && (
+            <circle cx={activePoint.x} cy={activeLevelY} r={4} fill="hsl(var(--background))" stroke="hsl(var(--primary))" strokeWidth="2" />
           )}
         </svg>
 
@@ -265,17 +225,17 @@ function ChartPanel({ hourlyData, field, normalLevel, overlayBuckets, overlayLab
           </span>
         ))}
 
-        {activeHour != null && (
+        {activePoint && (
           <div
             className="absolute z-20 pointer-events-none"
             style={{
-              left: `${(activeHour / 24) * 100}%`,
+              left: `${(activePoint.x / CHART_WIDTH) * 100}%`,
               top: '2px',
-              transform: `translateX(${activeHour >= 18 ? '-100%' : activeHour >= 7 ? '-50%' : '0'})`,
+              transform: `translateX(${activePoint.x >= CHART_WIDTH * 0.75 ? '-100%' : activePoint.x >= CHART_WIDTH * 0.3 ? '-50%' : '0'})`,
             }}
           >
             <ChartTooltip
-              hourLabel={formatHourLabel(activeHour)}
+              hourLabel={formatTimeLabel(activePoint.ts)}
               level={activeLevel}
               discharge={activeDischarge}
               overlayLabel={overlayLabel}
@@ -286,22 +246,19 @@ function ChartPanel({ hourlyData, field, normalLevel, overlayBuckets, overlayLab
           </div>
         )}
       </div>
-      <HourAxis nowHour={nowHour} />
+      <RollingTimeAxis windowStartMs={windowStartMs} />
     </div>
   );
 }
 
 export default function RiverLevelChart({ hourly, field = 'level', unitLabel, normalLevel, overlayHourly, overlayLabel }) {
-  const todayDateStr = localDateStr(new Date());
+  // Re-render every 60s so the 12-hour window slides forward as time progresses.
+  const now = useNowTick(60000);
+  const nowMs = now.getTime();
 
-  // Tag the hourly data with today's date string for buildHours.
-  const todayData = useMemo(() => {
-    if (!hourly?.time?.length) return null;
-    return { ...hourly, _targetDateStr: todayDateStr };
-  }, [hourly, todayDateStr]);
-
-  // Bucket overlay into hourly averages — both level and discharge so
-  // the tooltip can show both fields regardless of which is charted.
+  // Bucket overlay into hourly averages by hour-of-day — both level and
+  // discharge so the tooltip can show both fields regardless of which
+  // is charted. Looked up by hour-of-day of the active data point.
   const overlayBuckets = useMemo(() => {
     if (!overlayHourly?.time?.length) return null;
     const buckets = new Array(24).fill(null).map((_, h) => ({ hour: h, level: null, discharge: null }));
@@ -327,12 +284,17 @@ export default function RiverLevelChart({ hourly, field = 'level', unitLabel, no
     return [...buckets, { hour: 24, level: firstLevel, discharge: firstDischarge }];
   }, [overlayHourly]);
 
-  // Y bounds from today's data + normal level.
+  // Y bounds from the rolling 12-hour window of data + normal level.
   const bounds = useMemo(() => {
-    if (!todayData?.time?.length) return null;
+    if (!hourly?.time?.length) return null;
+    const windowStartMs = nowMs - WINDOW_HOURS * 3600000;
     const allVals = [];
-    const values = todayData[field] || [];
-    values.forEach(v => { if (v != null) allVals.push(v); });
+    hourly.time.forEach((t, i) => {
+      const ts = new Date(t).getTime();
+      if (ts < windowStartMs || ts > nowMs) return;
+      const v = hourly[field]?.[i];
+      if (v != null) allVals.push(v);
+    });
     if (allVals.length === 0) return null;
 
     let min = Math.min(...allVals);
@@ -352,7 +314,7 @@ export default function RiverLevelChart({ hourly, field = 'level', unitLabel, no
     const usableHeight = usableBottom - usableTop;
     const normalY = normalLevel != null ? usableBottom - ((normalLevel - min) / range) * usableHeight : null;
     return { min, max, normalY, usableTop, usableBottom };
-  }, [todayData, field, normalLevel]);
+  }, [hourly, field, normalLevel, nowMs]);
 
   const yTicks = useMemo(() => {
     if (!bounds) return [];
@@ -364,22 +326,21 @@ export default function RiverLevelChart({ hourly, field = 'level', unitLabel, no
     return generateFixedIntervalTicks(min, max, pickTickInterval(max - min), usableTop, usableBottom);
   }, [bounds, field]);
 
-  const loading = !todayData;
+  const loading = !hourly?.time?.length;
 
   return (
     <div className="w-full">
       <ChartPanel
-        hourlyData={todayData}
+        hourlyData={hourly}
         field={field}
         unitLabel={unitLabel}
         normalLevel={normalLevel}
         overlayBuckets={overlayBuckets}
         overlayLabel={overlayLabel}
         bounds={bounds}
-        isToday={true}
-        nowHour={new Date().getHours() + new Date().getMinutes() / 60}
         loading={loading}
         yTicks={yTicks}
+        nowMs={nowMs}
       />
 
       {/* Legend */}

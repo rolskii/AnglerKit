@@ -325,7 +325,7 @@ export default function RiverConditions() {
               {/* Hourly chart + historical overlay */}
               <Card>
                 <CardHeader className="pt-3 pb-2 px-3">
-                  <CardTitle className="text-base">Water Level (Today)</CardTitle>
+                  <CardTitle className="text-base">Water Level (Last 12 Hours)</CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0 pb-2 px-3">
                   <RiverLevelChart hourly={data.hourly} field="level" unitLabel="m" normalLevel={data.normal?.median} overlayHourly={historicalHourly} overlayLabel={overlayLabel} />
