@@ -13,11 +13,13 @@ function localDateStr(d) {
 }
 
 function pickTickInterval(dataRange) {
+  if (dataRange <= 0.01) return 0.002;
   if (dataRange <= 0.02) return 0.005;
   if (dataRange <= 0.04) return 0.01;
   if (dataRange <= 0.08) return 0.02;
-  if (dataRange <= 0.20) return 0.05;
-  if (dataRange <= 0.40) return 0.10;
+  if (dataRange <= 0.16) return 0.04;
+  if (dataRange <= 0.30) return 0.05;
+  if (dataRange <= 0.60) return 0.10;
   return 0.20;
 }
 
