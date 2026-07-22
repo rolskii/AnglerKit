@@ -1,6 +1,8 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useRef, useState } from 'react';
+import { base44 } from '@/api/base44Client';
 import { buildSmoothPath, generateFixedIntervalTicks } from '@/lib/chartUtils';
 import { useNowTick } from '@/hooks/useNowTick';
+import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 
 const CHART_HEIGHT = 120;
 const CHART_WIDTH = 720;
@@ -24,8 +26,6 @@ function formatElevation(v, field) {
   return field === 'discharge' ? v.toFixed(1) : v.toFixed(2);
 }
 
-// 24h tick axis: major labeled ticks every 3 hours, minor unlabeled notches.
-// `nowHour` replaces the nearest major tick's label with "Now".
 function HourAxis({ nowHour }) {
   const majorHours = [0, 3, 6, 9, 12, 15, 18, 21, 24];
   const labelFor = (h) => {
@@ -61,31 +61,101 @@ function HourAxis({ nowHour }) {
   );
 }
 
-export default function RiverLevelChart({ hourly, field = 'level', unitLabel, normalLevel, overlayHourly }) {
+export default function RiverLevelChart({ hourly, field = 'level', unitLabel, normalLevel, overlayHourly, stationId, stationName }) {
   const now = useNowTick(60000);
+  const [dayOffset, setDayOffset] = useState(0); // 0 = today, -1 = yesterday, etc.
+  const [historicalData, setHistoricalData] = useState(null);
+  const [loadingHistorical, setLoadingHistorical] = useState(false);
+  const touchStartX = useRef(null);
+  const touchStartY = useRef(null);
 
-  // Build today's 24-hour array (12am–12am) from the hourly readings.
+  // Fetch the target day's hourly data when panning away from today.
+  useEffect(() => {
+    if (dayOffset === 0 || !stationId) {
+      setHistoricalData(null);
+      return;
+    }
+    let cancelled = false;
+    const load = async () => {
+      setLoadingHistorical(true);
+      try {
+        const targetDate = new Date(now.getTime() + dayOffset * 86400000);
+        const startDateStr = localDateStr(targetDate);
+        const res = await base44.functions.invoke('hydrometric', {
+          stationId,
+          stationName,
+          historicalRange: 'custom',
+          startDate: startDateStr,
+          tzOffset: new Date().getTimezoneOffset(),
+        });
+        if (!cancelled) {
+          setHistoricalData(res.data?.historical || null);
+        }
+      } catch (e) {
+        if (!cancelled) setHistoricalData(null);
+      } finally {
+        if (!cancelled) setLoadingHistorical(false);
+      }
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [dayOffset, stationId, stationName, now]);
+
+  // Horizontal swipe to pan between days; ignore vertical scrolls.
+  const onTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  };
+  const onTouchEnd = (e) => {
+    if (touchStartX.current == null) return;
+    const deltaX = e.changedTouches[0].clientX - touchStartX.current;
+    const deltaY = e.changedTouches[0].clientY - (touchStartY.current ?? 0);
+    const threshold = 50;
+    // Only pan if the swipe is predominantly horizontal
+    if (Math.abs(deltaX) > threshold && Math.abs(deltaX) > Math.abs(deltaY)) {
+      if (deltaX < 0) {
+        setDayOffset(d => d - 1); // swipe left → further back
+      } else if (dayOffset < 0) {
+        setDayOffset(d => Math.min(0, d + 1)); // swipe right → toward today
+      }
+    }
+    touchStartX.current = null;
+    touchStartY.current = null;
+  };
+
+  const isToday = dayOffset === 0;
+  const effectiveHourly = isToday ? hourly : historicalData;
+
+  const targetDate = new Date(now.getTime() + dayOffset * 86400000);
+  const targetDateStr = localDateStr(targetDate);
+  const dayLabel = isToday
+    ? 'Today'
+    : dayOffset === -1
+      ? 'Yesterday'
+      : targetDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+
+  // Build the 24-hour array (12am–12am) for the target day.
   const hours = useMemo(() => {
-    if (!hourly?.time?.length) return null;
-    const todayStr = localDateStr(now);
+    if (!effectiveHourly?.time?.length) return new Array(24).fill(null).map((_, h) => ({ hour: h, value: null, isReal: false }));
     const byDate = {};
-    hourly.time.forEach((t, i) => {
+    effectiveHourly.time.forEach((t, i) => {
       const d = new Date(t);
       const dateStr = localDateStr(d);
       if (!byDate[dateStr]) byDate[dateStr] = new Array(24).fill(null).map((_, h) => ({ hour: h, value: null, isReal: false }));
       const hour = d.getHours();
-      byDate[dateStr][hour] = { hour, value: hourly[field]?.[i] ?? null, isReal: true };
+      byDate[dateStr][hour] = { hour, value: effectiveHourly[field]?.[i] ?? null, isReal: true };
     });
-    return byDate[todayStr] || new Array(24).fill(null).map((_, h) => ({ hour: h, value: null, isReal: false }));
-  }, [hourly, field, now]);
+    return byDate[targetDateStr] || new Array(24).fill(null).map((_, h) => ({ hour: h, value: null, isReal: false }));
+  }, [effectiveHourly, field, targetDateStr]);
 
-  // Bucket historical overlay by local hour (0-23).
+  // Suppress the historical overlay line when viewing a non-today day.
+  const effectiveOverlay = isToday ? overlayHourly : null;
   const overlayHours = useMemo(() => {
-    if (!overlayHourly?.time?.length) return null;
-    const values = overlayHourly[field] || [];
+    if (!effectiveOverlay?.time?.length) return null;
+    const values = effectiveOverlay[field] || [];
     const buckets = new Array(24).fill(null).map((_, h) => ({ hour: h, value: null }));
     const counts = new Array(24).fill(0);
-    overlayHourly.time.forEach((t, i) => {
+    effectiveOverlay.time.forEach((t, i) => {
       const v = values[i];
       if (v == null) return;
       const h = new Date(t).getHours();
@@ -97,16 +167,15 @@ export default function RiverLevelChart({ hourly, field = 'level', unitLabel, no
       counts[h]++;
     });
     return buckets;
-  }, [overlayHourly, field]);
+  }, [effectiveOverlay, field]);
 
-  if (!hours) {
+  if (!effectiveHourly?.time?.length && !loadingHistorical) {
     return <p className="text-sm text-muted-foreground py-4 text-center">No hourly data available yet.</p>;
   }
 
   const withValues = hours.filter(p => p.value != null);
-  const gradId = `riverGradient-${field}-today`;
+  const gradId = `riverGradient-${field}-${dayOffset}`;
 
-  // Y bounds across current + overlay data
   const allVals = [];
   withValues.forEach(p => allVals.push(p.value));
   if (overlayHours) overlayHours.forEach(p => { if (p.value != null) allVals.push(p.value); });
@@ -127,7 +196,6 @@ export default function RiverLevelChart({ hourly, field = 'level', unitLabel, no
   const usableHeight = usableBottom - usableTop;
   const normalY = normalLevel != null ? usableBottom - ((normalLevel - min) / range) * usableHeight : null;
 
-  // Map hours to SVG x-coordinates (0–24 → 0–CHART_WIDTH)
   const svgPoints = hours.map(p => {
     const x = (p.hour / 24) * CHART_WIDTH;
     if (p.value == null) return { x, y: null, isReal: p.isReal };
@@ -168,11 +236,40 @@ export default function RiverLevelChart({ hourly, field = 'level', unitLabel, no
       ]
     : generateFixedIntervalTicks(min, max, pickTickInterval(max - min), usableTop, usableBottom);
 
-  const lastReal = [...knownPoints].reverse().find(p => p.isReal);
+  const lastReal = isToday ? [...knownPoints].reverse().find(p => p.isReal) : null;
 
   return (
     <div className="w-full">
-      <div className="flex items-stretch gap-1.5">
+      {/* Day label + navigation arrows */}
+      <div className="flex items-center justify-between mb-1">
+        <button
+          onClick={() => setDayOffset(d => d - 1)}
+          className="p-1 -ml-1 text-muted-foreground hover:text-primary transition-colors"
+          aria-label="Previous day"
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </button>
+        <span className="text-xs font-medium text-foreground">{dayLabel}</span>
+        <button
+          onClick={() => setDayOffset(d => Math.min(0, d + 1))}
+          disabled={isToday}
+          className="p-1 -mr-1 text-muted-foreground hover:text-primary transition-colors disabled:opacity-30 disabled:pointer-events-none"
+          aria-label="Next day"
+        >
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      </div>
+
+      <div
+        className="flex items-stretch gap-1.5 relative"
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+      >
+        {loadingHistorical && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/40">
+            <Loader2 className="w-5 h-5 animate-spin text-primary" />
+          </div>
+        )}
         <div className="relative w-9 shrink-0" style={{ height: CHART_HEIGHT }}>
           {yTicks.map((tick, i) => (
             <span
@@ -219,7 +316,7 @@ export default function RiverLevelChart({ hourly, field = 'level', unitLabel, no
               Historical
             </span>
           )}
-          <HourAxis nowHour={new Date().getHours() + new Date().getMinutes() / 60} />
+          <HourAxis nowHour={isToday ? new Date().getHours() + new Date().getMinutes() / 60 : null} />
         </div>
       </div>
     </div>
