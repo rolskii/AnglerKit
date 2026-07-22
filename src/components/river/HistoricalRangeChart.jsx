@@ -62,7 +62,7 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
     };
     load();
     return () => { cancelled = true; };
-  }, [stationId, stationName, range, onDataChange]);
+  }, [stationId, stationName, range, onDataChange, currentValue]);
 
   // Find the hour bucket closest to "this time" for the comparison text.
   const oldestVal = (() => {
