@@ -304,19 +304,21 @@ export default function RiverLevelChart({ hourly, field = 'level', unitLabel, no
               <circle cx={lastReal.x} cy={lastReal.y} r={4} fill="hsl(var(--background))" stroke="hsl(var(--primary))" strokeWidth="2" />
             )}
           </svg>
-          {normalY != null && normalLevel != null && (
-            <span className="absolute right-1 top-1 inline-flex items-center gap-1 text-[11px] font-medium text-green-600 bg-background/80 px-1 rounded whitespace-nowrap">
-              <span className="inline-block w-3 border-t border-dashed border-green-500" />
-              Normal level ({normalLevel.toFixed(2)}{unitLabel ? ` ${unitLabel}` : ''})
-            </span>
-          )}
-          {overlayPathD && (
-            <span className="absolute left-1 top-1 inline-flex items-center gap-1 text-[11px] font-medium text-red-700 bg-background/80 px-1 rounded whitespace-nowrap">
-              <span className="inline-block w-3 border-t border-red-700" />
-              Historical
-            </span>
-          )}
           <HourAxis nowHour={isToday ? new Date().getHours() + new Date().getMinutes() / 60 : null} />
+          <div className="flex items-center gap-3 mt-0.5">
+            {normalY != null && normalLevel != null && (
+              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-green-600 whitespace-nowrap">
+                <span className="inline-block w-3 border-t border-dashed border-green-500" />
+                Normal level ({normalLevel.toFixed(2)}{unitLabel ? ` ${unitLabel}` : ''})
+              </span>
+            )}
+            {overlayPathD && (
+              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-red-700 whitespace-nowrap">
+                <span className="inline-block w-3 border-t border-red-700" />
+                Historical
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </div>
