@@ -153,7 +153,7 @@ export default function Home() {
     const coords = sharedLoc.coords;
     const tempUnit = localStorage.getItem("weatherTempUnit") || "celsius";
     await fetchWeather(coords, tempUnit);
-    await Promise.all([fetchGearCount(), fetchLastCatch(), fetchMapStats(), fetchRiverConditions(coords)]);
+    await Promise.all([fetchGearCount(), fetchLastCatch(), fetchMapStats()]);
   };
   useEffect(() => { refreshData(); }, []);
   useEffect(() => {
@@ -233,26 +233,6 @@ export default function Home() {
         setDescriptions(prev => ({ ...prev, catch: "No catches yet" }));
       }
     } catch (e) {}
-  };
-  const fetchRiverConditions = async (coords) => {
-    try {
-      const res = await base44.functions.invoke('hydrometric', { lat: coords.lat, lon: coords.lon });
-      const d = res.data;
-      if (d?.error || !d?.current) {
-        setDescriptions(prev => ({ ...prev, river: null }));
-        return;
-      }
-      const level = d.current.level != null ? `${d.current.level.toFixed(2)} m` : null;
-      const flow = d.current.discharge != null ? `${d.current.discharge.toFixed(1)} m³/s` : null;
-      const parts = [level, flow].filter(Boolean);
-      setDescriptions(prev => ({
-        ...prev,
-        river: parts.length ? parts : null,
-        riverName: d.station?.name,
-      }));
-    } catch (e) {
-      setDescriptions(prev => ({ ...prev, river: null }));
-    }
   };
   const fetchMapStats = async () => {
     try {
@@ -335,7 +315,7 @@ export default function Home() {
             <div className="flex items-start justify-end">
               {moonPhase && <MoonPhaseSymbol phase={moonPhase} className="w-12 h-12" />}
             </div>
-            <div className="flex items-start justify-end pr-2 -mt-3">
+            <div className="flex items-start justify-end pr-2 -mt-2">
               {weatherInfo && (
                 <WeatherGlyph code={weatherInfo.code} isNight={weatherInfo.isNight} animated className="w-16 h-20" />
               )}
@@ -356,15 +336,11 @@ export default function Home() {
                 <Icon className={isGear ? "w-5 md:w-10 h-5 md:h-10" : "w-4 md:w-8 h-4 md:h-8"} strokeWidth={2} />
               </div>
               <div className="space-y-0.5 md:space-y-1">
-                <h2 className="text-[10px] md:text-lg font-heading font-semibold tracking-tight leading-tight">{item.title}</h2>
+                <h2 className="text-[12.5px] md:text-[22.5px] font-heading font-semibold tracking-tight leading-tight">{item.title}</h2>
                 {isConditions ? (
                   <p className="text-[10px] md:text-sm text-muted-foreground leading-tight">Moon · Weather · River</p>
                 ) : Array.isArray(desc) ? (
-                  <div className="space-y-0.5">
-                    {desc.map((line, i) => (
-                      <p key={i} className="text-[10px] md:text-sm text-muted-foreground leading-tight">{line}</p>
-                    ))}
-                  </div>
+                  <p className="text-[10px] md:text-sm text-muted-foreground leading-tight">{desc.join(", ")}</p>
                 ) : desc ? (
                   <p className="text-[10px] md:text-sm text-muted-foreground leading-tight">{desc}</p>
                 ) : (
@@ -375,7 +351,7 @@ export default function Home() {
           );
           if (isConditions) {
             return (
-              <div key={item.key} className="relative">
+              <div key={item.key} className="relative h-full">
                 {conditionsOpen && (
                   <div
                     ref={conditionsPopupRef}
@@ -404,7 +380,7 @@ export default function Home() {
                   ref={conditionsButtonRef}
                   type="button"
                   onClick={() => setConditionsOpen((open) => !open)}
-                  className="group w-full text-left"
+                  className="group block w-full h-full text-left"
                 >
                   <Card className="relative p-1.5 md:p-5 h-full rounded-2xl border-0 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer bg-card">
                     {cardInner}
@@ -414,7 +390,7 @@ export default function Home() {
             );
           }
           return (
-            <Link key={item.key} to={item.to} className="group">
+            <Link key={item.key} to={item.to} className="group block h-full">
               <Card className="relative p-1.5 md:p-5 h-full rounded-2xl border-0 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer bg-card">
                 {cardInner}
               </Card>

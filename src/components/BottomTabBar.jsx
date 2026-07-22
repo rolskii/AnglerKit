@@ -21,7 +21,6 @@ const CONDITIONS_PATHS = CONDITIONS_ITEMS.map((item) => item.to);
 function TabLink({ tab }) {
   const location = useLocation();
   const Icon = tab.icon;
-  const isGear = tab.to === "/gear/lines";
   const isActive = tab.matchPrefix
     ? location.pathname.startsWith(tab.matchPrefix)
     : location.pathname === tab.to;
@@ -32,7 +31,7 @@ function TabLink({ tab }) {
         isActive ? "text-primary" : "text-muted-foreground"
       }`}
     >
-      <Icon className={isGear ? "w-6 h-6" : "w-5 h-5"} strokeWidth={isActive ? 2.5 : 2} />
+      <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} />
       <span className="text-[10px] font-medium whitespace-nowrap">{tab.label}</span>
     </NavLink>
   );
@@ -80,7 +79,7 @@ export default function BottomTabBar() {
         />
       )}
       <nav
-        className="md:hidden fixed bottom-0 left-0 right-0 z-[600] flex items-center justify-around px-1.5 border-t border-border/60 bg-background/90 backdrop-blur-xl"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-[600] flex items-center justify-around px-4 border-t border-border/60 bg-background/90 backdrop-blur-xl"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         {conditionsOpen && (
@@ -111,14 +110,15 @@ export default function BottomTabBar() {
         <TabLink tab={tabs[0]} />
         <TabLink tab={tabs[1]} />
 
-        <div className="relative flex flex-col items-center flex-1">
+        <div className="flex flex-col items-center flex-1">
           <button
             ref={buttonRef}
             type="button"
             onClick={() => setConditionsOpen((open) => !open)}
-            className="flex flex-col items-center gap-0.5 py-2 px-1"
+            className="relative flex flex-col items-center gap-0.5 py-2 px-1"
           >
-            <span className="flex items-center justify-center w-11 h-11 rounded-full -mt-[22px] border-4 border-background bg-primary text-primary-foreground shadow-lg">
+            <span className="w-5 h-5" aria-hidden="true" />
+            <span className="absolute left-1/2 -translate-x-1/2 -top-[22px] flex items-center justify-center w-11 h-11 rounded-full border-4 border-background bg-primary text-primary-foreground shadow-lg">
               <Gauge className="w-5 h-5" strokeWidth={2} />
             </span>
             <span
