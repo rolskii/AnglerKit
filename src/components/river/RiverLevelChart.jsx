@@ -257,10 +257,10 @@ function ChartPanel({ hourlyData, field, normalLevel, overlayBuckets, overlayLab
           )}
           {areaD && <path d={areaD} fill={`url(#${gradId})`} stroke="none" />}
           {overlayPath && overlayColor && (
-            <path d={overlayPath} fill="none" stroke={overlayColor} strokeWidth="1" strokeLinecap="round" opacity="0.75" vectorEffect="non-scaling-stroke" />
+            <path d={overlayPath} fill="none" stroke={overlayColor} strokeWidth="2" strokeLinecap="round" opacity="0.8" vectorEffect="non-scaling-stroke" />
           )}
           {overlayRefY != null && overlayColor && (
-            <line x1="0" y1={overlayRefY} x2={CHART_WIDTH} y2={overlayRefY} stroke={overlayColor} strokeWidth="1.5" strokeDasharray="6 3" opacity="0.7" vectorEffect="non-scaling-stroke" />
+            <line x1="0" y1={overlayRefY} x2={CHART_WIDTH} y2={overlayRefY} stroke={overlayColor} strokeWidth="2.5" strokeDasharray="6 3" opacity="0.75" vectorEffect="non-scaling-stroke" />
           )}
           {pathD && <path d={pathD} fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" />}
           {lastReal && (
@@ -312,13 +312,13 @@ function ChartPanel({ hourlyData, field, normalLevel, overlayBuckets, overlayLab
 }
 
 const OVERLAY_COLORS = {
-  '1d': '#991b1b',
-  '2d': '#991b1b',
-  '7d': '#991b1b',
-  '1m': '#991b1b',
-  '3m': '#991b1b',
-  '6m': '#991b1b',
-  '1y': '#991b1b',
+  '1d': '#f59e0b',
+  '2d': '#f59e0b',
+  '7d': '#f59e0b',
+  '1m': '#f59e0b',
+  '3m': '#f59e0b',
+  '6m': '#f59e0b',
+  '1y': '#f59e0b',
 };
 
 export default function RiverLevelChart({ hourly, field = 'level', unitLabel, normalLevel, overlayHourly, overlayLabel, overlayRange }) {
