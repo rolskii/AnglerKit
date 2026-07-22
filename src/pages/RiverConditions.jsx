@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -15,6 +15,7 @@ import HistoricalRangeChart from '@/components/river/HistoricalRangeChart';
 import PullToRefresh from '@/components/PullToRefresh';
 import { useAutoRefresh } from '@/hooks/useAutoRefresh';
 import { useUnits } from '@/lib/unitsContext';
+import ShareStatusButton from '@/components/ShareStatusButton';
 
 function TrendIndicator({ trend }) {
   if (!trend) return null;
@@ -99,6 +100,7 @@ export default function RiverConditions() {
   const [overlayLabel, setOverlayLabel] = useState('1 day before');
   const [overlayRange, setOverlayRange] = useState('1d');
   const { isMetric, formatLevel, formatDischarge, levelUnitLabel, convertLevelVal, convertDischargeVal } = useUnits();
+  const contentRef = useRef(null);
 
   const chartHourly = useMemo(() => {
     if (!data?.hourly || isMetric) return data?.hourly;
@@ -272,7 +274,7 @@ export default function RiverConditions() {
   return (
     <PullToRefresh onRefresh={refresh}>
       <div className="space-y-3 md:space-y-4 -mt-4 md:-mt-8">
-        <div className="max-w-2xl mx-auto space-y-3">
+        <div ref={contentRef} className="max-w-2xl mx-auto space-y-3">
           {/* Header */}
           <div className="px-1 mb-2 flex items-center justify-between">
             <h1 className="text-2xl md:text-[34px] font-heading font-extrabold tracking-tight leading-tight flex items-center gap-2">
@@ -425,6 +427,23 @@ export default function RiverConditions() {
             </>
           )}
         </div>
+
+        {data && !error && (
+          <div className="px-1 max-w-2xl mx-auto">
+            <ShareStatusButton
+              targetRef={contentRef}
+              title={`River Conditions — ${data.station?.name || locationName}`}
+              text={[
+                `📍 ${data.station?.name || locationName} (Station ${data.station?.id || '—'})`,
+                `💧 Water Level: ${data.current?.level != null ? formatLevel(data.current.level) : '—'}`,
+                `🌊 Flow: ${data.current?.discharge != null ? formatDischarge(data.current.discharge) : '—'}`,
+                data.trend?.level?.direction ? `📈 Level Trend: ${data.trend.level.direction} (${Math.abs(Math.round(data.trend.level.changePct))}%)` : '',
+                data.trend?.discharge?.direction ? `📈 Flow Trend: ${data.trend.discharge.direction} (${Math.abs(Math.round(data.trend.discharge.changePct))}%)` : '',
+                `🔄 Updated ${data.current?.datetimeLocal ? new Date(data.current.datetimeLocal).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '—'}`,
+              ].filter(Boolean).join('\n')}
+            />
+          </div>
+        )}
 
         <RiverStationMapPicker
           open={mapPickerOpen}
