@@ -121,7 +121,7 @@ export default function Layout() {
         </div>
       )}
       <main className="md:pl-64">
-        <div className="mx-auto max-w-6xl px-4 pt-4 pb-16 md:px-8 md:pt-6 md:pb-10">
+        <div className="mx-auto max-w-6xl px-4 pt-4 pb-28 md:px-8 md:pt-6 md:pb-10">
           <motion.div
             key={location.pathname}
             initial={{ opacity: 0, x: 20 }}
