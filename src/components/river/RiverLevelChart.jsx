@@ -75,32 +75,51 @@ function interpolateValue(dataArray, targetIdx, field) {
   return null;
 }
 
-function RollingTimeAxis({ windowStartMs }) {
-  // Major labels every 3 hours; minor ticks for the hours in between.
-  const allHours = Array.from({ length: WINDOW_HOURS + 1 }, (_, h) => h);
+function RollingTimeAxis({ windowStartMs, nowMs }) {
+  // Ticks at every clock hour within the rolling window. Major labels
+  // at 3-hour boundaries (12am, 3, 6, 9, 12pm, 3, 6, 9); "Now" at right edge.
+  const labelFor = (hourOfDay) => {
+    if (hourOfDay === 0) return '12am';
+    if (hourOfDay === 12) return '12pm';
+    return hourOfDay > 12 ? `${hourOfDay - 12}` : `${hourOfDay}`;
+  };
+
+  const ticks = [];
+  const firstHour = new Date(windowStartMs);
+  firstHour.setMinutes(0, 0, 0);
+  if (firstHour.getTime() < windowStartMs) {
+    firstHour.setTime(firstHour.getTime() + 3600000);
+  }
+  for (let ts = firstHour.getTime(); ts <= nowMs; ts += 3600000) {
+    const d = new Date(ts);
+    const hourOfDay = d.getHours();
+    const leftPct = ((ts - windowStartMs) / (WINDOW_HOURS * 3600000)) * 100;
+    const isMajor = hourOfDay % 3 === 0;
+    const hideLabel = leftPct > 93; // avoid overlap with "Now"
+    ticks.push({ ts, leftPct, isMajor, hourOfDay, hideLabel });
+  }
+
   return (
     <div className="relative h-6 mt-1">
-      {allHours.map((h) => {
-        const leftPct = (h / WINDOW_HOURS) * 100;
-        const ts = windowStartMs + h * 3600000;
-        const isMajor = h % 3 === 0;
-        const isNow = h === WINDOW_HOURS;
-        const showLabel = (isMajor && h > 0) || isNow;
-        return (
-          <div
-            key={h}
-            className="absolute top-0 flex flex-col items-center"
-            style={{ left: `${leftPct}%`, transform: 'translateX(-50%)' }}
-          >
-            <div className={isMajor ? 'w-px h-1.5 bg-muted-foreground/50' : 'w-px h-1 bg-muted-foreground/25'} />
-            {showLabel && (
-              <span className={`text-[11px] mt-0.5 whitespace-nowrap ${isNow ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
-                {isNow ? 'Now' : formatTimeLabel(ts)}
-              </span>
-            )}
-          </div>
-        );
-      })}
+      {ticks.map((tick, i) => (
+        <div
+          key={i}
+          className="absolute top-0 flex flex-col items-center"
+          style={{ left: `${tick.leftPct}%`, transform: 'translateX(-50%)' }}
+        >
+          <div className={tick.isMajor ? 'w-px h-1.5 bg-muted-foreground/50' : 'w-px h-1 bg-muted-foreground/25'} />
+          {tick.isMajor && !tick.hideLabel && (
+            <span className="text-[11px] mt-0.5 whitespace-nowrap text-muted-foreground">
+              {labelFor(tick.hourOfDay)}
+            </span>
+          )}
+        </div>
+      ))}
+      {/* "Now" at the right edge */}
+      <div className="absolute top-0 flex flex-col items-center" style={{ left: '100%', transform: 'translateX(-50%)' }}>
+        <div className="w-px h-1.5 bg-muted-foreground/50" />
+        <span className="text-[11px] mt-0.5 whitespace-nowrap text-primary font-semibold">Now</span>
+      </div>
     </div>
   );
 }
@@ -251,7 +270,7 @@ function ChartPanel({ hourlyData, field, normalLevel, overlayBuckets, overlayLab
           </div>
         )}
       </div>
-      <RollingTimeAxis windowStartMs={windowStartMs} />
+      <RollingTimeAxis windowStartMs={windowStartMs} nowMs={nowMs} />
     </div>
   );
 }
