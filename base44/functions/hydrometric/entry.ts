@@ -216,7 +216,12 @@ async function fetchHistoricalSeries(stationId, range, startDateStr, endDateStr,
   // that day's 24h on a fixed 12am→12am axis.
   let targetDate;
   if (range === 'custom' && startDateStr) {
-    targetDate = new Date(startDateStr);
+    // Parse as local midnight — new Date("2026-07-21") is UTC midnight,
+    // and getDate() returns the local date, which shifts the window one
+    // day early in negative-UTC timezones (e.g. EDT sees July 20 instead
+    // of July 21), leaving yesterday's panel empty.
+    const [y, m, d] = startDateStr.split('-').map(Number);
+    targetDate = new Date(y, m - 1, d);
   } else {
     const now = new Date();
     switch (range) {
