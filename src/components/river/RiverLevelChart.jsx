@@ -147,37 +147,17 @@ function DayPanel({ hourlyData, field, unitLabel, normalLevel, overlayHours, sha
   })();
   const overlayPathD = buildSmoothPath(overlayKnown);
 
-  const yTicks = field === 'discharge'
-    ? [
-        { y: usableTop, label: formatElevation(max, field) },
-        { y: (usableTop + usableBottom) / 2, label: formatElevation((min + max) / 2, field) },
-        { y: usableBottom, label: formatElevation(min, field) },
-      ]
-    : generateFixedIntervalTicks(min, max, pickTickInterval(max - min), usableTop, usableBottom);
-
   const lastReal = isToday ? [...knownPoints].reverse().find(p => p.isReal) : null;
 
   return (
-    <div className="flex items-stretch gap-1.5">
-      <div className="relative w-9 shrink-0" style={{ height: CHART_HEIGHT }}>
-        {yTicks.map((tick, i) => (
-          <span
-            key={i}
-            className="absolute right-0 text-[11px] text-muted-foreground whitespace-nowrap"
-            style={{ top: `${(tick.y / CHART_HEIGHT) * 100}%`, transform: 'translateY(-50%)' }}
-          >
-            {tick.label}{unitLabel ? ` ${unitLabel}` : ''}
-          </span>
-        ))}
-      </div>
-      <div className="flex-1 min-w-0 relative">
-        {loading ? (
-          <div className="flex items-center justify-center" style={{ height: CHART_HEIGHT }}>
-            <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-          </div>
-        ) : (
-          <>
-            <svg viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`} className="w-full" style={{ height: CHART_HEIGHT }} preserveAspectRatio="none">
+    <div className="w-full relative">
+      {loading ? (
+        <div className="flex items-center justify-center" style={{ height: CHART_HEIGHT }}>
+          <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+        </div>
+      ) : (
+        <>
+          <svg viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`} className="w-full" style={{ height: CHART_HEIGHT }} preserveAspectRatio="none">
               <defs>
                 <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.45" />
@@ -202,7 +182,6 @@ function DayPanel({ hourlyData, field, unitLabel, normalLevel, overlayHours, sha
             <HourAxis nowHour={nowHour} />
           </>
         )}
-      </div>
     </div>
   );
 }
@@ -340,32 +319,60 @@ export default function RiverLevelChart({ hourly, field = 'level', unitLabel, no
 
   const hasOverlay = overlayHours?.some(p => p.value != null);
 
+  const yTicks = useMemo(() => {
+    if (!sharedBounds) return [];
+    const { min, max, usableTop, usableBottom } = sharedBounds;
+    if (field === 'discharge') {
+      return [
+        { y: usableTop, label: formatElevation(max, field) },
+        { y: (usableTop + usableBottom) / 2, label: formatElevation((min + max) / 2, field) },
+        { y: usableBottom, label: formatElevation(min, field) },
+      ];
+    }
+    return generateFixedIntervalTicks(min, max, pickTickInterval(max - min), usableTop, usableBottom);
+  }, [sharedBounds, field]);
+
   return (
     <div className="w-full">
-      <div
-        ref={scrollRef}
-        className="overflow-x-auto snap-x snap-mandatory flex scrollbar-hide"
-      >
-        {dates.map(date => {
-          const data = dayDataMap[date.dateStr];
-          const loading = !data;
-          return (
-            <div key={date.dateStr} className="snap-start shrink-0 w-full pr-0">
-              <p className="text-xs font-medium text-muted-foreground text-center mb-1">{date.label}</p>
-              <DayPanel
-                hourlyData={data}
-                field={field}
-                unitLabel={unitLabel}
-                normalLevel={normalLevel}
-                overlayHours={date.isToday ? overlayHours : null}
-                sharedBounds={sharedBounds}
-                isToday={date.isToday}
-                nowHour={date.isToday ? new Date().getHours() + new Date().getMinutes() / 60 : null}
-                loading={loading}
-              />
-            </div>
-          );
-        })}
+      <div className="flex gap-1.5">
+        <div className="relative w-9 shrink-0 mt-5" style={{ height: CHART_HEIGHT }}>
+          {yTicks.map((tick, i) => (
+            <span
+              key={i}
+              className="absolute right-0 text-[11px] text-muted-foreground whitespace-nowrap"
+              style={{ top: `${(tick.y / CHART_HEIGHT) * 100}%`, transform: 'translateY(-50%)' }}
+            >
+              {tick.label}{unitLabel ? ` ${unitLabel}` : ''}
+            </span>
+          ))}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div
+            ref={scrollRef}
+            className="overflow-x-auto snap-x snap-mandatory flex scrollbar-hide"
+          >
+            {dates.map(date => {
+              const data = dayDataMap[date.dateStr];
+              const loading = !data;
+              return (
+                <div key={date.dateStr} className="snap-start shrink-0 w-full">
+                  <p className="text-xs font-medium text-muted-foreground text-center mb-1">{date.label}</p>
+                  <DayPanel
+                    hourlyData={data}
+                    field={field}
+                    unitLabel={unitLabel}
+                    normalLevel={normalLevel}
+                    overlayHours={date.isToday ? overlayHours : null}
+                    sharedBounds={sharedBounds}
+                    isToday={date.isToday}
+                    nowHour={date.isToday ? new Date().getHours() + new Date().getMinutes() / 60 : null}
+                    loading={loading}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       {/* Legend */}
