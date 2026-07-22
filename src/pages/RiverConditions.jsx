@@ -310,13 +310,6 @@ export default function RiverConditions() {
                   <div className="space-y-1">
                     <div className="flex items-center gap-1.5">
                       <p className="text-sm font-semibold truncate">{data.station.name}</p>
-                      <button
-                        onClick={() => setNoteDialogOpen(true)}
-                        className="text-muted-foreground hover:text-primary transition-colors shrink-0"
-                        aria-label="Add note"
-                      >
-                        <Pen className="w-3.5 h-3.5" />
-                      </button>
                     </div>
                     <p className="text-xs text-muted-foreground">Station {data.station.id} · {data.station.distanceKm} km away · <span className="font-semibold text-foreground">Updated {data.current?.datetimeLocal ? new Date(data.current.datetimeLocal).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '—'}</span></p>
                   </div>
