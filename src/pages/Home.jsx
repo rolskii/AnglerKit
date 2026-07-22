@@ -260,7 +260,7 @@ export default function Home() {
       <div className="space-y-2 px-1">
         <h1 className="text-2xl md:text-[34px] font-heading font-extrabold tracking-tight leading-tight">AnglerKit</h1>
         <p className="text-sm md:text-[17px] text-muted-foreground">
-          Track your fishing gear, predict the bite, check the weather and log every catch — all in one place.
+          Predict the bite, track live weather and river conditions, and manage your gear and every catch — all in one place.
         </p>
       </div>
       {/* Status bar */}
