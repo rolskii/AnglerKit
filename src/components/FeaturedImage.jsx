@@ -75,6 +75,12 @@ export default function FeaturedImage() {
                 item.length,
                 item.line_weight ? `${item.line_weight}wt` : null,
               ].filter(Boolean).join(" ") || "Rod";
+            } else if (type === "Reel") {
+              label = [
+                item.brand,
+                item.model,
+                item.size,
+              ].filter(Boolean).join(" ") || "Reel";
             } else {
               label = `${item.brand || ""} ${item.name || ""}`.trim() || type;
             }

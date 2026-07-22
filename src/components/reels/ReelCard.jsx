@@ -47,7 +47,7 @@ export default function ReelCard({ reel, lineCount, spooledLines, onEdit, onDele
   };
   return (
     <Card ref={cardRef} className="p-4 flex flex-col gap-3">
-      <ImageGallery images={getItemImages(reel)} />
+      <ImageGallery images={getItemImages(reel)} featuredLabel={[reel.brand, reel.model, reel.size].filter(Boolean).join(" ") || reel.name} featuredSubtitle="Reel" featuredLink="/gear/reels" />
       <div className="flex items-start justify-between gap-2">
         <div>
           <h3 className="font-heading font-semibold">{reel.name}</h3>
