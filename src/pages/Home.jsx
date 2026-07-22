@@ -154,6 +154,12 @@ export default function Home() {
     const tempUnit = localStorage.getItem("weatherTempUnit") || "celsius";
     await fetchWeather(coords, tempUnit);
     await Promise.all([fetchGearCount(), fetchLastCatch(), fetchMapStats()]);
+    // Rotate the featured photo on each pull-to-refresh (only the daily
+    // random pick — a user-selected featured image is left untouched).
+    if (!localStorage.getItem("featuredImageUser")) {
+      localStorage.removeItem("featuredImageDaily");
+      window.dispatchEvent(new Event("featured-image-changed"));
+    }
   };
   useEffect(() => { refreshData(); }, []);
   useEffect(() => {
