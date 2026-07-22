@@ -272,9 +272,19 @@ function ChartPanel({ hourlyData, field, normalLevel, overlayBuckets, overlayLab
 }
 
 export default function RiverLevelChart({ hourly, field = 'level', unitLabel, normalLevel, overlayHourly, overlayLabel }) {
-  // Re-render every 60s so the 12-hour window slides forward as time progresses.
+  // Re-render every 60s so the window can advance when fresh readings arrive.
   const now = useNowTick(60000);
-  const nowMs = now.getTime();
+  // End the rolling window at the last actual reading's timestamp rather
+  // than wall-clock time, so the graph doesn't extend past the newest data.
+  const nowMs = useMemo(() => {
+    if (!hourly?.time?.length) return now.getTime();
+    for (let i = hourly.time.length - 1; i >= 0; i--) {
+      const lv = hourly.level?.[i];
+      const dv = hourly.discharge?.[i];
+      if (lv != null || dv != null) return new Date(hourly.time[i]).getTime();
+    }
+    return now.getTime();
+  }, [hourly, now]);
 
   // Bucket overlay into hourly averages by hour-of-day — both level and
   // discharge so the tooltip can show both fields regardless of which
