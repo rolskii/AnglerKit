@@ -41,9 +41,10 @@ const parseToMinutes = (isoStr) => {
   return d.getHours() * 60 + d.getMinutes();
 };
 const minutesToTime = (mins) => {
-  let h = Math.floor(mins / 60);
-  const m = Math.round(mins % 60);
-  if (h >= 24) h -= 24;
+  if (mins == null || isNaN(mins)) return '—';
+  const total = ((Math.round(mins) % 1440) + 1440) % 1440;
+  const h = Math.floor(total / 60);
+  const m = total % 60;
   const period = h >= 12 ? 'PM' : 'AM';
   const h12 = h % 12 || 12;
   return `${h12}:${String(m).padStart(2, '0')} ${period}`;
