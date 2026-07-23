@@ -156,7 +156,7 @@ export default function BottomTabBar() {
           {conditionsOpen && (
             <div
               ref={conditionsPopupRef}
-              className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-card rounded-2xl shadow-xl border border-border/60 p-2 flex gap-1.5 z-[601]"
+              className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-[190px] bg-card rounded-2xl shadow-xl border border-border/60 p-1.5 z-[601]"
             >
               {CONDITIONS_ITEMS.map((item) => {
                 const Icon = item.icon;
@@ -165,12 +165,12 @@ export default function BottomTabBar() {
                     key={item.to}
                     type="button"
                     onClick={() => handleSelectCondition(item.to)}
-                    className="flex flex-col items-center gap-1.5 w-[68px] py-2 px-1 rounded-xl active:bg-accent transition-colors"
+                    className="w-full flex items-center gap-2.5 p-1.5 rounded-xl active:bg-accent transition-colors text-left"
                   >
-                    <span className={`flex items-center justify-center w-9 h-9 rounded-xl ${item.tint}`}>
-                      <Icon className="w-5 h-5" strokeWidth={2} />
+                    <span className={`flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0 ${item.tint}`}>
+                      <Icon className="w-4 h-4" strokeWidth={2} />
                     </span>
-                    <span className="text-[11px] font-semibold text-foreground">{item.label}</span>
+                    <span className="text-[12.5px] font-semibold text-foreground">{item.label}</span>
                   </button>
                 );
               })}
