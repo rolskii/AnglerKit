@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Loader2, Fish, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
+import { Plus, Search, Loader2, Fish, ArrowUp, ArrowDown, ArrowUpDown, List, LayoutGrid } from "lucide-react";
 import CatchCard from "@/components/catches/CatchCard";
+import CatchThumbnail from "@/components/catches/CatchThumbnail";
 import CatchForm from "@/components/catches/CatchForm";
 import PullToRefresh from "@/components/PullToRefresh";
 import {
@@ -27,6 +28,7 @@ export default function Catches() {
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [viewMode, setViewMode] = useState("list");
 
   const load = async () => {
     setLoading(true);
@@ -145,6 +147,22 @@ export default function Catches() {
             className="pl-9"
           />
         </div>
+        <div className="flex rounded-lg border border-border overflow-hidden shrink-0">
+          <button
+            onClick={() => setViewMode("list")}
+            className={`flex items-center gap-1.5 px-3 py-2 text-sm transition-colors ${viewMode === "list" ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}
+          >
+            <List className="w-4 h-4" />
+            <span className="hidden sm:inline">List</span>
+          </button>
+          <button
+            onClick={() => setViewMode("thumbnail")}
+            className={`flex items-center gap-1.5 px-3 py-2 text-sm transition-colors ${viewMode === "thumbnail" ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}
+          >
+            <LayoutGrid className="w-4 h-4" />
+            <span className="hidden sm:inline">Thumbnails</span>
+          </button>
+        </div>
       </div>
 
       <PullToRefresh onRefresh={load}>
@@ -154,6 +172,12 @@ export default function Catches() {
           <div className="text-center py-20 text-muted-foreground">
             <Fish className="w-12 h-12 mx-auto mb-3 opacity-40" />
             <p>No catches logged yet. Log your first one!</p>
+          </div>
+        ) : viewMode === "thumbnail" ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+            {filtered.map((c) => (
+              <CatchThumbnail key={c.id} catchItem={c} />
+            ))}
           </div>
         ) : (
           <div className="overflow-x-auto rounded-lg border border-border">
