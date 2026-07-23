@@ -5,11 +5,15 @@ import { Input } from "@/components/ui/input";
 import { Plus, Search, Loader2, RotateCw, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import ReelForm from "@/components/reels/ReelForm";
 import ReelDetailDialog from "@/components/reels/ReelDetailDialog";
+import ViewToggle from "@/components/ViewToggle";
+import GearThumbnail from "@/components/GearThumbnail";
+import { useViewMode } from "@/hooks/useViewMode";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+
 
 const conditionColor = {
   "New": "bg-emerald-100 text-emerald-700",
@@ -31,6 +35,7 @@ export default function Reels() {
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [viewTarget, setViewTarget] = useState(null);
+  const [viewMode, setViewMode] = useViewMode();
 
   const load = async () => {
     setLoading(true);
@@ -155,9 +160,12 @@ export default function Reels() {
         </Button>
       </div>
 
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input placeholder="Search reels..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input placeholder="Search reels..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+        </div>
+        <ViewToggle viewMode={viewMode} setViewMode={setViewMode} />
       </div>
 
       {loading ? (
@@ -167,37 +175,54 @@ export default function Reels() {
           <RotateCw className="w-12 h-12 mx-auto mb-3 opacity-40" />
           <p>No reels found. Add your first one!</p>
         </div>
+      ) : viewMode === "thumbnail" ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          {filtered.map((reel) => (
+            <GearThumbnail
+              key={reel.id}
+              item={reel}
+              title={[reel.brand, reel.model].filter(Boolean).join(" ") || reel.name}
+              subtitle={reel.type}
+              details={[reel.size, reel.value != null && `$${reel.value}`]}
+              onClick={() => setViewTarget(reel)}
+            />
+          ))}
+        </div>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-border">
           <table className="w-full text-sm">
-            <thead className="bg-muted/50 text-muted-foreground">
-              <tr>
+            <thead className="bg-muted/50">
+              <tr className="border-b">
                 <SortHeader label="Species" field="species" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Type" field="type" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Name" field="name" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Brand" field="brand" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Model" field="model" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Size" field="size" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Type" field="type" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <th className="px-3 py-2.5 text-left font-medium whitespace-nowrap">Lines</th>
                 <SortHeader label="Condition" field="condition" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Value" field="value" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
               </tr>
             </thead>
             <tbody>
               {filtered.map((reel) => (
-                <tr key={reel.id} onClick={() => setViewTarget(reel)} className="border-t border-border cursor-pointer hover:bg-accent/50 transition-colors">
-                   <td className="px-3 py-2.5 whitespace-nowrap">{reel.species || "—"}</td>
-                   <td className="px-3 py-2.5 whitespace-nowrap">{reel.type || "—"}</td>
-                   <td className="px-3 py-2.5 whitespace-nowrap font-medium">{reel.name || "—"}</td>
-                   <td className="px-3 py-2.5 whitespace-nowrap">{reel.model || "—"}</td>
-                   <td className="px-3 py-2.5 whitespace-nowrap">{reel.size || "—"}</td>
-                   <td className="px-3 py-2.5 whitespace-nowrap">
-                     {reel.condition ? (
-                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${conditionColor[reel.condition] || "bg-muted text-muted-foreground"}`}>
-                         {reel.condition}
-                       </span>
-                     ) : "—"}
-                   </td>
-                   <td className="px-3 py-2.5 whitespace-nowrap">{reel.value != null ? `$${reel.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}</td>
-                 </tr>
+                <tr key={reel.id} className="border-b hover:bg-muted/30 cursor-pointer" onClick={() => setViewTarget(reel)}>
+                  <td className="px-3 py-2.5">{reel.species}</td>
+                  <td className="px-3 py-2.5 font-medium">{reel.name}</td>
+                  <td className="px-3 py-2.5">{reel.brand}</td>
+                  <td className="px-3 py-2.5">{reel.model}</td>
+                  <td className="px-3 py-2.5">{reel.size}</td>
+                  <td className="px-3 py-2.5">{reel.type}</td>
+                  <td className="px-3 py-2.5 text-muted-foreground">{linesByReel[reel.name] || 0}</td>
+                  <td className="px-3 py-2.5">
+                    {reel.condition && (
+                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${conditionColor[reel.condition] || ""}`}>
+                        {reel.condition}
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-3 py-2.5">{reel.value != null ? `$${reel.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ""}</td>
+                </tr>
               ))}
             </tbody>
           </table>

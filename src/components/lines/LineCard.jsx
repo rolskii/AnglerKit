@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
 import ImageGallery, { getItemImages } from "@/components/ImageGallery";
+import { formatGearDate } from "@/lib/utils";
 
 const conditionColor = {
   "New": "bg-emerald-100 text-emerald-700",
@@ -29,7 +30,7 @@ export default function LineCard({ line, onEdit, onDelete }) {
       { label: "Value", value: line.value != null ? `$${line.value}` : null },
       { label: "Reel", value: line.reel },
       { label: "Rod", value: line.rod },
-      { label: "Acquired", value: line.date_acquired },
+      { label: "Acquired", value: formatGearDate(line.date_acquired) },
     ],
     sections: [],
     notes: line.notes,
@@ -61,7 +62,7 @@ export default function LineCard({ line, onEdit, onDelete }) {
         <Detail label="Total Len" value={line.total_length ? `${line.total_length} ft` : null} />
         <Detail label="Colour" value={line.colour} />
         <Detail label="Value" value={line.value != null ? `$${line.value}` : null} />
-        <Detail label="Acquired" value={line.date_acquired} />
+        <Detail label="Acquired" value={formatGearDate(line.date_acquired)} />
       </div>
 
       <div className="flex flex-col gap-1.5 text-sm border-t border-border pt-3">

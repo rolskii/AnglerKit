@@ -2,20 +2,17 @@ import React, { useEffect, useRef, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Home as HomeIcon, Camera, Cloud, Moon as MoonIcon, Map as MapIcon, Waves, Gauge, Package } from "lucide-react";
 import { ReelIcon as ReelDiscIcon, LinesIcon, RodIcon, LureIcon } from "@/components/GearIcons";
-
 const tabs = [
   { to: "/", label: "Home", icon: HomeIcon, matchExact: true },
   { to: "/map", label: "Map", icon: MapIcon, matchExact: true },
   { to: "/catches", label: "Fish Log", icon: Camera, matchPrefix: "/catches" },
 ];
-
 const CONDITIONS_ITEMS = [
   { to: "/moon", label: "Moon", icon: MoonIcon, tint: "bg-purple-100 text-purple-600" },
   { to: "/weather", label: "Weather", icon: Cloud, tint: "bg-teal-100 text-teal-600" },
   { to: "/river", label: "River", icon: Waves, tint: "bg-cyan-100 text-cyan-600" },
 ];
 const CONDITIONS_PATHS = CONDITIONS_ITEMS.map((item) => item.to);
-
 const GEAR_ITEMS = [
   { to: "/lines", label: "Lines", icon: LinesIcon, tint: "bg-blue-100 text-blue-600" },
   { to: "/reels", label: "Reels", icon: ReelDiscIcon, tint: "bg-orange-100 text-orange-600" },
@@ -24,17 +21,23 @@ const GEAR_ITEMS = [
   { to: "/misc", label: "Misc. Gear", icon: Package, tint: "bg-orange-100 text-orange-600" },
 ];
 const GEAR_PATHS = GEAR_ITEMS.map((item) => item.to);
-
 function TabLink({ tab }) {
   const location = useLocation();
   const Icon = tab.icon;
   const isActive = tab.matchPrefix
     ? location.pathname.startsWith(tab.matchPrefix)
     : location.pathname === tab.to;
+  const handleClick = (e) => {
+    if (isActive) {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
   return (
     <NavLink
       to={tab.to}
-      className={`flex flex-col items-center gap-0.5 py-2 px-1 flex-1 transition-colors ${
+      onClick={handleClick}
+      className={`flex flex-col items-center gap-0.5 pt-1 pb-0.5 px-1 flex-1 transition-colors ${
         isActive ? "text-primary" : "text-muted-foreground"
       }`}
     >
@@ -43,7 +46,6 @@ function TabLink({ tab }) {
     </NavLink>
   );
 }
-
 export default function BottomTabBar() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -53,15 +55,12 @@ export default function BottomTabBar() {
   const conditionsButtonRef = useRef(null);
   const gearPopupRef = useRef(null);
   const gearButtonRef = useRef(null);
-
   const isConditionsActive = CONDITIONS_PATHS.includes(location.pathname);
   const isGearActive = GEAR_PATHS.includes(location.pathname);
-
   useEffect(() => {
     setConditionsOpen(false);
     setGearOpen(false);
   }, [location.pathname]);
-
   useEffect(() => {
     if (!conditionsOpen && !gearOpen) return undefined;
     function handleOutside(event) {
@@ -83,27 +82,22 @@ export default function BottomTabBar() {
       document.removeEventListener("touchstart", handleOutside);
     };
   }, [conditionsOpen, gearOpen]);
-
   const handleSelectCondition = (to) => {
     setConditionsOpen(false);
     navigate(to);
   };
-
   const handleSelectGear = (to) => {
     setGearOpen(false);
     navigate(to);
   };
-
   const toggleConditions = () => {
     setGearOpen(false);
     setConditionsOpen((open) => !open);
   };
-
   const toggleGear = () => {
     setConditionsOpen(false);
     setGearOpen((open) => !open);
   };
-
   return (
     <>
       {(conditionsOpen || gearOpen) && (
@@ -117,10 +111,9 @@ export default function BottomTabBar() {
       )}
       <nav
         className="md:hidden fixed bottom-0 left-0 right-0 z-[600] flex items-center justify-around px-4 border-t border-border/60 bg-background/90 backdrop-blur-xl"
-        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+        style={{ paddingBottom: "calc(env(safe-area-inset-bottom) * 0.5)" }}
       >
         <TabLink tab={tabs[0]} />
-
         <div className="relative flex-1">
           {gearOpen && (
             <div
@@ -151,7 +144,7 @@ export default function BottomTabBar() {
             role="button"
             href={location.pathname}
             onClick={(e) => { e.preventDefault(); toggleGear(); }}
-            className={`flex flex-col items-center gap-0.5 py-2 px-1 w-full transition-colors cursor-pointer ${
+            className={`flex flex-col items-center gap-0.5 pt-1 pb-0.5 px-1 w-full transition-colors cursor-pointer ${
               isGearActive || gearOpen ? "text-primary" : "text-muted-foreground"
             }`}
           >
@@ -159,7 +152,6 @@ export default function BottomTabBar() {
             <span className="text-[10px] font-medium whitespace-nowrap">Gear</span>
           </a>
         </div>
-
         <div className="relative flex-1">
           {conditionsOpen && (
             <div
@@ -190,7 +182,7 @@ export default function BottomTabBar() {
             role="button"
             href={location.pathname}
             onClick={(e) => { e.preventDefault(); toggleConditions(); }}
-            className={`flex flex-col items-center gap-0.5 py-2 px-1 w-full transition-colors cursor-pointer ${
+            className={`flex flex-col items-center gap-0.5 pt-1 pb-0.5 px-1 w-full transition-colors cursor-pointer ${
               isConditionsActive || conditionsOpen ? "text-primary" : "text-muted-foreground"
             }`}
           >
@@ -198,7 +190,6 @@ export default function BottomTabBar() {
             <span className="text-[10px] font-medium whitespace-nowrap">Conditions</span>
           </a>
         </div>
-
         <TabLink tab={tabs[1]} />
         <TabLink tab={tabs[2]} />
       </nav>

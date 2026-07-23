@@ -1,18 +1,22 @@
 import React, { useEffect, useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Loader2, Fish, ArrowUp, ArrowDown, ArrowUpDown, Camera } from "lucide-react";
-import CatchDetailDialog from "@/components/catches/CatchDetailDialog";
+import { Plus, Search, Loader2, Fish, ArrowUp, ArrowDown, ArrowUpDown, List, LayoutGrid } from "lucide-react";
+import CatchCard from "@/components/catches/CatchCard";
+import CatchThumbnail from "@/components/catches/CatchThumbnail";
+import { useViewMode } from "@/hooks/useViewMode";
 import CatchForm from "@/components/catches/CatchForm";
+import PullToRefresh from "@/components/PullToRefresh";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { useUnits } from "@/lib/unitsContext";
 
 export default function Catches() {
+  const navigate = useNavigate();
   const [catches, setCatches] = useState([]);
   const [rods, setRods] = useState([]);
   const [reels, setReels] = useState([]);
@@ -25,8 +29,7 @@ export default function Catches() {
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const [viewTarget, setViewTarget] = useState(null);
-  const { formatLength, formatWeight } = useUnits();
+  const [viewMode, setViewMode] = useViewMode();
 
   const load = async () => {
     setLoading(true);
@@ -82,50 +85,56 @@ export default function Catches() {
 
   const handleSave = async (payload) => {
     setSaving(true);
+    setFormOpen(false);
+    const wasEditing = editing;
+    setEditing(null);
     try {
-      if (editing) {
-        await base44.entities.Catch.update(editing.id, payload);
+      if (wasEditing) {
+        setCatches(prev => prev.map(c => c.id === wasEditing.id ? { ...c, ...payload } : c));
+        await base44.entities.Catch.update(wasEditing.id, payload);
         toast.success("Catch updated");
       } else {
-        await base44.entities.Catch.create(payload);
+        const tempId = `temp_${Date.now()}`;
+        setCatches(prev => [{ ...payload, id: tempId }, ...prev]);
+        const created = await base44.entities.Catch.create(payload);
+        setCatches(prev => prev.map(c => c.id === tempId ? created : c));
         toast.success("Catch logged");
       }
-      setFormOpen(false);
-      setEditing(null);
-      await load();
     } catch (e) {
       toast.error(e.message || "Failed to save");
+      await load();
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async () => {
+    const target = deleteTarget;
+    setDeleteTarget(null);
+    setCatches(prev => prev.filter(c => c.id !== target.id));
     try {
-      await base44.entities.Catch.delete(deleteTarget.id);
+      await base44.entities.Catch.delete(target.id);
       toast.success("Catch deleted");
-      setDeleteTarget(null);
-      await load();
     } catch (e) {
       toast.error("Failed to delete");
+      setCatches(prev => [...prev, target]);
     }
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 md:space-y-8 -mt-4 md:-mt-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="font-heading text-2xl font-bold flex items-center gap-2">
-            <Camera className="w-6 h-6 text-primary" />
             Fish Log
           </h1>
-          <p className="text-muted-foreground text-sm">Log in your catches with measurements, photos and gear used.</p>
+          <p className="text-muted-foreground text-sm"></p>
           <p className="text-muted-foreground text-sm mt-1">
             {catches.length} {catches.length === 1 ? "catch" : "catches"} logged
           </p>
         </div>
         <Button onClick={() => { setEditing(null); setFormOpen(true); }}>
-          <Plus className="w-4 h-4 mr-2" /> Log a Catch
+          <Plus className="w-4 h-4 mr-2" /> Log in your Catch
         </Button>
       </div>
 
@@ -139,61 +148,77 @@ export default function Catches() {
             className="pl-9"
           />
         </div>
+        <div className="flex rounded-lg border border-border overflow-hidden shrink-0">
+          <button
+            onClick={() => setViewMode("list")}
+            className={`flex items-center gap-1.5 px-3 py-2 text-sm transition-colors ${viewMode === "list" ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}
+          >
+            <List className="w-4 h-4" />
+            <span className="hidden sm:inline">List</span>
+          </button>
+          <button
+            onClick={() => setViewMode("thumbnail")}
+            className={`flex items-center gap-1.5 px-3 py-2 text-sm transition-colors ${viewMode === "thumbnail" ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}
+          >
+            <LayoutGrid className="w-4 h-4" />
+            <span className="hidden sm:inline">Thumbnails</span>
+          </button>
+        </div>
       </div>
 
-      {loading ? (
-        <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-muted-foreground" /></div>
-      ) : filtered.length === 0 ? (
-        <div className="text-center py-20 text-muted-foreground">
-          <Fish className="w-12 h-12 mx-auto mb-3 opacity-40" />
-          <p>No catches logged yet. Log your first one!</p>
-        </div>
-      ) : (
-        <div className="overflow-x-auto rounded-lg border border-border">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/50 text-muted-foreground">
-              <tr>
-                <SortHeader label="Species" field="species" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Date" field="date" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Body of Water</th>
-                <SortHeader label="Length" field="length" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Girth" field="girth" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Weight" field="weight" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Fly</th>
-                <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Released</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((c) => (
-                <tr
-                  key={c.id}
-                  onClick={() => setViewTarget(c)}
-                  className="border-t border-border cursor-pointer hover:bg-accent/50 transition-colors"
-                >
-                  <td className="px-3 py-2.5 whitespace-nowrap font-medium">{c.species || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">
-                    {c.date ? new Date(c.date + "T00:00:00").toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : "—"}
-                  </td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{c.location || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{c.length != null ? formatLength(c.length) : "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{c.girth != null ? formatLength(c.girth) : "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{c.weight != null ? formatWeight(c.weight) : "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{c.fly_used || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{c.released ? "Yes" : "No"}</td>
+      <PullToRefresh onRefresh={load}>
+        {loading ? (
+          <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-muted-foreground" /></div>
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-20 text-muted-foreground">
+            <Fish className="w-12 h-12 mx-auto mb-3 opacity-40" />
+            <p>No catches logged yet. Log your first one!</p>
+          </div>
+        ) : viewMode === "thumbnail" ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+            {filtered.map((c) => (
+              <CatchThumbnail key={c.id} catchItem={c} />
+            ))}
+          </div>
+        ) : (
+          <div className="overflow-x-auto rounded-lg border border-border">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/50 text-muted-foreground">
+                <tr>
+                  <SortHeader label="Species" field="species" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                  <SortHeader label="Date" field="date" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                  <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Body of Water</th>
+                  <SortHeader label="Length" field="length" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                  <SortHeader label="Girth" field="girth" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                  <SortHeader label="Weight" field="weight" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                  <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Fly</th>
+                  <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Released</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      <CatchDetailDialog
-        open={!!viewTarget}
-        onOpenChange={(o) => !o && setViewTarget(null)}
-        catchItem={viewTarget}
-        onEdit={(c) => { setViewTarget(null); setEditing(c); setFormOpen(true); }}
-        onDelete={(c) => { setViewTarget(null); setDeleteTarget(c); }}
-      />
+              </thead>
+              <tbody>
+                {filtered.map((c) => (
+                  <tr
+                    key={c.id}
+                    onClick={() => navigate(`/catches/${c.id}`)}
+                    className="border-t border-border cursor-pointer hover:bg-accent/50 transition-colors"
+                  >
+                    <td className="px-3 py-2.5 whitespace-nowrap font-medium">{c.species || "—"}</td>
+                    <td className="px-3 py-2.5 whitespace-nowrap">
+                      {c.date ? new Date(c.date + "T00:00:00").toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : "—"}
+                    </td>
+                    <td className="px-3 py-2.5 whitespace-nowrap">{c.location || "—"}</td>
+                    <td className="px-3 py-2.5 whitespace-nowrap">{c.length != null ? `${c.length} in` : "—"}</td>
+                    <td className="px-3 py-2.5 whitespace-nowrap">{c.girth != null ? `${c.girth} in` : "—"}</td>
+                    <td className="px-3 py-2.5 whitespace-nowrap">{c.weight != null ? `${c.weight} lb` : "—"}</td>
+                    <td className="px-3 py-2.5 whitespace-nowrap">{c.fly_used || "—"}</td>
+                    <td className="px-3 py-2.5 whitespace-nowrap">{c.released ? "Yes" : "No"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </PullToRefresh>
 
       <CatchForm
         open={formOpen}

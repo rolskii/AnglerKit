@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
 import ImageGallery, { getItemImages } from "@/components/ImageGallery";
+import { formatGearDate } from "@/lib/utils";
 
 const conditionColor = {
   "New": "bg-emerald-100 text-emerald-700",
@@ -25,7 +26,7 @@ export default function ReelCard({ reel, lineCount, spooledLines, onEdit, onDele
       { label: "Size", value: reel.size },
       { label: "Condition", value: reel.condition },
       { label: "Value", value: reel.value != null ? `$${reel.value}` : null },
-      { label: "Acquired", value: reel.date_acquired },
+      { label: "Acquired", value: formatGearDate(reel.date_acquired) },
     ],
     sections: spooledLines && spooledLines.length > 0 ? [{
       title: "Currently Spooled with",
@@ -69,7 +70,7 @@ export default function ReelCard({ reel, lineCount, spooledLines, onEdit, onDele
          <Detail label="Type" value={reel.type} />
          <Detail label="Condition" value={reel.condition} />
          <Detail label="Value" value={reel.value != null ? `$${reel.value}` : null} />
-         <Detail label="Acquired" value={reel.date_acquired} />
+         <Detail label="Acquired" value={formatGearDate(reel.date_acquired)} />
        </div>
 
       <div className="flex flex-col gap-2 border-t border-border pt-3">

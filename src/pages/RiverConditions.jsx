@@ -424,6 +424,9 @@ export default function RiverConditions() {
               )}
 
               <p className="text-[10px] text-muted-foreground text-center px-4 pb-2">
+                <a href="https://wateroffice.ec.gc.ca/report/real_time_e.html?stn=02GB001" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary">
+                  Read ECCC Disclaimer.
+                </a>{' '}
                 Hydrometric data from Environment and Climate Change Canada (ECCC). Water level/flow only — no official water temperature is published for these stations.
               </p>
             </>

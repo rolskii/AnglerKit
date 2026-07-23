@@ -7,13 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2 } from "lucide-react";
+import { Loader2, Calculator } from "lucide-react";
 import ImageUpload from "@/components/ImageUpload";
 import VideoUpload from "@/components/catches/VideoUpload";
 import AudioRecorder from "@/components/catches/AudioRecorder";
-import LineSelect from "@/components/catches/LineSelect";
-import RodSelect from "@/components/catches/RodSelect";
-import ReelSelect from "@/components/catches/ReelSelect";
 import { useUnits } from "@/lib/unitsContext";
 
 
@@ -49,30 +46,38 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
   useEffect(() => {
     if (open) {
       const base = initial ? { ...emptyCatch, ...initial } : emptyCatch;
-      if (isMetric && initial) {
-        setForm({
-          ...base,
-          weight: base.weight != null ? (base.weight * 0.453592).toFixed(1) : "",
-        });
-      } else {
-        setForm(base);
+      // Migrate legacy name/string values to entity ids so gear stays
+      // uniquely identifiable even if names duplicate or gear is renamed
+      if (base.rod && !rods.some((r) => r.id === base.rod)) {
+        const matched = rods.find((r) => r.name === base.rod);
+        if (matched) base.rod = matched.id;
       }
+      if (base.reel && !reels.some((r) => r.id === base.reel)) {
+        const matched = reels.find((r) => r.name === base.reel);
+        if (matched) base.reel = matched.id;
+      }
+      if (base.line && !lines.some((l) => l.id === base.line)) {
+        const matched = lines.find((l) => `${l.brand} ${l.model}`.trim() === base.line);
+        if (matched) base.line = matched.id;
+      }
+      setForm(base);
     }
-  }, [open, initial, isMetric]);
+  }, [open, initial, rods, reels, lines]);
 
   const set = (field, value) => setForm((f) => ({ ...f, [field]: value }));
 
-  // Use unique entity ids as dropdown values (names can duplicate), but store
-  // the display name on the catch so existing records and the card still work.
-  const rodById = Object.fromEntries(rods.map((r) => [r.id, r.name]));
-  const reelById = Object.fromEntries(reels.map((r) => [r.id, r.name]));
-  const lineById = Object.fromEntries(lines.map((l) => [l.id, `${l.brand} ${l.model}`.trim()]));
-  const rodIdByName = Object.fromEntries(rods.map((r) => [r.name, r.id]));
-  const reelIdByName = Object.fromEntries(reels.map((r) => [r.name, r.id]));
-  const lineIdByName = Object.fromEntries(lines.map((l) => [`${l.brand} ${l.model}`.trim(), l.id]));
+  // Standard fish weight estimator: Weight (lb) = (Length × Girth²) / 800
+  const estimatedWeight = (() => {
+    const len = parseFloat(form.length);
+    const girth = parseFloat(form.girth);
+    if (len > 0 && girth > 0) {
+      return Number(((len * girth * girth) / 800).toFixed(1));
+    }
+    return null;
+  })();
 
-  const sortedRods = [...rods].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
-  const sortedReels = [...reels].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+  const sortedRods = [...rods].sort((a, b) => [a.brand, a.model].filter(Boolean).join(" ").localeCompare([b.brand, b.model].filter(Boolean).join(" ")));
+  const sortedReels = [...reels].sort((a, b) => [a.brand, a.model].filter(Boolean).join(" ").localeCompare([b.brand, b.model].filter(Boolean).join(" ")));
   const sortedLines = [...lines].sort((a, b) => (`${a.brand} ${a.model}`.trim()).localeCompare(`${b.brand} ${b.model}`.trim()));
 
   const numOrNull = (v) => (v === "" || v == null ? null : Number(v));
@@ -82,9 +87,6 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
     let length = numOrNull(form.length);
     let girth = numOrNull(form.girth);
     let weight = numOrNull(form.weight);
-    if (isMetric) {
-      weight = weight != null ? Number((weight / 0.453592).toFixed(2)) : null;
-    }
     const payload = {
       ...form,
       length, girth, weight,
@@ -160,15 +162,25 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Weight ({isMetric ? 'kg' : 'lb'})</Label>
+              <Label>Weight (lb)</Label>
               <Input
                 className="bg-muted"
                 type="number"
                 step="0.1"
                 value={form.weight ?? ""}
                 onChange={(e) => set("weight", e.target.value)}
-                placeholder={isMetric ? "2" : "4.5"}
+                placeholder="4.5"
               />
+              {estimatedWeight != null && (
+                <button
+                  type="button"
+                  onClick={() => set("weight", estimatedWeight)}
+                  className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors"
+                >
+                  <Calculator className="w-3.5 h-3.5" />
+                  Estimated: {estimatedWeight} lb — tap to fill
+                </button>
+              )}
             </div>
           </div>
 
@@ -185,29 +197,61 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label>Rod</Label>
-              <RodSelect
-                rods={sortedRods}
-                value={form.rod ? (rodIdByName[form.rod] || "") : ""}
-                onChange={(id) => set("rod", id === "" ? "" : (rodById[id] || ""))}
-              />
+              <select
+                className="flex h-9 w-full rounded-md border border-input bg-muted px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                value={form.rod || ""}
+                onChange={(e) => set("rod", e.target.value)}
+              >
+                <option value="">Select a rod (optional)</option>
+                {sortedRods.map((r) => {
+                  const label = [r.brand, r.model].filter(Boolean).join(" ");
+                  const details = [r.length, r.line_weight && `${r.line_weight} wt`].filter(Boolean).join(" · ");
+                  return (
+                    <option key={r.id} value={r.id}>
+                      {label}{details ? ` — ${details}` : ""}
+                    </option>
+                  );
+                })}
+              </select>
             </div>
             <div className="space-y-1.5">
               <Label>Reel</Label>
-              <ReelSelect
-                reels={sortedReels}
-                value={form.reel ? (reelIdByName[form.reel] || "") : ""}
-                onChange={(id) => set("reel", id === "" ? "" : (reelById[id] || ""))}
-              />
+              <select
+                className="flex h-9 w-full rounded-md border border-input bg-muted px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                value={form.reel || ""}
+                onChange={(e) => set("reel", e.target.value)}
+              >
+                <option value="">Select a reel (optional)</option>
+                {sortedReels.map((r) => {
+                  const label = [r.brand, r.model].filter(Boolean).join(" ");
+                  const details = [r.size, r.type].filter(Boolean).join(" · ");
+                  return (
+                    <option key={r.id} value={r.id}>
+                      {label}{details ? ` — ${details}` : ""}
+                    </option>
+                  );
+                })}
+              </select>
             </div>
           </div>
 
           <div className="space-y-1.5">
             <Label>Line</Label>
-            <LineSelect
-              lines={sortedLines}
-              value={form.line ? (sortedLines.find((l) => `${l.brand} ${l.model}`.trim() === form.line)?.id || "") : ""}
-              onChange={(id) => set("line", id === "" ? "" : (lineById[id] || ""))}
-            />
+            <select
+              className="flex h-9 w-full rounded-md border border-input bg-muted px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              value={form.line || ""}
+              onChange={(e) => set("line", e.target.value)}
+            >
+              <option value="">Select a line (optional)</option>
+              {sortedLines.map((l) => {
+                const label = `${l.brand} ${l.model}`.trim();
+                return (
+                  <option key={l.id} value={l.id}>
+                    {label}{l.grain_weight ? ` — ${l.grain_weight}gr` : ""}
+                  </option>
+                );
+              })}
+            </select>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -228,7 +272,6 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
                 step="0.1"
                 value={form.water_temp ?? ""}
                 onChange={(e) => set("water_temp", e.target.value)}
-                placeholder="54"
               />
             </div>
           </div>

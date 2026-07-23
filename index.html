@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="https://base44.com/logo_v2.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="hsl(210, 70%, 28%)" />
     <link rel="apple-touch-icon" href="https://media.base44.com/images/public/6a3f2458eb55a5d860886e35/3f39c9959_Untitled-July162026at224101.png" />
@@ -14,8 +14,9 @@
     <script>
       (function () {
         try {
-          var t = localStorage.getItem("theme") || "light";
-          if (t === "dark") document.documentElement.classList.add("dark");
+          var t = localStorage.getItem("theme") || "system";
+          var isDark = t === "dark" || (t === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+          if (isDark) document.documentElement.classList.add("dark");
         } catch (e) {}
       })();
     </script>

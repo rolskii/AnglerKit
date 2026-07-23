@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
 import ImageGallery, { getItemImages } from "@/components/ImageGallery";
+import { formatGearDate } from "@/lib/utils";
 
 const conditionColor = {
   "New": "bg-emerald-100 text-emerald-700",
@@ -30,7 +31,7 @@ export default function RodCard({ rod, lineCount, pairedLines, onEdit, onDelete 
       { label: "Material", value: rod.material },
       { label: "Condition", value: rod.condition },
       { label: "Value", value: rod.value != null ? `$${rod.value}` : null },
-      { label: "Acquired", value: rod.date_acquired },
+      { label: "Acquired", value: formatGearDate(rod.date_acquired) },
     ],
     sections: pairedLines && pairedLines.length > 0 ? [{
       title: "Paired Lines",
@@ -73,7 +74,7 @@ export default function RodCard({ rod, lineCount, pairedLines, onEdit, onDelete 
         <Detail label="Material" value={rod.material} />
         <Detail label="Condition" value={rod.condition} />
         <Detail label="Value" value={rod.value != null ? `$${rod.value}` : null} />
-        <Detail label="Acquired" value={rod.date_acquired} />
+        <Detail label="Acquired" value={formatGearDate(rod.date_acquired)} />
       </div>
 
       <div className="flex flex-col gap-2 border-t border-border pt-3">

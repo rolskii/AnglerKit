@@ -5,11 +5,15 @@ import { Input } from "@/components/ui/input";
 import { Plus, Search, Loader2, Waves, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import RodForm from "@/components/rods/RodForm";
 import RodDetailDialog from "@/components/rods/RodDetailDialog";
+import ViewToggle from "@/components/ViewToggle";
+import GearThumbnail from "@/components/GearThumbnail";
+import { useViewMode } from "@/hooks/useViewMode";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+
 
 const conditionColor = {
   "New": "bg-emerald-100 text-emerald-700",
@@ -31,6 +35,7 @@ export default function Rods() {
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [viewTarget, setViewTarget] = useState(null);
+  const [viewMode, setViewMode] = useViewMode();
 
   const load = async () => {
     setLoading(true);
@@ -181,9 +186,12 @@ export default function Rods() {
         </Button>
       </div>
 
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input placeholder="Search rods..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input placeholder="Search rods..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+        </div>
+        <ViewToggle viewMode={viewMode} setViewMode={setViewMode} />
       </div>
 
       {loading ? (
@@ -193,38 +201,55 @@ export default function Rods() {
           <Waves className="w-12 h-12 mx-auto mb-3 opacity-40" />
           <p>No rods found. Add your first one!</p>
         </div>
+      ) : viewMode === "thumbnail" ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          {filtered.map((rod) => (
+            <GearThumbnail
+              key={rod.id}
+              item={rod}
+              title={[rod.brand, rod.model].filter(Boolean).join(" ") || rod.name}
+              subtitle={rod.type}
+              details={[rod.length, rod.line_weight && `${rod.line_weight} wt`, rod.value != null && `$${rod.value}`]}
+              onClick={() => setViewTarget(rod)}
+            />
+          ))}
+        </div>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-border">
           <table className="w-full text-sm">
-            <thead className="bg-muted/50 text-muted-foreground">
-              <tr>
+            <thead className="bg-muted/50">
+              <tr className="border-b">
                 <SortHeader label="Species" field="species" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Type" field="type" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Name" field="name" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Brand" field="brand" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Length" field="length" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Line Wt" field="line_weight" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Type" field="type" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Material" field="material" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <th className="px-3 py-2.5 text-left font-medium whitespace-nowrap">Lines</th>
                 <SortHeader label="Condition" field="condition" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Value" field="value" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
               </tr>
             </thead>
             <tbody>
               {filtered.map((rod) => (
-                <tr key={rod.id} onClick={() => setViewTarget(rod)} className="border-t border-border cursor-pointer hover:bg-accent/50 transition-colors">
-                  <td className="px-3 py-2.5 whitespace-nowrap">{rod.species || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{rod.type || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap font-medium">{rod.name || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{rod.length || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{rod.line_weight || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{rod.material || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">
-                    {rod.condition ? (
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${conditionColor[rod.condition] || "bg-muted text-muted-foreground"}`}>
+                <tr key={rod.id} className="border-b hover:bg-muted/30 cursor-pointer" onClick={() => setViewTarget(rod)}>
+                  <td className="px-3 py-2.5">{rod.species}</td>
+                  <td className="px-3 py-2.5 font-medium">{rod.name}</td>
+                  <td className="px-3 py-2.5">{rod.brand}</td>
+                  <td className="px-3 py-2.5">{rod.length}</td>
+                  <td className="px-3 py-2.5">{rod.line_weight}</td>
+                  <td className="px-3 py-2.5">{rod.type}</td>
+                  <td className="px-3 py-2.5">{rod.material}</td>
+                  <td className="px-3 py-2.5 text-muted-foreground">{linesByRod[rod.name] || 0}</td>
+                  <td className="px-3 py-2.5">
+                    {rod.condition && (
+                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${conditionColor[rod.condition] || ""}`}>
                         {rod.condition}
                       </span>
-                    ) : "—"}
+                    )}
                   </td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{rod.value != null ? `$${rod.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}</td>
+                  <td className="px-3 py-2.5">{rod.value != null ? `$${rod.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ""}</td>
                 </tr>
               ))}
             </tbody>

@@ -4,12 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Search, Loader2, Waves, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import LineDetailDialog from "@/components/lines/LineDetailDialog";
+import ViewToggle from "@/components/ViewToggle";
+import GearThumbnail from "@/components/GearThumbnail";
+import { useViewMode } from "@/hooks/useViewMode";
 import LineForm from "@/components/lines/LineForm";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+
 
 export default function Lines() {
   const [lines, setLines] = useState([]);
@@ -24,6 +28,7 @@ export default function Lines() {
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [viewTarget, setViewTarget] = useState(null);
+  const [viewMode, setViewMode] = useViewMode();
 
   const load = async () => {
     setLoading(true);
@@ -147,6 +152,7 @@ export default function Lines() {
             className="pl-9"
           />
         </div>
+        <ViewToggle viewMode={viewMode} setViewMode={setViewMode} />
       </div>
 
       {loading ? (
@@ -156,16 +162,28 @@ export default function Lines() {
           <Waves className="w-12 h-12 mx-auto mb-3 opacity-40" />
           <p>No lines found. Add your first one!</p>
         </div>
+      ) : viewMode === "thumbnail" ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          {filtered.map((line) => (
+            <GearThumbnail
+              key={line.id}
+              item={line}
+              title={[line.brand, line.model].filter(Boolean).join(" ") || line.name}
+              subtitle={line.type}
+              details={[line.line_weight && `${line.line_weight} wt`, line.grain_weight && `${line.grain_weight} gr`, line.value != null && `$${line.value}`]}
+              onClick={() => setViewTarget(line)}
+            />
+          ))}
+        </div>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-border">
           <table className="w-full text-sm">
-            <thead className="bg-muted/50 text-muted-foreground">
-              <tr>
+            <thead className="bg-muted/50">
+              <tr className="border-b">
                 <SortHeader label="Species" field="species" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Line Type" field="rod_type" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Brand" field="brand" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Model" field="model" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                <SortHeader label="Description" field="type" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Type" field="type" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Line Wt" field="line_weight" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Grain Wt" field="grain_weight" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Value" field="value" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
@@ -173,19 +191,14 @@ export default function Lines() {
             </thead>
             <tbody>
               {filtered.map((line) => (
-                <tr
-                  key={line.id}
-                  onClick={() => setViewTarget(line)}
-                  className={`border-t border-border cursor-pointer hover:bg-accent/50 transition-colors ${line.reel && line.reel.toLowerCase() !== "spooled" && !line.spooled ? "bg-primary/15 border-l-4 border-l-primary" : ""}`}
-                >
-                  <td className="px-3 py-2.5 whitespace-nowrap">{line.species || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{line.rod_type || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap font-medium">{line.brand || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{line.model || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{line.type || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{line.line_weight || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{line.grain_weight || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{line.value != null ? `$${line.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}</td>
+                <tr key={line.id} className="border-b hover:bg-muted/30 cursor-pointer" onClick={() => setViewTarget(line)}>
+                  <td className="px-3 py-2.5">{line.species}</td>
+                  <td className="px-3 py-2.5 font-medium">{line.brand}</td>
+                  <td className="px-3 py-2.5">{line.model}</td>
+                  <td className="px-3 py-2.5">{line.type}</td>
+                  <td className="px-3 py-2.5">{line.line_weight}</td>
+                  <td className="px-3 py-2.5">{line.grain_weight}</td>
+                  <td className="px-3 py-2.5">{line.value != null ? `$${line.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ""}</td>
                 </tr>
               ))}
             </tbody>

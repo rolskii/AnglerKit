@@ -114,6 +114,8 @@
   .scrollbar-hide::-webkit-scrollbar { display: none; }
   .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
+  input[type="date"] { text-align: left; }
+
   @media (hover: none) and (pointer: coarse) {
     .scrollbar-hide-desktop::-webkit-scrollbar { display: none; }
     .scrollbar-hide-desktop { -ms-overflow-style: none; scrollbar-width: none; }

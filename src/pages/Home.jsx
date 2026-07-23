@@ -424,7 +424,7 @@ export default function Home() {
                 {conditionsOpen && (
                   <div
                     ref={conditionsPopupRef}
-                    className="absolute top-full mt-2 left-1/2 -translate-x-1/2 w-[220px] bg-card rounded-2xl shadow-xl border border-border/60 p-2 z-20"
+                    className="absolute top-full mt-2 left-1/2 -translate-x-1/2 w-[160px] bg-card rounded-2xl shadow-xl border border-border/60 p-1.5 z-20"
                   >
                     <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-card border-l border-t border-border/60 rotate-45" />
                     {CONDITIONS_ITEMS.map((sub) => {
@@ -434,10 +434,10 @@ export default function Home() {
                           key={sub.to}
                           type="button"
                           onClick={() => handleSelectCondition(sub.to)}
-                          className="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-accent active:bg-accent transition-colors text-left"
+                          className="w-full flex items-center gap-2 p-1.5 rounded-xl hover:bg-accent active:bg-accent transition-colors text-left"
                         >
-                          <span className={`flex items-center justify-center w-9 h-9 rounded-xl flex-shrink-0 ${tintClasses[sub.tint]}`}>
-                            <SubIcon className="w-[18px] h-[18px]" strokeWidth={2} />
+                          <span className={`flex items-center justify-center w-7 h-7 rounded-lg flex-shrink-0 ${tintClasses[sub.tint]}`}>
+                            <SubIcon className="w-4 h-4" strokeWidth={2} />
                           </span>
                           <span className="text-sm font-semibold text-foreground">{sub.label}</span>
                         </button>

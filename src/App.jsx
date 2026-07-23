@@ -16,6 +16,7 @@ import Rods from '@/pages/Rods';
 import About from '@/pages/About';
 import Settings from '@/pages/Settings';
 import Catches from '@/pages/Catches';
+import CatchDetail from '@/pages/CatchDetail';
 import Lures from '@/pages/Lures';
 import Misc from '@/pages/Misc';
 import Moon from '@/pages/Moon';
@@ -66,6 +67,7 @@ const AuthenticatedApp = () => {
         <Route path="/reels" element={<Reels />} />
         <Route path="/rods" element={<Rods />} />
         <Route path="/catches" element={<Catches />} />
+        <Route path="/catches/:id" element={<CatchDetail />} />
         <Route path="/lures" element={<Lures />} />
         <Route path="/misc" element={<Misc />} />
         <Route path="/moon" element={<Moon />} />

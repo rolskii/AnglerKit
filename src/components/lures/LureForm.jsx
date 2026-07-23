@@ -5,9 +5,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
+import FormSelect from "@/components/ui/form-select";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import ImageUpload from "@/components/ImageUpload";
@@ -34,8 +32,10 @@ export default function LureForm({ open, onOpenChange, onSubmit, initial, loadin
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const autoName = [form.brand, form.model].filter(Boolean).join(" ").trim() || form.name;
     onSubmit({
       ...form,
+      name: autoName,
       quantity: form.quantity ? Number(form.quantity) : null,
       value: form.value ? Number(form.value) : null,
     });
@@ -48,28 +48,23 @@ export default function LureForm({ open, onOpenChange, onSubmit, initial, loadin
           <DialogTitle>{initial ? "Edit Lure / Fly" : "Add Lure / Fly"}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1.5">
-            <Label>Name</Label>
-            <Input className="bg-muted" value={form.name} onChange={(e) => set("name", e.target.value)} required placeholder="e.g. Elk Hair Caddis" />
-          </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label>Type</Label>
-              <Select value={form.type} onValueChange={(v) => set("type", v)}>
-                <SelectTrigger className="bg-muted"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <FormSelect
+                value={form.type}
+                onChange={(v) => set("type", v)}
+                options={TYPES.map((t) => ({ value: t, label: t }))}
+              />
             </div>
             <div className="space-y-1.5">
               <Label>Category</Label>
-              <Select value={form.category} onValueChange={(v) => set("category", v)}>
-                <SelectTrigger className="bg-muted"><SelectValue placeholder="Select category" /></SelectTrigger>
-                <SelectContent>
-                  {CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <FormSelect
+                value={form.category}
+                onChange={(v) => set("category", v)}
+                options={CATEGORIES.map((c) => ({ value: c, label: c }))}
+                placeholder="Select category"
+              />
             </div>
             <div className="space-y-1.5">
               <Label>Brand</Label>
@@ -93,12 +88,11 @@ export default function LureForm({ open, onOpenChange, onSubmit, initial, loadin
             </div>
             <div className="space-y-1.5">
               <Label>Condition</Label>
-              <Select value={form.condition} onValueChange={(v) => set("condition", v)}>
-                <SelectTrigger className="bg-muted"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {CONDITIONS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <FormSelect
+                value={form.condition}
+                onChange={(v) => set("condition", v)}
+                options={CONDITIONS.map((c) => ({ value: c, label: c }))}
+              />
             </div>
             <div className="space-y-1.5">
               <Label>Value ($)</Label>
@@ -106,7 +100,7 @@ export default function LureForm({ open, onOpenChange, onSubmit, initial, loadin
             </div>
             <div className="space-y-1.5">
               <Label>Date Acquired</Label>
-              <Input className="bg-muted" type="date" value={form.date_acquired || ""} onChange={(e) => set("date_acquired", e.target.value)} />
+              <Input className="bg-muted text-left" type="date" value={form.date_acquired || ""} onChange={(e) => set("date_acquired", e.target.value)} />
             </div>
           </div>
           <div className="space-y-1.5">

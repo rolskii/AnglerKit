@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
 import ImageGallery, { getItemImages } from "@/components/ImageGallery";
+import { formatGearDate } from "@/lib/utils";
 
 const conditionColor = {
   "New": "bg-emerald-100 text-emerald-700",
@@ -29,7 +30,7 @@ export default function LureCard({ lure, onEdit, onDelete }) {
       { label: "Quantity", value: lure.quantity != null ? lure.quantity : null },
       { label: "Condition", value: lure.condition },
       { label: "Value", value: lure.value != null ? `$${lure.value}` : null },
-      { label: "Acquired", value: lure.date_acquired },
+      { label: "Acquired", value: formatGearDate(lure.date_acquired) },
     ],
     sections: [],
     notes: lure.notes,
@@ -61,7 +62,7 @@ export default function LureCard({ lure, onEdit, onDelete }) {
         <Detail label="Quantity" value={lure.quantity != null ? lure.quantity : null} />
         <Detail label="Condition" value={lure.condition} />
         <Detail label="Value" value={lure.value != null ? `$${lure.value}` : null} />
-        <Detail label="Acquired" value={lure.date_acquired} />
+        <Detail label="Acquired" value={formatGearDate(lure.date_acquired)} />
       </div>
 
       {lure.notes && <p className="text-sm text-muted-foreground italic border-t border-border pt-2">{lure.notes}</p>}

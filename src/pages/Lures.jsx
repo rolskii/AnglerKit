@@ -5,11 +5,15 @@ import { Input } from "@/components/ui/input";
 import { Plus, Search, Loader2, RotateCw, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import LureForm from "@/components/lures/LureForm";
 import LureDetailDialog from "@/components/lures/LureDetailDialog";
+import ViewToggle from "@/components/ViewToggle";
+import GearThumbnail from "@/components/GearThumbnail";
+import { useViewMode } from "@/hooks/useViewMode";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+
 
 const conditionColor = {
   "New": "bg-emerald-100 text-emerald-700",
@@ -30,6 +34,7 @@ export default function Lures() {
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [viewTarget, setViewTarget] = useState(null);
+  const [viewMode, setViewMode] = useViewMode();
 
   const load = async () => {
     setLoading(true);
@@ -129,9 +134,12 @@ export default function Lures() {
         </Button>
       </div>
 
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input placeholder="Search lures & flies..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input placeholder="Search lures & flies..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+        </div>
+        <ViewToggle viewMode={viewMode} setViewMode={setViewMode} />
       </div>
 
       {loading ? (
@@ -141,13 +149,26 @@ export default function Lures() {
           <RotateCw className="w-12 h-12 mx-auto mb-3 opacity-40" />
           <p>No lures or flies found. Add your first one!</p>
         </div>
+      ) : viewMode === "thumbnail" ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          {filtered.map((lure) => (
+            <GearThumbnail
+              key={lure.id}
+              item={lure}
+              title={[lure.brand, lure.model].filter(Boolean).join(" ") || lure.name}
+              subtitle={lure.category}
+              details={[lure.size, lure.quantity > 1 && `×${lure.quantity}`, lure.value != null && `$${lure.value}`]}
+              onClick={() => setViewTarget(lure)}
+            />
+          ))}
+        </div>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-border">
           <table className="w-full text-sm">
-            <thead className="bg-muted/50 text-muted-foreground">
-              <tr>
-                <SortHeader label="Type" field="type" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+            <thead className="bg-muted/50">
+              <tr className="border-b">
                 <SortHeader label="Name" field="name" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+                <SortHeader label="Type" field="type" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Category" field="category" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Brand" field="brand" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Size" field="size" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
@@ -158,21 +179,21 @@ export default function Lures() {
             </thead>
             <tbody>
               {filtered.map((lure) => (
-                <tr key={lure.id} onClick={() => setViewTarget(lure)} className="border-t border-border cursor-pointer hover:bg-accent/50 transition-colors">
-                  <td className="px-3 py-2.5 whitespace-nowrap">{lure.type || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap font-medium">{lure.name || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{lure.category || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{lure.brand || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{lure.size || "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{lure.quantity != null ? lure.quantity : "—"}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">
-                    {lure.condition ? (
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${conditionColor[lure.condition] || "bg-muted text-muted-foreground"}`}>
+                <tr key={lure.id} className="border-b hover:bg-muted/30 cursor-pointer" onClick={() => setViewTarget(lure)}>
+                  <td className="px-3 py-2.5 font-medium">{lure.name}</td>
+                  <td className="px-3 py-2.5">{lure.type}</td>
+                  <td className="px-3 py-2.5">{lure.category}</td>
+                  <td className="px-3 py-2.5">{lure.brand}</td>
+                  <td className="px-3 py-2.5">{lure.size}</td>
+                  <td className="px-3 py-2.5">{lure.quantity}</td>
+                  <td className="px-3 py-2.5">
+                    {lure.condition && (
+                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${conditionColor[lure.condition] || ""}`}>
                         {lure.condition}
                       </span>
-                    ) : "—"}
+                    )}
                   </td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{lure.value != null ? `$${lure.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}</td>
+                  <td className="px-3 py-2.5">{lure.value != null ? `$${lure.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ""}</td>
                 </tr>
               ))}
             </tbody>
