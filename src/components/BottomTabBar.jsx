@@ -34,7 +34,7 @@ function TabLink({ tab }) {
     <NavLink
       to={tab.to}
       onClick={handleClick}
-      className={`flex flex-col items-center gap-0.5 py-2 px-1 flex-1 transition-colors ${
+      className={`flex flex-col items-center gap-0.5 py-1 px-1 flex-1 transition-colors ${
         isActive ? "text-primary" : "text-muted-foreground"
       }`}
     >
@@ -122,7 +122,7 @@ export default function BottomTabBar() {
           role="button"
           href={location.pathname}
           onClick={(e) => { e.preventDefault(); setConditionsOpen((open) => !open); }}
-          className={`flex flex-col items-center gap-0.5 py-2 px-1 flex-1 transition-colors cursor-pointer ${
+          className={`flex flex-col items-center gap-0.5 py-1 px-1 flex-1 transition-colors cursor-pointer ${
             isConditionsActive || conditionsOpen ? "text-primary" : "text-muted-foreground"
           }`}
         >
