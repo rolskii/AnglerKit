@@ -216,9 +216,14 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
                 onChange={(e) => set("reel", e.target.value === "" ? "" : (reelById[e.target.value] || ""))}
               >
                 <option value="">Select a reel (optional)</option>
-                {sortedReels.map((r) => (
-                  <option key={r.id} value={r.id}>{r.name}</option>
-                ))}
+                {sortedReels.map((r) => {
+                  const details = [r.brand, r.model].filter(Boolean).join(" ");
+                  return (
+                    <option key={r.id} value={r.id}>
+                      {r.name}{details ? ` — ${details}` : ""}
+                    </option>
+                  );
+                })}
               </select>
             </div>
           </div>
