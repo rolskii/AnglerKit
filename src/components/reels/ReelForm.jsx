@@ -5,7 +5,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import BottomSheetSelect from "@/components/ui/bottom-sheet-select";
+import FormSelect from "@/components/ui/form-select";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import ImageUpload from "@/components/ImageUpload";
@@ -43,11 +43,10 @@ export default function ReelForm({ open, onOpenChange, onSubmit, initial, loadin
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label>Species</Label>
-              <BottomSheetSelect
+              <FormSelect
                 value={form.species}
                 onChange={(v) => set("species", v)}
                 options={SPECIES.map((s) => ({ value: s, label: s }))}
-                className="bg-muted"
               />
             </div>
             <div className="space-y-1.5">
@@ -64,21 +63,19 @@ export default function ReelForm({ open, onOpenChange, onSubmit, initial, loadin
             </div>
             <div className="space-y-1.5">
               <Label>Type</Label>
-              <BottomSheetSelect
+              <FormSelect
                 value={form.type}
                 onChange={(v) => set("type", v)}
                 options={TYPES.map((t) => ({ value: t, label: t }))}
                 placeholder="Select type"
-                className="bg-muted"
               />
             </div>
             <div className="space-y-1.5">
               <Label>Condition</Label>
-              <BottomSheetSelect
+              <FormSelect
                 value={form.condition}
                 onChange={(v) => set("condition", v)}
                 options={CONDITIONS.map((c) => ({ value: c, label: c }))}
-                className="bg-muted"
               />
             </div>
             <div className="space-y-1.5">

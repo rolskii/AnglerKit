@@ -5,7 +5,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import BottomSheetSelect from "@/components/ui/bottom-sheet-select";
+import FormSelect from "@/components/ui/form-select";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import ImageUpload from "@/components/ImageUpload";
@@ -76,11 +76,10 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label>Species</Label>
-                <BottomSheetSelect
+                <FormSelect
                   value={form.species}
                   onChange={(v) => set("species", v)}
                   options={speciesOptions.map((s) => ({ value: s, label: s }))}
-                  className="bg-muted"
                 />
               </div>
               <div className="space-y-1.5 relative">
@@ -114,25 +113,22 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
             </div>
             <div className="space-y-1.5">
                <Label>Description</Label>
-               <BottomSheetSelect
+               <FormSelect
                  value={form.type}
                  onChange={(v) => set("type", v)}
                  options={typeOptions.map((t) => ({ value: t, label: t }))}
-                 className="bg-muted"
                />
              </div>
             <div className="space-y-1.5">
               <Label>Line Type</Label>
-              <BottomSheetSelect
-                value={form.rod_type || "_none"}
-                onChange={(v) => set("rod_type", v === "_none" ? "" : v)}
-                options={[
-                  { value: "_none", label: "None" },
-                  ...ROD_TYPES.map((t) => ({ value: t, label: t })),
-                ]}
-                placeholder="Select..."
-                className="bg-muted"
-              />
+              <FormSelect
+                 value={form.rod_type || "_none"}
+                 onChange={(v) => set("rod_type", v === "_none" ? "" : v)}
+                 options={[
+                   { value: "_none", label: "None" },
+                   ...ROD_TYPES.map((t) => ({ value: t, label: t })),
+                 ]}
+               />
             </div>
             <div className="space-y-1.5 col-span-2 relative">
               <Label>Description</Label>
@@ -181,38 +177,33 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
             </div>
             <div className="space-y-1.5">
                <Label>Condition</Label>
-               <BottomSheetSelect
+               <FormSelect
                  value={form.condition}
                  onChange={(v) => set("condition", v)}
                  options={CONDITIONS.map((c) => ({ value: c, label: c }))}
-                 className="bg-muted"
                />
              </div>
              <div className="space-y-1.5">
                <Label>Reel</Label>
-              <BottomSheetSelect
+              <FormSelect
                 value={form.reel || "_none"}
                 onChange={(v) => set("reel", v === "_none" ? "" : v)}
                 options={[
                   { value: "_none", label: "Spooled" },
                   ...[...reels].sort((a, b) => a.name.localeCompare(b.name)).map((r) => ({ value: r.name, label: r.name })),
                 ]}
-                placeholder="Spooled"
-                className="bg-muted"
               />
             </div>
 
             <div className="space-y-1.5">
                <Label>Rod</Label>
-               <BottomSheetSelect
+               <FormSelect
                  value={form.rod || "_none"}
                  onChange={(v) => set("rod", v === "_none" ? "" : v)}
                  options={[
                    { value: "_none", label: "None" },
                    ...[...rods].sort((a, b) => a.name.localeCompare(b.name)).map((r) => ({ value: r.name, label: r.name })),
                  ]}
-                 placeholder="None"
-                 className="bg-muted"
                />
              </div>
              <div className="space-y-1.5">

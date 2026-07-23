@@ -5,7 +5,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import BottomSheetSelect from "@/components/ui/bottom-sheet-select";
+import FormSelect from "@/components/ui/form-select";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import ImageUpload from "@/components/ImageUpload";
@@ -50,11 +50,10 @@ export default function RodForm({ open, onOpenChange, onSubmit, initial, loading
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label>Species</Label>
-              <BottomSheetSelect
+              <FormSelect
                 value={form.species}
                 onChange={(v) => set("species", v)}
                 options={SPECIES.map((s) => ({ value: s, label: s }))}
-                className="bg-muted"
               />
             </div>
             <div className="space-y-1.5">
@@ -75,29 +74,26 @@ export default function RodForm({ open, onOpenChange, onSubmit, initial, loading
             </div>
             <div className="space-y-1.5">
               <Label>Type</Label>
-              <BottomSheetSelect
+              <FormSelect
                 value={form.type}
                 onChange={(v) => set("type", v)}
                 options={TYPES.map((t) => ({ value: t, label: t }))}
-                className="bg-muted"
               />
             </div>
             <div className="space-y-1.5">
               <Label>Material</Label>
-              <BottomSheetSelect
+              <FormSelect
                 value={form.material}
                 onChange={(v) => set("material", v)}
                 options={MATERIALS.map((m) => ({ value: m, label: m }))}
-                className="bg-muted"
               />
             </div>
             <div className="space-y-1.5">
               <Label>Condition</Label>
-              <BottomSheetSelect
+              <FormSelect
                 value={form.condition}
                 onChange={(v) => set("condition", v)}
                 options={CONDITIONS.map((c) => ({ value: c, label: c }))}
-                className="bg-muted"
               />
             </div>
             <div className="space-y-1.5">
