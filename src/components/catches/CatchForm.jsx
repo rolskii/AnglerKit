@@ -272,7 +272,6 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
                 step="0.1"
                 value={form.water_temp ?? ""}
                 onChange={(e) => set("water_temp", e.target.value)}
-                placeholder="54"
               />
             </div>
           </div>
