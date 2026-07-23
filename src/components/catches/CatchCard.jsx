@@ -21,14 +21,16 @@ export default function CatchCard({ catchItem, onEdit, onDelete, lines = [], rod
     || lines.find((l) => `${l.brand} ${l.model}`.trim() === catchItem.line);
   const grainWeight = matchedLine?.grain_weight;
   const lineDisplay = matchedLine ? `${matchedLine.brand} ${matchedLine.model}`.trim() : catchItem.line;
-  const matchedReel = reels.find((r) => r.name === catchItem.reel);
+  const matchedReel = reels.find((r) => r.id === catchItem.reel)
+    || reels.find((r) => r.name === catchItem.reel);
   const reelDisplay = matchedReel
     ? [matchedReel.brand, matchedReel.model].filter(Boolean).join(" ")
     : catchItem.reel;
   const reelDetails = matchedReel
     ? [matchedReel.size, matchedReel.type].filter(Boolean).join(" · ")
     : null;
-  const matchedRod = rods.find((r) => r.name === catchItem.rod);
+  const matchedRod = rods.find((r) => r.id === catchItem.rod)
+    || rods.find((r) => r.name === catchItem.rod);
   const rodDisplay = matchedRod
     ? [matchedRod.brand, matchedRod.model].filter(Boolean).join(" ")
     : catchItem.rod;
