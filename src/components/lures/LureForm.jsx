@@ -32,8 +32,10 @@ export default function LureForm({ open, onOpenChange, onSubmit, initial, loadin
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const autoName = [form.brand, form.model].filter(Boolean).join(" ").trim() || form.name;
     onSubmit({
       ...form,
+      name: autoName,
       quantity: form.quantity ? Number(form.quantity) : null,
       value: form.value ? Number(form.value) : null,
     });
@@ -46,10 +48,6 @@ export default function LureForm({ open, onOpenChange, onSubmit, initial, loadin
           <DialogTitle>{initial ? "Edit Lure / Fly" : "Add Lure / Fly"}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1.5">
-            <Label>Name</Label>
-            <Input className="bg-muted" value={form.name} onChange={(e) => set("name", e.target.value)} required placeholder="e.g. Elk Hair Caddis" />
-          </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label>Type</Label>
