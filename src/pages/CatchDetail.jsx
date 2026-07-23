@@ -99,6 +99,7 @@ export default function CatchDetail() {
         catchItem={catchItem}
         lines={lines}
         rods={rods}
+        reels={reels}
         onEdit={(c) => { setEditing(c); setFormOpen(true); }}
         onDelete={(c) => setDeleteTarget(c)}
       />

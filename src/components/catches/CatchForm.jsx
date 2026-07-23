@@ -46,9 +46,15 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
   useEffect(() => {
     if (open) {
       const base = initial ? { ...emptyCatch, ...initial } : emptyCatch;
+      // Migrate legacy line value (brand+model string) to line id so
+      // duplicate brand+model lines with different grain weights stay distinct
+      if (base.line && !lines.some((l) => l.id === base.line)) {
+        const matched = lines.find((l) => `${l.brand} ${l.model}`.trim() === base.line);
+        if (matched) base.line = matched.id;
+      }
       setForm(base);
     }
-  }, [open, initial]);
+  }, [open, initial, lines]);
 
   const set = (field, value) => setForm((f) => ({ ...f, [field]: value }));
 
@@ -66,10 +72,8 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
   // the display name on the catch so existing records and the card still work.
   const rodById = Object.fromEntries(rods.map((r) => [r.id, r.name]));
   const reelById = Object.fromEntries(reels.map((r) => [r.id, r.name]));
-  const lineById = Object.fromEntries(lines.map((l) => [l.id, `${l.brand} ${l.model}`.trim()]));
   const rodIdByName = Object.fromEntries(rods.map((r) => [r.name, r.id]));
   const reelIdByName = Object.fromEntries(reels.map((r) => [r.name, r.id]));
-  const lineIdByName = Object.fromEntries(lines.map((l) => [`${l.brand} ${l.model}`.trim(), l.id]));
 
   const sortedRods = [...rods].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
   const sortedReels = [...reels].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
@@ -232,8 +236,8 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
             <Label>Line</Label>
             <select
               className="flex h-9 w-full rounded-md border border-input bg-muted px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
-              value={form.line ? (sortedLines.find((l) => `${l.brand} ${l.model}`.trim() === form.line)?.id || "") : ""}
-              onChange={(e) => set("line", e.target.value === "" ? "" : (lineById[e.target.value] || ""))}
+              value={form.line || ""}
+              onChange={(e) => set("line", e.target.value)}
             >
               <option value="">Select a line (optional)</option>
               {sortedLines.map((l) => {

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Pencil, Trash2, MapPin, Calendar, Fish, Star, Info } from "lucide-react";
 import ImageGallery, { getItemImages } from "@/components/ImageGallery";
 
-export default function CatchCard({ catchItem, onEdit, onDelete, lines = [], rods = [] }) {
+export default function CatchCard({ catchItem, onEdit, onDelete, lines = [], rods = [], reels = [] }) {
   const cardRef = useRef(null);
   const [showFormula, setShowFormula] = useState(false);
   const fmtDate = (d) => {
@@ -17,8 +17,14 @@ export default function CatchCard({ catchItem, onEdit, onDelete, lines = [], rod
   const estWeight = (catchItem.length && catchItem.girth)
     ? (catchItem.length * catchItem.girth * catchItem.girth / 800)
     : null;
-  const matchedLine = lines.find((l) => `${l.brand} ${l.model}`.trim() === catchItem.line);
+  const matchedLine = lines.find((l) => l.id === catchItem.line)
+    || lines.find((l) => `${l.brand} ${l.model}`.trim() === catchItem.line);
   const grainWeight = matchedLine?.grain_weight;
+  const lineDisplay = matchedLine ? `${matchedLine.brand} ${matchedLine.model}`.trim() : catchItem.line;
+  const matchedReel = reels.find((r) => r.name === catchItem.reel);
+  const reelDetails = matchedReel
+    ? [matchedReel.brand, matchedReel.model].filter(Boolean).join(" ")
+    : null;
   const matchedRod = rods.find((r) => r.name === catchItem.rod);
   const rodDetails = matchedRod
     ? [matchedRod.length, matchedRod.line_weight && `${matchedRod.line_weight} wt`].filter(Boolean).join(" · ")
@@ -34,8 +40,8 @@ export default function CatchCard({ catchItem, onEdit, onDelete, lines = [], rod
       { label: "Fly", value: catchItem.fly_used },
       { label: "Water Temp", value: catchItem.water_temp != null ? `${catchItem.water_temp}°` : null },
       { label: "Rod", value: catchItem.rod },
-      { label: "Reel", value: catchItem.reel },
-      { label: "Line", value: catchItem.line },
+      { label: "Reel", value: reelDetails ? `${catchItem.reel} — ${reelDetails}` : catchItem.reel },
+      { label: "Line", value: lineDisplay },
       { label: "Grain Weight", value: catchItem.line && grainWeight != null ? `${grainWeight} gr` : null },
       { label: "Conditions", value: catchItem.conditions },
     ],
@@ -101,8 +107,8 @@ export default function CatchCard({ catchItem, onEdit, onDelete, lines = [], rod
         </div>
         <Detail label="Fly or Lure Used" value={catchItem.fly_used} />
         <Detail label="Rod" value={catchItem.rod} subValue={rodDetails} />
-        <Detail label="Reel" value={catchItem.reel} />
-        <Detail label="Line" value={catchItem.line} />
+        <Detail label="Reel" value={catchItem.reel} subValue={reelDetails} />
+        <Detail label="Line" value={lineDisplay} />
         {catchItem.line && grainWeight != null && (
           <Detail label="Grain Weight" value={`${grainWeight} gr`} />
         )}
