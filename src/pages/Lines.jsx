@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Search, Loader2, Waves, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import LineDetailDialog from "@/components/lines/LineDetailDialog";
+import ViewToggle from "@/components/ViewToggle";
+import GearThumbnail from "@/components/GearThumbnail";
 import LineForm from "@/components/lines/LineForm";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -25,6 +27,7 @@ export default function Lines() {
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [viewTarget, setViewTarget] = useState(null);
+  const [viewMode, setViewMode] = useState("list");
 
   const load = async () => {
     setLoading(true);
@@ -148,6 +151,7 @@ export default function Lines() {
             className="pl-9"
           />
         </div>
+        <ViewToggle viewMode={viewMode} setViewMode={setViewMode} />
       </div>
 
       {loading ? (
@@ -157,8 +161,20 @@ export default function Lines() {
           <Waves className="w-12 h-12 mx-auto mb-3 opacity-40" />
           <p>No lines found. Add your first one!</p>
         </div>
+      ) : viewMode === "thumbnail" ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          {filtered.map((line) => (
+            <GearThumbnail
+              key={line.id}
+              item={line}
+              title={[line.brand, line.model].filter(Boolean).join(" ") || line.name}
+              subtitle={line.type}
+              details={[line.line_weight && `${line.line_weight} wt`, line.grain_weight && `${line.grain_weight} gr`, line.value != null && `$${line.value}`]}
+              onClick={() => setViewTarget(line)}
+            />
+          ))}
+        </div>
       ) : (
-        <>
         <div className="overflow-x-auto rounded-lg border border-border">
           <table className="w-full text-sm">
             <thead className="bg-muted/50">
@@ -187,7 +203,6 @@ export default function Lines() {
             </tbody>
           </table>
         </div>
-        </>
       )}
 
       <LineDetailDialog

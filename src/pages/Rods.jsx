@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Plus, Search, Loader2, Waves, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import RodForm from "@/components/rods/RodForm";
 import RodDetailDialog from "@/components/rods/RodDetailDialog";
+import ViewToggle from "@/components/ViewToggle";
+import GearThumbnail from "@/components/GearThumbnail";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -32,6 +34,7 @@ export default function Rods() {
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [viewTarget, setViewTarget] = useState(null);
+  const [viewMode, setViewMode] = useState("list");
 
   const load = async () => {
     setLoading(true);
@@ -182,9 +185,12 @@ export default function Rods() {
         </Button>
       </div>
 
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input placeholder="Search rods..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input placeholder="Search rods..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+        </div>
+        <ViewToggle viewMode={viewMode} setViewMode={setViewMode} />
       </div>
 
       {loading ? (
@@ -194,8 +200,20 @@ export default function Rods() {
           <Waves className="w-12 h-12 mx-auto mb-3 opacity-40" />
           <p>No rods found. Add your first one!</p>
         </div>
+      ) : viewMode === "thumbnail" ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          {filtered.map((rod) => (
+            <GearThumbnail
+              key={rod.id}
+              item={rod}
+              title={[rod.brand, rod.model].filter(Boolean).join(" ") || rod.name}
+              subtitle={rod.type}
+              details={[rod.length, rod.line_weight && `${rod.line_weight} wt`, rod.value != null && `$${rod.value}`]}
+              onClick={() => setViewTarget(rod)}
+            />
+          ))}
+        </div>
       ) : (
-        <>
         <div className="overflow-x-auto rounded-lg border border-border">
           <table className="w-full text-sm">
             <thead className="bg-muted/50">
@@ -236,7 +254,6 @@ export default function Rods() {
             </tbody>
           </table>
         </div>
-        </>
       )}
 
       <RodDetailDialog
