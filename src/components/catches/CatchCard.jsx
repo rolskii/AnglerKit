@@ -22,10 +22,16 @@ export default function CatchCard({ catchItem, onEdit, onDelete, lines = [], rod
   const grainWeight = matchedLine?.grain_weight;
   const lineDisplay = matchedLine ? `${matchedLine.brand} ${matchedLine.model}`.trim() : catchItem.line;
   const matchedReel = reels.find((r) => r.name === catchItem.reel);
-  const reelDetails = matchedReel
+  const reelDisplay = matchedReel
     ? [matchedReel.brand, matchedReel.model].filter(Boolean).join(" ")
+    : catchItem.reel;
+  const reelDetails = matchedReel
+    ? [matchedReel.size, matchedReel.type].filter(Boolean).join(" · ")
     : null;
   const matchedRod = rods.find((r) => r.name === catchItem.rod);
+  const rodDisplay = matchedRod
+    ? [matchedRod.brand, matchedRod.model].filter(Boolean).join(" ")
+    : catchItem.rod;
   const rodDetails = matchedRod
     ? [matchedRod.length, matchedRod.line_weight && `${matchedRod.line_weight} wt`].filter(Boolean).join(" · ")
     : null;
@@ -39,8 +45,8 @@ export default function CatchCard({ catchItem, onEdit, onDelete, lines = [], rod
       { label: estWeight != null ? "Estimated Weight" : "Weight", value: estWeight != null ? `${estWeight.toFixed(2)} lb` : (catchItem.weight ? `${catchItem.weight} lb` : null) },
       { label: "Fly", value: catchItem.fly_used },
       { label: "Water Temp", value: catchItem.water_temp != null ? `${catchItem.water_temp}°` : null },
-      { label: "Rod", value: catchItem.rod },
-      { label: "Reel", value: reelDetails ? `${catchItem.reel} — ${reelDetails}` : catchItem.reel },
+      { label: "Rod", value: rodDetails ? `${rodDisplay} (${rodDetails})` : rodDisplay },
+      { label: "Reel", value: reelDetails ? `${reelDisplay} (${reelDetails})` : reelDisplay },
       { label: "Line", value: lineDisplay },
       { label: "Grain Weight", value: catchItem.line && grainWeight != null ? `${grainWeight} gr` : null },
       { label: "Conditions", value: catchItem.conditions },
@@ -106,8 +112,8 @@ export default function CatchCard({ catchItem, onEdit, onDelete, lines = [], rod
           <Detail label="Water Temp" value={catchItem.water_temp != null ? `${catchItem.water_temp}°` : null} />
         </div>
         <Detail label="Fly or Lure Used" value={catchItem.fly_used} />
-        <Detail label="Rod" value={catchItem.rod} subValue={rodDetails} />
-        <Detail label="Reel" value={catchItem.reel} subValue={reelDetails} />
+        <Detail label="Rod" value={rodDisplay} subValue={rodDetails} />
+        <Detail label="Reel" value={reelDisplay} subValue={reelDetails} />
         <Detail label="Line" value={lineDisplay} />
         {catchItem.line && grainWeight != null && (
           <Detail label="Grain Weight" value={`${grainWeight} gr`} />
