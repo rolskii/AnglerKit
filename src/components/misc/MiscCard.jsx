@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
 import ImageGallery, { getItemImages } from "@/components/ImageGallery";
+import { formatGearDate } from "@/lib/utils";
 
 const conditionColor = {
   "New": "bg-emerald-100 text-emerald-700",
@@ -27,7 +28,7 @@ export default function MiscCard({ item, onEdit, onDelete }) {
       { label: "Quantity", value: item.quantity != null ? item.quantity : null },
       { label: "Condition", value: item.condition },
       { label: "Value", value: item.value != null ? `$${item.value}` : null },
-      { label: "Acquired", value: item.date_acquired },
+      { label: "Acquired", value: formatGearDate(item.date_acquired) },
     ],
     sections: [],
     notes: item.notes,
@@ -57,7 +58,7 @@ export default function MiscCard({ item, onEdit, onDelete }) {
         <Detail label="Quantity" value={item.quantity != null ? item.quantity : null} />
         <Detail label="Condition" value={item.condition} />
         <Detail label="Value" value={item.value != null ? `$${item.value}` : null} />
-        <Detail label="Acquired" value={item.date_acquired} />
+        <Detail label="Acquired" value={formatGearDate(item.date_acquired)} />
       </div>
 
       {item.notes && <p className="text-sm text-muted-foreground italic border-t border-border pt-2">{item.notes}</p>}
