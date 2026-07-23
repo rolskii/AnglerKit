@@ -87,6 +87,7 @@ export default function BottomTabBar() {
       )}
       <nav
         className="md:hidden fixed bottom-0 left-0 right-0 z-[600] flex items-center justify-around px-4 border-t border-border/60 bg-background/90 backdrop-blur-xl"
+        style={{ paddingBottom: "calc(env(safe-area-inset-bottom) * 0.5)" }}
       >
         {conditionsOpen && (
           <div
