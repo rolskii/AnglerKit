@@ -198,9 +198,14 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
                 onChange={(e) => set("rod", e.target.value === "" ? "" : (rodById[e.target.value] || ""))}
               >
                 <option value="">Select a rod (optional)</option>
-                {sortedRods.map((r) => (
-                  <option key={r.id} value={r.id}>{r.name}</option>
-                ))}
+                {sortedRods.map((r) => {
+                  const details = [r.length, r.line_weight].filter(Boolean).join(" · ");
+                  return (
+                    <option key={r.id} value={r.id}>
+                      {r.name}{details ? ` — ${details}` : ""}
+                    </option>
+                  );
+                })}
               </select>
             </div>
             <div className="space-y-1.5">
@@ -226,9 +231,14 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
               onChange={(e) => set("line", e.target.value === "" ? "" : (lineById[e.target.value] || ""))}
             >
               <option value="">Select a line (optional)</option>
-              {sortedLines.map((l) => (
-                <option key={l.id} value={l.id}>{`${l.brand} ${l.model}`.trim()}</option>
-              ))}
+              {sortedLines.map((l) => {
+                const label = `${l.brand} ${l.model}`.trim();
+                return (
+                  <option key={l.id} value={l.id}>
+                    {label}{l.grain_weight ? ` — ${l.grain_weight}gr` : ""}
+                  </option>
+                );
+              })}
             </select>
           </div>
 
