@@ -118,7 +118,7 @@ export default function BottomTabBar() {
           {gearOpen && (
             <div
               ref={gearPopupRef}
-              className="absolute bottom-full mb-2 left-0 w-[190px] bg-card rounded-2xl shadow-xl border border-border/60 p-1.5 z-[601]"
+              className="absolute bottom-full mb-2 left-0 w-[160px] bg-card rounded-2xl shadow-xl border border-border/60 p-1.5 z-[601]"
             >
               {GEAR_ITEMS.map((item) => {
                 const Icon = item.icon;
@@ -156,7 +156,7 @@ export default function BottomTabBar() {
           {conditionsOpen && (
             <div
               ref={conditionsPopupRef}
-              className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-[190px] bg-card rounded-2xl shadow-xl border border-border/60 p-1.5 z-[601]"
+              className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-[160px] bg-card rounded-2xl shadow-xl border border-border/60 p-1.5 z-[601]"
             >
               {CONDITIONS_ITEMS.map((item) => {
                 const Icon = item.icon;

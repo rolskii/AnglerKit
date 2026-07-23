@@ -424,7 +424,7 @@ export default function Home() {
                 {conditionsOpen && (
                   <div
                     ref={conditionsPopupRef}
-                    className="absolute top-full mt-2 left-1/2 -translate-x-1/2 w-[220px] bg-card rounded-2xl shadow-xl border border-border/60 p-2 z-20"
+                    className="absolute top-full mt-2 left-1/2 -translate-x-1/2 w-[160px] bg-card rounded-2xl shadow-xl border border-border/60 p-1.5 z-20"
                   >
                     <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-card border-l border-t border-border/60 rotate-45" />
                     {CONDITIONS_ITEMS.map((sub) => {
