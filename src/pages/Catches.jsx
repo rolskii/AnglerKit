@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Plus, Search, Loader2, Fish, ArrowUp, ArrowDown, ArrowUpDown, List, LayoutGrid } from "lucide-react";
 import CatchCard from "@/components/catches/CatchCard";
 import CatchThumbnail from "@/components/catches/CatchThumbnail";
+import { useViewMode } from "@/hooks/useViewMode";
 import CatchForm from "@/components/catches/CatchForm";
 import PullToRefresh from "@/components/PullToRefresh";
 import {
@@ -28,7 +29,7 @@ export default function Catches() {
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const [viewMode, setViewMode] = useState("list");
+  const [viewMode, setViewMode] = useViewMode();
 
   const load = async () => {
     setLoading(true);

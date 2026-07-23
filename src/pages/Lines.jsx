@@ -6,6 +6,7 @@ import { Plus, Search, Loader2, Waves, ArrowUp, ArrowDown, ArrowUpDown } from "l
 import LineDetailDialog from "@/components/lines/LineDetailDialog";
 import ViewToggle from "@/components/ViewToggle";
 import GearThumbnail from "@/components/GearThumbnail";
+import { useViewMode } from "@/hooks/useViewMode";
 import LineForm from "@/components/lines/LineForm";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -27,7 +28,7 @@ export default function Lines() {
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [viewTarget, setViewTarget] = useState(null);
-  const [viewMode, setViewMode] = useState("list");
+  const [viewMode, setViewMode] = useViewMode();
 
   const load = async () => {
     setLoading(true);
