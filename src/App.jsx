@@ -6,6 +6,7 @@ import { initAlarmService } from '@/lib/alarmService';
 import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
+import { UnitsProvider } from '@/lib/unitsContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import Layout from '@/components/Layout';
@@ -96,6 +97,7 @@ function App() {
 
   return (
     <AuthProvider>
+      <UnitsProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
           <ScrollToTop />
@@ -103,6 +105,7 @@ function App() {
         </Router>
         <Toaster />
       </QueryClientProvider>
+      </UnitsProvider>
     </AuthProvider>
   )
 }
