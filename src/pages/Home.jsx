@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { ChevronRight, Camera, Moon as MoonIcon, Cloud, Bell, MapPin, ChevronDown, Map as MapIcon, Waves, Gauge } from "lucide-react";
+import { ChevronRight, Camera, Moon as MoonIcon, Cloud, Bell, MapPin, ChevronDown, Map as MapIcon, Waves, Gauge, Package } from "lucide-react";
 import WeatherGlyph from "@/components/weather/WeatherGlyph";
-import { ReelIcon as ReelDiscIcon } from "@/components/GearIcons";
+import { ReelIcon as ReelDiscIcon, LinesIcon, RodIcon, LureIcon } from "@/components/GearIcons";
 import FishIcon from "@/components/FishIcon";
-import RealisticMoon from "@/components/RealisticMoon";
-import RealisticSun from "@/components/RealisticSun";
+import MoonPhaseSymbol from "@/components/MoonPhaseSymbol";
 import { base44 } from "@/api/base44Client";
 import PullToRefresh from "@/components/PullToRefresh";
 import FeaturedImage from "@/components/FeaturedImage";
@@ -73,7 +72,7 @@ const getNextBiteWindow = () => {
   return periods[0];
 };
 const items = [
-  { to: "/gear/lines", title: "Gear", icon: ReelDiscIcon, tint: "orange", key: "gear" },
+  { title: "Gear", icon: ReelDiscIcon, tint: "orange", key: "gear" },
   { title: "Conditions", icon: Gauge, tint: "gauge", key: "conditions" },
   { to: "/map", title: "Map", icon: MapIcon, tint: "green", key: "map" },
   { to: "/catches", title: "Fish Log", icon: Camera, tint: "blue", key: "catch" },
@@ -82,6 +81,13 @@ const CONDITIONS_ITEMS = [
   { to: "/moon", label: "Moon", icon: MoonIcon, tint: "purple" },
   { to: "/weather", label: "Weather", icon: Cloud, tint: "teal" },
   { to: "/river", label: "River", icon: Waves, tint: "cyan" },
+];
+const GEAR_ITEMS = [
+  { to: "/lines", label: "Lines", icon: LinesIcon, tint: "blue" },
+  { to: "/reels", label: "Reels", icon: ReelDiscIcon, tint: "orange" },
+  { to: "/rods", label: "Rods", icon: RodIcon, tint: "teal" },
+  { to: "/lures", label: "Tackle", icon: LureIcon, tint: "purple" },
+  { to: "/misc", label: "Misc. Gear", icon: Package, tint: "orange" },
 ];
 const tintClasses = {
   orange: "bg-tint-orange-bg text-tint-orange",
@@ -104,14 +110,24 @@ export default function Home() {
   const [locationDialogOpen, setLocationDialogOpen] = useState(false);
   const [coords, setCoords] = useState(shared.coords);
   const [conditionsOpen, setConditionsOpen] = useState(false);
+  const [gearOpen, setGearOpen] = useState(false);
   const conditionsPopupRef = useRef(null);
   const conditionsButtonRef = useRef(null);
+  const gearPopupRef = useRef(null);
+  const gearButtonRef = useRef(null);
   useEffect(() => {
-    if (!conditionsOpen) return undefined;
+    if (!conditionsOpen && !gearOpen) return undefined;
     function handleOutside(event) {
-      if (conditionsPopupRef.current?.contains(event.target)) return;
-      if (conditionsButtonRef.current?.contains(event.target)) return;
+      if (conditionsOpen) {
+        if (conditionsPopupRef.current?.contains(event.target)) return;
+        if (conditionsButtonRef.current?.contains(event.target)) return;
+      }
+      if (gearOpen) {
+        if (gearPopupRef.current?.contains(event.target)) return;
+        if (gearButtonRef.current?.contains(event.target)) return;
+      }
       setConditionsOpen(false);
+      setGearOpen(false);
     }
     document.addEventListener("mousedown", handleOutside);
     document.addEventListener("touchstart", handleOutside);
@@ -119,10 +135,22 @@ export default function Home() {
       document.removeEventListener("mousedown", handleOutside);
       document.removeEventListener("touchstart", handleOutside);
     };
-  }, [conditionsOpen]);
+  }, [conditionsOpen, gearOpen]);
   const handleSelectCondition = (to) => {
     setConditionsOpen(false);
     navigate(to);
+  };
+  const handleSelectGear = (to) => {
+    setGearOpen(false);
+    navigate(to);
+  };
+  const toggleConditions = () => {
+    setGearOpen(false);
+    setConditionsOpen((open) => !open);
+  };
+  const toggleGear = () => {
+    setConditionsOpen(false);
+    setGearOpen((open) => !open);
   };
   const todayStr = () => {
     const now = new Date();
@@ -155,12 +183,6 @@ export default function Home() {
     const tempUnit = localStorage.getItem("weatherTempUnit") || "celsius";
     await fetchWeather(coords, tempUnit);
     await Promise.all([fetchGearCount(), fetchLastCatch(), fetchMapStats()]);
-    // Rotate the featured photo on each pull-to-refresh (only the daily
-    // random pick — a user-selected featured image is left untouched).
-    if (!localStorage.getItem("featuredImageUser")) {
-      localStorage.removeItem("featuredImageDaily");
-      window.dispatchEvent(new Event("featured-image-changed"));
-    }
   };
   useEffect(() => { refreshData(); }, []);
   useEffect(() => {
@@ -267,7 +289,7 @@ export default function Home() {
       <div className="space-y-2 px-1">
         <h1 className="text-2xl md:text-[34px] font-heading font-extrabold tracking-tight leading-tight">AnglerKit</h1>
         <p className="text-sm md:text-[17px] text-muted-foreground">
-          Predict the bite, track live weather and river conditions, and manage your gear and every catch — all in one place.
+          Track your fishing gear, predict the bite, check the weather and log every catch — all in one place.
         </p>
       </div>
       {/* Status bar */}
@@ -319,15 +341,13 @@ export default function Home() {
               <p className="text-xs text-foreground">5:48–6:18 AM</p>
               <p className="text-xs text-foreground">8:54–9:24 PM</p>
             </div>
-            <div className="flex flex-col items-center justify-end gap-0.5">
-              {moonPhase && <RealisticMoon illumination={moonPhase.illumination} phase={moonPhase.name} className="w-[50px] h-[50px]" />}
-              {moonPhase && <span className="text-[10px] text-muted-foreground leading-tight whitespace-nowrap">{moonPhase.illumination}% Lit</span>}
+            <div className="flex items-start justify-end">
+              {moonPhase && <MoonPhaseSymbol phase={moonPhase} className="w-12 h-12" />}
             </div>
-            <div className="flex flex-col items-center justify-end gap-0.5">
-              {weatherInfo && (weatherInfo.code <= 1 && !weatherInfo.isNight
-                ? <RealisticSun className="w-[50px] h-[50px]" />
-                : <WeatherGlyph code={weatherInfo.code} isNight={weatherInfo.isNight} animated className="w-[50px] h-[50px]" />)}
-              {weatherInfo && <span className="text-[10px] text-muted-foreground leading-tight whitespace-nowrap">{weatherInfo.desc}</span>}
+            <div className="flex items-start justify-end pr-2 -mt-2">
+              {weatherInfo && (
+                <WeatherGlyph code={weatherInfo.code} isNight={weatherInfo.isNight} animated className="w-16 h-20" />
+              )}
             </div>
           </div>
         </div>
@@ -336,7 +356,7 @@ export default function Home() {
       <div className="grid grid-cols-4 gap-2 md:gap-4">
         {items.map((item) => {
           const Icon = item.icon;
-          const isGear = item.to === "/gear/lines";
+          const isGear = item.key === "gear";
           const isConditions = item.key === "conditions";
           const desc = descriptions[item.key];
           const cardInner = (
@@ -358,6 +378,46 @@ export default function Home() {
               </div>
             </div>
           );
+          if (isGear) {
+            return (
+              <div key={item.key} className="relative h-full">
+                {gearOpen && (
+                  <div
+                    ref={gearPopupRef}
+                    className="absolute top-full mt-2 left-0 w-[220px] bg-card rounded-2xl shadow-xl border border-border/60 p-2 z-20"
+                  >
+                    <div className="absolute -top-1.5 left-6 w-3 h-3 bg-card border-l border-t border-border/60 rotate-45" />
+                    {GEAR_ITEMS.map((sub) => {
+                      const SubIcon = sub.icon;
+                      return (
+                        <button
+                          key={sub.to}
+                          type="button"
+                          onClick={() => handleSelectGear(sub.to)}
+                          className="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-accent active:bg-accent transition-colors text-left"
+                        >
+                          <span className={`flex items-center justify-center w-9 h-9 rounded-xl flex-shrink-0 ${tintClasses[sub.tint]}`}>
+                            <SubIcon className="w-[18px] h-[18px]" strokeWidth={2} />
+                          </span>
+                          <span className="text-sm font-semibold text-foreground">{sub.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+                <button
+                  ref={gearButtonRef}
+                  type="button"
+                  onClick={toggleGear}
+                  className="group block w-full h-full text-left"
+                >
+                  <Card className="relative p-1.5 md:p-5 h-full rounded-2xl border-0 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer bg-card">
+                    {cardInner}
+                  </Card>
+                </button>
+              </div>
+            );
+          }
           if (isConditions) {
             return (
               <div key={item.key} className="relative h-full">
@@ -388,7 +448,7 @@ export default function Home() {
                 <button
                   ref={conditionsButtonRef}
                   type="button"
-                  onClick={() => setConditionsOpen((open) => !open)}
+                  onClick={toggleConditions}
                   className="group block w-full h-full text-left"
                 >
                   <Card className="relative p-1.5 md:p-5 h-full rounded-2xl border-0 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer bg-card">

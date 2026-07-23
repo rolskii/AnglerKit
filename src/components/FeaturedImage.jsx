@@ -4,12 +4,11 @@ import { Card } from "@/components/ui/card";
 import { base44 } from "@/api/base44Client";
 
 const entityRoutes = {
-  FlyLine: "/gear/lines",
-  Reel: "/gear/reels",
-  Rod: "/gear/rods",
-  Lure: "/gear/lures",
-  MiscItem: "/gear/misc",
-  Catch: "/catches",
+  FlyLine: "/lines",
+  Reel: "/reels",
+  Rod: "/rods",
+  Lure: "/lures",
+  MiscItem: "/misc",
 };
 
 const entityLabels = {
@@ -18,7 +17,6 @@ const entityLabels = {
   Rod: "Rod",
   Lure: "Lure",
   MiscItem: "Misc",
-  Catch: "Fish Log",
 };
 
 const todayStr = () => {
@@ -31,7 +29,6 @@ export default function FeaturedImage() {
   const [loading, setLoading] = useState(true);
   const [labelColor, setLabelColor] = useState("white");
   const imgRef = useRef(null);
-  const prevUrlRef = useRef(null);
 
   const computeBrightness = (img) => {
     try {
@@ -53,7 +50,7 @@ export default function FeaturedImage() {
   };
 
   const fetchAllGearImages = async () => {
-    const entityTypes = ["Reel", "Rod", "Lure", "MiscItem", "Catch"];
+    const entityTypes = ["Reel", "Rod", "Lure", "MiscItem"];
     const allImages = [];
     for (const type of entityTypes) {
       try {
@@ -61,38 +58,11 @@ export default function FeaturedImage() {
         for (const item of items) {
           const imgs = item.images || (item.image_url ? [item.image_url] : []);
           for (const img of imgs) {
-            let label;
-            if (type === "Catch") {
-              label = [
-                item.species,
-                item.length != null ? `${item.length}"` : null,
-                item.location,
-              ].filter(Boolean).join(" ") || "Catch";
-            } else if (type === "Rod") {
-              label = [
-                item.brand,
-                item.model,
-                item.length,
-                item.line_weight ? `${item.line_weight}wt` : null,
-              ].filter(Boolean).join(" ") || "Rod";
-            } else if (type === "Reel") {
-              label = [
-                item.brand,
-                item.model,
-                item.size,
-              ].filter(Boolean).join(" ") || "Reel";
-            } else if (type === "MiscItem") {
-              label = [
-                item.brand,
-                item.model,
-                item.colour,
-              ].filter(Boolean).join(" ") || "Misc";
-            } else {
-              label = `${item.brand || ""} ${item.name || ""}`.trim() || type;
-            }
             allImages.push({
               image_url: img,
-              label,
+              label: type === "FlyLine"
+                ? `${item.brand || ""} ${item.model || ""}`.trim() || "Line"
+                : (item.name || type),
               subtitle: entityLabels[type],
               link: entityRoutes[type],
             });
@@ -105,14 +75,13 @@ export default function FeaturedImage() {
 
   const loadFeatured = async () => {
     setLoading(true);
-    const isExcluded = (img) => img && img.link === "/gear/lines";
+    const isExcluded = (img) => img && img.link === "/lines";
 
     try {
       const userStored = localStorage.getItem("featuredImageUser");
       if (userStored) {
         const parsed = JSON.parse(userStored);
         if (!isExcluded(parsed)) {
-          prevUrlRef.current = parsed.image_url;
           setFeatured(parsed);
           setLoading(false);
           return;
@@ -126,7 +95,6 @@ export default function FeaturedImage() {
       if (dailyStored) {
         const parsed = JSON.parse(dailyStored);
         if (parsed.date === todayStr() && parsed.image && !isExcluded(parsed.image)) {
-          prevUrlRef.current = parsed.image.image_url;
           setFeatured(parsed.image);
           setLoading(false);
           return;
@@ -135,13 +103,7 @@ export default function FeaturedImage() {
       }
       const allImages = await fetchAllGearImages();
       if (allImages.length === 0) { setLoading(false); return; }
-      // Exclude the currently-shown image so refresh always rotates to a different photo
-      const pool = prevUrlRef.current
-        ? allImages.filter(img => img.image_url !== prevUrlRef.current)
-        : allImages;
-      const pickFrom = pool.length > 0 ? pool : allImages;
-      const random = pickFrom[Math.floor(Math.random() * pickFrom.length)];
-      prevUrlRef.current = random.image_url;
+      const random = allImages[Math.floor(Math.random() * allImages.length)];
       localStorage.setItem("featuredImageDaily", JSON.stringify({ date: todayStr(), image: random }));
       setFeatured(random);
     } catch (e) {} finally {
@@ -172,7 +134,7 @@ export default function FeaturedImage() {
 
   return (
     <div className="space-y-3">
-      <Link to={featured.link || "/gear/lines"}>
+      <Link to={featured.link || "/lines"}>
         <Card className="rounded-2xl border-0 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200 cursor-pointer bg-card">
           <div className="relative aspect-square bg-muted">
             <img

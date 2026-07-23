@@ -3,18 +3,22 @@ import { Outlet, NavLink, useNavigate, useLocation, Link } from "react-router-do
 import {
   LogOut, Menu, X,
   Home as HomeIcon, Camera, Cloud, Map as MapIcon, Waves,
-  Settings as SettingsIcon, Info,
+  Settings as SettingsIcon, Info, Package,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
-import { ReelIcon as ReelDiscIcon } from "@/components/GearIcons";
+import { ReelIcon as ReelDiscIcon, LinesIcon, RodIcon, LureIcon } from "@/components/GearIcons";
 import AppLogo from "@/components/AppLogo";
 import { Moon as MoonIcon } from "lucide-react";
 import BottomTabBar from "@/components/BottomTabBar";
 import { motion } from "framer-motion";
 const navItems = [
   { to: "/", label: "Home", icon: HomeIcon },
-  { to: "/gear/lines", label: "Gear", icon: ReelDiscIcon, matchPrefix: "/gear" },
+  { to: "/lines", label: "Lines", icon: LinesIcon },
+  { to: "/reels", label: "Reels", icon: ReelDiscIcon },
+  { to: "/rods", label: "Rods", icon: RodIcon },
+  { to: "/lures", label: "Tackle", icon: LureIcon },
+  { to: "/misc", label: "Misc. Gear", icon: Package },
   { to: "/moon", label: "Moon Phase", icon: MoonIcon },
   { to: "/weather", label: "Weather", icon: Cloud },
   { to: "/river", label: "River Conditions", icon: Waves },
@@ -65,7 +69,7 @@ export default function Layout() {
   return (
     <div
       className="min-h-screen bg-background"
-      style={{ paddingTop: "env(safe-area-inset-top)" }}
+      style={{ paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       {/* Desktop sidebar */}
       <aside className="hidden md:flex fixed inset-y-0 left-0 w-64 flex-col border-r border-border/60 bg-sidebar/80 backdrop-blur-xl p-4">
@@ -121,7 +125,7 @@ export default function Layout() {
         </div>
       )}
       <main className="md:pl-64">
-        <div className="mx-auto max-w-6xl px-4 pt-4 pb-28 md:px-8 md:pt-6 md:pb-10">
+        <div className="mx-auto max-w-6xl px-4 py-6 pb-16 md:px-8 md:py-10 md:pb-10">
           <motion.div
             key={location.pathname}
             initial={{ opacity: 0, x: 20 }}

@@ -6,7 +6,6 @@ import { initAlarmService } from '@/lib/alarmService';
 import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
-import { UnitsProvider } from '@/lib/unitsContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import Layout from '@/components/Layout';
@@ -21,7 +20,6 @@ import Lures from '@/pages/Lures';
 import Misc from '@/pages/Misc';
 import Moon from '@/pages/Moon';
 import Weather from '@/pages/Weather';
-import Gear from '@/pages/Gear';
 import MapView from '@/pages/MapView';
 import RiverConditions from '@/pages/RiverConditions';
 // Add page imports here
@@ -75,8 +73,8 @@ const AuthenticatedApp = () => {
         <Route path="/river" element={<RiverConditions />} />
         <Route path="/about" element={<About />} />
         <Route path="/settings" element={<Settings />} />
-        <Route path="/gear" element={<Navigate to="/gear/lines" replace />} />
-        <Route path="/gear/:tab" element={<Gear />} />
+        <Route path="/gear" element={<Navigate to="/lines" replace />} />
+        <Route path="/gear/:tab" element={<Navigate to="/lines" replace />} />
       </Route>
       {/* MapView renders its own full-screen layout (including its own BottomTabBar), so it sits outside the shared <Layout> shell. */}
       <Route path="/map" element={<MapView />} />
@@ -96,7 +94,6 @@ function App() {
 
   return (
     <AuthProvider>
-      <UnitsProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
           <ScrollToTop />
@@ -104,7 +101,6 @@ function App() {
         </Router>
         <Toaster />
       </QueryClientProvider>
-      </UnitsProvider>
     </AuthProvider>
   )
 }
