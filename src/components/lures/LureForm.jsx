@@ -102,7 +102,7 @@ export default function LureForm({ open, onOpenChange, onSubmit, initial, loadin
             </div>
             <div className="space-y-1.5">
               <Label>Date Acquired</Label>
-              <Input className="bg-muted" type="date" value={form.date_acquired || ""} onChange={(e) => set("date_acquired", e.target.value)} />
+              <Input className="bg-muted text-left" type="date" value={form.date_acquired || ""} onChange={(e) => set("date_acquired", e.target.value)} />
             </div>
           </div>
           <div className="space-y-1.5">

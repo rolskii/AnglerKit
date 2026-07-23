@@ -212,7 +212,7 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
              </div>
              <div className="space-y-1.5">
                <Label>Date Acquired</Label>
-               <Input className="bg-muted" type="date" value={form.date_acquired || ""} onChange={(e) => set("date_acquired", e.target.value)} />
+               <Input className="bg-muted text-left" type="date" value={form.date_acquired || ""} onChange={(e) => set("date_acquired", e.target.value)} />
              </div>
              <div className="space-y-1.5 col-span-2">
               <Label>Notes</Label>
