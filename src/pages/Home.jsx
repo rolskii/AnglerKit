@@ -344,7 +344,7 @@ export default function Home() {
             <div className="flex items-start justify-end">
               {moonPhase && <MoonPhaseSymbol phase={moonPhase} className="w-12 h-12" />}
             </div>
-            <div className="flex items-start justify-end pr-2 -mt-2">
+            <div className="flex items-start justify-end pr-2">
               {weatherInfo && (
                 <WeatherGlyph code={weatherInfo.code} isNight={weatherInfo.isNight} animated className="w-16 h-20" />
               )}
