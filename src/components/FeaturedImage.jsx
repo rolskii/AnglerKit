@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { base44 } from "@/api/base44Client";
 
@@ -136,7 +135,7 @@ export default function FeaturedImage() {
 
   return (
     <div className="space-y-3">
-      <Link to={featured.link || "/lines"}>
+      <button type="button" onClick={() => loadFeatured(true)} className="block w-full text-left">
         <Card className="rounded-2xl border-0 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200 cursor-pointer bg-card">
           <div className="relative aspect-square bg-muted">
             <img
@@ -158,7 +157,7 @@ export default function FeaturedImage() {
             </div>
           </div>
         </Card>
-      </Link>
+      </button>
     </div>
   );
 }
