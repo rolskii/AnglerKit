@@ -8,16 +8,19 @@ const SITE_LIST_URL = 'https://dd.weather.gc.ca/today/citypage_weather/docs/site
 const WEATHER_BASE = 'https://dd.weather.gc.ca/today/citypage_weather';
 
 // EC icon code → WMO weather code (used by frontend WeatherGlyph)
+// "Chance of thunderstorm" risk codes (9, 19, 39, 46, 47, 48) map to their
+// base sky condition (Partly Cloudy) rather than WMO 95 — the thunderstorm
+// risk is conveyed in the EC text summary, not as a full thunderstorm icon.
 const ecIconToWMO = {
   0: 0, 1: 1, 2: 2, 3: 2, 4: 2, 5: 1,
-  6: 80, 7: 85, 8: 71, 9: 95,
+  6: 80, 7: 85, 8: 71, 9: 2,
   10: 3, 11: 3, 12: 63, 13: 65, 14: 61,
-  15: 85, 16: 71, 17: 73, 18: 75, 19: 95,
+  15: 85, 16: 71, 17: 73, 18: 75, 19: 2,
   22: 2, 23: 45, 24: 45, 27: 75, 28: 53,
   29: 3, 30: 0, 31: 1, 32: 2, 33: 3,
   34: 2, 35: 1, 36: 80, 37: 85, 38: 71,
-  39: 95, 40: 75, 43: 3, 44: 45, 46: 96,
-  47: 95, 48: 95,
+  39: 2, 40: 75, 43: 3, 44: 45, 46: 2,
+  47: 2, 48: 2,
 };
 
 function haversine(lat1, lon1, lat2, lon2) {
@@ -885,28 +888,6 @@ Deno.serve(async (req) => {
           if (ecData.current.uv_index != null) weatherData.current.uv_index = ecData.current.uv_index;
           if (ecData.current.uv_category) weatherData.current.uv_category = ecData.current.uv_category;
         }
-
-        // Override hourly weather codes for thunderstorm risk mentioned in EC night text summaries
-        const tzOffsetHours = tzOffset != null ? -tzOffset / 60 : 0;
-        weatherData.hourly.time.forEach((t, idx) => {
-          const hourDate = new Date(t);
-          const localTime = new Date(hourDate.getTime() + tzOffsetHours * 3600000);
-          const localHour = localTime.getHours();
-          if (localHour < 8 || localHour >= 20) {
-            const nightDate = new Date(localTime);
-            if (localHour >= 20) {
-              nightDate.setDate(nightDate.getDate() + 1);
-            }
-            const nightDateStr = `${nightDate.getFullYear()}-${String(nightDate.getMonth() + 1).padStart(2, '0')}-${String(nightDate.getDate()).padStart(2, '0')}`;
-            const nightIdx = weatherData.daily.time.indexOf(nightDateStr);
-            if (nightIdx !== -1) {
-              const nightText = (weatherData.daily.night_text_summary?.[nightIdx] || '').toLowerCase();
-              if (nightText.includes('thunderstorm')) {
-                weatherData.hourly.weather_code[idx] = 95;
-              }
-            }
-          }
-        });
 
         // AQHI for Ontario only
         if (site.province === 'ON') {
