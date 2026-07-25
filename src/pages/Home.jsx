@@ -183,6 +183,9 @@ export default function Home() {
     const tempUnit = localStorage.getItem("weatherTempUnit") || "celsius";
     await fetchWeather(coords, tempUnit);
     await Promise.all([fetchGearCount(), fetchLastCatch(), fetchMapStats()]);
+    // Pick a new featured photo on manual refresh
+    localStorage.removeItem("featuredImageDaily");
+    window.dispatchEvent(new Event("featured-image-changed"));
   };
   useEffect(() => { refreshData(); }, []);
   useEffect(() => {

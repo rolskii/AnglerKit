@@ -73,13 +73,13 @@ export default function FeaturedImage() {
     return allImages;
   };
 
-  const loadFeatured = async () => {
+  const loadFeatured = async (forceNew = false) => {
     setLoading(true);
     const isExcluded = (img) => img && img.link === "/lines";
 
     try {
       const userStored = localStorage.getItem("featuredImageUser");
-      if (userStored) {
+      if (userStored && !forceNew) {
         const parsed = JSON.parse(userStored);
         if (!isExcluded(parsed)) {
           setFeatured(parsed);
@@ -91,15 +91,17 @@ export default function FeaturedImage() {
     } catch {}
 
     try {
-      const dailyStored = localStorage.getItem("featuredImageDaily");
-      if (dailyStored) {
-        const parsed = JSON.parse(dailyStored);
-        if (parsed.date === todayStr() && parsed.image && !isExcluded(parsed.image)) {
-          setFeatured(parsed.image);
-          setLoading(false);
-          return;
+      if (!forceNew) {
+        const dailyStored = localStorage.getItem("featuredImageDaily");
+        if (dailyStored) {
+          const parsed = JSON.parse(dailyStored);
+          if (parsed.date === todayStr() && parsed.image && !isExcluded(parsed.image)) {
+            setFeatured(parsed.image);
+            setLoading(false);
+            return;
+          }
+          localStorage.removeItem("featuredImageDaily");
         }
-        localStorage.removeItem("featuredImageDaily");
       }
       const allImages = await fetchAllGearImages();
       if (allImages.length === 0) { setLoading(false); return; }
@@ -113,7 +115,7 @@ export default function FeaturedImage() {
 
   useEffect(() => {
     loadFeatured();
-    const onChanged = () => loadFeatured();
+    const onChanged = () => loadFeatured(true);
     window.addEventListener("featured-image-changed", onChanged);
     window.addEventListener("storage", onChanged);
     return () => {
