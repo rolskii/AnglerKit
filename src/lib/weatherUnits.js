@@ -38,3 +38,32 @@ export const formatVisibility = (km, unit) => {
     ? `${(km / 1.60934).toFixed(1)}mi`
     : `${km.toFixed(1)}km`;
 };
+
+// Maps a WMO weather code to a short text description.
+export const getWeatherDescription = (code) => {
+  const codes = {
+    0: 'Clear', 1: 'Mostly Clear', 2: 'Partly Cloudy', 3: 'Cloudy',
+    45: 'Foggy', 48: 'Foggy', 51: 'Light Drizzle', 53: 'Drizzle',
+    55: 'Heavy Drizzle', 61: 'Light Rain', 63: 'Rain', 65: 'Heavy Rain',
+    71: 'Light Snow', 73: 'Snow', 75: 'Heavy Snow',
+    80: 'Light Showers', 81: 'Showers', 82: 'Heavy Showers',
+    85: 'Light Snow Showers', 86: 'Snow Showers',
+    95: 'Thunderstorm', 96: 'Thunderstorm with Hail', 99: 'Thunderstorm with Hail',
+  };
+  return codes[code] || 'Unknown';
+};
+
+// Reconciles the EC condition text with the WMO weather code so the
+// description matches the icon. EC "thunderstorm risk" icon codes map to
+// WMO 95-99, but the observed condition text may not mention thunder —
+// this appends a thunderstorm note when the icon indicates one.
+export const getConditionText = (condition, code) => {
+  if (!condition) return getWeatherDescription(code);
+  const lower = condition.toLowerCase();
+  if (code >= 95 && code <= 99 && !lower.includes('thunder')) {
+    return code >= 96
+      ? `${condition} · Thunderstorm with Hail`
+      : `${condition} · Thunderstorm Risk`;
+  }
+  return condition;
+};

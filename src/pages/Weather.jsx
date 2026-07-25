@@ -13,7 +13,7 @@ import WeatherGlyph from '@/components/weather/WeatherGlyph';
 import ShareStatusButton from '@/components/ShareStatusButton';
 import AlertColorSymbols from '@/components/weather/AlertColorSymbols';
 import AirQualityCard from '@/components/weather/AirQualityCard';
-import { formatTemp, formatWind, formatPrecip, formatPressure, formatVisibility } from '@/lib/weatherUnits';
+import { formatTemp, formatWind, formatPrecip, formatPressure, formatVisibility, getConditionText } from '@/lib/weatherUnits';
 import PullToRefresh from '@/components/PullToRefresh';
 import { useAutoRefresh } from '@/hooks/useAutoRefresh';
 import { useUnits } from '@/lib/unitsContext';
@@ -358,7 +358,7 @@ export default function Weather() {
                 <div className="flex items-center gap-2">
                    <div>
                      <p className="text-6xl font-bold text-primary leading-none">{formatTemp(current.temperature_2m, tempUnit)}°</p>
-                     <p className="text-sm font-medium text-muted-foreground mt-0.5">{current.condition || getWeatherDescription(current.weather_code)}{current.apparent_temperature != null && Math.round(current.apparent_temperature) !== Math.round(current.temperature_2m) ? ` · Feels ${formatTemp(current.apparent_temperature, tempUnit)}°` : ''}</p>
+                     <p className="text-sm font-medium text-muted-foreground mt-0.5">{getConditionText(current.condition, current.weather_code)}{current.apparent_temperature != null && Math.round(current.apparent_temperature) !== Math.round(current.temperature_2m) ? ` · Feels ${formatTemp(current.apparent_temperature, tempUnit)}°` : ''}</p>
                    </div>
                    <WeatherGlyph code={current.weather_code} isNight={isNight()} darkOutline animated className="w-16 h-20 shrink-0" />
                  </div>
@@ -444,7 +444,7 @@ export default function Weather() {
                 <div className="bg-secondary rounded-xl flex items-center gap-2 p-2 overflow-hidden">
                   {(() => { const Icon = getConditionIcon(current.weather_code, isNight()); return <Icon className="w-7 h-7 shrink-0 text-primary" />; })()}
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold leading-tight truncate">{current.condition || getWeatherDescription(current.weather_code)}</p>
+                    <p className="text-sm font-semibold leading-tight truncate">{getConditionText(current.condition, current.weather_code)}</p>
                     <span className="text-xs text-muted-foreground leading-tight">Condition</span>
                   </div>
                 </div>
@@ -571,7 +571,7 @@ export default function Weather() {
             title={`Weather — ${formatDate(selectedDate)}`}
             text={[
               `📍 ${location}`,
-              `${current.condition || getWeatherDescription(current.weather_code)}`,
+              `${getConditionText(current.condition, current.weather_code)}`,
               `🌡️ Temperature: ${formatTemp(current.temperature_2m, tempUnit)}° (feels like ${formatTemp(current.apparent_temperature, tempUnit)}°)`,
               `📊 Pressure: ${formatPressure(current.pressure, tempUnit)} (${current.pressure_tendency || '—'})`,
               `💧 Dew Point: ${formatTemp(current.dewpoint, tempUnit)}°`,
