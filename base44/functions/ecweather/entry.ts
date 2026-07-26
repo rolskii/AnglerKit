@@ -383,6 +383,7 @@ function parseWeatherXml(xmlText, localDate, tzOffset) {
     precipitation_probability: [],
     precipitation_mm: [],
     wind_speed_10m: [],
+    condition: [],
   };
 
   const nowHour = new Date();
@@ -420,6 +421,7 @@ function parseWeatherXml(xmlText, localDate, tzOffset) {
     hourly.precipitation_probability.push(dayPop);
     hourly.precipitation_mm.push(0);
     hourly.wind_speed_10m.push(windSpeed);
+    hourly.condition.push(null);
   }
 
   // --- Weather alerts/warnings ---
@@ -715,6 +717,7 @@ async function fetchWeatherKitData(lat, lon) {
     precipitation_probability: [],
     precipitation_mm: [],
     wind_speed_10m: [],
+    condition: [],
   };
   const nowHour = new Date();
   nowHour.setMinutes(0, 0, 0);
@@ -739,12 +742,14 @@ async function fetchWeatherKitData(lat, lon) {
       hourly.precipitation_probability.push(Math.round(bestMatch.precipitationChance * 100));
       hourly.precipitation_mm.push(bestMatch.precipitationAmount ?? 0);
       hourly.wind_speed_10m.push(bestMatch.windSpeed ?? 0);
+      hourly.condition.push(null);
     } else {
       hourly.temperature_2m.push(0);
       hourly.weather_code.push(3);
       hourly.precipitation_probability.push(0);
       hourly.precipitation_mm.push(0);
       hourly.wind_speed_10m.push(0);
+      hourly.condition.push(null);
     }
   }
 
@@ -829,6 +834,7 @@ Deno.serve(async (req) => {
           const newHourly = {
             time: [], temperature_2m: [], weather_code: [],
             precipitation_probability: [], precipitation_mm: [], wind_speed_10m: [],
+            condition: [],
           };
           const nowHour = new Date();
           nowHour.setMinutes(0, 0, 0);
@@ -849,6 +855,7 @@ Deno.serve(async (req) => {
               newHourly.precipitation_probability.push(ecMatch.lop ?? 0);
               newHourly.precipitation_mm.push(wkMatch?.precipitationAmount ?? 0);
               newHourly.wind_speed_10m.push(ecMatch.windSpeed ?? 0);
+              newHourly.condition.push(ecMatch.condition || null);
             } else if (wkMatch) {
               // Beyond EC's ~24h range — fall back to WeatherKit
               newHourly.temperature_2m.push(
@@ -858,6 +865,7 @@ Deno.serve(async (req) => {
               newHourly.precipitation_probability.push(Math.round((wkMatch.precipitationChance ?? 0) * 100));
               newHourly.precipitation_mm.push(wkMatch.precipitationAmount ?? 0);
               newHourly.wind_speed_10m.push(wkMatch.windSpeed ?? 0);
+              newHourly.condition.push(null);
             } else {
               // Neither source has data this far out — hold the last known conditions
               newHourly.temperature_2m.push(weatherData.current.temperature_2m);
@@ -865,6 +873,7 @@ Deno.serve(async (req) => {
               newHourly.precipitation_probability.push(0);
               newHourly.precipitation_mm.push(0);
               newHourly.wind_speed_10m.push(weatherData.current.wind_speed_10m);
+              newHourly.condition.push(null);
             }
           }
           weatherData.hourly = newHourly;

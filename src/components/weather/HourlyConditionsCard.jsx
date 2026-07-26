@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Cloud, CloudRain, Sun, Moon, Droplets, Wind } from 'lucide-react';
+import { Cloud, CloudRain, Sun, Moon, Droplets, Wind, Zap } from 'lucide-react';
 import WeatherGlyph from '@/components/weather/WeatherGlyph';
 import { formatTemp, formatWind, formatPrecip } from '@/lib/weatherUnits';
 
@@ -125,6 +125,12 @@ export default function HourlyConditionsCard({ hourly, selectedDate, daily, temp
                       <p className="text-xs text-muted-foreground flex items-center gap-0.5">
                         <Droplets className="w-3 h-3" />
                         0%
+                      </p>
+                    )}
+                    {hourly.condition?.[hIdx]?.toLowerCase().includes('thunder') && (
+                      <p className="text-[10px] text-amber-500 font-semibold flex items-center gap-0.5">
+                        <Zap className="w-2.5 h-2.5" />
+                        T-storm
                       </p>
                     )}
                     <p className="text-[10px] text-muted-foreground flex items-center gap-0.5">
