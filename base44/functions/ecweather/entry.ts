@@ -299,7 +299,10 @@ function parseWeatherXml(xmlText, localDate, tzOffset) {
       dayPrecip = f.precipAmount || 0;
       nightTextSummary = f.textSummary;
       dayTextSummary = null; // don't use night text as day summary — frontend will generate one
-      highTemp = lowTemp; // use tonight's low as the high for today's partial entry
+      // The day's high has already been observed — use the current temperature
+      // as the high (it's always >= tonight's low), instead of incorrectly
+      // showing "highs near [low]°" in the forecast summary.
+      highTemp = Math.max(temperature, lowTemp);
 
       const date = new Date(today);
       const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
