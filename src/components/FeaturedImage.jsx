@@ -8,6 +8,7 @@ const entityRoutes = {
   Rod: "/rods",
   Lure: "/lures",
   MiscItem: "/misc",
+  Catch: "/catches",
 };
 
 const entityLabels = {
@@ -16,6 +17,7 @@ const entityLabels = {
   Rod: "Rod",
   Lure: "Lure",
   MiscItem: "Misc",
+  Catch: "Fish Log",
 };
 
 const todayStr = () => {
@@ -48,8 +50,33 @@ export default function FeaturedImage() {
     }
   };
 
+  const labelFor = (type, item) => {
+    const join = (parts) => parts.filter(Boolean).join(" ").trim();
+    if (type === "Rod") {
+      const parts = [item.brand, item.model, item.length];
+      if (item.line_weight) parts.push(`${item.line_weight}wt`);
+      return join(parts) || item.name || "Rod";
+    }
+    if (type === "Reel") {
+      return join([item.brand, item.model, item.size]) || item.name || "Reel";
+    }
+    if (type === "Lure") {
+      return join([item.brand, item.model, item.size, item.colour]) || item.name || "Lure";
+    }
+    if (type === "MiscItem") {
+      return join([item.brand, item.model]) || item.name || "Misc";
+    }
+    if (type === "Catch") {
+      const parts = [item.species];
+      if (item.length) parts.push(`${item.length}"`);
+      if (item.location) parts.push(item.location);
+      return join(parts) || "Catch";
+    }
+    return item.name || type;
+  };
+
   const fetchAllGearImages = async () => {
-    const entityTypes = ["Reel", "Rod", "Lure", "MiscItem"];
+    const entityTypes = ["Reel", "Rod", "Lure", "MiscItem", "Catch"];
     const allImages = [];
     for (const type of entityTypes) {
       try {
@@ -59,9 +86,7 @@ export default function FeaturedImage() {
           for (const img of imgs) {
             allImages.push({
               image_url: img,
-              label: type === "FlyLine"
-                ? `${item.brand || ""} ${item.model || ""}`.trim() || "Line"
-                : (item.name || type),
+              label: labelFor(type, item),
               subtitle: entityLabels[type],
               link: entityRoutes[type],
             });
