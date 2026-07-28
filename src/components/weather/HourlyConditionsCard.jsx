@@ -128,7 +128,7 @@ export default function HourlyConditionsCard({ hourly, selectedDate, daily, temp
                       </p>
                     )}
                     {hourly.condition?.[hIdx]?.toLowerCase().includes('thunder') && (
-                      <p className="text-[10px] text-amber-500 font-semibold flex items-center gap-0.5">
+                      <p className="text-[10px] text-amber-500 font-semibold flex items-center gap-0.5 whitespace-nowrap">
                         <Zap className="w-2.5 h-2.5" />
                         T-storm
                       </p>
