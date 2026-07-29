@@ -103,7 +103,7 @@ export default function HourlyConditionsCard({ hourly, selectedDate, daily, temp
               return (
                 <div
                   key={hIdx}
-                  className="relative flex flex-col items-center gap-0.5 w-16 p-2 shrink-0 border-r border-border last:border-r-0 overflow-hidden"
+                  className="relative flex flex-col items-center gap-0.5 min-w-16 p-2 shrink-0 border-r border-border last:border-r-0 overflow-hidden"
                   style={{ scrollSnapAlign: 'start' }}
                 >
                   {hasRain && fillHeight > 0 && (
