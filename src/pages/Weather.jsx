@@ -566,7 +566,7 @@ export default function Weather() {
       </div>
         {/* Data attribution */}
         <p className="text-[11px] text-muted-foreground text-center px-4">
-          Weather data provided by Environment Canada and Apple WeatherKit.
+          Canadian weather data is provided by Environment Canada and Apple WeatherKit. U.S. and international weather data is provided by Apple WeatherKit.
         </p>
         {/* Share */}
         <div className="px-1">
