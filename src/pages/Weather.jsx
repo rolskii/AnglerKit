@@ -564,6 +564,10 @@ export default function Weather() {
           </CardContent>
         </Card>
       </div>
+        {/* Data attribution */}
+        <p className="text-[11px] text-muted-foreground text-center px-4">
+          Weather data provided by Environment Canada and Apple WeatherKit.
+        </p>
         {/* Share */}
         <div className="px-1">
           <ShareStatusButton
