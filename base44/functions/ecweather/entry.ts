@@ -227,6 +227,27 @@ function parseWeatherXml(xmlText, localDate, tzOffset) {
     }
   }
 
+  // Observation timestamp (UTC) from <currentConditions><dateTime name="observation">.
+  // The handler uses this to interpolate the displayed current temperature
+  // toward the next hour's forecast, so the once-per-hour observation refresh
+  // doesn't visibly snap (e.g. 24°→27°).
+  let observationTime = null;
+  {
+    const re = /<dateTime[^>]*name="observation"[^>]*>([\s\S]*?)<\/dateTime>/g;
+    const obsMatches = [];
+    let _m;
+    while ((_m = re.exec(cc)) !== null) {
+      const offsetMatch = _m[0].match(/UTCOffset="([^"]*)"/);
+      obsMatches.push({ offset: offsetMatch ? offsetMatch[1] : null, ts: getTagText(_m[1], 'timeStamp') });
+    }
+    const utcMatch = obsMatches.find(x => x.offset === '0' && x.ts);
+    const picked = utcMatch || obsMatches.find(x => x.ts);
+    if (picked && picked.ts) {
+      const iso = parseECTimestamp(picked.ts);
+      if (iso) observationTime = new Date(iso).getTime();
+    }
+  }
+
   let apparentTemp = temperature;
   if (windChill) apparentTemp = parseFloat(windChill);
   else if (humidexVal) apparentTemp = parseFloat(humidexVal);
@@ -442,7 +463,7 @@ function parseWeatherXml(xmlText, localDate, tzOffset) {
     }
   }
 
-  return { current, daily, hourly, alerts };
+  return { current, daily, hourly, alerts, observationTime };
 }
 
 // --- Parse EC hourly forecasts from <hourlyForecastGroup> ---
@@ -877,6 +898,34 @@ Deno.serve(async (req) => {
             }
           }
           weatherData.hourly = newHourly;
+
+          // --- Interpolate the displayed current temperature toward the next
+          // hour's forecast, based on minutes elapsed since the EC observation.
+          // EC reports a once-per-hour observation; without blending, the
+          // displayed "current" snaps when each new observation arrives (often
+          // a 2-3°C jump). Drifting toward the next hour's forecast shrinks
+          // that snap while keeping the fresh observation as the anchor at the
+          // top of each hour.
+          const obsTimeMs = ecData.observationTime;
+          if (ecUsable && obsTimeMs && ecHourlyForecasts.length > 0) {
+            const obsTemp = ecData.current.temperature_2m;
+            const nextObsTs = obsTimeMs + 3600000; // the upcoming observation hour
+            let nextForecastTemp = null;
+            let minDiff = Infinity;
+            for (const f of ecHourlyForecasts) {
+              const diff = Math.abs(f.timestamp - nextObsTs);
+              if (diff < minDiff) { minDiff = diff; nextForecastTemp = f.temperature; }
+            }
+            if (nextForecastTemp != null && minDiff < 3600000) {
+              const blend = Math.min(1, Math.max(0, (Date.now() - obsTimeMs) / 3600000));
+              const blended = obsTemp + (nextForecastTemp - obsTemp) * blend;
+              const blendedRounded = Math.round(blended * 10) / 10;
+              weatherData.current.temperature_2m = blendedRounded;
+              if (weatherData.hourly.temperature_2m.length > 0) {
+                weatherData.hourly.temperature_2m[0] = blendedRounded;
+              }
+            }
+          }
         }
 
         // Use EC weather alerts (official Environment Canada warnings)
