@@ -79,8 +79,8 @@ const items = [
 ];
 const CONDITIONS_ITEMS = [
   { to: "/moon", label: "Moon", icon: MoonIcon, tint: "purple" },
-  { to: "/weather", label: "Weather", icon: Cloud, tint: "teal" },
   { to: "/river", label: "River", icon: Waves, tint: "cyan" },
+  { to: "/weather", label: "Weather", icon: Cloud, tint: "teal" },
 ];
 const GEAR_ITEMS = [
   { to: "/lines", label: "Lines", icon: LinesIcon, tint: "blue" },
@@ -370,7 +370,7 @@ export default function Home() {
               <div className="space-y-0.5 md:space-y-1">
                 <h2 className="text-[12.5px] md:text-[22.5px] font-heading font-semibold tracking-tight leading-tight">{item.title}</h2>
                 {isConditions ? (
-                  <p className="text-[10px] md:text-sm text-muted-foreground leading-tight">Moon · Weather · River</p>
+                  <p className="text-[10px] md:text-sm text-muted-foreground leading-tight">Moon · River · Weather</p>
                 ) : Array.isArray(desc) ? (
                   <p className="text-[10px] md:text-sm text-muted-foreground leading-tight">{desc.join(", ")}</p>
                 ) : desc ? (
