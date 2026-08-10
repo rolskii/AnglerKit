@@ -964,6 +964,18 @@ Deno.serve(async (req) => {
       }
     }
 
+    // --- Align the displayed current condition with the current hour's
+    // hourly forecast slot, so the main icon/text matches the hourly
+    // card's first entry. EC's <currentConditions> observation can lag the
+    // hourly forecast (e.g. reporting "Clear" while the current-hour
+    // forecast already shows showers/thunderstorms), which makes the hero
+    // icon and the hourly disagree.
+    if (weatherData.hourly?.weather_code?.length > 0) {
+      weatherData.current.weather_code = weatherData.hourly.weather_code[0];
+      const hour0Condition = weatherData.hourly.condition?.[0];
+      if (hour0Condition) weatherData.current.condition = hour0Condition;
+    }
+
     if (unit === 'fahrenheit') {
       weatherData.daily.text_summary = (weatherData.daily.text_summary || []).map(convertSummaryToImperial);
       weatherData.daily.night_text_summary = (weatherData.daily.night_text_summary || []).map(convertSummaryToImperial);
