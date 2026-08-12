@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Route, MapPin, Calendar, Clock, Navigation, Trash2, Footprints } from 'lucide-react';
+import { Route, MapPin, Calendar, Clock, Navigation, Trash2, Footprints, Ruler, Hexagon } from 'lucide-react';
 import { formatDistance, isImperial } from '@/lib/sphericalArea';
 
 const formatDuration = (sec) => {
@@ -80,6 +80,16 @@ export default function RouteInfoDialog({ open, onOpenChange, route, onSaveName,
               <Footprints className="w-4 h-4 text-muted-foreground mb-1" />
               <span className="text-sm font-semibold">{route.track?.length || 0}</span>
               <span className="text-xs text-muted-foreground">points</span>
+            </div>
+            <div className="flex flex-col items-center p-2 rounded-lg bg-muted">
+              <Ruler className="w-4 h-4 text-muted-foreground mb-1" />
+              <span className="text-sm font-semibold">{route.measurements?.length || 0}</span>
+              <span className="text-xs text-muted-foreground">measures</span>
+            </div>
+            <div className="flex flex-col items-center p-2 rounded-lg bg-muted">
+              <Hexagon className="w-4 h-4 text-muted-foreground mb-1" />
+              <span className="text-sm font-semibold">{route.areas?.length || 0}</span>
+              <span className="text-xs text-muted-foreground">areas</span>
             </div>
           </div>
           {route.date && (

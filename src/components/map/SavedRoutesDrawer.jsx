@@ -1,6 +1,6 @@
 import React from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { MapPin, Route, Trash2, Calendar, Navigation } from 'lucide-react';
+import { MapPin, Route, Trash2, Calendar, Navigation, Ruler, Hexagon } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import FishIcon from '@/components/FishIcon';
 import { formatDistance, isImperial } from '@/lib/sphericalArea';
@@ -103,6 +103,18 @@ export default function SavedRoutesDrawer({ open, onOpenChange, routes, onLoad, 
                             <span className="flex items-center gap-0.5">
                               <MapPin className="w-3 h-3" />
                               {r.pins?.length || 0}
+                            </span>
+                          )}
+                          {(r.measurements?.length || 0) > 0 && (
+                            <span className="flex items-center gap-0.5">
+                              <Ruler className="w-3 h-3" />
+                              {r.measurements?.length || 0}
+                            </span>
+                          )}
+                          {(r.areas?.length || 0) > 0 && (
+                            <span className="flex items-center gap-0.5">
+                              <Hexagon className="w-3 h-3" />
+                              {r.areas?.length || 0}
                             </span>
                           )}
                         </div>

@@ -478,16 +478,38 @@ export default function MapView() {
     setMeasurePoints([]);
   }, []);
 
-  const handleMeasureSave = useCallback(() => {
+  const handleMeasureSave = useCallback(async () => {
     if (measurePoints.length < 2) return;
     const dist = measurePoints.reduce((sum, p, i) => {
       if (i === 0) return 0;
       const prev = measurePoints[i - 1];
       return sum + haversine(prev.lat, prev.lon, p.lat, p.lon);
     }, 0);
-    setSavedMeasurements((prev) => [...prev, { points: measurePoints, distance_km: Math.round(dist * 100) / 100 }]);
+    const newMeasurement = { points: measurePoints, distance_km: Math.round(dist * 100) / 100 };
+    const updatedMeasurements = [...savedMeasurements, newMeasurement];
+    setSavedMeasurements(updatedMeasurements);
     setMeasurePoints([]);
-  }, [measurePoints]);
+    try {
+      const today = new Date();
+      const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+      if (loadedRouteId) {
+        await base44.entities.MapCourse.update(loadedRouteId, { measurements: updatedMeasurements });
+      } else {
+        const now = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        const newRecord = await base44.entities.MapCourse.create({
+          name: `Measurement — ${now}`,
+          measurements: updatedMeasurements,
+          date: dateStr,
+        });
+        setLoadedRouteId(newRecord.id);
+      }
+      await loadRoutes();
+      toast({ title: 'Measurement saved', description: `Saved to your routes folder.` });
+    } catch (e) {
+      console.error('Failed to persist measurement:', e);
+      toast({ title: 'Failed to save measurement', description: e?.message || 'Unknown error', variant: 'destructive' });
+    }
+  }, [measurePoints, savedMeasurements, loadedRouteId, loadRoutes, toast]);
 
   // Area handlers
   const handleToggleArea = useCallback(() => {
@@ -510,12 +532,34 @@ export default function MapView() {
     setAreaPoints([]);
   }, []);
 
-  const handleAreaSave = useCallback(() => {
+  const handleAreaSave = useCallback(async () => {
     if (areaPoints.length < 3) return;
-    const areaM2 = computeSphericalArea(areaPoints);
-    setSavedAreas((prev) => [...prev, { points: areaPoints, area_m2: Math.round(areaM2) }]);
+    const areaM2Val = computeSphericalArea(areaPoints);
+    const newArea = { points: areaPoints, area_m2: Math.round(areaM2Val) };
+    const updatedAreas = [...savedAreas, newArea];
+    setSavedAreas(updatedAreas);
     setAreaPoints([]);
-  }, [areaPoints]);
+    try {
+      const today = new Date();
+      const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+      if (loadedRouteId) {
+        await base44.entities.MapCourse.update(loadedRouteId, { areas: updatedAreas });
+      } else {
+        const now = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        const newRecord = await base44.entities.MapCourse.create({
+          name: `Area — ${now}`,
+          areas: updatedAreas,
+          date: dateStr,
+        });
+        setLoadedRouteId(newRecord.id);
+      }
+      await loadRoutes();
+      toast({ title: 'Area saved', description: `Saved to your routes folder.` });
+    } catch (e) {
+      console.error('Failed to persist area:', e);
+      toast({ title: 'Failed to save area', description: e?.message || 'Unknown error', variant: 'destructive' });
+    }
+  }, [areaPoints, savedAreas, loadedRouteId, loadRoutes, toast]);
 
   // Drawing label/description handlers
   const handleDrawingClick = useCallback((idx) => {
@@ -971,6 +1015,7 @@ export default function MapView() {
   const hasPins = pins.length > 0;
   const hasDrawings = drawings.length > 0;
   const hasAreas = savedAreas.length > 0 || areaPoints.length > 0;
+  const hasMeasurements = savedMeasurements.length > 0 || measurePoints.length >= 2;
   const measureTotalKm = measurePoints.reduce((sum, p, i) => {
     if (i === 0) return 0;
     const prev = measurePoints[i - 1];
@@ -1419,6 +1464,7 @@ export default function MapView() {
         hasPins={hasPins}
         hasDrawings={hasDrawings}
         hasAreas={hasAreas}
+        hasMeasurements={hasMeasurements}
         pinMode={pinMode}
         onStart={startTracking}
         onPause={pauseTracking}
