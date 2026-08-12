@@ -673,9 +673,13 @@ export default function MapView() {
     setIsPaused(false);
     setRoutesOpen(false);
     setLoadedRouteId(route.id);
+    const firstMeasurementPt = route.measurements?.[0]?.points?.[0];
+    const firstAreaPt = route.areas?.[0]?.points?.[0];
     const target = targetCoords ||
       (route.track && route.track.length > 0 ? [route.track[0].lat, route.track[0].lon] : null) ||
-      (route.pins && route.pins.length > 0 ? [route.pins[0].lat, route.pins[0].lon] : null);
+      (route.pins && route.pins.length > 0 ? [route.pins[0].lat, route.pins[0].lon] : null) ||
+      (firstMeasurementPt ? [firstMeasurementPt.lat, firstMeasurementPt.lon] : null) ||
+      (firstAreaPt ? [firstAreaPt.lat, firstAreaPt.lon] : null);
     if (target) {
       setRecenterTarget(target);
       setRecenterTrigger((t) => t + 1);
