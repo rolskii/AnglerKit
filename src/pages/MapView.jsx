@@ -69,6 +69,7 @@ export default function MapView() {
   const [durationSec, setDurationSec] = useState(0);
   const [recenterTrigger, setRecenterTrigger] = useState(0);
   const [recenterTarget, setRecenterTarget] = useState(null);
+  const [recenterSpan, setRecenterSpan] = useState(0.01);
   const [pinDialogOpen, setPinDialogOpen] = useState(false);
   const [pendingPin, setPendingPin] = useState(null);
   const [editingPinIdx, setEditingPinIdx] = useState(null);
@@ -673,17 +674,43 @@ export default function MapView() {
     setIsPaused(false);
     setRoutesOpen(false);
     setLoadedRouteId(route.id);
-    const firstMeasurementPt = route.measurements?.[0]?.points?.[0];
-    const firstAreaPt = route.areas?.[0]?.points?.[0];
-    const target = targetCoords ||
-      (route.track && route.track.length > 0 ? [route.track[0].lat, route.track[0].lon] : null) ||
-      (route.pins && route.pins.length > 0 ? [route.pins[0].lat, route.pins[0].lon] : null) ||
-      (firstMeasurementPt ? [firstMeasurementPt.lat, firstMeasurementPt.lon] : null) ||
-      (firstAreaPt ? [firstAreaPt.lat, firstAreaPt.lon] : null);
-    if (target) {
-      setRecenterTarget(target);
-      setRecenterTrigger((t) => t + 1);
+    // Gather every point available on the route to compute a bounding box
+    const allPts = [];
+    (route.track || []).forEach((p) => allPts.push(p));
+    (route.pins || []).forEach((p) => allPts.push(p));
+    (route.measurements || []).forEach((m) => (m.points || []).forEach((p) => allPts.push(p)));
+    (route.areas || []).forEach((a) => (a.points || []).forEach((p) => allPts.push(p)));
+
+    if (allPts.length === 0 && !targetCoords) return;
+
+    let center;
+    if (targetCoords) {
+      center = targetCoords;
+    } else if (allPts.length === 1) {
+      center = [allPts[0].lat, allPts[0].lon];
+    } else {
+      const lats = allPts.map((p) => p.lat);
+      const lons = allPts.map((p) => p.lon);
+      center = [
+        (Math.min(...lats) + Math.max(...lats)) / 2,
+        (Math.min(...lons) + Math.max(...lons)) / 2,
+      ];
     }
+
+    // Span: bounding box with padding, clamped to a sane range
+    let span = 0.01;
+    if (allPts.length > 1) {
+      const lats = allPts.map((p) => p.lat);
+      const lons = allPts.map((p) => p.lon);
+      const latSpan = Math.max(...lats) - Math.min(...lats);
+      const lonSpan = Math.max(...lons) - Math.min(...lons);
+      span = Math.max(latSpan, lonSpan) * 2.2 || 0.01;
+      span = Math.min(Math.max(span, 0.005), 0.5);
+    }
+
+    setRecenterSpan(span);
+    setRecenterTarget(center);
+    setRecenterTrigger((t) => t + 1);
   }, []);
 
   const handleRouteDeleted = useCallback((id) => {
@@ -1013,7 +1040,16 @@ export default function MapView() {
     if (!mapReady || !mapRef.current || !recenterTarget) return;
     const coord = new mapkit.Coordinate(recenterTarget[0], recenterTarget[1]);
     mapRef.current.setCenterAnimated(coord);
-  }, [recenterTrigger, recenterTarget, mapReady]);
+    // Fit a region around the target so the map visibly navigates to it
+    try {
+      const span = recenterSpan || 0.01;
+      const region = new mapkit.CoordinateRegion(
+        new mapkit.Coordinate(recenterTarget[0] - span / 2, recenterTarget[1] - span / 2),
+        new mapkit.CoordinateSpan(span, span)
+      );
+      mapRef.current.setRegionAnimated(region);
+    } catch (e) {}
+  }, [recenterTrigger, recenterTarget, mapReady, recenterSpan]);
 
   const hasTrack = trackPoints.length > 0;
   const hasPins = pins.length > 0;
