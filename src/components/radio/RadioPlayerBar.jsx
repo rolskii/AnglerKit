@@ -1,7 +1,7 @@
 import React from 'react';
 import { Radio, Loader2, Play, Pause, Volume2, VolumeX, X } from 'lucide-react';
 
-const GREEN = '#006b53';
+const GREEN = '#1B754A';
 
 /**
  * Floating pill player bar shown when a station is loaded.

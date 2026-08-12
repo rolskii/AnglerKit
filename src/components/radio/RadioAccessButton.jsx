@@ -11,7 +11,7 @@ export default function RadioAccessButton({ active, onClick, className = '' }) {
       onClick={onClick}
       aria-label="Open radio"
       className={`relative shrink-0 w-9 h-9 rounded-full flex items-center justify-center shadow-sm transition-transform active:scale-90 ${className}`}
-      style={{ backgroundColor: '#006b53' }}
+      style={{ backgroundColor: '#1B754A' }}
     >
       <Radio className="w-[18px] h-[18px] text-white" strokeWidth={2.2} />
       {active && (
