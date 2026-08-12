@@ -1,28 +1,47 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 
 const SAVED_KEY = 'anglerkit_radio_saved';
-const RADIO_API = 'https://de1.api.radio-browser.info/json';
+const RG_API = 'https://radio.garden/api';
 
-// Location tag → search term used against the Radio Browser API.
+// Browseable city tags. Radio Garden's /search handles place + station names,
+// so each tag is simply the city name.
 export const LOCATION_TAGS = [
-  { label: 'Toronto', q: 'toronto' },
-  { label: 'New York', q: 'new york' },
-  { label: 'London', q: 'london' },
-  { label: 'Paris', q: 'paris' },
-  { label: 'Tokyo', q: 'tokyo' },
-  { label: 'Los Angeles', q: 'los angeles' },
+  { label: 'Toronto', q: 'Toronto' },
+  { label: 'New York', q: 'New York' },
+  { label: 'London', q: 'London' },
+  { label: 'Paris', q: 'Paris' },
+  { label: 'Tokyo', q: 'Tokyo' },
+  { label: 'Los Angeles', q: 'Los Angeles' },
 ];
 
-const normalize = (s) => ({
-  id: s.stationuuid,
-  name: (s.name || 'Unknown').trim(),
-  location: [s.state, s.country].filter(Boolean).join(', '),
-  url: s.url_resolved || s.url,
-  favicon: s.favicon || '',
-  bitrate: s.bitrate || 0,
-  codec: s.codec || '',
-  votes: s.votes || 0,
-});
+// Channel ID is the final path segment of a Radio Garden listen URL
+// (e.g. "/listen/680news/B3DfRJRH" → "B3DfRJRH").
+const channelIdFromUrl = (url) => {
+  if (!url) return '';
+  const parts = url.split('/').filter(Boolean);
+  return parts[parts.length - 1] || '';
+};
+
+const streamUrl = (channelId) =>
+  `${RG_API}/ara/content/listen/${channelId}/channel.mp3`;
+
+// Normalize a Radio Garden channel hit into the station shape used by the UI.
+const normalizeChannel = (page) => {
+  const id = channelIdFromUrl(page?.url);
+  if (!id) return null;
+  const place = page.place?.title;
+  const country = page.country?.title;
+  const location = page.subtitle || [place, country].filter(Boolean).join(', ');
+  return {
+    id,
+    name: (page.title || 'Unknown').trim(),
+    location,
+    url: streamUrl(id),
+    favicon: '',
+    website: page.website || '',
+    secure: page.secure !== false,
+  };
+};
 
 const loadSaved = () => {
   try {
@@ -35,7 +54,7 @@ const loadSaved = () => {
 
 /**
  * Encapsulates a single shared <audio> element plus radio state.
- * Streams are fetched live from the Radio Browser public API.
+ * Streams are played directly from Radio Garden's live listen endpoint.
  */
 export function useRadioPlayer() {
   const audioRef = useRef(null);
@@ -50,11 +69,11 @@ export function useRadioPlayer() {
   const [searching, setSearching] = useState(false);
   const [activeQuery, setActiveQuery] = useState('');
 
-  // Create the audio element once.
+  // Create the audio element once. No crossOrigin: cross-origin media plays
+  // without CORS as long as we don't read the audio data.
   useEffect(() => {
     const a = new Audio();
     a.preload = 'none';
-    a.crossOrigin = 'anonymous';
     audioRef.current = a;
     const onPlaying = () => { setPlaying(true); setLoading(false); setError(null); };
     const onPause = () => setPlaying(false);
@@ -74,15 +93,35 @@ export function useRadioPlayer() {
     };
   }, []);
 
-  // Keep volume in sync.
   useEffect(() => {
     if (audioRef.current) audioRef.current.volume = muted ? 0 : volume;
   }, [volume, muted]);
 
-  // Persist saved stations.
   useEffect(() => {
     try { localStorage.setItem(SAVED_KEY, JSON.stringify(saved)); } catch (e) {}
   }, [saved]);
+
+  // Run a Radio Garden search and return normalized channel stations.
+  const runSearch = useCallback(async (query) => {
+    const term = (query || '').trim();
+    if (!term) return [];
+    const res = await fetch(`${RG_API}/search?q=${encodeURIComponent(term)}`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    const hits = data?.hits?.hits || [];
+    const stations = [];
+    const seen = new Set();
+    hits.forEach((hit) => {
+      const src = hit?._source;
+      if (!src || src.type !== 'channel' || !src.page) return;
+      const station = normalizeChannel(src.page);
+      if (station && !seen.has(station.id)) {
+        seen.add(station.id);
+        stations.push(station);
+      }
+    });
+    return stations;
+  }, []);
 
   const play = useCallback((station) => {
     const a = audioRef.current;
@@ -132,52 +171,48 @@ export function useRadioPlayer() {
     setSearching(true);
     setActiveQuery(term);
     try {
-      const res = await fetch(`${RADIO_API}/stations/byname/${encodeURIComponent(term)}?limit=40&order=votes&reverse=true&hidebroken=true`);
-      const data = await res.json();
-      const norm = data
-        .map(normalize)
-        .filter((s) => s.url && /^https?:\/\//.test(s.url));
-      setResults(norm);
+      setResults(await runSearch(term));
     } catch (e) {
       setResults([]);
     } finally {
       setSearching(false);
     }
-  }, []);
+  }, [runSearch]);
 
   const searchByTag = useCallback(async (q) => {
     if (!q) return;
     setSearching(true);
     setActiveQuery(q);
     try {
-      const res = await fetch(`${RADIO_API}/stations/byname/${encodeURIComponent(q)}?limit=40&order=votes&reverse=true&hidebroken=true`);
-      const data = await res.json();
-      const norm = data.map(normalize).filter((s) => s.url && /^https?:\/\//.test(s.url));
-      setResults(norm);
+      setResults(await runSearch(q));
     } catch (e) {
       setResults([]);
     } finally {
       setSearching(false);
     }
-  }, []);
+  }, [runSearch]);
 
-  // Load popular stations the first time the panel opens.
+  // On first open, surface stations near the listener via Radio Garden's
+  // geo endpoint, falling back to Toronto.
   const loadDefaults = useCallback(async () => {
     setSearching(true);
     setActiveQuery('');
     try {
-      const res = await fetch(`${RADIO_API}/stations/topvote/30`);
-      const data = await res.json();
-      const norm = data
-        .map(normalize)
-        .filter((s) => s.url && s.url.startsWith('https://'));
-      setResults(norm);
+      let query = 'Toronto';
+      try {
+        const geoRes = await fetch(`${RG_API}/geo`);
+        if (geoRes.ok) {
+          const geo = await geoRes.json();
+          if (geo?.city) query = geo.city;
+        }
+      } catch (e) {}
+      setResults(await runSearch(query));
     } catch (e) {
       setResults([]);
     } finally {
       setSearching(false);
     }
-  }, []);
+  }, [runSearch]);
 
   return {
     current, playing, loading, error, volume, muted, saved, results, searching, activeQuery,
