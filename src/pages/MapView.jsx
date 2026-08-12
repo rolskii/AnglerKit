@@ -657,7 +657,7 @@ export default function MapView() {
         variant: 'destructive',
       });
     }
-  }, [trackPoints, pins, drawings, distanceKm, durationSec, savedMeasurements, measurePoints, loadRoutes, toast, loadedRouteId]);
+  }, [trackPoints, pins, drawings, distanceKm, durationSec, savedMeasurements, measurePoints, savedAreas, areaPoints, loadRoutes, toast, loadedRouteId]);
 
   // Load a saved route
   const handleLoadRoute = useCallback((route, targetCoords) => {
