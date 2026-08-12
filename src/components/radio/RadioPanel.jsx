@@ -2,9 +2,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Radio, X, Search, MapPin, Heart, Play, Loader2, AudioLines } from 'lucide-react';
 import { LOCATION_TAGS } from '@/hooks/useRadioPlayer';
 
-const GREEN = '#1E8457';
+const GREEN = '#006b53';
 const LIGHT_GREEN = '#E5F0E9';
-const CORAL = '#FF6B6B';
+const CORAL = '#ff3b30';
+const CLOSE_GREY = '#5e5e5e';
+const TAG_BG = '#f0f0f0';
+const TAG_TEXT = '#4B5563';
 
 export default function RadioPanel({ open, onClose, player }) {
   const {
@@ -32,7 +35,7 @@ export default function RadioPanel({ open, onClose, player }) {
     return (
       <div
         onClick={() => (isCurrent ? toggle() : play(station))}
-        className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors"
+        className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-colors"
         style={isCurrent ? { backgroundColor: LIGHT_GREEN } : undefined}
       >
         <div
@@ -71,15 +74,15 @@ export default function RadioPanel({ open, onClose, player }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[3500] flex items-end sm:items-center justify-center">
+    <div className="fixed inset-0 z-[3500] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" onClick={onClose} />
-      <div className="relative w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col max-h-[85vh] sm:max-h-[80vh] overflow-hidden">
+      <div className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden">
         {/* Header */}
-        <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
-          <Radio className="w-5 h-5" style={{ color: GREEN }} />
+        <div className="flex items-center gap-2 px-4 py-3.5 border-b border-border/60">
+          <Radio className="w-5 h-5" style={{ color: GREEN }} strokeWidth={2.2} />
           <h2 className="flex-1 font-heading font-bold text-base tracking-wide" style={{ color: GREEN }}>RADIO GARDEN</h2>
           <button onClick={onClose} className="p-1.5 rounded-full hover:bg-muted transition-colors" aria-label="Close">
-            <X className="w-5 h-5 text-foreground" />
+            <X className="w-5 h-5" style={{ color: CLOSE_GREY }} />
           </button>
         </div>
 
@@ -90,7 +93,7 @@ export default function RadioPanel({ open, onClose, player }) {
             <input
               value={term}
               onChange={(e) => setTerm(e.target.value)}
-              placeholder="Toronto"
+              placeholder="City or country..."
               className="flex-1 bg-transparent outline-none text-sm placeholder:text-muted-foreground min-w-0"
             />
           </div>
@@ -104,7 +107,7 @@ export default function RadioPanel({ open, onClose, player }) {
         </form>
 
         {/* Location tags */}
-        <div className="flex gap-2 px-4 pb-2 overflow-x-auto scrollbar-hide">
+        <div className="flex flex-wrap gap-2 px-4 pb-3">
           {LOCATION_TAGS.map((tag) => (
             <button
               key={tag.label}
@@ -112,8 +115,8 @@ export default function RadioPanel({ open, onClose, player }) {
               onClick={() => searchByTag(tag.q)}
               className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors"
               style={{
-                backgroundColor: activeQuery === tag.q ? LIGHT_GREEN : '#F4F4F2',
-                color: activeQuery === tag.q ? GREEN : '#4B5563',
+                backgroundColor: activeQuery === tag.q ? LIGHT_GREEN : TAG_BG,
+                color: activeQuery === tag.q ? GREEN : TAG_TEXT,
               }}
             >
               <MapPin className="w-3 h-3" />
@@ -123,10 +126,11 @@ export default function RadioPanel({ open, onClose, player }) {
         </div>
 
         {/* Scrollable list */}
-        <div ref={listRef} className="flex-1 overflow-y-auto px-3 pb-3 space-y-3">
+        <div ref={listRef} className="flex-1 overflow-y-auto px-3 pb-2 space-y-3">
           {/* Saved */}
           <section>
-            <h3 className="px-1 pt-2 pb-1 text-[11px] font-bold tracking-widest text-muted-foreground">SAVED</h3>
+            <div className="border-t border-border/60 mx-1 mb-2" />
+            <h3 className="px-1 pt-1 pb-1 text-[11px] font-bold tracking-widest text-muted-foreground">SAVED</h3>
             {saved.length === 0 ? (
               <p className="px-1 py-2 text-xs text-muted-foreground">Tap the heart on a station to save it here.</p>
             ) : (
@@ -153,6 +157,11 @@ export default function RadioPanel({ open, onClose, player }) {
           {error && (
             <p className="text-xs text-destructive text-center px-4 py-2">{error}</p>
           )}
+        </div>
+
+        {/* Footer */}
+        <div className="border-t border-border/60 px-4 py-3">
+          <p className="text-xs text-muted-foreground text-center">Search for local stations anywhere in the world.</p>
         </div>
       </div>
     </div>
