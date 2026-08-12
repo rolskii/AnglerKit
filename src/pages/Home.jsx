@@ -11,6 +11,10 @@ import PullToRefresh from "@/components/PullToRefresh";
 import FeaturedImage from "@/components/FeaturedImage";
 import LocationMapPicker from "@/components/moon/LocationMapPicker";
 import { getSharedLocation, setSharedLocation, initDefaultLocationFromGPS } from "@/lib/sharedLocation";
+import { useRadioPlayer } from "@/hooks/useRadioPlayer";
+import RadioAccessButton from "@/components/radio/RadioAccessButton";
+import RadioPanel from "@/components/radio/RadioPanel";
+import RadioPlayerBar from "@/components/radio/RadioPlayerBar";
 const calculateMoonPhase = (date) => {
   const knownNewMoon = new Date(2000, 0, 6);
   const lunarMonth = 29.53058867;
@@ -111,6 +115,8 @@ export default function Home() {
   const [coords, setCoords] = useState(shared.coords);
   const [conditionsOpen, setConditionsOpen] = useState(false);
   const [gearOpen, setGearOpen] = useState(false);
+  const [radioOpen, setRadioOpen] = useState(false);
+  const radio = useRadioPlayer();
   const conditionsPopupRef = useRef(null);
   const conditionsButtonRef = useRef(null);
   const gearPopupRef = useRef(null);
@@ -290,7 +296,10 @@ export default function Home() {
     <div className="space-y-3 md:space-y-4 -mt-4 md:-mt-8">
       {/* Hero */}
       <div className="space-y-2 px-1">
-        <h1 className="text-2xl md:text-[34px] font-heading font-extrabold tracking-tight leading-tight">AnglerKit</h1>
+        <div className="flex items-start justify-between gap-2">
+          <h1 className="text-2xl md:text-[34px] font-heading font-extrabold tracking-tight leading-tight">AnglerKit</h1>
+          <RadioAccessButton active={radio.current && radio.playing} onClick={() => setRadioOpen(true)} className="mt-1" />
+        </div>
         <p className="text-sm md:text-[17px] text-muted-foreground">
           Track your fishing gear, predict the bite, check the weather and log every catch — all in one place.
         </p>
@@ -477,6 +486,8 @@ export default function Home() {
         initialCoords={coords}
         onSelect={selectLocationFromMap}
       />
+      <RadioPanel open={radioOpen} onClose={() => setRadioOpen(false)} player={radio} />
+      <RadioPlayerBar player={radio} />
       </div>
       </PullToRefresh>
       );
