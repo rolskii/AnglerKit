@@ -1,7 +1,7 @@
 import React from 'react';
 import { Radio, Loader2, Play, Pause, Volume2, VolumeX, X } from 'lucide-react';
 
-const GREEN = '#1B754A';
+const BLUE = 'hsl(var(--primary))';
 
 /**
  * Floating pill player bar shown when a station is loaded.
@@ -12,11 +12,11 @@ export default function RadioPlayerBar({ player }) {
 
   return (
     <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[3400] w-[calc(100%-2rem)] max-w-sm">
-      <div className="flex items-center gap-2 px-3 py-2 rounded-full shadow-lg border border-border" style={{ backgroundColor: '#F7F7F5' }}>
+      <div className="flex items-center gap-2 px-3 py-2 rounded-full shadow-lg border border-border bg-card">
         <button
           onClick={toggle}
           className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center text-white"
-          style={{ backgroundColor: GREEN }}
+          style={{ backgroundColor: BLUE }}
           aria-label={playing ? 'Pause' : 'Play'}
         >
           {loading ? (

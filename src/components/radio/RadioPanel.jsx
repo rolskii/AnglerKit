@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Radio, X, Search, Heart, Loader2 } from 'lucide-react';
 import { LOCATION_TAGS } from '@/hooks/useRadioPlayer';
 
-const GREEN = '#1B754A';
+const BLUE = 'hsl(var(--primary))';
 const CORAL = '#FF3B30';
 const INACTIVE_HEART = '#C7C7CC';
 const CLOSE_GREY = '#333333';
@@ -45,7 +45,7 @@ export default function RadioPanel({ open, onClose, player }) {
           <p className="text-sm font-semibold truncate" style={{ color: '#333333' }}>{station.name}</p>
           {station.location && <p className="text-xs truncate" style={{ color: SUBTEXT_GREY }}>{station.location}</p>}
         </div>
-        {isCurrent && loading && <Loader2 className="w-4 h-4 animate-spin shrink-0" style={{ color: GREEN }} />}
+        {isCurrent && loading && <Loader2 className="w-4 h-4 animate-spin shrink-0" style={{ color: BLUE }} />}
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); toggleSave(station); }}
@@ -64,7 +64,7 @@ export default function RadioPanel({ open, onClose, player }) {
       <div className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center gap-2 px-4 py-3.5 border-b border-border/60">
-          <Radio className="w-5 h-5" style={{ color: TITLE_GREY }} strokeWidth={2.2} />
+          <Radio className="w-5 h-5" style={{ color: BLUE }} strokeWidth={2.2} />
           <h2 className="flex-1 font-heading font-bold text-base tracking-wide" style={{ color: TITLE_GREY }}>RADIO GARDEN</h2>
           <button onClick={onClose} className="p-1.5 rounded-full hover:bg-muted transition-colors" aria-label="Close">
             <X className="w-5 h-5" style={{ color: CLOSE_GREY }} />
@@ -85,7 +85,7 @@ export default function RadioPanel({ open, onClose, player }) {
           <button
             type="submit"
             className="px-4 py-2 rounded-full text-white text-sm font-semibold shrink-0 disabled:opacity-50"
-            style={{ backgroundColor: GREEN }}
+            style={{ backgroundColor: BLUE }}
           >
             Go
           </button>
@@ -100,8 +100,8 @@ export default function RadioPanel({ open, onClose, player }) {
               onClick={() => searchByTag(tag.q)}
               className="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors"
               style={{
-                backgroundColor: activeQuery === tag.q ? '#E5F0E9' : TAG_BG,
-                color: activeQuery === tag.q ? GREEN : TAG_TEXT,
+                backgroundColor: activeQuery === tag.q ? 'hsl(var(--tint-blue-bg))' : TAG_BG,
+                color: activeQuery === tag.q ? BLUE : TAG_TEXT,
               }}
             >
               {tag.label}
@@ -128,7 +128,7 @@ export default function RadioPanel({ open, onClose, player }) {
             </h3>
             {searching && (
               <div className="flex items-center justify-center py-6">
-                <Loader2 className="w-5 h-5 animate-spin" style={{ color: GREEN }} />
+                <Loader2 className="w-5 h-5 animate-spin" style={{ color: BLUE }} />
               </div>
             )}
             {!searching && results.length === 0 && (
