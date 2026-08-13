@@ -981,6 +981,11 @@ Deno.serve(async (req) => {
       weatherData.daily.night_text_summary = (weatherData.daily.night_text_summary || []).map(convertSummaryToImperial);
     }
 
+    // Surface whether this location is served by Environment Canada so the
+    // frontend can link to the right official weather page (EC for Canada,
+    // NWS for the US, weather.com elsewhere).
+    weatherData.isCanada = isCanada;
+
     return Response.json(weatherData);
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

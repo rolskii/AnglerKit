@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Droplets, MapPin, ChevronDown, Thermometer, Eye, Wind, Gauge, TrendingUp, TrendingDown, Minus, Sunrise, Sunset, Sun, Moon, CloudSun, CloudMoon, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, CloudLightning, Cloudy } from 'lucide-react';
+import { Droplets, MapPin, ChevronDown, Thermometer, Eye, Wind, Gauge, TrendingUp, TrendingDown, Minus, Sunrise, Sunset, Sun, Moon, CloudSun, CloudMoon, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, CloudLightning, Cloudy, ExternalLink } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { searchLocations, geocodeLocation } from '@/lib/geocode';
 import { getSharedLocation, setSharedLocation, initDefaultLocationFromGPS } from '@/lib/sharedLocation';
@@ -88,7 +88,7 @@ export default function Weather() {
       setLocation(locationName);
       setEditingLocation(locationName);
       setShowSuggestions(false);
-      setWeather({ current: data.current, daily: data.daily, hourly: data.hourly, alerts: data.alerts || [], air_quality: data.air_quality || null });
+      setWeather({ current: data.current, daily: data.daily, hourly: data.hourly, alerts: data.alerts || [], air_quality: data.air_quality || null, isCanada: data.isCanada });
       setLoading(false);
     } catch (err) {
       setError('Failed to fetch weather for that location.');
@@ -266,6 +266,28 @@ export default function Weather() {
     }
     return parts;
   };
+  // Build the official weather page URL for the current location:
+  // Environment Canada for Canada, NWS for the US, weather.com elsewhere.
+  const getOfficialWeatherUrl = () => {
+    if (!lastCoords?.lat || !lastCoords?.lon) return null;
+    const { lat, lon } = lastCoords;
+    if (weather?.isCanada) {
+      return `https://weather.gc.ca/en/location/index.html?coords=${lat.toFixed(3)},${lon.toFixed(3)}`;
+    }
+    // Contiguous US + Alaska + Hawaii rough bounds (Canada already excluded)
+    const isUS =
+      (lat >= 24.5 && lat <= 49.5 && lon >= -125 && lon <= -66.5) ||
+      (lat >= 55 && lat <= 71 && lon >= -180 && lon <= -130) ||
+      (lat >= 18 && lat <= 23 && lon >= -161 && lon <= -154);
+    if (isUS) {
+      return `https://forecast.weather.gov/MapClick.php?lat=${lat}&lon=${lon}`;
+    }
+    return `https://weather.com/weather/today/l/${lat.toFixed(2)},${lon.toFixed(2)}`;
+  };
+  const openOfficialWeather = () => {
+    const url = getOfficialWeatherUrl();
+    if (url) window.open(url, '_blank', 'noopener,noreferrer');
+  };
   const isNight = () => {
     if (!weather?.daily?.sunrise?.[0] || !weather?.daily?.sunset?.[0]) return false;
     const now = new Date();
@@ -356,9 +378,19 @@ export default function Weather() {
               <div className="flex items-center justify-between gap-2 py-0">
                 <div className="flex items-center gap-2">
                    <div>
-                     <p className="text-6xl font-bold text-primary leading-none">{formatTemp(current.temperature_2m, tempUnit)}°</p>
-                     <p className="text-sm font-medium text-muted-foreground mt-0.5">{getConditionText(current.condition, current.weather_code)}{current.apparent_temperature != null && Math.round(current.apparent_temperature) !== Math.round(current.temperature_2m) ? ` · Feels ${formatTemp(current.apparent_temperature, tempUnit)}°` : ''}</p>
-                   </div>
+                      <button
+                        onClick={openOfficialWeather}
+                        className="text-left leading-none group cursor-pointer"
+                        title="View on official weather site"
+                        aria-label="View on official weather site"
+                      >
+                        <span className="text-6xl font-bold text-primary leading-none inline-flex items-end group-hover:opacity-80 transition-opacity">
+                          {formatTemp(current.temperature_2m, tempUnit)}°
+                          <ExternalLink className="w-3.5 h-3.5 ml-1 mb-1 text-primary/60 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </span>
+                      </button>
+                      <p className="text-sm font-medium text-muted-foreground mt-0.5">{getConditionText(current.condition, current.weather_code)}{current.apparent_temperature != null && Math.round(current.apparent_temperature) !== Math.round(current.temperature_2m) ? ` · Feels ${formatTemp(current.apparent_temperature, tempUnit)}°` : ''}</p>
+                    </div>
                    <WeatherGlyph code={current.weather_code} isNight={isNight()} darkOutline animated className="w-16 h-20 shrink-0" />
                  </div>
                 <div className="flex flex-col items-end gap-1 shrink-0">
