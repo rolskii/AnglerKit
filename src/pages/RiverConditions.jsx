@@ -15,7 +15,6 @@ import HistoricalRangeChart from '@/components/river/HistoricalRangeChart';
 import PullToRefresh from '@/components/PullToRefresh';
 import { useAutoRefresh } from '@/hooks/useAutoRefresh';
 import { useUnits } from '@/lib/unitsContext';
-import ShareStatusButton from '@/components/ShareStatusButton';
 
 function TrendIndicator({ trend }) {
   if (!trend) return null;
@@ -432,23 +431,6 @@ export default function RiverConditions() {
             </>
           )}
         </div>
-
-        {data && !error && (
-          <div className="px-1 max-w-2xl mx-auto">
-            <ShareStatusButton
-              targetRef={contentRef}
-              title={`River Conditions — ${data.station?.name || locationName}`}
-              text={[
-                `📍 ${data.station?.name || locationName} (Station ${data.station?.id || '—'})`,
-                `💧 Water Level: ${data.current?.level != null ? formatLevel(data.current.level) : '—'}`,
-                `🌊 Flow: ${data.current?.discharge != null ? formatDischarge(data.current.discharge) : '—'}`,
-                data.trend?.level?.direction ? `📈 Level Trend: ${data.trend.level.direction} (${Math.abs(Math.round(data.trend.level.changePct))}%)` : '',
-                data.trend?.discharge?.direction ? `📈 Flow Trend: ${data.trend.discharge.direction} (${Math.abs(Math.round(data.trend.discharge.changePct))}%)` : '',
-                `🔄 Updated ${data.current?.datetimeLocal ? new Date(data.current.datetimeLocal).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '—'}`,
-              ].filter(Boolean).join('\n')}
-            />
-          </div>
-        )}
 
         <RiverStationMapPicker
           open={mapPickerOpen}

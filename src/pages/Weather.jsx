@@ -10,7 +10,6 @@ import { Calendar } from '@/components/ui/calendar';
 import HourlyConditionsCard from '@/components/weather/HourlyConditionsCard';
 import DayForecastDialog from '@/components/weather/DayForecastDialog';
 import WeatherGlyph from '@/components/weather/WeatherGlyph';
-import ShareStatusButton from '@/components/ShareStatusButton';
 import AlertColorSymbols from '@/components/weather/AlertColorSymbols';
 import AirQualityCard from '@/components/weather/AirQualityCard';
 import { formatTemp, formatWind, formatPrecip, formatPressure, formatVisibility, getConditionText } from '@/lib/weatherUnits';
@@ -568,26 +567,7 @@ export default function Weather() {
         <p className="text-[11px] text-muted-foreground text-center px-4">
           Canadian weather data is provided by <a href="https://weather.gc.ca/" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">Environment Canada</a> and Apple WeatherKit. U.S. and international weather data is provided by Apple WeatherKit.
         </p>
-        {/* Share */}
-        <div className="px-1">
-          <ShareStatusButton
-            targetRef={contentRef}
-            title={`Weather — ${formatDate(selectedDate)}`}
-            text={[
-              `📍 ${location}`,
-              `${getConditionText(current.condition, current.weather_code)}`,
-              `🌡️ Temperature: ${formatTemp(current.temperature_2m, tempUnit)}° (feels like ${formatTemp(current.apparent_temperature, tempUnit)}°)`,
-              `📊 Pressure: ${formatPressure(current.pressure, tempUnit)} (${current.pressure_tendency || '—'})`,
-              `💧 Dew Point: ${formatTemp(current.dewpoint, tempUnit)}°`,
-              `💦 Humidity: ${current.relative_humidity_2m}%`,
-              `🌡️ Humidex: ${displayHumidex != null ? displayHumidex : '—'}`,
-              `👁️ Visibility: ${formatVisibility(current.visibility, tempUnit)}`,
-              `💨 Wind: ${formatWind(current.wind_speed_10m, tempUnit)} ${current.wind_direction || ''}`,
-              `H: ${formatTemp(daily.temperature_2m_max[0], tempUnit)}°  L: ${formatTemp(daily.temperature_2m_min[0], tempUnit)}°`,
-            ].join('\n')}
-          />
         </div>
-      </div>
       <LocationMapPicker
         open={mapPickerOpen}
         onOpenChange={setMapPickerOpen}

@@ -15,7 +15,6 @@ import ActivityChart from '@/components/moon/ActivityChart';
 import SunMoonFooter from '@/components/moon/SunMoonFooter';
 import WeeklyBiteForecast from '@/components/moon/WeeklyBiteForecast';
 import DaySolunarDialog from '@/components/moon/DaySolunarDialog';
-import ShareStatusButton from '@/components/ShareStatusButton';
 import { clearFiredAlarms } from '@/lib/alarmService';
 import { ensurePushSubscription, syncAlarmToServer, removeAlarmFromServer } from '@/lib/pushService';
 import PullToRefresh from '@/components/PullToRefresh';
@@ -692,22 +691,6 @@ export default function Moon() {
           </CardContent>
         </Card>
       </div>
-        {/* Share */}
-        <div className="px-1">
-          <ShareStatusButton
-            targetRef={contentRef}
-            title={`Moon & Fishing — ${moonData.date}`}
-            text={[
-              `🌙 ${moonData.phase} (${moonData.illumination}% illuminated)`,
-              `🐟 Fishing Rating: ${getRatingLabel(moonData.fishingRating)} (${moonData.fishingRating}/7)`,
-              `📍 ${moonData.location}`,
-              solunar.major.length ? `Major: ${solunar.major.map(m => m.time).join(', ')}` : '',
-              solunar.minor.length ? `Minor: ${solunar.minor.map(m => m.time).join(', ')}` : '',
-              sunData?.sunrise ? `Sunrise: ${parseTimeFromIso(sunData.sunrise)}` : '',
-              sunData?.sunset ? `Sunset: ${parseTimeFromIso(sunData.sunset)}` : '',
-            ].filter(Boolean).join('\n')}
-          />
-        </div>
       </div>
       <WeeklyBiteForecast
         open={weeklyForecastOpen}
