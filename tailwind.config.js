@@ -62,13 +62,25 @@ module.exports = {
   			},
   			tint: {
   				blue: 'hsl(var(--tint-blue))',
-  				'blue-bg': 'hsl(var(--tint-blue-bg))',
-  				orange: 'hsl(var(--tint-orange))',
-  				'orange-bg': 'hsl(var(--tint-orange-bg))',
-  				purple: 'hsl(var(--tint-purple))',
-  				'purple-bg': 'hsl(var(--tint-purple-bg))',
-  				teal: 'hsl(var(--tint-teal))',
-  				'teal-bg': 'hsl(var(--tint-teal-bg))'
+  				'blue-bg': 'hsl(var(--tint-blue-bg))'
+  			},
+  			cat: {
+  				rods: 'hsl(var(--cat-rods))',
+  				'rods-bg': 'hsl(var(--cat-rods-bg))',
+  				reels: 'hsl(var(--cat-reels))',
+  				'reels-bg': 'hsl(var(--cat-reels-bg))',
+  				lines: 'hsl(var(--cat-lines))',
+  				'lines-bg': 'hsl(var(--cat-lines-bg))',
+  				tackle: 'hsl(var(--cat-tackle))',
+  				'tackle-bg': 'hsl(var(--cat-tackle-bg))',
+  				misc: 'hsl(var(--cat-misc))',
+  				'misc-bg': 'hsl(var(--cat-misc-bg))',
+  				moon: 'hsl(var(--cat-moon))',
+  				'moon-bg': 'hsl(var(--cat-moon-bg))',
+  				weather: 'hsl(var(--cat-weather))',
+  				'weather-bg': 'hsl(var(--cat-weather-bg))',
+  				hydro: 'hsl(var(--cat-hydro))',
+  				'hydro-bg': 'hsl(var(--cat-hydro-bg))'
   			}
   		},
   		fontFamily: {

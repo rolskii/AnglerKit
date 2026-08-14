@@ -2,23 +2,24 @@ import React, { useEffect, useRef, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Home as HomeIcon, Camera, Cloud, Moon as MoonIcon, Map as MapIcon, Waves, Gauge, Package, Sparkles } from "lucide-react";
 import { ReelIcon as ReelDiscIcon, LinesIcon, RodIcon, LureIcon } from "@/components/GearIcons";
+import { CATEGORY_CHIP } from "@/lib/categoryColors";
 const tabs = [
   { to: "/", label: "Home", icon: HomeIcon, matchExact: true },
   { to: "/map", label: "Map", icon: MapIcon, matchExact: true },
   { to: "/catches", label: "Fish Log", icon: Camera, matchPrefix: "/catches" },
 ];
 const CONDITIONS_ITEMS = [
-  { to: "/moon", label: "Moon", icon: MoonIcon, tint: "bg-purple-100 text-purple-600" },
-  { to: "/weather", label: "Weather", icon: Cloud, tint: "bg-teal-100 text-teal-600" },
-  { to: "/river", label: "Hydrometric", icon: Waves, tint: "bg-cyan-100 text-cyan-600" },
+  { to: "/moon", label: "Moon", icon: MoonIcon, tint: CATEGORY_CHIP.moon },
+  { to: "/weather", label: "Weather", icon: Cloud, tint: CATEGORY_CHIP.weather },
+  { to: "/river", label: "Hydrometric", icon: Waves, tint: CATEGORY_CHIP.hydro },
 ];
 const CONDITIONS_PATHS = CONDITIONS_ITEMS.map((item) => item.to);
 const GEAR_ITEMS = [
-  { to: "/lines", label: "Lines", icon: LinesIcon, tint: "bg-blue-100 text-blue-600" },
-  { to: "/reels", label: "Reels", icon: ReelDiscIcon, tint: "bg-orange-100 text-orange-600" },
-  { to: "/rods", label: "Rods", icon: RodIcon, tint: "bg-teal-100 text-teal-600" },
-  { to: "/lures", label: "Tackle", icon: LureIcon, tint: "bg-purple-100 text-purple-600" },
-  { to: "/misc", label: "Misc. Gear", icon: Package, tint: "bg-orange-100 text-orange-600" },
+  { to: "/lines", label: "Lines", icon: LinesIcon, tint: CATEGORY_CHIP.lines },
+  { to: "/reels", label: "Reels", icon: ReelDiscIcon, tint: CATEGORY_CHIP.reels },
+  { to: "/rods", label: "Rods", icon: RodIcon, tint: CATEGORY_CHIP.rods },
+  { to: "/lures", label: "Tackle", icon: LureIcon, tint: CATEGORY_CHIP.tackle },
+  { to: "/misc", label: "Misc. Gear", icon: Package, tint: CATEGORY_CHIP.misc },
 ];
 const GEAR_PATHS = GEAR_ITEMS.map((item) => item.to);
 function TabLink({ tab }) {
