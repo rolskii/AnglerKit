@@ -1,9 +1,12 @@
 // Shared logic for the "Scan Gear" AI camera feature.
-// One photo is uploaded, then run through Base44's ExtractDataFromUploadedFile
-// with the schema below. The result is mapped onto whichever gear entity
-// (Rod / Reel / FlyLine / Lure / MiscItem) it was identified as, and handed
-// to that category's existing form as prefilled `initial` data — the user
-// still reviews and confirms before anything is saved.
+// One or more photos are uploaded, then run through Base44's InvokeLLM
+// (passed as `file_urls` alongside the prompt/schema below — multiple angles
+// of the same item help the model read labels/specs that one photo might
+// miss). The result is mapped onto whichever gear entity (Rod / Reel /
+// FlyLine / Lure / MiscItem) it was identified as, and handed to that
+// category's existing form as prefilled `initial` data, with all of the
+// scanned photos attached — the user still reviews and confirms before
+// anything is saved.
 
 export const GEAR_CATEGORY_META = {
   rod: { path: "/rods", label: "Rod" },
@@ -84,6 +87,14 @@ export const GEAR_EXTRACTION_SCHEMA = {
   required: ["category", "confidence"],
 };
 
+// Prompt used with InvokeLLM (rather than ExtractDataFromUploadedFile, which
+// only accepts a single file) so multiple photos can be passed via `file_urls`.
+export const GEAR_EXTRACTION_PROMPT =
+  "These photos show a single piece of fishing gear — a rod, reel, fly line box, fly/lure, or " +
+  "other item — possibly from multiple angles or showing different labels/tags on the same item. " +
+  "Identify it and extract the requested details, reading any text on labels, tags, or packaging " +
+  "visible across the photos. If photos disagree, prefer the clearest/most legible source.";
+
 // Drops undefined/null/empty-string keys so the result can be safely spread
 // over each form's own `empty` defaults without clobbering them with blanks.
 function stripEmpty(obj) {
@@ -103,9 +114,10 @@ function displayName(data, fallback) {
  * Maps the raw extraction result (matching GEAR_EXTRACTION_SCHEMA) onto the
  * field shape expected by the given category's form/entity.
  * `category` may be overridden by the caller (e.g. low-confidence fallback to "misc").
+ * `imageUrls` is the full list of scanned photos — all get attached to the new entry.
  */
-export function mapExtractionToPrefill(category, data, imageUrl) {
-  const images = imageUrl ? [imageUrl] : [];
+export function mapExtractionToPrefill(category, data, imageUrls) {
+  const images = Array.isArray(imageUrls) ? imageUrls.filter(Boolean) : (imageUrls ? [imageUrls] : []);
 
   switch (category) {
     case "rod":

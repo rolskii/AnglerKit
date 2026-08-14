@@ -8,6 +8,9 @@ import RodForm from "@/components/rods/RodForm";
 import RodDetailDialog from "@/components/rods/RodDetailDialog";
 import ViewToggle from "@/components/ViewToggle";
 import GearThumbnail from "@/components/GearThumbnail";
+import GearEmptyState from "@/components/gear/GearEmptyState";
+import { RodIcon } from "@/components/GearIcons";
+import gearEmptyRods from "@/assets/gear-empty-rods.jpg";
 import { useViewMode } from "@/hooks/useViewMode";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -212,10 +215,19 @@ export default function Rods() {
       {loading ? (
         <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-muted-foreground" /></div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-20 text-muted-foreground">
-          <Waves className="w-12 h-12 mx-auto mb-3 opacity-40" />
-          <p>No rods found. Add your first one!</p>
-        </div>
+        rods.length === 0 ? (
+          <GearEmptyState
+            image={gearEmptyRods}
+            icon={RodIcon}
+            headline="Add your first rod"
+            subtext="Snap a photo and we'll fill in the details for you"
+          />
+        ) : (
+          <div className="text-center py-20 text-muted-foreground">
+            <Waves className="w-12 h-12 mx-auto mb-3 opacity-40" />
+            <p>No rods match your search.</p>
+          </div>
+        )
       ) : viewMode === "thumbnail" ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
           {filtered.map((rod) => (

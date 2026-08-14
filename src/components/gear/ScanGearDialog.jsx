@@ -4,12 +4,18 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Camera, Upload, Sparkles, Loader2, AlertTriangle } from "lucide-react";
+import { Camera, Upload, Sparkles, Loader2, AlertTriangle, X, Plus } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import {
-  GEAR_CATEGORY_META, GEAR_EXTRACTION_SCHEMA, mapExtractionToPrefill, resolveCategory,
+  GEAR_CATEGORY_META, GEAR_EXTRACTION_SCHEMA, GEAR_EXTRACTION_PROMPT,
+  mapExtractionToPrefill, resolveCategory,
 } from "@/lib/gearScan";
+
+// Up to this many photos of the same item can be staged before scanning —
+// extra angles help the AI read labels a single photo might miss, but the
+// grid below is tuned for a small number of thumbnails.
+const MAX_PHOTOS = 5;
 
 // Resize the photo's longest side down to 1600px (if larger) and re-encode
 // as JPEG. Kept less aggressive than the general ImageUpload compressor so
@@ -37,14 +43,22 @@ function prepareForScan(file) {
   });
 }
 
+let nextPhotoId = 0;
+
 export default function ScanGearDialog({ open, onOpenChange }) {
+  const [photos, setPhotos] = useState([]); // { id, file, previewUrl }
   const [status, setStatus] = useState("idle"); // idle | uploading | identifying | error
   const [errorMsg, setErrorMsg] = useState("");
   const fileRef = useRef(null);
   const cameraRef = useRef(null);
   const navigate = useNavigate();
 
+  const revokeAll = (list) => {
+    list.forEach((p) => URL.revokeObjectURL(p.previewUrl));
+  };
+
   const reset = () => {
+    setPhotos((prev) => { revokeAll(prev); return []; });
     setStatus("idle");
     setErrorMsg("");
   };
@@ -55,20 +69,55 @@ export default function ScanGearDialog({ open, onOpenChange }) {
     onOpenChange(o);
   };
 
-  const handleFile = async (fileList) => {
-    const file = fileList?.[0];
-    if (!file) return;
+  const addFiles = (fileList) => {
+    const incoming = Array.from(fileList || []);
+    if (!incoming.length) return;
+    setPhotos((prev) => {
+      const room = MAX_PHOTOS - prev.length;
+      if (room <= 0) {
+        toast.info(`You can scan up to ${MAX_PHOTOS} photos at once.`);
+        return prev;
+      }
+      const accepted = incoming.slice(0, room);
+      if (incoming.length > accepted.length) {
+        toast.info(`Only added ${accepted.length} — up to ${MAX_PHOTOS} photos at once.`);
+      }
+      const added = accepted.map((file) => ({
+        id: nextPhotoId++,
+        file,
+        previewUrl: URL.createObjectURL(file),
+      }));
+      return [...prev, ...added];
+    });
+  };
+
+  const removePhoto = (id) => {
+    setPhotos((prev) => {
+      const target = prev.find((p) => p.id === id);
+      if (target) URL.revokeObjectURL(target.previewUrl);
+      return prev.filter((p) => p.id !== id);
+    });
+  };
+
+  const handleIdentify = async () => {
+    if (photos.length === 0) return;
     try {
       setStatus("uploading");
       setErrorMsg("");
-      const prepared = await prepareForScan(file);
-      const { file_url } = await base44.integrations.Core.UploadFile({ file: prepared });
-      if (!file_url) throw new Error("Upload did not return a file URL");
+      const fileUrls = await Promise.all(
+        photos.map(async ({ file }) => {
+          const prepared = await prepareForScan(file);
+          const { file_url } = await base44.integrations.Core.UploadFile({ file: prepared });
+          return file_url;
+        })
+      );
+      if (fileUrls.some((u) => !u)) throw new Error("Upload did not return a file URL");
 
       setStatus("identifying");
-      const result = await base44.integrations.Core.ExtractDataFromUploadedFile({
-        file_url,
-        json_schema: GEAR_EXTRACTION_SCHEMA,
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: GEAR_EXTRACTION_PROMPT,
+        file_urls: fileUrls,
+        response_json_schema: GEAR_EXTRACTION_SCHEMA,
       });
       // Base44 may return the parsed object directly, or nested under `.output`/`.data`
       // depending on SDK version — handle both shapes defensively.
@@ -76,7 +125,7 @@ export default function ScanGearDialog({ open, onOpenChange }) {
 
       const category = resolveCategory(data);
       const meta = GEAR_CATEGORY_META[category];
-      const prefill = mapExtractionToPrefill(category, data, file_url);
+      const prefill = mapExtractionToPrefill(category, data, fileUrls);
 
       onOpenChange(false);
       reset();
@@ -84,13 +133,13 @@ export default function ScanGearDialog({ open, onOpenChange }) {
 
       const label = data.identified_as || meta.label;
       if (category === "misc" && (!data.category || data.category === "misc")) {
-        toast.success(`Photo uploaded — review the details before saving.`);
+        toast.success(`Photos uploaded — review the details before saving.`);
       } else {
         toast.success(`Looks like a ${label}. Review and save to add it.`);
       }
     } catch (e) {
       setStatus("error");
-      setErrorMsg(e?.message || "Something went wrong identifying that photo.");
+      setErrorMsg(e?.message || "Something went wrong identifying that gear.");
     }
   };
 
@@ -105,8 +154,8 @@ export default function ScanGearDialog({ open, onOpenChange }) {
             Scan Gear
           </DialogTitle>
           <DialogDescription>
-            Snap a photo of a rod, reel, fly line box, fly/lure, or other gear — we'll identify it and
-            prefill a new entry for you to review.
+            Snap or choose one or more photos of a rod, reel, fly line box, fly/lure, or other gear —
+            extra angles help us read labels — and we'll identify it and prefill a new entry for you to review.
           </DialogDescription>
         </DialogHeader>
 
@@ -114,25 +163,63 @@ export default function ScanGearDialog({ open, onOpenChange }) {
           <div className="flex flex-col items-center justify-center gap-3 py-10 text-center">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
             <p className="text-sm text-muted-foreground">
-              {status === "uploading" ? "Uploading photo…" : "Identifying gear…"}
+              {status === "uploading"
+                ? `Uploading ${photos.length > 1 ? `${photos.length} photos` : "photo"}…`
+                : "Identifying gear…"}
             </p>
           </div>
         ) : status === "error" ? (
           <div className="flex flex-col items-center justify-center gap-3 py-8 text-center">
             <AlertTriangle className="w-8 h-8 text-destructive" />
             <p className="text-sm text-muted-foreground">{errorMsg}</p>
-            <Button variant="outline" size="sm" onClick={reset}>Try again</Button>
+            <Button variant="outline" size="sm" onClick={() => setStatus("idle")}>Try again</Button>
           </div>
         ) : (
-          <div className="flex flex-col gap-2 py-2">
-            <Button type="button" onClick={() => cameraRef.current?.click()}>
-              <Camera className="w-4 h-4 mr-2" />
-              Take photo
-            </Button>
-            <Button type="button" variant="outline" onClick={() => fileRef.current?.click()}>
-              <Upload className="w-4 h-4 mr-2" />
-              Choose photo
-            </Button>
+          <div className="flex flex-col gap-3 py-2">
+            {photos.length > 0 && (
+              <div className="grid grid-cols-4 gap-2">
+                {photos.map((p) => (
+                  <div key={p.id} className="relative aspect-square rounded-lg overflow-hidden bg-muted">
+                    <img src={p.previewUrl} alt="" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removePhoto(p.id)}
+                      className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center"
+                      aria-label="Remove photo"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+                {photos.length < MAX_PHOTOS && (
+                  <button
+                    type="button"
+                    onClick={() => fileRef.current?.click()}
+                    className="aspect-square rounded-lg border-2 border-dashed border-border flex items-center justify-center text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+                    aria-label="Add another photo"
+                  >
+                    <Plus className="w-5 h-5" />
+                  </button>
+                )}
+              </div>
+            )}
+
+            <div className="flex flex-col gap-2">
+              <Button type="button" variant={photos.length ? "outline" : "default"} onClick={() => cameraRef.current?.click()}>
+                <Camera className="w-4 h-4 mr-2" />
+                {photos.length ? "Take another photo" : "Take photo"}
+              </Button>
+              <Button type="button" variant="outline" onClick={() => fileRef.current?.click()}>
+                <Upload className="w-4 h-4 mr-2" />
+                Choose photo{photos.length ? "s" : "(s)"}
+              </Button>
+              {photos.length > 0 && (
+                <Button type="button" onClick={handleIdentify}>
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Identify Gear{photos.length > 1 ? ` (${photos.length} photos)` : ""}
+                </Button>
+              )}
+            </div>
           </div>
         )}
 
@@ -142,14 +229,15 @@ export default function ScanGearDialog({ open, onOpenChange }) {
           accept="image/*"
           capture="environment"
           className="hidden"
-          onChange={(e) => { handleFile(e.target.files); e.target.value = ""; }}
+          onChange={(e) => { addFiles(e.target.files); e.target.value = ""; }}
         />
         <input
           ref={fileRef}
           type="file"
           accept="image/*"
+          multiple
           className="hidden"
-          onChange={(e) => { handleFile(e.target.files); e.target.value = ""; }}
+          onChange={(e) => { addFiles(e.target.files); e.target.value = ""; }}
         />
       </DialogContent>
     </Dialog>
