@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Outlet, NavLink, useNavigate, useLocation, Link } from "react-router-dom";
 import {
-  LogOut, Menu, X, ChevronLeft,
+  LogOut, Menu, X, ChevronLeft, Sparkles,
   Home as HomeIcon, Camera, Cloud, Map as MapIcon, Waves,
   Settings as SettingsIcon, Info, Package,
 } from "lucide-react";
@@ -11,6 +11,7 @@ import { ReelIcon as ReelDiscIcon, LinesIcon, RodIcon, LureIcon } from "@/compon
 import AppLogo from "@/components/AppLogo";
 import { Moon as MoonIcon } from "lucide-react";
 import BottomTabBar from "@/components/BottomTabBar";
+import ScanGearDialog from "@/components/gear/ScanGearDialog";
 import { motion } from "framer-motion";
 const navItems = [
   { to: "/", label: "Home", icon: HomeIcon },
@@ -29,6 +30,7 @@ const navItems = [
 ];
 export default function Layout() {
   const [open, setOpen] = useState(false);
+  const [scanOpen, setScanOpen] = useState(false);
   const appName = "AnglerKit";
   const navigate = useNavigate();
   const location = useLocation();
@@ -88,6 +90,13 @@ export default function Layout() {
             <p className="text-xs text-muted-foreground">Inventory Manager</p>
           </div>
         </Link>
+        <Button
+          className="w-full justify-start gap-3 rounded-xl mb-3"
+          onClick={() => setScanOpen(true)}
+        >
+          <Sparkles className="w-5 h-5" />
+          Scan Gear
+        </Button>
         <NavLinks />
         <div className="mt-auto pt-4 border-t border-border/60">
           <Button
@@ -126,6 +135,13 @@ export default function Layout() {
             <div className="flex justify-center mb-4">
               <div className="h-1.5 w-10 rounded-full bg-foreground/20" />
             </div>
+            <Button
+              className="w-full justify-start gap-3 rounded-xl mb-3"
+              onClick={() => { setOpen(false); setScanOpen(true); }}
+            >
+              <Sparkles className="w-5 h-5" />
+              Scan Gear
+            </Button>
             <NavLinks />
             <Button
               variant="ghost"
@@ -151,7 +167,8 @@ export default function Layout() {
         </div>
       </main>
       {/* Mobile bottom tab bar */}
-      <BottomTabBar />
+      <BottomTabBar onScan={() => setScanOpen(true)} />
+      <ScanGearDialog open={scanOpen} onOpenChange={setScanOpen} />
     </div>
   );
 }

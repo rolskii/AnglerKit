@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +17,8 @@ import { toast } from "sonner";
 
 
 export default function Lines() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [lines, setLines] = useState([]);
   const [reels, setReels] = useState([]);
   const [rods, setRods] = useState([]);
@@ -25,6 +28,7 @@ export default function Lines() {
   const [sortDir, setSortDir] = useState("asc");
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [prefill, setPrefill] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [viewTarget, setViewTarget] = useState(null);
@@ -49,6 +53,16 @@ export default function Lines() {
   };
 
   useEffect(() => { load(); }, []);
+
+  // Prefill from the "Scan Gear" AI camera flow.
+  useEffect(() => {
+    if (location.state?.prefill) {
+      setEditing(null);
+      setPrefill(location.state.prefill);
+      setFormOpen(true);
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state]);
 
   const existingBrands = useMemo(() => {
     const brands = new Set(lines.map(l => l.brand).filter(Boolean));
@@ -105,6 +119,7 @@ export default function Lines() {
       }
       setFormOpen(false);
       setEditing(null);
+      setPrefill(null);
       await load();
     } catch (e) {
       toast.error(e.message || "Failed to save");
@@ -137,7 +152,7 @@ export default function Lines() {
             <span className="font-medium text-foreground"> · Total value of your lines ${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
           </p>
         </div>
-        <Button onClick={() => { setEditing(null); setFormOpen(true); }}>
+        <Button onClick={() => { setEditing(null); setPrefill(null); setFormOpen(true); }}>
           <Plus className="w-4 h-4 mr-2" /> Add Line
         </Button>
       </div>
@@ -210,7 +225,7 @@ export default function Lines() {
         open={!!viewTarget}
         onOpenChange={(o) => !o && setViewTarget(null)}
         line={viewTarget}
-        onEdit={(l) => { setViewTarget(null); setEditing(l); setFormOpen(true); }}
+        onEdit={(l) => { setViewTarget(null); setEditing(l); setPrefill(null); setFormOpen(true); }}
         onDelete={(l) => { setViewTarget(null); setDeleteTarget(l); }}
       />
 
@@ -218,7 +233,7 @@ export default function Lines() {
         open={formOpen}
         onOpenChange={setFormOpen}
         onSubmit={handleSave}
-        initial={editing}
+        initial={editing || prefill}
         reels={reels}
         rods={rods}
         loading={saving}

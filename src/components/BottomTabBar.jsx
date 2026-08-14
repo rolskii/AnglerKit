@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Home as HomeIcon, Camera, Cloud, Moon as MoonIcon, Map as MapIcon, Waves, Gauge, Package } from "lucide-react";
+import { Home as HomeIcon, Camera, Cloud, Moon as MoonIcon, Map as MapIcon, Waves, Gauge, Package, Sparkles } from "lucide-react";
 import { ReelIcon as ReelDiscIcon, LinesIcon, RodIcon, LureIcon } from "@/components/GearIcons";
 const tabs = [
   { to: "/", label: "Home", icon: HomeIcon, matchExact: true },
@@ -46,7 +46,7 @@ function TabLink({ tab }) {
     </NavLink>
   );
 }
-export default function BottomTabBar() {
+export default function BottomTabBar({ onScan }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [conditionsOpen, setConditionsOpen] = useState(false);
@@ -120,6 +120,19 @@ export default function BottomTabBar() {
               ref={gearPopupRef}
               className="absolute bottom-full mb-2 left-0 w-[160px] bg-card rounded-2xl shadow-xl border border-border/60 p-1.5 z-[601]"
             >
+              {onScan && (
+                <button
+                  type="button"
+                  onClick={() => { setGearOpen(false); onScan(); }}
+                  className="w-full flex items-center gap-2.5 p-1.5 rounded-xl active:bg-accent transition-colors text-left"
+                >
+                  <span className="flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0 bg-primary/10 text-primary">
+                    <Sparkles className="w-4 h-4" strokeWidth={2} />
+                  </span>
+                  <span className="text-[12.5px] font-semibold text-foreground">Scan Gear</span>
+                </button>
+              )}
+              {onScan && <div className="my-1 h-px bg-border/60" />}
               {GEAR_ITEMS.map((item) => {
                 const Icon = item.icon;
                 return (

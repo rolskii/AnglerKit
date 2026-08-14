@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +25,8 @@ const conditionColor = {
 };
 
 export default function Misc() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -31,6 +34,7 @@ export default function Misc() {
   const [sortDir, setSortDir] = useState("asc");
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [prefill, setPrefill] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [viewTarget, setViewTarget] = useState(null);
@@ -49,6 +53,16 @@ export default function Misc() {
   };
 
   useEffect(() => { load(); }, []);
+
+  // Prefill from the "Scan Gear" AI camera flow.
+  useEffect(() => {
+    if (location.state?.prefill) {
+      setEditing(null);
+      setPrefill(location.state.prefill);
+      setFormOpen(true);
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state]);
 
   const totalValue = useMemo(() =>
     items.reduce((sum, i) => sum + (i.value || 0), 0), [items]);
@@ -129,7 +143,7 @@ export default function Misc() {
             <span className="font-medium text-foreground"> · Total value of your miscellaneous gear ${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
           </p>
         </div>
-        <Button onClick={() => { setEditing(null); setFormOpen(true); }}>
+        <Button onClick={() => { setEditing(null); setPrefill(null); setFormOpen(true); }}>
           <Plus className="w-4 h-4 mr-2" /> Add Misc. Item
         </Button>
       </div>
@@ -205,11 +219,11 @@ export default function Misc() {
         open={!!viewTarget}
         onOpenChange={(o) => !o && setViewTarget(null)}
         item={viewTarget}
-        onEdit={(i) => { setViewTarget(null); setEditing(i); setFormOpen(true); }}
+        onEdit={(i) => { setViewTarget(null); setEditing(i); setPrefill(null); setFormOpen(true); }}
         onDelete={(i) => { setViewTarget(null); setDeleteTarget(i); }}
       />
 
-      <MiscForm open={formOpen} onOpenChange={setFormOpen} onSubmit={handleSave} initial={editing} loading={saving} />
+      <MiscForm open={formOpen} onOpenChange={setFormOpen} onSubmit={handleSave} initial={editing || prefill} loading={saving} />
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <AlertDialogContent>
