@@ -9,7 +9,7 @@ const tabs = [
 ];
 const CONDITIONS_ITEMS = [
   { to: "/moon", label: "Moon", icon: MoonIcon, tint: "bg-purple-100 text-purple-600" },
-  { to: "/river", label: "River", icon: Waves, tint: "bg-cyan-100 text-cyan-600" },
+  { to: "/river", label: "Hydrometric", icon: Waves, tint: "bg-cyan-100 text-cyan-600" },
   { to: "/weather", label: "Weather", icon: Cloud, tint: "bg-teal-100 text-teal-600" },
 ];
 const CONDITIONS_PATHS = CONDITIONS_ITEMS.map((item) => item.to);
