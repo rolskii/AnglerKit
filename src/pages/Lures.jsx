@@ -8,6 +8,9 @@ import LureForm from "@/components/lures/LureForm";
 import LureDetailDialog from "@/components/lures/LureDetailDialog";
 import ViewToggle from "@/components/ViewToggle";
 import GearThumbnail from "@/components/GearThumbnail";
+import GearEmptyState from "@/components/gear/GearEmptyState";
+import { LureIcon } from "@/components/GearIcons";
+import gearEmptyTackle from "@/assets/gear-empty-tackle.jpg";
 import { useViewMode } from "@/hooks/useViewMode";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -159,10 +162,19 @@ export default function Lures() {
       {loading ? (
         <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-muted-foreground" /></div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-20 text-muted-foreground">
-          <RotateCw className="w-12 h-12 mx-auto mb-3 opacity-40" />
-          <p>No lures or flies found. Add your first one!</p>
-        </div>
+        lures.length === 0 ? (
+          <GearEmptyState
+            image={gearEmptyTackle}
+            icon={LureIcon}
+            headline="Add your first fly or lure"
+            subtext="Snap a photo and we'll fill in the details for you"
+          />
+        ) : (
+          <div className="text-center py-20 text-muted-foreground">
+            <RotateCw className="w-12 h-12 mx-auto mb-3 opacity-40" />
+            <p>No lures or flies match your search.</p>
+          </div>
+        )
       ) : viewMode === "thumbnail" ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
           {filtered.map((lure) => (

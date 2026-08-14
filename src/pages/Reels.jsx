@@ -8,6 +8,9 @@ import ReelForm from "@/components/reels/ReelForm";
 import ReelDetailDialog from "@/components/reels/ReelDetailDialog";
 import ViewToggle from "@/components/ViewToggle";
 import GearThumbnail from "@/components/GearThumbnail";
+import GearEmptyState from "@/components/gear/GearEmptyState";
+import { ReelIcon } from "@/components/GearIcons";
+import gearEmptyReels from "@/assets/gear-empty-reels.jpg";
 import { useViewMode } from "@/hooks/useViewMode";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -185,10 +188,19 @@ export default function Reels() {
       {loading ? (
         <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-muted-foreground" /></div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-20 text-muted-foreground">
-          <RotateCw className="w-12 h-12 mx-auto mb-3 opacity-40" />
-          <p>No reels found. Add your first one!</p>
-        </div>
+        reels.length === 0 ? (
+          <GearEmptyState
+            image={gearEmptyReels}
+            icon={ReelIcon}
+            headline="Add your first reel"
+            subtext="Snap a photo and we'll fill in the details for you"
+          />
+        ) : (
+          <div className="text-center py-20 text-muted-foreground">
+            <RotateCw className="w-12 h-12 mx-auto mb-3 opacity-40" />
+            <p>No reels match your search.</p>
+          </div>
+        )
       ) : viewMode === "thumbnail" ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
           {filtered.map((reel) => (

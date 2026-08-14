@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { ChevronRight, Camera, Moon as MoonIcon, Cloud, Bell, MapPin, ChevronDown, Map as MapIcon, Waves, Gauge, Package } from "lucide-react";
+import { ChevronRight, Camera, Moon as MoonIcon, Cloud, Bell, MapPin, ChevronDown, Map as MapIcon, Waves, Gauge, Package, Sparkles } from "lucide-react";
 import WeatherGlyph from "@/components/weather/WeatherGlyph";
 import { ReelIcon as ReelDiscIcon, LinesIcon, RodIcon, LureIcon } from "@/components/GearIcons";
 import { CATEGORY_CHIP, NEUTRAL_CHIP } from "@/lib/categoryColors";
@@ -141,6 +141,10 @@ export default function Home() {
   const handleSelectGear = (to) => {
     setGearOpen(false);
     navigate(to);
+  };
+  const handleScanGear = () => {
+    setGearOpen(false);
+    window.dispatchEvent(new Event("open-scan-gear"));
   };
   const toggleConditions = () => {
     setGearOpen(false);
@@ -391,6 +395,17 @@ export default function Home() {
                     className="absolute top-full mt-2 left-0 w-[160px] bg-card rounded-2xl shadow-xl border border-border/60 p-1.5 z-20"
                   >
                     <div className="absolute -top-1.5 left-6 w-3 h-3 bg-card border-l border-t border-border/60 rotate-45" />
+                    <button
+                      type="button"
+                      onClick={handleScanGear}
+                      className="w-full flex items-center gap-2 p-1.5 rounded-xl hover:bg-accent active:bg-accent transition-colors text-left"
+                    >
+                      <span className="flex items-center justify-center w-7 h-7 rounded-lg flex-shrink-0 bg-primary/10 text-primary">
+                        <Sparkles className="w-4 h-4" strokeWidth={2} />
+                      </span>
+                      <span className="text-sm font-semibold text-foreground">Scan Gear</span>
+                    </button>
+                    <div className="my-1 h-px bg-border/60" />
                     {GEAR_ITEMS.map((sub) => {
                       const SubIcon = sub.icon;
                       return (

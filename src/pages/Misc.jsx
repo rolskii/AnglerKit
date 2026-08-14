@@ -3,11 +3,13 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Loader2, RotateCw, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
+import { Plus, Search, Loader2, RotateCw, ArrowUp, ArrowDown, ArrowUpDown, Package } from "lucide-react";
 import MiscForm from "@/components/misc/MiscForm";
 import MiscDetailDialog from "@/components/misc/MiscDetailDialog";
 import ViewToggle from "@/components/ViewToggle";
 import GearThumbnail from "@/components/GearThumbnail";
+import GearEmptyState from "@/components/gear/GearEmptyState";
+import gearEmptyMisc from "@/assets/gear-empty-misc.jpg";
 import { useViewMode } from "@/hooks/useViewMode";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -159,10 +161,19 @@ export default function Misc() {
       {loading ? (
         <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-muted-foreground" /></div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-20 text-muted-foreground">
-          <RotateCw className="w-12 h-12 mx-auto mb-3 opacity-40" />
-          <p>No misc. items found. Add your first one!</p>
-        </div>
+        items.length === 0 ? (
+          <GearEmptyState
+            image={gearEmptyMisc}
+            icon={Package}
+            headline="Add your first piece of gear"
+            subtext="Snap a photo and we'll fill in the details for you"
+          />
+        ) : (
+          <div className="text-center py-20 text-muted-foreground">
+            <RotateCw className="w-12 h-12 mx-auto mb-3 opacity-40" />
+            <p>No misc. items match your search.</p>
+          </div>
+        )
       ) : viewMode === "thumbnail" ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
           {filtered.map((item) => (

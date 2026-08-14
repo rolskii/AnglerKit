@@ -9,6 +9,9 @@ import ViewToggle from "@/components/ViewToggle";
 import GearThumbnail from "@/components/GearThumbnail";
 import { useViewMode } from "@/hooks/useViewMode";
 import LineForm from "@/components/lines/LineForm";
+import GearEmptyState from "@/components/gear/GearEmptyState";
+import { LinesIcon } from "@/components/GearIcons";
+import gearEmptyLines from "@/assets/gear-empty-lines.jpg";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -173,10 +176,19 @@ export default function Lines() {
       {loading ? (
         <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-muted-foreground" /></div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-20 text-muted-foreground">
-          <Waves className="w-12 h-12 mx-auto mb-3 opacity-40" />
-          <p>No lines found. Add your first one!</p>
-        </div>
+        lines.length === 0 ? (
+          <GearEmptyState
+            image={gearEmptyLines}
+            icon={LinesIcon}
+            headline="Add your first line"
+            subtext="Snap a photo and we'll fill in the details for you"
+          />
+        ) : (
+          <div className="text-center py-20 text-muted-foreground">
+            <Waves className="w-12 h-12 mx-auto mb-3 opacity-40" />
+            <p>No lines match your search.</p>
+          </div>
+        )
       ) : viewMode === "thumbnail" ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
           {filtered.map((line) => (
