@@ -278,7 +278,7 @@ export default function RiverConditions() {
           <div className="px-1 mb-2 flex items-center justify-between">
             <h1 className="text-2xl md:text-[34px] font-heading font-extrabold tracking-tight leading-tight flex items-center gap-2">
               <Waves className="w-6 h-6 md:w-8 md:h-8 text-primary" />
-              River Conditions
+              Hydrometric
             </h1>
             {data && !error && (
               <button
