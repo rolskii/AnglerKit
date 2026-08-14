@@ -151,7 +151,7 @@ export default function Lures() {
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="Search lures & flies..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+          <Input placeholder="Search lures & flies..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 bg-card border-0 shadow-sm" />
         </div>
         <ViewToggle viewMode={viewMode} setViewMode={setViewMode} />
       </div>
@@ -179,7 +179,7 @@ export default function Lures() {
       ) : (
         <div className="overflow-x-auto rounded-lg border border-border">
           <table className="w-full text-sm">
-            <thead className="bg-muted/50">
+            <thead className="bg-muted/60">
               <tr className="border-b">
                 <SortHeader label="Name" field="name" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Type" field="type" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
@@ -193,7 +193,7 @@ export default function Lures() {
             </thead>
             <tbody>
               {filtered.map((lure) => (
-                <tr key={lure.id} className="border-b hover:bg-muted/30 cursor-pointer" onClick={() => setViewTarget(lure)}>
+                <tr key={lure.id} className="border-b hover:bg-muted/50 cursor-pointer" onClick={() => setViewTarget(lure)}>
                   <td className="px-3 py-2.5 font-medium">{lure.name}</td>
                   <td className="px-3 py-2.5">{lure.type}</td>
                   <td className="px-3 py-2.5">{lure.category}</td>
@@ -249,7 +249,7 @@ function SortHeader({ label, field, sortBy, sortDir, onSort }) {
   const active = sortBy === field;
   return (
     <th
-      className="text-left font-medium px-3 py-2.5 whitespace-nowrap cursor-pointer select-none hover:text-foreground"
+      className="text-left font-semibold text-[11px] uppercase tracking-wider text-muted-foreground px-3 py-3 whitespace-nowrap cursor-pointer select-none hover:text-foreground transition-colors"
       onClick={() => onSort(field)}
     >
       <span className="inline-flex items-center gap-1">

@@ -145,7 +145,7 @@ export default function Catches() {
             placeholder="Search species, location, fly..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
+            className="pl-9 bg-card border-0 shadow-sm"
           />
         </div>
         <div className="flex rounded-lg border border-border overflow-hidden shrink-0">
@@ -183,16 +183,16 @@ export default function Catches() {
         ) : (
           <div className="overflow-x-auto rounded-lg border border-border">
             <table className="w-full text-sm">
-              <thead className="bg-muted/50 text-muted-foreground">
+              <thead className="bg-muted/60 text-muted-foreground">
                 <tr>
                   <SortHeader label="Species" field="species" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                   <SortHeader label="Date" field="date" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                  <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Body of Water</th>
+                  <th className="text-left font-semibold text-[11px] uppercase tracking-wider text-muted-foreground px-3 py-3 whitespace-nowrap">Body of Water</th>
                   <SortHeader label="Length" field="length" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                   <SortHeader label="Girth" field="girth" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                   <SortHeader label="Weight" field="weight" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                  <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Fly</th>
-                  <th className="text-left font-medium px-3 py-2.5 whitespace-nowrap">Released</th>
+                  <th className="text-left font-semibold text-[11px] uppercase tracking-wider text-muted-foreground px-3 py-3 whitespace-nowrap">Fly</th>
+                  <th className="text-left font-semibold text-[11px] uppercase tracking-wider text-muted-foreground px-3 py-3 whitespace-nowrap">Released</th>
                 </tr>
               </thead>
               <tbody>
@@ -200,7 +200,7 @@ export default function Catches() {
                   <tr
                     key={c.id}
                     onClick={() => navigate(`/catches/${c.id}`)}
-                    className="border-t border-border cursor-pointer hover:bg-accent/50 transition-colors"
+                    className="border-t border-border cursor-pointer hover:bg-muted/50 transition-colors"
                   >
                     <td className="px-3 py-2.5 whitespace-nowrap font-medium">{c.species || "—"}</td>
                     <td className="px-3 py-2.5 whitespace-nowrap">
@@ -255,7 +255,7 @@ function SortHeader({ label, field, sortBy, sortDir, onSort }) {
   const active = sortBy === field;
   return (
     <th
-      className="text-left font-medium px-3 py-2.5 whitespace-nowrap cursor-pointer select-none hover:text-foreground"
+      className="text-left font-semibold text-[11px] uppercase tracking-wider text-muted-foreground px-3 py-3 whitespace-nowrap cursor-pointer select-none hover:text-foreground transition-colors"
       onClick={() => onSort(field)}
     >
       <span className="inline-flex items-center gap-1">
