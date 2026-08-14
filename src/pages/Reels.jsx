@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +25,8 @@ const conditionColor = {
 };
 
 export default function Reels() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [reels, setReels] = useState([]);
   const [lines, setLines] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -32,6 +35,7 @@ export default function Reels() {
   const [sortDir, setSortDir] = useState("asc");
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [prefill, setPrefill] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [viewTarget, setViewTarget] = useState(null);
@@ -54,6 +58,16 @@ export default function Reels() {
   };
 
   useEffect(() => { load(); }, []);
+
+  // Prefill from the "Scan Gear" AI camera flow.
+  useEffect(() => {
+    if (location.state?.prefill) {
+      setEditing(null);
+      setPrefill(location.state.prefill);
+      setFormOpen(true);
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state]);
 
   const linesByReel = useMemo(() => {
     const map = {};
@@ -155,7 +169,7 @@ export default function Reels() {
             {totalValue > 0 && <span className="font-medium text-foreground"> · Total value of reels ${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>}
           </p>
         </div>
-        <Button onClick={() => { setEditing(null); setFormOpen(true); }}>
+        <Button onClick={() => { setEditing(null); setPrefill(null); setFormOpen(true); }}>
           <Plus className="w-4 h-4 mr-2" /> Add Reel
         </Button>
       </div>
@@ -235,11 +249,11 @@ export default function Reels() {
         reel={viewTarget}
         lineCount={viewTarget ? linesByReel[viewTarget.name] || 0 : 0}
         spooledLines={viewTarget ? spooledLinesByReel[viewTarget.name] || [] : []}
-        onEdit={(r) => { setViewTarget(null); setEditing(r); setFormOpen(true); }}
+        onEdit={(r) => { setViewTarget(null); setEditing(r); setPrefill(null); setFormOpen(true); }}
         onDelete={(r) => { setViewTarget(null); setDeleteTarget(r); }}
       />
 
-      <ReelForm open={formOpen} onOpenChange={setFormOpen} onSubmit={handleSave} initial={editing} loading={saving} />
+      <ReelForm open={formOpen} onOpenChange={setFormOpen} onSubmit={handleSave} initial={editing || prefill} loading={saving} />
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <AlertDialogContent>
