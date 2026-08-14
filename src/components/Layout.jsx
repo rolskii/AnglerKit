@@ -8,6 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { ReelIcon as ReelDiscIcon, LinesIcon, RodIcon, LureIcon } from "@/components/GearIcons";
+import { CATEGORY_TEXT } from "@/lib/categoryColors";
 import AppLogo from "@/components/AppLogo";
 import { Moon as MoonIcon } from "lucide-react";
 import BottomTabBar from "@/components/BottomTabBar";
@@ -15,14 +16,14 @@ import ScanGearDialog from "@/components/gear/ScanGearDialog";
 import { motion } from "framer-motion";
 const navItems = [
   { to: "/", label: "Home", icon: HomeIcon },
-  { to: "/lines", label: "Lines", icon: LinesIcon },
-  { to: "/reels", label: "Reels", icon: ReelDiscIcon },
-  { to: "/rods", label: "Rods", icon: RodIcon },
-  { to: "/lures", label: "Tackle", icon: LureIcon },
-  { to: "/misc", label: "Misc. Gear", icon: Package },
-  { to: "/moon", label: "Moon Phase", icon: MoonIcon },
-  { to: "/weather", label: "Weather", icon: Cloud },
-  { to: "/river", label: "Hydrometric", icon: Waves },
+  { to: "/lines", label: "Lines", icon: LinesIcon, tint: CATEGORY_TEXT.lines },
+  { to: "/reels", label: "Reels", icon: ReelDiscIcon, tint: CATEGORY_TEXT.reels },
+  { to: "/rods", label: "Rods", icon: RodIcon, tint: CATEGORY_TEXT.rods },
+  { to: "/lures", label: "Tackle", icon: LureIcon, tint: CATEGORY_TEXT.tackle },
+  { to: "/misc", label: "Misc. Gear", icon: Package, tint: CATEGORY_TEXT.misc },
+  { to: "/moon", label: "Moon Phase", icon: MoonIcon, tint: CATEGORY_TEXT.moon },
+  { to: "/weather", label: "Weather", icon: Cloud, tint: CATEGORY_TEXT.weather },
+  { to: "/river", label: "Hydrometric", icon: Waves, tint: CATEGORY_TEXT.hydro },
   { to: "/map", label: "Maps", icon: MapIcon },
   { to: "/catches", label: "Fish Log", icon: Camera, matchPrefix: "/catches" },
   { to: "/settings", label: "Settings", icon: SettingsIcon },
@@ -76,7 +77,7 @@ export default function Layout() {
                       : "text-foreground/70 hover:bg-accent hover:text-foreground"
                   }`}
                 >
-                  <Icon className="w-5 h-5 shrink-0" strokeWidth={2} />
+                  <Icon className={`w-5 h-5 shrink-0 ${item.tint || ""}`} strokeWidth={2} />
                   {item.label}
                 </NavLink>
               </li>

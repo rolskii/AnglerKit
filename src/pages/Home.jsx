@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { ChevronRight, Camera, Moon as MoonIcon, Cloud, Bell, MapPin, ChevronDown, Map as MapIcon, Waves, Gauge, Package } from "lucide-react";
 import WeatherGlyph from "@/components/weather/WeatherGlyph";
 import { ReelIcon as ReelDiscIcon, LinesIcon, RodIcon, LureIcon } from "@/components/GearIcons";
+import { CATEGORY_CHIP, NEUTRAL_CHIP } from "@/lib/categoryColors";
 import FishIcon from "@/components/FishIcon";
 import MoonPhaseSymbol from "@/components/MoonPhaseSymbol";
 import { base44 } from "@/api/base44Client";
@@ -76,32 +77,23 @@ const getNextBiteWindow = () => {
   return periods[0];
 };
 const items = [
-  { title: "Gear", icon: ReelDiscIcon, tint: "orange", key: "gear" },
-  { title: "Conditions", icon: Gauge, tint: "gauge", key: "conditions" },
-  { to: "/map", title: "Map", icon: MapIcon, tint: "green", key: "map" },
-  { to: "/catches", title: "Fish Log", icon: Camera, tint: "blue", key: "catch" },
+  { title: "Gear", icon: ReelDiscIcon, key: "gear" },
+  { title: "Conditions", icon: Gauge, key: "conditions" },
+  { to: "/map", title: "Map", icon: MapIcon, key: "map" },
+  { to: "/catches", title: "Fish Log", icon: Camera, key: "catch" },
 ];
 const CONDITIONS_ITEMS = [
-  { to: "/moon", label: "Moon", icon: MoonIcon, tint: "purple" },
-  { to: "/weather", label: "Weather", icon: Cloud, tint: "teal" },
-  { to: "/river", label: "Hydrometric", icon: Waves, tint: "cyan" },
+  { to: "/moon", label: "Moon", icon: MoonIcon, tint: CATEGORY_CHIP.moon },
+  { to: "/weather", label: "Weather", icon: Cloud, tint: CATEGORY_CHIP.weather },
+  { to: "/river", label: "Hydrometric", icon: Waves, tint: CATEGORY_CHIP.hydro },
 ];
 const GEAR_ITEMS = [
-  { to: "/lines", label: "Lines", icon: LinesIcon, tint: "blue" },
-  { to: "/reels", label: "Reels", icon: ReelDiscIcon, tint: "orange" },
-  { to: "/rods", label: "Rods", icon: RodIcon, tint: "teal" },
-  { to: "/lures", label: "Tackle", icon: LureIcon, tint: "purple" },
-  { to: "/misc", label: "Misc. Gear", icon: Package, tint: "orange" },
+  { to: "/lines", label: "Lines", icon: LinesIcon, tint: CATEGORY_CHIP.lines },
+  { to: "/reels", label: "Reels", icon: ReelDiscIcon, tint: CATEGORY_CHIP.reels },
+  { to: "/rods", label: "Rods", icon: RodIcon, tint: CATEGORY_CHIP.rods },
+  { to: "/lures", label: "Tackle", icon: LureIcon, tint: CATEGORY_CHIP.tackle },
+  { to: "/misc", label: "Misc. Gear", icon: Package, tint: CATEGORY_CHIP.misc },
 ];
-const tintClasses = {
-  orange: "bg-tint-orange-bg text-tint-orange",
-  blue: "bg-tint-blue-bg text-tint-blue",
-  purple: "bg-tint-purple-bg text-tint-purple",
-  teal: "bg-tint-teal-bg text-tint-teal",
-  cyan: "bg-cyan-100 text-cyan-600",
-  green: "bg-green-100 text-green-600",
-  gauge: "bg-blue-100 text-blue-700",
-};
 export default function Home() {
   const navigate = useNavigate();
   const [moonPhase, setMoonPhase] = useState(null);
@@ -373,7 +365,7 @@ export default function Home() {
           const desc = descriptions[item.key];
           const cardInner = (
             <div className="flex flex-col gap-1 md:gap-3">
-              <div className={`flex h-7 w-7 md:h-11 md:w-11 items-center justify-center rounded-xl flex-shrink-0 ${tintClasses[item.tint]}`}>
+              <div className={`flex h-7 w-7 md:h-11 md:w-11 items-center justify-center rounded-xl flex-shrink-0 ${NEUTRAL_CHIP}`}>
                 <Icon className={isGear ? "w-5 md:w-10 h-5 md:h-10" : "w-4 md:w-8 h-4 md:h-8"} strokeWidth={2} />
               </div>
               <div className="space-y-0.5 md:space-y-1">
@@ -408,7 +400,7 @@ export default function Home() {
                           onClick={() => handleSelectGear(sub.to)}
                           className="w-full flex items-center gap-2 p-1.5 rounded-xl hover:bg-accent active:bg-accent transition-colors text-left"
                         >
-                          <span className={`flex items-center justify-center w-7 h-7 rounded-lg flex-shrink-0 ${tintClasses[sub.tint]}`}>
+                          <span className={`flex items-center justify-center w-7 h-7 rounded-lg flex-shrink-0 ${sub.tint}`}>
                             <SubIcon className="w-4 h-4" strokeWidth={2} />
                           </span>
                           <span className="text-sm font-semibold text-foreground">{sub.label}</span>
@@ -448,7 +440,7 @@ export default function Home() {
                           onClick={() => handleSelectCondition(sub.to)}
                           className="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-accent active:bg-accent transition-colors text-left"
                         >
-                          <span className={`flex items-center justify-center w-9 h-9 rounded-xl flex-shrink-0 ${tintClasses[sub.tint]}`}>
+                          <span className={`flex items-center justify-center w-9 h-9 rounded-xl flex-shrink-0 ${sub.tint}`}>
                             <SubIcon className="w-[18px] h-[18px]" strokeWidth={2} />
                           </span>
                           <span className="text-sm font-semibold text-foreground">{sub.label}</span>
