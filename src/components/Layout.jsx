@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Outlet, NavLink, useNavigate, useLocation, Link } from "react-router-dom";
 import {
   LogOut, Menu, X, ChevronLeft, Sparkles,
@@ -37,6 +37,16 @@ export default function Layout() {
   const handleLogout = async () => {
     await base44.auth.logout();
   };
+
+  // Lets other components (e.g. the empty-state "Featured Photo" card) open
+  // the Scan Gear dialog without needing the dialog's state threaded through
+  // props — matches this app's existing window-event pattern (see
+  // "featured-image-changed" in src/lib/featuredImage.js).
+  useEffect(() => {
+    const openScan = () => setScanOpen(true);
+    window.addEventListener("open-scan-gear", openScan);
+    return () => window.removeEventListener("open-scan-gear", openScan);
+  }, []);
 
   const isChildScreen = () => {
     const p = location.pathname;
