@@ -820,17 +820,22 @@ export default function MapView() {
   useEffect(() => {
     if (!mapReady || !mapRef.current || gpsPos) return;
     if (!navigator.geolocation) return;
+    let cancelled = false;
     navigator.geolocation.getCurrentPosition(
       (pos) => {
+        if (cancelled || !mapRef.current) return;
         const c = [pos.coords.latitude, pos.coords.longitude];
         setGpsPos(c);
         const coord = new mapkit.Coordinate(c[0], c[1]);
-        mapRef.current.setCameraDistanceAnimated(300);
-        mapRef.current.setCenterAnimated(coord);
+        try {
+          mapRef.current.setCameraDistanceAnimated(300);
+          mapRef.current.setCenterAnimated(coord);
+        } catch (e) {}
       },
       (err) => console.warn('Geolocation failed:', err.message),
       { enableHighAccuracy: true, maximumAge: 30000, timeout: 15000 }
     );
+    return () => { cancelled = true; };
   }, [mapReady, gpsPos]);
 
   // Update track overlay
