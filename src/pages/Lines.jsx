@@ -164,7 +164,7 @@ export default function Lines() {
             placeholder="Search brand, model, colour..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
+            className="pl-9 bg-card border-0 shadow-sm"
           />
         </div>
         <ViewToggle viewMode={viewMode} setViewMode={setViewMode} />
@@ -193,7 +193,7 @@ export default function Lines() {
       ) : (
         <div className="overflow-x-auto rounded-lg border border-border">
           <table className="w-full text-sm">
-            <thead className="bg-muted/50">
+            <thead className="bg-muted/60">
               <tr className="border-b">
                 <SortHeader label="Species" field="species" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Brand" field="brand" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
@@ -206,7 +206,7 @@ export default function Lines() {
             </thead>
             <tbody>
               {filtered.map((line) => (
-                <tr key={line.id} className="border-b hover:bg-muted/30 cursor-pointer" onClick={() => setViewTarget(line)}>
+                <tr key={line.id} className="border-b hover:bg-muted/50 cursor-pointer" onClick={() => setViewTarget(line)}>
                   <td className="px-3 py-2.5">{line.species}</td>
                   <td className="px-3 py-2.5 font-medium">{line.brand}</td>
                   <td className="px-3 py-2.5">{line.model}</td>
@@ -265,7 +265,7 @@ function SortHeader({ label, field, sortBy, sortDir, onSort }) {
   const active = sortBy === field;
   return (
     <th
-      className="text-left font-medium px-3 py-2.5 whitespace-nowrap cursor-pointer select-none hover:text-foreground"
+      className="text-left font-semibold text-[11px] uppercase tracking-wider text-muted-foreground px-3 py-3 whitespace-nowrap cursor-pointer select-none hover:text-foreground transition-colors"
       onClick={() => onSort(field)}
     >
       <span className="inline-flex items-center gap-1">
