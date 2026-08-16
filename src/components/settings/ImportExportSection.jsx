@@ -8,6 +8,8 @@ const ENTITIES = [
   { name: "FlyLine", label: "Lines" },
   { name: "Reel", label: "Reels" },
   { name: "Rod", label: "Rods" },
+  { name: "Lure", label: "Lures & Flies" },
+  { name: "MiscItem", label: "Misc. Gear" },
 ];
 
 const ALL_ENTITIES = [
@@ -23,6 +25,8 @@ const COLUMNS = {
   FlyLine: ["species", "brand", "model", "type", "description", "line_weight", "grain_weight", "head_length", "total_length", "colour", "condition", "reel", "rod", "notes"],
   Reel: ["name", "brand", "model", "size", "condition", "notes"],
   Rod: ["name", "brand", "length", "line_weight", "type", "material", "condition", "notes"],
+  Lure: ["name", "type", "category", "brand", "model", "size", "colour", "quantity", "condition", "notes"],
+  MiscItem: ["name", "category", "brand", "model", "colour", "quantity", "condition", "notes"],
 };
 
 const SAMPLES = {
@@ -45,6 +49,22 @@ Hatch Finatic,Hatch,Finatic 5,Fly,5+,Like New,Backup reel
     content: `name,type,brand,length,line_weight,material,condition,notes
 Orvis Clearwater 9' 5wt,Fly,Orvis,9 ft,5,Carbon,New,
 Sage X 10' 7wt,Fly,Sage,10 ft,7,Carbon,Good,Great dry fly rod
+`,
+  },
+  Lure: {
+    file: "flyfish-sample-lures.csv",
+    content: `name,type,category,brand,model,size,colour,quantity,condition,notes
+Adams,Fly,Dry Fly,Classic,Adams,#14,Grey,6,Good,Go-to mayfly pattern
+Woolly Bugger,Fly,Streamer,Custom,Woolly Bugger,#6,Black,4,Like New,Olive bead head variant
+Mepps Aglia,Lure,Spinner,Mepps,Aglia,2,Silver,3,New,
+`,
+  },
+  MiscItem: {
+    file: "flyfish-sample-misc.csv",
+    content: `name,category,brand,model,colour,quantity,condition,notes
+G3 Waders,Apparel,Simms,G3 Stockingfoot,Tan,1,Good,Felt sole
+Nippers,Tool,Dr. Slick,Nippers,Stainless,1,Like New,
+Dry Fly Patch,Accessory,Guide Choice,Mountaineer Patch,Green,1,New,
 `,
   },
 };
@@ -368,6 +388,14 @@ export default function ImportExportSection() {
           <Button variant="outline" onClick={() => handleDownloadSample("Rod")}>
             <FileJson className="w-4 h-4" />
             Sample Rods
+          </Button>
+          <Button variant="outline" onClick={() => handleDownloadSample("Lure")}>
+            <FileJson className="w-4 h-4" />
+            Sample Lures
+          </Button>
+          <Button variant="outline" onClick={() => handleDownloadSample("MiscItem")}>
+            <FileJson className="w-4 h-4" />
+            Sample Misc
           </Button>
         </div>
         {importResult?.success != null && (
