@@ -30,6 +30,7 @@ export default function RodCard({ rod, lineCount, pairedLines, onEdit, onDelete 
       { label: "Type", value: rod.type },
       { label: "Material", value: rod.material },
       { label: "Condition", value: rod.condition },
+      { label: "Serial #", value: rod.serial_number },
       { label: "Value", value: rod.value != null ? `$${rod.value}` : null },
       { label: "Acquired", value: formatGearDate(rod.date_acquired) },
     ],
@@ -73,6 +74,7 @@ export default function RodCard({ rod, lineCount, pairedLines, onEdit, onDelete 
         <Detail label="Type" value={rod.type} />
         <Detail label="Material" value={rod.material} />
         <Detail label="Condition" value={rod.condition} />
+        <Detail label="Serial #" value={rod.serial_number} />
         <Detail label="Value" value={rod.value != null ? `$${rod.value}` : null} />
         <Detail label="Acquired" value={formatGearDate(rod.date_acquired)} />
       </div>

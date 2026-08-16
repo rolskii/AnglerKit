@@ -25,6 +25,7 @@ export default function ReelCard({ reel, lineCount, spooledLines, onEdit, onDele
       { label: "Model", value: reel.model },
       { label: "Size", value: reel.size },
       { label: "Condition", value: reel.condition },
+      { label: "Serial #", value: reel.serial_number },
       { label: "Value", value: reel.value != null ? `$${reel.value}` : null },
       { label: "Acquired", value: formatGearDate(reel.date_acquired) },
     ],
@@ -69,6 +70,7 @@ export default function ReelCard({ reel, lineCount, spooledLines, onEdit, onDele
          <Detail label="Size" value={reel.size} />
          <Detail label="Type" value={reel.type} />
          <Detail label="Condition" value={reel.condition} />
+         <Detail label="Serial #" value={reel.serial_number} />
          <Detail label="Value" value={reel.value != null ? `$${reel.value}` : null} />
          <Detail label="Acquired" value={formatGearDate(reel.date_acquired)} />
        </div>

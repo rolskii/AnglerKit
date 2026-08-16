@@ -14,7 +14,7 @@ const SPECIES = ["Trout", "Salmon", "Steelhead", "Bass", "Pike", "Saltwater", "G
 const TYPES = ["Casting", "Fly", "Spinning", "Other"];
 const MATERIALS = ["Carbon", "Cane", "Fiberglass", "Other"];
 const CONDITIONS = ["New", "Like New", "Good", "Fair", "Poor"];
-const empty = { name: "", species: "Trout", brand: "", model: "", length: "", line_weight: "", type: "Fly", material: "Carbon", condition: "Good", value: "", date_acquired: "", notes: "", images: [] };
+const empty = { name: "", species: "Trout", brand: "", model: "", length: "", line_weight: "", type: "Fly", material: "Carbon", condition: "Good", value: "", date_acquired: "", serial_number: "", notes: "", images: [] };
 
 export default function RodForm({ open, onOpenChange, onSubmit, initial, loading }) {
   const [form, setForm] = useState(empty);
@@ -104,6 +104,10 @@ export default function RodForm({ open, onOpenChange, onSubmit, initial, loading
               <Label>Date Acquired</Label>
               <Input className="bg-muted text-left" type="date" value={form.date_acquired || ""} onChange={(e) => set("date_acquired", e.target.value)} />
             </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Serial #</Label>
+            <Input className="bg-muted" value={form.serial_number || ""} onChange={(e) => set("serial_number", e.target.value)} placeholder="e.g. 1234567" />
           </div>
           <div className="space-y-1.5">
             <Label>Notes</Label>

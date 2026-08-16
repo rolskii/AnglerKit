@@ -69,6 +69,10 @@
       },
       "description": "Photos of the reel"
     },
+    "serial_number": {
+      "type": "string",
+      "description": "Serial number of the reel"
+    },
     "notes": {
       "type": "string"
     }

@@ -13,7 +13,7 @@ import ImageUpload from "@/components/ImageUpload";
 const SPECIES = ["Trout", "Salmon", "Steelhead", "Bass", "Pike", "Saltwater", "Gar", "Muskie", "Anything", "Other"].sort((a, b) => a.localeCompare(b));
 const CONDITIONS = ["New", "Like New", "Good", "Fair", "Poor"];
 const TYPES = ["Casting", "Fly", "Spinning", "Other"];
-const empty = { name: "", species: "Trout", brand: "", model: "", size: "", type: "", condition: "Good", value: "", date_acquired: "", notes: "", images: [] };
+const empty = { name: "", species: "Trout", brand: "", model: "", size: "", type: "", condition: "Good", value: "", date_acquired: "", serial_number: "", notes: "", images: [] };
 
 export default function ReelForm({ open, onOpenChange, onSubmit, initial, loading }) {
   const [form, setForm] = useState(empty);
@@ -86,6 +86,10 @@ export default function ReelForm({ open, onOpenChange, onSubmit, initial, loadin
               <Label>Date Acquired</Label>
               <Input className="bg-muted text-left" type="date" value={form.date_acquired || ""} onChange={(e) => set("date_acquired", e.target.value)} />
             </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Serial #</Label>
+            <Input className="bg-muted" value={form.serial_number || ""} onChange={(e) => set("serial_number", e.target.value)} placeholder="e.g. 1234567" />
           </div>
           <div className="space-y-1.5">
             <Label>Notes</Label>
