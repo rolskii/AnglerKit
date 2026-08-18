@@ -4,12 +4,12 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Camera, Upload, Sparkles, Loader2, AlertTriangle, X, Plus } from "lucide-react";
+import { Camera, Upload, Sparkles, Loader2, AlertTriangle, X, Plus, Check, RotateCcw } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import {
   GEAR_CATEGORY_META, GEAR_EXTRACTION_SCHEMA, GEAR_EXTRACTION_PROMPT,
-  mapExtractionToPrefill, resolveCategory,
+  SCAN_CATEGORY_ORDER, mapExtractionToPrefill, resolveCategory,
 } from "@/lib/gearScan";
 
 // Up to this many photos of the same item can be staged before scanning —
@@ -47,8 +47,12 @@ let nextPhotoId = 0;
 
 export default function ScanGearDialog({ open, onOpenChange }) {
   const [photos, setPhotos] = useState([]); // { id, file, previewUrl }
-  const [status, setStatus] = useState("idle"); // idle | uploading | identifying | error
+  const [status, setStatus] = useState("idle"); // idle | uploading | identifying | review | error
   const [errorMsg, setErrorMsg] = useState("");
+  // Raw extraction + uploaded URLs kept around so the user can re-pick the
+  // category in the review step without re-uploading / re-running the AI.
+  const [identified, setIdentified] = useState(null); // { data, fileUrls }
+  const [chosenCategory, setChosenCategory] = useState("misc");
   const fileRef = useRef(null);
   const cameraRef = useRef(null);
   const navigate = useNavigate();
@@ -61,6 +65,8 @@ export default function ScanGearDialog({ open, onOpenChange }) {
     setPhotos((prev) => { revokeAll(prev); return []; });
     setStatus("idle");
     setErrorMsg("");
+    setIdentified(null);
+    setChosenCategory("misc");
   };
 
   const handleOpenChange = (o) => {
@@ -123,24 +129,30 @@ export default function ScanGearDialog({ open, onOpenChange }) {
       // depending on SDK version — handle both shapes defensively.
       const data = result?.output ?? result?.data ?? result ?? {};
 
-      const category = resolveCategory(data);
-      const meta = GEAR_CATEGORY_META[category];
-      const prefill = mapExtractionToPrefill(category, data, fileUrls);
-
-      onOpenChange(false);
-      reset();
-      navigate(meta.path, { state: { prefill } });
-
-      const label = data.identified_as || meta.label;
-      if (category === "misc" && (!data.category || data.category === "misc")) {
-        toast.success(`Photos uploaded — review the details before saving.`);
-      } else {
-        toast.success(`Looks like a ${label}. Review and save to add it.`);
-      }
+      const suggested = resolveCategory(data);
+      setIdentified({ data, fileUrls });
+      setChosenCategory(suggested);
+      setStatus("review");
     } catch (e) {
       setStatus("error");
       setErrorMsg(e?.message || "Something went wrong identifying that gear.");
     }
+  };
+
+  // Re-map the cached extraction onto the user's chosen category and hand it
+  // to that category's form as prefill data.
+  const handleConfirmCategory = () => {
+    if (!identified) return;
+    const category = chosenCategory;
+    const meta = GEAR_CATEGORY_META[category];
+    const prefill = mapExtractionToPrefill(category, identified.data, identified.fileUrls);
+
+    onOpenChange(false);
+    reset();
+    navigate(meta.path, { state: { prefill } });
+
+    const label = identified.data.identified_as || meta.label;
+    toast.success(`Adding as a ${meta.label}${label && label !== meta.label ? ` (${label})` : ""}. Review and save.`);
   };
 
   const working = status === "uploading" || status === "identifying";
@@ -154,7 +166,7 @@ export default function ScanGearDialog({ open, onOpenChange }) {
             Scan Gear
           </DialogTitle>
           <DialogDescription>
-            Snap or choose one or more photos of a rod, reel, fly line box, fly/lure, or other gear —
+            Snap or choose one or more photos of a rod, reel, fly line box, fly/lure, tying supply, or other gear —
             extra angles help us read labels — and we'll identify it and prefill a new entry for you to review.
           </DialogDescription>
         </DialogHeader>
@@ -173,6 +185,50 @@ export default function ScanGearDialog({ open, onOpenChange }) {
             <AlertTriangle className="w-8 h-8 text-destructive" />
             <p className="text-sm text-muted-foreground">{errorMsg}</p>
             <Button variant="outline" size="sm" onClick={() => setStatus("idle")}>Try again</Button>
+          </div>
+        ) : status === "review" ? (
+          <div className="flex flex-col gap-4 py-2">
+            {identified?.data?.identified_as && (
+              <p className="text-sm text-center text-muted-foreground">
+                Looks like <span className="font-semibold text-foreground">{identified.data.identified_as}</span>.
+              </p>
+            )}
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                Pick a category
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                {SCAN_CATEGORY_ORDER.map((key) => {
+                  const meta = GEAR_CATEGORY_META[key];
+                  const selected = chosenCategory === key;
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setChosenCategory(key)}
+                      className={`flex items-center justify-between gap-2 rounded-xl border px-3 py-2.5 text-sm font-medium transition-colors ${
+                        selected
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border bg-card text-foreground/80 hover:bg-accent"
+                      }`}
+                    >
+                      <span>{meta.label}</span>
+                      {selected && <Check className="w-4 h-4" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Button type="button" onClick={handleConfirmCategory}>
+                <Check className="w-4 h-4 mr-2" />
+                Review &amp; Add as {GEAR_CATEGORY_META[chosenCategory].label}
+              </Button>
+              <Button type="button" variant="outline" onClick={reset}>
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Scan different photos
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="flex flex-col gap-3 py-2">
