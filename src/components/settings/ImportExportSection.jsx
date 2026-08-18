@@ -73,10 +73,16 @@ Dry Fly Patch,Accessory,Guide Choice,Mountaineer Patch,Green,1,New,
   Supply: {
     file: "flyfish-sample-supplies.csv",
     content: `name,category,brand,model,colour,quantity,condition,notes
-5X Tippet,Leader/Tippet,Rio,Powerflex,Clear,1,New,50 yd spool
+Powerflex Tippet,Leader/Tippet,Rio,5X,Clear,1,New,50 yd spool
 Split Shot,Weight,Water Gremlin,BB,Black,10,New,Removable
-Thingamabobber,Indicator/Float,Thingamabobber,Medium,Red,5,New,
-Gink,Floatant/Dressing,Loon,Floatant,Clear,1,New,
+Lead Wire,Wire,Hareline,0.030,Grey,1,New,For weighting nymphs
+Bucktail,Hair,Hareline,Natural,White,1,New,For streamers
+Deer Hair,Hair,Hareline,Bleached,Tan,1,New,For elk hair caddis
+Marabou Blood Quill,Feathers,Spirit River,Sz 4,Red,5,New,For wooly buggers
+Dry Fly Hook,Hooks,Daiichi,1180 Sz 14,Silver,50,New,1X long shank
+UTC Thread,Thread/Floss,UTC,70 Denier,Black,2,New,For small dries
+Brass Beads,Beads/Eyes,Hareline,3/16 Gold,Gold,25,New,For nymphs
+Hares Ear Dubbing,Dubbing,Hareline,Natural,Beige,1,New,For nymphs
 `,
   },
 };

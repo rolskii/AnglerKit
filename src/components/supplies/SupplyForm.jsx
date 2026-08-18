@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import ImageUpload from "@/components/ImageUpload";
 
-const CATEGORIES = ["Leader/Tippet", "Weight", "Indicator/Float", "Floatant/Dressing", "Hook", "Tying Material", "Adhesive", "Other"];
+const CATEGORIES = ["Leader/Tippet", "Weight", "Wire", "Hair", "Feathers", "Hooks", "Thread/Floss", "Beads/Eyes", "Dubbing", "Adhesive", "Other"];
 const CONDITIONS = ["New", "Like New", "Good", "Fair", "Poor"];
 const empty = {
   name: "", category: "Other", brand: "", model: "", colour: "",
@@ -59,7 +59,7 @@ export default function SupplyForm({ open, onOpenChange, onSubmit, initial, load
             </div>
             <div className="space-y-1.5">
               <Label>Model / Size</Label>
-              <Input className="bg-muted" value={form.model} onChange={(e) => set("model", e.target.value)} placeholder="e.g. 5X, #14, 0.030" />
+              <Input className="bg-muted" value={form.model} onChange={(e) => set("model", e.target.value)} placeholder="e.g. #14, 0.030, 70 Denier, Sz 2" />
             </div>
             <div className="space-y-1.5">
               <Label>Colour</Label>

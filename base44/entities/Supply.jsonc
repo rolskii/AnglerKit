@@ -11,22 +11,25 @@
       "enum": [
         "Leader/Tippet",
         "Weight",
-        "Indicator/Float",
-        "Floatant/Dressing",
-        "Hook",
-        "Tying Material",
+        "Wire",
+        "Hair",
+        "Feathers",
+        "Hooks",
+        "Thread/Floss",
+        "Beads/Eyes",
+        "Dubbing",
         "Adhesive",
         "Other"
       ],
       "default": "Other",
-      "description": "Type of fishing supply (consumable)"
+      "description": "Type of fly/lure building material (e.g. hooks, thread, wire, hair, feathers, dubbing, beads)"
     },
     "brand": {
       "type": "string"
     },
     "model": {
       "type": "string",
-      "description": "Model or size (e.g. 5X, #14, 0.030)"
+      "description": "Model or size (e.g. #14, 0.030, 70 Denier, Sz 2)"
     },
     "colour": {
       "type": "string"

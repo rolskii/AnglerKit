@@ -139,7 +139,7 @@ export default function Supplies() {
           <h1 className="font-heading text-2xl font-bold flex items-center gap-2">
             Supplies
           </h1>
-          <p className="text-muted-foreground text-sm">Track consumable fishing supplies - tippet, weight, indicators, floatant, hooks and tying materials.</p>
+          <p className="text-muted-foreground text-sm">Track materials to build your own flies and lures - hooks, thread, wire, weight, hair, feathers, dubbing, beads and more.</p>
           <p className="text-muted-foreground text-sm mt-1">
             {items.length} {items.length === 1 ? "supply" : "supplies"} in your collection
             <span className="font-medium text-foreground"> · Total value ${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
