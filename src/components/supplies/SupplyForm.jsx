@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import ImageUpload from "@/components/ImageUpload";
 
-const CATEGORIES = ["Leader/Tippet", "Weight", "Wire", "Hair", "Feathers", "Hooks", "Thread/Floss", "Beads/Eyes", "Dubbing", "Adhesive", "Other"];
+const CATEGORIES = ["Leader/Tippet", "Weight", "Wire", "Hair", "Feathers", "Hooks", "Thread/Floss", "Beads/Eyes", "Dubbing", "Adhesive", "Indicator/Float", "Floatant/Dressing", "Other"];
 const CONDITIONS = ["New", "Like New", "Good", "Fair", "Poor"];
 const empty = {
   name: "", category: "Other", brand: "", model: "", colour: "",

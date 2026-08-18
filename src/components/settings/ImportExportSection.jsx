@@ -83,6 +83,8 @@ Dry Fly Hook,Hooks,Daiichi,1180 Sz 14,Silver,50,New,1X long shank
 UTC Thread,Thread/Floss,UTC,70 Denier,Black,2,New,For small dries
 Brass Beads,Beads/Eyes,Hareline,3/16 Gold,Gold,25,New,For nymphs
 Hares Ear Dubbing,Dubbing,Hareline,Natural,Beige,1,New,For nymphs
+Thingamabobber,Indicator/Float,Thingamabobber,Medium,Red,5,New,Strike indicator
+Gink,Floatant/Dressing,Loon,Floatant,Clear,1,New,Dry fly dressing
 `,
   },
 };

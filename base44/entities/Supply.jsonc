@@ -19,10 +19,12 @@
         "Beads/Eyes",
         "Dubbing",
         "Adhesive",
+        "Indicator/Float",
+        "Floatant/Dressing",
         "Other"
       ],
       "default": "Other",
-      "description": "Type of fly/lure building material (e.g. hooks, thread, wire, hair, feathers, dubbing, beads)"
+      "description": "Type of fly/lure building material or on-stream consumable supply"
     },
     "brand": {
       "type": "string"
