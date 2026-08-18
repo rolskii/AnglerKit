@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Loader2, RotateCw, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
+import { Plus, Search, Loader2, RotateCw, ArrowUp, ArrowDown, ArrowUpDown, AlertTriangle } from "lucide-react";
 import ReelForm from "@/components/reels/ReelForm";
 import ReelDetailDialog from "@/components/reels/ReelDetailDialog";
 import ViewToggle from "@/components/ViewToggle";
@@ -270,9 +270,12 @@ export default function Reels() {
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete this reel?</AlertDialogTitle>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-destructive" />
+              Delete this reel?
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently remove "{deleteTarget?.name}" from your collection.
+              This will permanently remove "{deleteTarget?.name}" from your collection. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

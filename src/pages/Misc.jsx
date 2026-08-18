@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Loader2, RotateCw, ArrowUp, ArrowDown, ArrowUpDown, Package } from "lucide-react";
+import { Plus, Search, Loader2, RotateCw, ArrowUp, ArrowDown, ArrowUpDown, Package, AlertTriangle } from "lucide-react";
 import MiscForm from "@/components/misc/MiscForm";
 import MiscDetailDialog from "@/components/misc/MiscDetailDialog";
 import ViewToggle from "@/components/ViewToggle";
@@ -239,9 +239,12 @@ export default function Misc() {
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete this misc. item?</AlertDialogTitle>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-destructive" />
+              Delete this misc. item?
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently remove "{deleteTarget?.name}" from your collection.
+              This will permanently remove "{deleteTarget?.name}" from your collection. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
