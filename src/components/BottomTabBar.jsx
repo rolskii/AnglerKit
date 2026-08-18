@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Home as HomeIcon, Camera, Cloud, Moon as MoonIcon, Map as MapIcon, Waves, Gauge, Package, Sparkles } from "lucide-react";
+import { Home as HomeIcon, Camera, Cloud, Moon as MoonIcon, Map as MapIcon, Waves, Gauge, Package, Boxes, Sparkles } from "lucide-react";
 import { ReelIcon as ReelDiscIcon, LinesIcon, RodIcon, LureIcon } from "@/components/GearIcons";
 import { CATEGORY_CHIP } from "@/lib/categoryColors";
 const tabs = [
@@ -20,6 +20,7 @@ const GEAR_ITEMS = [
   { to: "/rods", label: "Rods", icon: RodIcon, tint: CATEGORY_CHIP.rods },
   { to: "/lures", label: "Tackle", icon: LureIcon, tint: CATEGORY_CHIP.tackle },
   { to: "/misc", label: "Misc. Gear", icon: Package, tint: CATEGORY_CHIP.misc },
+  { to: "/supplies", label: "Supplies", icon: Boxes, tint: CATEGORY_CHIP.supplies },
 ];
 const GEAR_PATHS = GEAR_ITEMS.map((item) => item.to);
 function TabLink({ tab }) {

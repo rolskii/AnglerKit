@@ -75,6 +75,8 @@ module.exports = {
   				'tackle-bg': 'hsl(var(--cat-tackle-bg))',
   				misc: 'hsl(var(--cat-misc))',
   				'misc-bg': 'hsl(var(--cat-misc-bg))',
+  				supplies: 'hsl(var(--cat-supplies))',
+  				'supplies-bg': 'hsl(var(--cat-supplies-bg))',
   				moon: 'hsl(var(--cat-moon))',
   				'moon-bg': 'hsl(var(--cat-moon-bg))',
   				weather: 'hsl(var(--cat-weather))',

@@ -20,6 +20,7 @@ import Catches from '@/pages/Catches';
 import CatchDetail from '@/pages/CatchDetail';
 import Lures from '@/pages/Lures';
 import Misc from '@/pages/Misc';
+import Supplies from '@/pages/Supplies';
 import Moon from '@/pages/Moon';
 import Weather from '@/pages/Weather';
 import MapView from '@/pages/MapView';
@@ -71,6 +72,7 @@ const AuthenticatedApp = () => {
         <Route path="/catches/:id" element={<CatchDetail />} />
         <Route path="/lures" element={<Lures />} />
         <Route path="/misc" element={<Misc />} />
+        <Route path="/supplies" element={<Supplies />} />
         <Route path="/moon" element={<Moon />} />
         <Route path="/weather" element={<Weather />} />
         <Route path="/river" element={<RiverConditions />} />

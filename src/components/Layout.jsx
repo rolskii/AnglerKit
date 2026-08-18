@@ -3,7 +3,7 @@ import { Outlet, NavLink, useNavigate, useLocation, Link } from "react-router-do
 import {
   LogOut, Menu, X, ChevronLeft, Sparkles,
   Home as HomeIcon, Camera, Cloud, Map as MapIcon, Waves,
-  Settings as SettingsIcon, Info, Package,
+  Settings as SettingsIcon, Info, Package, Boxes,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
@@ -21,6 +21,7 @@ const navItems = [
   { to: "/rods", label: "Rods", icon: RodIcon, tint: CATEGORY_TEXT.rods },
   { to: "/lures", label: "Tackle", icon: LureIcon, tint: CATEGORY_TEXT.tackle },
   { to: "/misc", label: "Misc. Gear", icon: Package, tint: CATEGORY_TEXT.misc },
+  { to: "/supplies", label: "Supplies", icon: Boxes, tint: CATEGORY_TEXT.supplies },
   { to: "/moon", label: "Moon Phase", icon: MoonIcon, tint: CATEGORY_TEXT.moon },
   { to: "/weather", label: "Weather", icon: Cloud, tint: CATEGORY_TEXT.weather },
   { to: "/river", label: "Hydrometric", icon: Waves, tint: CATEGORY_TEXT.hydro },

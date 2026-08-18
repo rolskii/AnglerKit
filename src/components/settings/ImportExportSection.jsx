@@ -10,6 +10,7 @@ const ENTITIES = [
   { name: "Rod", label: "Rods" },
   { name: "Lure", label: "Lures & Flies" },
   { name: "MiscItem", label: "Misc. Gear" },
+  { name: "Supply", label: "Supplies" },
 ];
 
 const ALL_ENTITIES = [
@@ -19,6 +20,7 @@ const ALL_ENTITIES = [
   { name: "Catch", label: "Catches" },
   { name: "Lure", label: "Lures & Flies" },
   { name: "MiscItem", label: "Misc. Gear" },
+  { name: "Supply", label: "Supplies" },
 ];
 
 const COLUMNS = {
@@ -27,6 +29,7 @@ const COLUMNS = {
   Rod: ["name", "brand", "length", "line_weight", "type", "material", "condition", "notes"],
   Lure: ["name", "type", "category", "brand", "model", "size", "colour", "quantity", "condition", "notes"],
   MiscItem: ["name", "category", "brand", "model", "colour", "quantity", "condition", "notes"],
+  Supply: ["name", "category", "brand", "model", "colour", "quantity", "condition", "notes"],
 };
 
 const SAMPLES = {
@@ -65,6 +68,15 @@ Mepps Aglia,Lure,Spinner,Mepps,Aglia,2,Silver,3,New,
 G3 Waders,Apparel,Simms,G3 Stockingfoot,Tan,1,Good,Felt sole
 Nippers,Tool,Dr. Slick,Nippers,Stainless,1,Like New,
 Dry Fly Patch,Accessory,Guide Choice,Mountaineer Patch,Green,1,New,
+`,
+  },
+  Supply: {
+    file: "flyfish-sample-supplies.csv",
+    content: `name,category,brand,model,colour,quantity,condition,notes
+5X Tippet,Leader/Tippet,Rio,Powerflex,Clear,1,New,50 yd spool
+Split Shot,Weight,Water Gremlin,BB,Black,10,New,Removable
+Thingamabobber,Indicator/Float,Thingamabobber,Medium,Red,5,New,
+Gink,Floatant/Dressing,Loon,Floatant,Clear,1,New,
 `,
   },
 };
@@ -396,6 +408,10 @@ export default function ImportExportSection() {
           <Button variant="outline" onClick={() => handleDownloadSample("MiscItem")}>
             <FileJson className="w-4 h-4" />
             Sample Misc
+          </Button>
+          <Button variant="outline" onClick={() => handleDownloadSample("Supply")}>
+            <FileJson className="w-4 h-4" />
+            Sample Supplies
           </Button>
         </div>
         {importResult?.success != null && (

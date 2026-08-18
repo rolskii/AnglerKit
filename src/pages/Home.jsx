@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { ChevronRight, Camera, Moon as MoonIcon, Cloud, Bell, MapPin, ChevronDown, Map as MapIcon, Waves, Gauge, Package, Sparkles } from "lucide-react";
+import { ChevronRight, Camera, Moon as MoonIcon, Cloud, Bell, MapPin, ChevronDown, Map as MapIcon, Waves, Gauge, Package, Boxes, Sparkles } from "lucide-react";
 import WeatherGlyph from "@/components/weather/WeatherGlyph";
 import { ReelIcon as ReelDiscIcon, LinesIcon, RodIcon, LureIcon } from "@/components/GearIcons";
 import { CATEGORY_CHIP, NEUTRAL_CHIP } from "@/lib/categoryColors";
@@ -93,6 +93,7 @@ const GEAR_ITEMS = [
   { to: "/rods", label: "Rods", icon: RodIcon, tint: CATEGORY_CHIP.rods },
   { to: "/lures", label: "Tackle", icon: LureIcon, tint: CATEGORY_CHIP.tackle },
   { to: "/misc", label: "Misc. Gear", icon: Package, tint: CATEGORY_CHIP.misc },
+  { to: "/supplies", label: "Supplies", icon: Boxes, tint: CATEGORY_CHIP.supplies },
 ];
 export default function Home() {
   const navigate = useNavigate();
@@ -237,12 +238,13 @@ export default function Home() {
   };
   const fetchGearCount = async () => {
     try {
-      const [lines, reels, rods, lures, misc] = await Promise.all([
+      const [lines, reels, rods, lures, misc, supplies] = await Promise.all([
         base44.entities.FlyLine.list("-created_date", 500),
         base44.entities.Reel.list("-created_date", 500),
         base44.entities.Rod.list("-created_date", 500),
         base44.entities.Lure.list("-created_date", 500),
         base44.entities.MiscItem.list("-created_date", 500),
+        base44.entities.Supply.list("-created_date", 500),
       ]);
       const tackleCount = lures.length + misc.length;
       setDescriptions(prev => ({
@@ -252,6 +254,7 @@ export default function Home() {
           `${reels.length} ${reels.length === 1 ? "reel" : "reels"}`,
           `${rods.length} ${rods.length === 1 ? "rod" : "rods"}`,
           `${tackleCount} ${tackleCount === 1 ? "tackle" : "tackle"}`,
+          `${supplies.length} ${supplies.length === 1 ? "supply" : "supplies"}`,
         ]
       }));
     } catch (e) {}

@@ -43,6 +43,8 @@
     --cat-tackle-bg: 280 70% 96%;
     --cat-misc: 340 75% 48%;
     --cat-misc-bg: 340 75% 96%;
+    --cat-supplies: 142 55% 40%;
+    --cat-supplies-bg: 142 55% 95%;
     --cat-moon: 248 60% 55%;
     --cat-moon-bg: 248 60% 96%;
     --cat-weather: 42 95% 42%;
@@ -98,6 +100,8 @@
     --cat-tackle-bg: 280 40% 18%;
     --cat-misc: 340 80% 68%;
     --cat-misc-bg: 340 40% 17%;
+    --cat-supplies: 142 65% 58%;
+    --cat-supplies-bg: 142 35% 16%;
     --cat-moon: 248 65% 72%;
     --cat-moon-bg: 248 40% 18%;
     --cat-weather: 42 95% 62%;

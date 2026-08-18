@@ -1,0 +1,77 @@
+{
+  "name": "Supply",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Supply name/description"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Leader/Tippet",
+        "Weight",
+        "Indicator/Float",
+        "Floatant/Dressing",
+        "Hook",
+        "Tying Material",
+        "Adhesive",
+        "Other"
+      ],
+      "default": "Other",
+      "description": "Type of fishing supply (consumable)"
+    },
+    "brand": {
+      "type": "string"
+    },
+    "model": {
+      "type": "string",
+      "description": "Model or size (e.g. 5X, #14, 0.030)"
+    },
+    "colour": {
+      "type": "string"
+    },
+    "quantity": {
+      "type": "number",
+      "description": "How many of this item you own",
+      "default": 1
+    },
+    "condition": {
+      "type": "string",
+      "enum": [
+        "New",
+        "Like New",
+        "Good",
+        "Fair",
+        "Poor"
+      ],
+      "default": "New"
+    },
+    "value": {
+      "type": "number",
+      "description": "Dollar value of the supply"
+    },
+    "date_acquired": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the supply was acquired"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Legacy single photo (superseded by images)"
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Photos of the supply"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}
