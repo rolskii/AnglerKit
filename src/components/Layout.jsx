@@ -7,6 +7,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
+import { useAuth } from "@/lib/AuthContext";
+import { seedSampleData } from "@/lib/sampleData";
 import { ReelIcon as ReelDiscIcon, LinesIcon, RodIcon, LureIcon } from "@/components/GearIcons";
 import { CATEGORY_TEXT } from "@/lib/categoryColors";
 import AppLogo from "@/components/AppLogo";
@@ -49,6 +51,35 @@ export default function Layout() {
     window.addEventListener("open-scan-gear", openScan);
     return () => window.removeEventListener("open-scan-gear", openScan);
   }, []);
+
+  // Auto-seed a starter set of sample gear & catches for non-admin users whose
+  // account is still empty, so new accounts have data to explore. Admins (the
+  // app owner) are skipped so their own collection stays untouched. Runs at
+  // most once per browser session.
+  const { user } = useAuth();
+  useEffect(() => {
+    if (!user || user.role === "admin") return;
+    if (sessionStorage.getItem("anglerkit_sample_seed_checked")) return;
+    sessionStorage.setItem("anglerkit_sample_seed_checked", "1");
+    (async () => {
+      try {
+        const checks = await Promise.all([
+          base44.entities.Rod.list("-updated_date", 1),
+          base44.entities.Reel.list("-updated_date", 1),
+          base44.entities.FlyLine.list("-updated_date", 1),
+          base44.entities.Lure.list("-updated_date", 1),
+          base44.entities.MiscItem.list("-updated_date", 1),
+          base44.entities.Supply.list("-updated_date", 1),
+          base44.entities.Catch.list("-updated_date", 1),
+        ]);
+        if (checks.every((r) => r.length === 0)) {
+          await seedSampleData();
+        }
+      } catch (e) {
+        // best-effort — ignore seeding errors
+      }
+    })();
+  }, [user]);
 
   const isChildScreen = () => {
     const p = location.pathname;

@@ -6,12 +6,13 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Loader2, Sun, Moon, Monitor, ArrowLeftRight, BellRing, Ruler, Trash2 } from "lucide-react";
+import { Loader2, Sun, Moon, Monitor, ArrowLeftRight, BellRing, Ruler, Trash2, Sparkles } from "lucide-react";
 import { useUnits } from "@/lib/unitsContext";
 import ImportExportSection from "@/components/settings/ImportExportSection";
 import NotificationSetup from "@/components/settings/NotificationSetup";
 import AlarmSoundPicker from "@/components/settings/AlarmSoundPicker";
 import { toast } from "sonner";
+import { seedSampleData } from "@/lib/sampleData";
 
 export default function Settings() {
   const [user, setUser] = useState(null);
@@ -21,6 +22,19 @@ export default function Settings() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [deleting, setDeleting] = useState(false);
+  const [seeding, setSeeding] = useState(false);
+
+  const loadSamples = async () => {
+    setSeeding(true);
+    try {
+      const { total } = await seedSampleData();
+      toast.success(`Added ${total} sample items to your account`);
+    } catch (e) {
+      toast.error(e.message || "Failed to load sample data");
+    } finally {
+      setSeeding(false);
+    }
+  };
 
   const resolveDark = (t) => {
     if (t === "dark") return true;
@@ -182,6 +196,20 @@ export default function Settings() {
             <span className={`text-xs font-medium ${theme === "system" ? "text-primary" : ""}`}>System</span>
           </button>
         </div>
+      </div>
+
+      <div className="rounded-lg border border-border bg-card p-6 space-y-4">
+        <div className="flex items-center gap-2">
+          <Sparkles className="w-5 h-5 text-primary" />
+          <h2 className="font-heading font-semibold">Sample Data</h2>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Load a starter set of sample rods, reels, lines, flies, gear, supplies, and catches into your account. This only adds copies to your own collection — delete any items you don't want.
+        </p>
+        <Button onClick={loadSamples} disabled={seeding}>
+          {seeding ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
+          Load sample data
+        </Button>
       </div>
 
       <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-6 space-y-4">
