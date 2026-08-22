@@ -114,6 +114,7 @@ Deno.serve(async (req) => {
       precipitation: cw.precipitationAmount ?? 0,
       weather_code: mapCondition(cw.conditionCode),
       wind_speed_10m: cw.windSpeed ?? 0,
+      wind_gust_10m: cw.windGust ?? cw.windSpeed ?? 0,
       visibility: cw.visibility ?? 10000,
       pressure: cw.pressure ?? 0,
     };

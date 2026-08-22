@@ -1,0 +1,88 @@
+// Helpers for the Fish Log photo capture flow: geolocation, reverse
+// geocoding, local-weather summarisation, and AI species identification.
+import { base44 } from "@/api/base44Client";
+import { formatTemp, formatWind, getWeatherDescription } from "@/lib/weatherUnits";
+
+// Resolves to { lat, lon } or null if permission is denied / unavailable.
+export function getPosition() {
+  return new Promise((resolve) => {
+    if (!navigator?.geolocation?.getCurrentPosition) return resolve(null);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+      () => resolve(null),
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+    );
+  });
+}
+
+// Free, key-less, CORS-enabled client reverse geocoder. Returns a readable
+// "City, Region, Country"-style string, or null on failure.
+export async function reverseGeocode(lat, lon) {
+  try {
+    const res = await fetch(
+      `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`
+    );
+    if (!res.ok) return null;
+    const d = await res.json();
+    const parts = [d.city || d.locality, d.principalSubdivision, d.countryName].filter(Boolean);
+    return parts.length ? parts.join(", ") : null;
+  } catch {
+    return null;
+  }
+}
+
+function buildConditions(current, isMetric) {
+  if (!current) return null;
+  const unit = isMetric ? "celsius" : "fahrenheit";
+  const desc = getWeatherDescription(current.weather_code);
+  const temp = formatTemp(current.temperature_2m, unit);
+  const gust = current.wind_gust_10m != null ? formatWind(current.wind_gust_10m, unit) : null;
+  const parts = [desc, `${temp}°`, gust ? `wind gusts ${gust}` : null].filter(Boolean);
+  return parts.join(", ");
+}
+
+// Fetches current local weather via the app's WeatherKit backend and renders a
+// brief summary string, e.g. "Partly Cloudy, 18°, wind gusts 25km/h".
+export async function fetchCurrentWeather(lat, lon, isMetric) {
+  try {
+    const res = await base44.functions.invoke("weatherkit", { lat, lon });
+    const current = res?.data?.current ?? res?.current;
+    return buildConditions(current, isMetric);
+  } catch {
+    return null;
+  }
+}
+
+const FISH_ID_SCHEMA = {
+  type: "object",
+  properties: {
+    species: { type: "string", description: "Common name of the fish species, e.g. 'Brook Trout'." },
+    confidence: { type: "number" },
+  },
+  required: ["species"],
+};
+
+const FISH_ID_PROMPT =
+  "These photos show a caught fish. Identify the species using its common name " +
+  "(e.g. 'Brook Trout', 'Rainbow Trout', 'Smallmouth Bass', 'Largemouth Bass', " +
+  "'Northern Pike', 'Walleye', 'Brown Trout', 'Steelhead', 'Atlantic Salmon', " +
+  "'Carp', 'Gar', 'Muskie'). Give your best guess if uncertain. Return the common species name only.";
+
+// Runs the fish-identification scan on one or more uploaded photo URLs.
+// Returns the species common name, or null.
+export async function identifySpecies(fileUrls) {
+  try {
+    const urls = (Array.isArray(fileUrls) ? fileUrls : [fileUrls]).filter(Boolean);
+    if (!urls.length) return null;
+    const res = await base44.integrations.Core.InvokeLLM({
+      prompt: FISH_ID_PROMPT,
+      file_urls: urls,
+      response_json_schema: FISH_ID_SCHEMA,
+    });
+    const data = res?.output ?? res?.data ?? res ?? {};
+    const sp = typeof data === "string" ? data : data.species;
+    return sp && typeof sp === "string" ? sp.trim() : null;
+  } catch {
+    return null;
+  }
+}

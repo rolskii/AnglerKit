@@ -14,6 +14,14 @@ export default function CatchCard({ catchItem, onEdit, onDelete, lines = [], rod
     try { return new Date(d + "T00:00:00").toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }); }
     catch { return d; }
   };
+  const fmtTime = (t) => {
+    if (!t) return null;
+    const [h, m] = String(t).split(":").map(Number);
+    if (isNaN(h)) return t;
+    const ampm = h >= 12 ? "PM" : "AM";
+    const hr = h % 12 || 12;
+    return `${hr}:${String(m || 0).padStart(2, "0")} ${ampm}`;
+  };
   const estWeight = (catchItem.length && catchItem.girth)
     ? (catchItem.length * catchItem.girth * catchItem.girth / 800)
     : null;
@@ -69,7 +77,7 @@ export default function CatchCard({ catchItem, onEdit, onDelete, lines = [], rod
           <div className="flex items-center gap-3 text-sm text-muted-foreground mt-0.5 flex-wrap">
             {fmtDate(catchItem.date) && (
               <span className="flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5" /> {fmtDate(catchItem.date)}
+                <Calendar className="w-3.5 h-3.5" /> {fmtDate(catchItem.date)}{catchItem.time ? ` · ${fmtTime(catchItem.time)}` : ""}
               </span>
             )}
             {catchItem.location && (

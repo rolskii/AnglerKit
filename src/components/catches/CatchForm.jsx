@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, Calculator } from "lucide-react";
-import ImageUpload from "@/components/ImageUpload";
+import CatchPhotoUpload from "@/components/catches/CatchPhotoUpload";
 import VideoUpload from "@/components/catches/VideoUpload";
 import AudioRecorder from "@/components/catches/AudioRecorder";
 import { useUnits } from "@/lib/unitsContext";
@@ -22,6 +22,7 @@ const SPECIES_OPTIONS = [
 const emptyCatch = {
   species: "",
   date: new Date().toISOString().slice(0, 10),
+  time: "",
   location: "",
   length: "",
   girth: "",
@@ -66,6 +67,19 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
 
   const set = (field, value) => setForm((f) => ({ ...f, [field]: value }));
 
+  // Merge photo-captured metadata into the form, filling only blank fields so
+  // anything the user has already entered is preserved.
+  const handleMeta = (meta) => {
+    setForm((f) => {
+      const next = { ...f };
+      for (const [k, v] of Object.entries(meta)) {
+        if (v == null || v === "") continue;
+        if (!next[k]) next[k] = v;
+      }
+      return next;
+    });
+  };
+
   // Standard fish weight estimator: Weight (lb) = (Length × Girth²) / 800
   const estimatedWeight = (() => {
     const len = parseFloat(form.length);
@@ -102,21 +116,22 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
           <DialogTitle>{initial ? "Edit Catch" : "Log a Catch"}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-1.5">
+            <Label>Species *</Label>
+            <Input
+              className="bg-muted"
+              list="catch-species"
+              value={form.species}
+              onChange={(e) => set("species", e.target.value)}
+              required
+              placeholder="Trout"
+            />
+            <datalist id="catch-species">
+              {SPECIES_OPTIONS.map((s) => <option key={s} value={s} />)}
+            </datalist>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label>Species *</Label>
-              <Input
-                className="bg-muted"
-                list="catch-species"
-                value={form.species}
-                onChange={(e) => set("species", e.target.value)}
-                required
-                placeholder="Trout"
-              />
-              <datalist id="catch-species">
-                {SPECIES_OPTIONS.map((s) => <option key={s} value={s} />)}
-              </datalist>
-            </div>
             <div className="space-y-1.5">
               <Label>Date</Label>
               <Input
@@ -124,6 +139,15 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
                 type="date"
                 value={form.date || ""}
                 onChange={(e) => set("date", e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Time</Label>
+              <Input
+                className="bg-muted"
+                type="time"
+                value={form.time || ""}
+                onChange={(e) => set("time", e.target.value)}
               />
             </div>
           </div>
@@ -287,7 +311,12 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
 
           <div className="space-y-1.5">
             <Label>Photos</Label>
-            <ImageUpload value={form.images} onChange={(imgs) => set("images", imgs)} compress={false} />
+            <CatchPhotoUpload
+              value={form.images || []}
+              onChange={(imgs) => set("images", imgs)}
+              onMeta={handleMeta}
+              isMetric={isMetric}
+            />
           </div>
 
           <div className="space-y-1.5">

@@ -11,6 +11,10 @@
       "format": "date",
       "description": "Date of the catch"
     },
+    "time": {
+      "type": "string",
+      "description": "Time of the catch (HH:MM 24h)"
+    },
     "location": {
       "type": "string",
       "description": "Where the fish was caught"
