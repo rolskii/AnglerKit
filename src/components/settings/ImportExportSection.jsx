@@ -249,19 +249,40 @@ export default function ImportExportSection() {
       const parsed = JSON.parse(text);
       const data = parsed.data || parsed;
       if (!data || typeof data !== "object") throw new Error("Invalid backup file");
+      // Build a stable signature from a record's identifying fields so we can
+      // skip items that already exist in the database instead of duplicating.
+      const signature = (rec) =>
+        ["name", "brand", "model", "size", "species", "date", "location", "length"]
+          .map((f) => String(rec[f] ?? "").trim().toLowerCase())
+          .join("|");
+
       const summary = [];
+      let totalSkipped = 0;
       for (const ent of ALL_ENTITIES) {
         const records = data[ent.name];
         if (!records || !Array.isArray(records) || records.length === 0) continue;
         const cleaned = records.map(({ id, created_date, updated_date, created_by_id, ...rest }) => rest);
+
+        const existing = await base44.entities[ent.name].list("-updated_date", 2000);
+        const seen = new Set(existing.map(signature));
+        const fresh = cleaned.filter((rec) => {
+          const key = signature(rec);
+          if (!key.replace(/\|/g, "").trim()) return true; // no identifying fields → keep
+          if (seen.has(key)) return false; // already in DB (or seen earlier in this backup)
+          seen.add(key);
+          return true;
+        });
+        const skipped = cleaned.length - fresh.length;
+        totalSkipped += skipped;
+
         let imgCount = 0;
-        for (const rec of cleaned) {
+        for (const rec of fresh) {
           if (Array.isArray(rec.images)) imgCount += rec.images.filter((i) => i && i.startsWith("data:")).length;
           if (rec.image_url && rec.image_url.startsWith("data:")) imgCount += 1;
         }
         setRestoreProgress({ entity: ent.label, done: 0, total: imgCount });
         let done = 0;
-        for (const rec of cleaned) {
+        for (const rec of fresh) {
           if (Array.isArray(rec.images)) {
             rec.images = await Promise.all(rec.images.map((img, idx) => reuploadImage(img, `${ent.name}-${idx}`)));
             done += rec.images.filter((i) => i && i.startsWith("data:")).length;
@@ -272,10 +293,10 @@ export default function ImportExportSection() {
           }
           setRestoreProgress({ entity: ent.label, done, total: imgCount });
         }
-        const created = await base44.entities[ent.name].bulkCreate(cleaned);
-        summary.push(`${ent.label}: ${created.length}`);
+        const created = fresh.length ? await base44.entities[ent.name].bulkCreate(fresh) : [];
+        summary.push(`${ent.label}: ${created.length}${skipped ? ` (${skipped} skipped)` : ""}`);
       }
-      setRestoreResult({ summary });
+      setRestoreResult({ summary, skipped: totalSkipped });
       toast.success("Restore complete");
     } catch (e) {
       setRestoreResult({ error: e.message || "Invalid backup file" });
@@ -479,6 +500,9 @@ export default function ImportExportSection() {
             </div>
             <ul className="ml-6 list-disc">
               {restoreResult.summary.map((s, i) => <li key={i}>{s} records imported</li>)}
+              {restoreResult.skipped > 0 && (
+                <li className="text-amber-600">{restoreResult.skipped} duplicate(s) skipped</li>
+              )}
             </ul>
           </div>
         )}
