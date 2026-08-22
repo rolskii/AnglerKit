@@ -117,6 +117,16 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
+            <Label>Photos</Label>
+            <CatchPhotoUpload
+              value={form.images || []}
+              onChange={(imgs) => set("images", imgs)}
+              onMeta={handleMeta}
+              isMetric={isMetric}
+            />
+          </div>
+
+          <div className="space-y-1.5">
             <Label>Species *</Label>
             <Input
               className="bg-muted"
@@ -307,16 +317,6 @@ export default function CatchForm({ open, onOpenChange, onSubmit, initial, rods,
               onCheckedChange={(v) => set("released", v)}
             />
             <Label htmlFor="released" className="cursor-pointer">Released</Label>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label>Photos</Label>
-            <CatchPhotoUpload
-              value={form.images || []}
-              onChange={(imgs) => set("images", imgs)}
-              onMeta={handleMeta}
-              isMetric={isMetric}
-            />
           </div>
 
           <div className="space-y-1.5">
