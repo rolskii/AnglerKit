@@ -192,7 +192,10 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
                 onChange={(v) => set("reel", v === "_none" ? "" : v)}
                 options={[
                   { value: "_none", label: "Spooled" },
-                  ...[...reels].sort((a, b) => a.name.localeCompare(b.name)).map((r) => ({ value: r.name, label: r.name })),
+                  ...[...reels].sort((a, b) => a.name.localeCompare(b.name)).map((r) => {
+                    const parts = [r.brand, r.model, r.size, r.type].filter(Boolean).join(" ");
+                    return { value: r.name, label: parts ? `${r.name} — ${parts}` : r.name };
+                  }),
                 ]}
               />
             </div>
