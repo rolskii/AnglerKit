@@ -35,12 +35,12 @@ const STEEL_LINE = "Airflo Rage 7";
 
 export const SAMPLE_DATA = {
   Rod: [
-    { name: TROUT_ROD, species: "Trout", brand: "Sage", model: "R8 Core", length: "9'", line_weight: "5", type: "Fly", material: "Carbon", condition: "Good", value: 850, date_acquired: "2023-04-15", images: [IMG.troutRod] },
-    { name: STEEL_ROD, species: "Steelhead", brand: "G. Loomis", model: "NRX+", length: "10'", line_weight: "7", type: "Fly", material: "Carbon", condition: "Like New", value: 650, date_acquired: "2022-09-10", images: [IMG.steelRod] },
+    { name: TROUT_ROD, species: "Trout", brand: "", model: "9' 5wt", length: "9'", line_weight: "5", type: "Fly", material: "Carbon", condition: "Good", value: 850, date_acquired: "2023-04-15", images: [IMG.troutRod] },
+    { name: STEEL_ROD, species: "Steelhead", brand: "", model: "10' 7wt", length: "10'", line_weight: "7", type: "Fly", material: "Carbon", condition: "Like New", value: 650, date_acquired: "2022-09-10", images: [IMG.steelRod] },
   ],
   Reel: [
-    { name: TROUT_REEL, species: "Trout", brand: "Ross", model: "Evolution R", size: "4/5", type: "Fly", condition: "Good", value: 350, date_acquired: "2023-04-15", images: [IMG.troutReel] },
-    { name: STEEL_REEL, species: "Steelhead", brand: "Hatch", model: "Finatic 7", size: "7/8", type: "Fly", condition: "Like New", value: 550, date_acquired: "2022-09-10", images: [IMG.steelReel] },
+    { name: TROUT_REEL, species: "Trout", brand: "", model: "4/5 Large Arbor", size: "4/5", type: "Fly", condition: "Good", value: 350, date_acquired: "2023-04-15", images: [IMG.troutReel] },
+    { name: STEEL_REEL, species: "Steelhead", brand: "", model: "7/8 Large Arbor", size: "7/8", type: "Fly", condition: "Like New", value: 550, date_acquired: "2022-09-10", images: [IMG.steelReel] },
   ],
   FlyLine: [
     { brand: "Rio", model: "Gold", type: "WF", rod_type: "Fly", line_weight: "5", species: "Trout", colour: "Olive", condition: "Good", value: 95, rod: TROUT_ROD, reel: TROUT_REEL, spooled: false, date_acquired: "2023-04-15", description: "Weight-forward floating line", images: [IMG.troutLine] },
