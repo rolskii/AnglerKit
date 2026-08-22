@@ -9,6 +9,8 @@ import FormSelect from "@/components/ui/form-select";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import ImageUpload from "@/components/ImageUpload";
+import RescanPhotosButton from "@/components/gear/RescanPhotosButton";
+import { mergePrefill } from "@/lib/gearScan";
 
 const SPECIES = ["Trout", "Salmon", "Steelhead", "Bass", "Pike", "Saltwater", "Gar", "Muskie", "Anything", "Other"].sort((a, b) => a.localeCompare(b));
 const TYPES = ["Casting", "Fly", "Spinning", "Other"];
@@ -115,6 +117,13 @@ export default function RodForm({ open, onOpenChange, onSubmit, initial, loading
           </div>
           <div className="space-y-1.5">
             <Label>Photos</Label>
+            {initial && (
+              <RescanPhotosButton
+                images={form.images || []}
+                category="rod"
+                onApply={(p) => setForm((f) => mergePrefill(f, p))}
+              />
+            )}
             <ImageUpload value={form.images || []} onChange={(v) => set("images", v)} />
           </div>
           <DialogFooter>

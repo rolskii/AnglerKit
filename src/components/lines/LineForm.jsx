@@ -9,6 +9,8 @@ import FormSelect from "@/components/ui/form-select";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import ImageUpload from "@/components/ImageUpload";
+import RescanPhotosButton from "@/components/gear/RescanPhotosButton";
+import { mergePrefill } from "@/lib/gearScan";
 
 const SPECIES = ["Trout", "Salmon", "Steelhead", "Bass", "Pike", "Saltwater", "Gar", "Muskie", "Anything", "Other"].sort((a, b) => a.localeCompare(b));
 const TYPES = ["Tip", "Body", "Head", "Integrated", "Shooting", "WF", "Running", "Sinking", "System", "Other"].sort((a, b) => a.localeCompare(b));
@@ -220,7 +222,14 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
             </div>
             <div className="space-y-1.5 col-span-2">
               <Label>Photos</Label>
-              <ImageUpload value={form.images || []} onChange={(v) => set("images", v)} />
+               {initial && (
+                 <RescanPhotosButton
+                   images={form.images || []}
+                   category="fly_line"
+                   onApply={(p) => setForm((f) => mergePrefill(f, p))}
+                 />
+               )}
+               <ImageUpload value={form.images || []} onChange={(v) => set("images", v)} />
             </div>
           </div>
           <DialogFooter>

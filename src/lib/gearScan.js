@@ -219,3 +219,19 @@ export function resolveCategory(data) {
   const confidence = typeof data?.confidence === "number" ? data.confidence : 0;
   return confidence < LOW_CONFIDENCE_THRESHOLD ? "misc" : raw;
 }
+
+/**
+ * Merges a scan/rescan `prefill` object into the current form state, filling
+ * only fields the user has left blank so manually-entered data is never
+ * overwritten. `images` is intentionally skipped — the existing photos stay as-is.
+ */
+export function mergePrefill(current, prefill) {
+  const merged = { ...current };
+  for (const [k, v] of Object.entries(prefill || {})) {
+    if (k === "images") continue;
+    if (v === undefined || v === null || v === "") continue;
+    const cur = merged[k];
+    if (cur === undefined || cur === null || cur === "") merged[k] = v;
+  }
+  return merged;
+}

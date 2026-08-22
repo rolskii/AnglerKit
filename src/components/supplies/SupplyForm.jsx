@@ -9,6 +9,8 @@ import FormSelect from "@/components/ui/form-select";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import ImageUpload from "@/components/ImageUpload";
+import RescanPhotosButton from "@/components/gear/RescanPhotosButton";
+import { mergePrefill } from "@/lib/gearScan";
 
 const CATEGORIES = ["Leader/Tippet", "Weight", "Wire", "Hair", "Feathers", "Hooks", "Thread/Floss", "Beads/Eyes", "Dubbing", "Adhesive", "Indicator/Float", "Floatant/Dressing", "Other"];
 const CONDITIONS = ["New", "Like New", "Good", "Fair", "Poor"];
@@ -92,6 +94,13 @@ export default function SupplyForm({ open, onOpenChange, onSubmit, initial, load
           </div>
           <div className="space-y-1.5">
             <Label>Photos</Label>
+            {initial && (
+              <RescanPhotosButton
+                images={form.images || []}
+                category="supplies"
+                onApply={(p) => setForm((f) => mergePrefill(f, p))}
+              />
+            )}
             <ImageUpload value={form.images || []} onChange={(v) => set("images", v)} />
           </div>
           <DialogFooter>
