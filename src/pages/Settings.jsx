@@ -6,13 +6,13 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Loader2, Sun, Moon, Monitor, ArrowLeftRight, BellRing, Ruler, Trash2, Sparkles } from "lucide-react";
+import { Loader2, Sun, Moon, Monitor, ArrowLeftRight, BellRing, Ruler, Trash2, Sparkles, AlertTriangle } from "lucide-react";
 import { useUnits } from "@/lib/unitsContext";
 import ImportExportSection from "@/components/settings/ImportExportSection";
 import NotificationSetup from "@/components/settings/NotificationSetup";
 import AlarmSoundPicker from "@/components/settings/AlarmSoundPicker";
 import { toast } from "sonner";
-import { seedSampleData } from "@/lib/sampleData";
+import { seedSampleData, deleteSampleData, getSampleDataCount } from "@/lib/sampleData";
 
 export default function Settings() {
   const [user, setUser] = useState(null);
@@ -23,16 +23,38 @@ export default function Settings() {
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [seeding, setSeeding] = useState(false);
+  const [purging, setPurging] = useState(false);
+  const [purgeOpen, setPurgeOpen] = useState(false);
+  const [sampleCount, setSampleCount] = useState(0);
+
+  const refreshSampleCount = () => setSampleCount(getSampleDataCount());
+
+  useEffect(() => { refreshSampleCount(); }, []);
 
   const loadSamples = async () => {
     setSeeding(true);
     try {
       const { total } = await seedSampleData();
       toast.success(`Added ${total} sample items to your account`);
+      refreshSampleCount();
     } catch (e) {
       toast.error(e.message || "Failed to load sample data");
     } finally {
       setSeeding(false);
+    }
+  };
+
+  const purgeSamples = async () => {
+    setPurging(true);
+    try {
+      const n = await deleteSampleData();
+      toast.success(`Removed ${n} sample items from your account`);
+      refreshSampleCount();
+    } catch (e) {
+      toast.error(e.message || "Failed to remove sample data");
+    } finally {
+      setPurging(false);
+      setPurgeOpen(false);
     }
   };
 
@@ -206,10 +228,21 @@ export default function Settings() {
         <p className="text-sm text-muted-foreground">
           Load a starter set of sample rods, reels, lines, flies, gear, supplies, and catches into your account. This only adds copies to your own collection — delete any items you don't want.
         </p>
-        <Button onClick={loadSamples} disabled={seeding}>
-          {seeding ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
-          Load sample data
-        </Button>
+        <div className="flex flex-wrap gap-3">
+          <Button onClick={loadSamples} disabled={seeding}>
+            {seeding ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
+            Load sample data
+          </Button>
+          {sampleCount > 0 && (
+            <Button variant="outline" onClick={() => setPurgeOpen(true)} disabled={purging}>
+              {purging ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
+              Remove sample data ({sampleCount})
+            </Button>
+          )}
+        </div>
+        <p className="text-xs text-muted-foreground">
+          "Remove sample data" deletes only the items added by "Load sample data" on this device — your own gear and catches are never touched.
+        </p>
       </div>
 
       <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-6 space-y-4">
@@ -224,6 +257,31 @@ export default function Settings() {
           <Trash2 className="w-4 h-4 mr-2" /> Delete Account
         </Button>
       </div>
+
+      <AlertDialog open={purgeOpen} onOpenChange={setPurgeOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-destructive" />
+              Remove sample data?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This deletes only the {sampleCount} sample items that were added by "Load sample data" on this device. Your own gear and catches are not affected. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={purging}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={purgeSamples}
+              disabled={purging}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {purging ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
+              Remove {sampleCount} items
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={deleteOpen} onOpenChange={(o) => { setDeleteOpen(o); if (!o) setDeleteConfirm(""); }}>
         <AlertDialogContent>

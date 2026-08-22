@@ -67,15 +67,56 @@ export const SAMPLE_DATA = {
   ],
 };
 
-// Creates a copy of the full sample set in the current user's account.
-// Returns { results: { Entity: count }, total }.
+const SAMPLE_STORE_KEY = "anglerkit_sample_ids";
+
+// Creates a copy of the full sample set in the current user's account and
+// remembers the IDs of every record it created (per browser) so they can be
+// removed later with deleteSampleData — without ever touching the user's own
+// items. Returns { results: { Entity: count }, total }.
 export async function seedSampleData() {
   const results = {};
+  const idsByEntity = readStoredIds();
   for (const [entity, records] of Object.entries(SAMPLE_DATA)) {
     if (!records.length) continue;
     const created = await base44.entities[entity].bulkCreate(records.map((r) => ({ ...r })));
-    results[entity] = Array.isArray(created) ? created.length : 0;
+    const list = Array.isArray(created) ? created : [];
+    results[entity] = list.length;
+    idsByEntity[entity] = [...(idsByEntity[entity] || []), ...list.map((r) => r.id)];
   }
+  localStorage.setItem(SAMPLE_STORE_KEY, JSON.stringify(idsByEntity));
   const total = Object.values(results).reduce((sum, n) => sum + (n || 0), 0);
   return { results, total };
+}
+
+function readStoredIds() {
+  try {
+    return JSON.parse(localStorage.getItem(SAMPLE_STORE_KEY) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+export function getSampleDataCount() {
+  return Object.values(readStoredIds()).reduce((sum, ids) => sum + (ids || []).length, 0);
+}
+
+// Removes every record created by seedSampleData on this browser (by exact ID),
+// then clears the store. Safe: never deletes items that weren't seeded by it.
+// Returns the number of records deleted.
+export async function deleteSampleData() {
+  const idsByEntity = readStoredIds();
+  let deleted = 0;
+  for (const [entity, ids] of Object.entries(idsByEntity)) {
+    if (!ids || !ids.length) continue;
+    for (const id of ids) {
+      try {
+        await base44.entities[entity].delete(id);
+        deleted += 1;
+      } catch {
+        // record may already be gone — skip
+      }
+    }
+  }
+  localStorage.removeItem(SAMPLE_STORE_KEY);
+  return deleted;
 }
