@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Star } from "lucide-react";
 import { setFeaturedImage, clearFeaturedImage } from "@/lib/featuredImage";
+import ImageLightbox from "@/components/ImageLightbox";
 
 export function getItemImages(item) {
   if (item.images && Array.isArray(item.images) && item.images.length > 0) return item.images;
@@ -11,6 +12,7 @@ export function getItemImages(item) {
 export default function ImageGallery({ images = [], featuredLabel, featuredSubtitle, featuredLink }) {
   const [active, setActive] = useState(0);
   const [featuredUrl, setFeaturedUrl] = useState(null);
+  const [lightbox, setLightbox] = useState(false);
   useEffect(() => {
     const update = () => {
       try {
@@ -43,8 +45,8 @@ export default function ImageGallery({ images = [], featuredLabel, featuredSubti
         <img
           src={images[active]}
           alt={`Photo ${active + 1}`}
-          onClick={featuredLabel ? handleSetFeatured : undefined}
-          className={`w-full max-h-[60vh] object-contain rounded-md bg-muted/30 ${featuredLabel ? "cursor-pointer" : ""}`}
+          onClick={() => setLightbox(true)}
+          className="w-full max-h-[60vh] object-contain rounded-md bg-muted/30 cursor-zoom-in"
         />
         {featuredLabel && (
           <button
@@ -95,6 +97,14 @@ export default function ImageGallery({ images = [], featuredLabel, featuredSubti
             </div>
           ))}
         </div>
+      )}
+      {lightbox && (
+        <ImageLightbox
+          images={images}
+          index={active}
+          onClose={() => setLightbox(false)}
+          onIndex={setActive}
+        />
       )}
     </div>
   );
