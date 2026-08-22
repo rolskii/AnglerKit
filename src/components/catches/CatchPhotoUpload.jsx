@@ -4,7 +4,7 @@ import { Upload, Camera, Trash2, Loader2, Sparkles } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import { extractExif } from "@/lib/exifUtils";
-import { getPosition, reverseGeocode, fetchCurrentWeather, identifySpecies } from "@/lib/catchCapture";
+import { getPosition, reverseGeocode, fetchCurrentWeather, analyzeCatchPhoto } from "@/lib/catchCapture";
 
 // Photo capture for the Fish Log. "Take photo" uses the device camera and, on
 // success, fills in the time, current location (reverse geocoded), and a brief
@@ -69,8 +69,11 @@ export default function CatchPhotoUpload({ value = [], onChange, onMeta, isMetri
         }
       }
 
-      const species = await identifySpecies([fileUrl]);
+      const { species, conditions } = await analyzeCatchPhoto([fileUrl]);
       if (species) meta.species = species;
+      // For uploads there's no live weather, so infer basic conditions from the
+      // photo's background. Camera shots already use the real local weather.
+      if (source === "upload" && conditions) meta.conditions = conditions;
 
       if (onMeta && Object.keys(meta).length) onMeta(meta);
     } catch {

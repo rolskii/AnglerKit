@@ -53,36 +53,46 @@ export async function fetchCurrentWeather(lat, lon, isMetric) {
   }
 }
 
-const FISH_ID_SCHEMA = {
+const CATCH_PHOTO_SCHEMA = {
   type: "object",
   properties: {
     species: { type: "string", description: "Common name of the fish species, e.g. 'Brook Trout'." },
+    conditions: {
+      type: "string",
+      description:
+        "Brief weather/sky conditions inferred from the photo's background (sky, lighting, " +
+        "wetness). One short phrase such as 'Sunny', 'Partly cloudy', 'Overcast', 'Light drizzle', " +
+        "'Heavy rain', 'Foggy', 'Clear'. Only describe what's clearly visible; omit if unsure.",
+    },
     confidence: { type: "number" },
   },
   required: ["species"],
 };
 
-const FISH_ID_PROMPT =
-  "These photos show a caught fish. Identify the species using its common name " +
-  "(e.g. 'Brook Trout', 'Rainbow Trout', 'Smallmouth Bass', 'Largemouth Bass', " +
-  "'Northern Pike', 'Walleye', 'Brown Trout', 'Steelhead', 'Atlantic Salmon', " +
-  "'Carp', 'Gar', 'Muskie'). Give your best guess if uncertain. Return the common species name only.";
+const CATCH_PHOTO_PROMPT =
+  "These photos show a caught fish. Do two things: (1) Identify the species using its common " +
+  "name (e.g. 'Brook Trout', 'Rainbow Trout', 'Smallmouth Bass', 'Largemouth Bass', 'Northern Pike', " +
+  "'Walleye', 'Brown Trout', 'Steelhead', 'Atlantic Salmon', 'Carp', 'Gar', 'Muskie'). Give your best " +
+  "guess if uncertain. (2) Describe the apparent weather/sky conditions visible in the photo's " +
+  "background as one short phrase (e.g. 'Sunny', 'Partly cloudy', 'Overcast', 'Light drizzle').";
 
-// Runs the fish-identification scan on one or more uploaded photo URLs.
-// Returns the species common name, or null.
-export async function identifySpecies(fileUrls) {
+// Runs the catch-photo scan on one or more uploaded photo URLs. Returns
+// { species, conditions } — either may be null.
+export async function analyzeCatchPhoto(fileUrls) {
   try {
     const urls = (Array.isArray(fileUrls) ? fileUrls : [fileUrls]).filter(Boolean);
-    if (!urls.length) return null;
+    if (!urls.length) return {};
     const res = await base44.integrations.Core.InvokeLLM({
-      prompt: FISH_ID_PROMPT,
+      prompt: CATCH_PHOTO_PROMPT,
       file_urls: urls,
-      response_json_schema: FISH_ID_SCHEMA,
+      response_json_schema: CATCH_PHOTO_SCHEMA,
     });
     const data = res?.output ?? res?.data ?? res ?? {};
-    const sp = typeof data === "string" ? data : data.species;
-    return sp && typeof sp === "string" ? sp.trim() : null;
+    const obj = typeof data === "string" ? { species: data } : data;
+    const species = obj.species && typeof obj.species === "string" ? obj.species.trim() : null;
+    const conditions = obj.conditions && typeof obj.conditions === "string" ? obj.conditions.trim() : null;
+    return { species, conditions };
   } catch {
-    return null;
+    return {};
   }
 }
