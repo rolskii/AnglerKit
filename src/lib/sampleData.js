@@ -7,12 +7,12 @@ import { base44 } from "@/api/base44Client";
 // delete freely without affecting anyone else's data.
 
 const IMG = {
-  troutRod: "https://media.base44.com/images/public/6a3f2458eb55a5d860886e35/bae8af78c_generated_image.png",
-  steelRod: "https://media.base44.com/images/public/6a3f2458eb55a5d860886e35/aaba557c8_generated_image.png",
-  troutReel: "https://media.base44.com/images/public/6a3f2458eb55a5d860886e35/b92cbb0fe_generated_image.png",
-  steelReel: "https://media.base44.com/images/public/6a3f2458eb55a5d860886e35/b41aaa68c_generated_image.png",
-  troutLine: "https://media.base44.com/images/public/6a3f2458eb55a5d860886e35/f810e949c_generated_image.png",
-  steelLine: "https://media.base44.com/images/public/6a3f2458eb55a5d860886e35/1d524d221_generated_image.png",
+  troutRod: "https://media.base44.com/images/public/6a3f2458eb55a5d860886e35/b7c92cc01_generated_image.png",
+  steelRod: "https://media.base44.com/images/public/6a3f2458eb55a5d860886e35/83f3fd5c1_generated_image.png",
+  troutReel: "https://media.base44.com/images/public/6a3f2458eb55a5d860886e35/76b280d74_generated_image.png",
+  steelReel: "https://media.base44.com/images/public/6a3f2458eb55a5d860886e35/0eae3b3d6_generated_image.png",
+  troutLine: "https://media.base44.com/images/public/6a3f2458eb55a5d860886e35/1bf28d3d9_generated_image.png",
+  steelLine: "https://media.base44.com/images/public/6a3f2458eb55a5d860886e35/5a5369930_generated_image.png",
   bugger: "https://media.base44.com/images/public/6a3f2458eb55a5d860886e35/2ebc5f410_generated_image.png",
   ptn: "https://media.base44.com/images/public/6a3f2458eb55a5d860886e35/c09bd642e_generated_image.png",
   caddis: "https://media.base44.com/images/public/6a3f2458eb55a5d860886e35/71a8bf7b8_generated_image.png",
