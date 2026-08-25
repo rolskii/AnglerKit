@@ -1,5 +1,6 @@
 import React from 'react';
-import { Play, Pause, Square, MapPin, Save, Crosshair, Layers, FolderOpen, Circle, Route, Pencil, Ruler, Hexagon, Fish } from 'lucide-react';
+import { Play, Pause, Square, MapPin, Save, Crosshair, Layers, FolderOpen, Circle, Route, Pencil, Ruler, Hexagon } from 'lucide-react';
+import FishIcon from '@/components/FishIcon';
 
 const ctrlBase = "flex items-center justify-center rounded-full shadow-lg backdrop-blur-xl transition-all active:scale-90";
 const ctrlSize = "w-12 h-12";
@@ -52,7 +53,7 @@ export default function MapControls({
           }`}
           title="Ontario fishing data layers"
         >
-          <Fish className="w-5 h-5" />
+          <FishIcon className="w-5 h-5" />
         </button>
         <button
           onClick={onOpenRoutes}
