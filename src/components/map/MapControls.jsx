@@ -47,7 +47,7 @@ export default function MapControls({
           onClick={onOpenGeoHub}
           className={`${ctrlBase} ${ctrlSize} border ${
             geoHubActive
-              ? 'bg-emerald-600 text-white border-emerald-600'
+              ? 'bg-violet-500 text-white border-violet-500'
               : 'bg-background/90 text-foreground border-border'
           }`}
           title="Ontario fishing data layers"
