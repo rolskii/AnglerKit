@@ -1215,7 +1215,7 @@ export default function MapView() {
               {pin.marker === 'fish' ? (
                 <div style={{
                   width: '36px', height: '36px',
-                  background: '#8b5cf6', border: '3px solid #ffffff',
+                  background: '#1B754A', border: '3px solid #ffffff',
                   borderRadius: '50%',
                   boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -1269,7 +1269,7 @@ export default function MapView() {
             >
               <div style={{
                 width: '30px', height: '30px',
-                background: '#0e8c73', border: '3px solid #ffffff',
+                background: '#8b5cf6', border: '3px solid #ffffff',
                 borderRadius: '50%',
                 boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -1280,7 +1280,7 @@ export default function MapView() {
                 <div style={{
                   position: 'absolute', top: '34px', left: '50%', transform: 'translateX(-50%)',
                   whiteSpace: 'nowrap', fontSize: '11px', fontWeight: 600,
-                  background: 'rgba(14,140,115,0.9)', color: 'white', padding: '2px 6px', borderRadius: '4px',
+                  background: 'rgba(139,92,246,0.9)', color: 'white', padding: '2px 6px', borderRadius: '4px',
                   pointerEvents: 'none',
                 }}>
                   {props.SITE_NAME}
@@ -1312,7 +1312,7 @@ export default function MapView() {
                   {pin.marker === 'fish' ? (
                     <div style={{
                       width: '32px', height: '32px',
-                      background: '#8b5cf6', border: '3px solid #ffffff',
+                      background: '#1B754A', border: '3px solid #ffffff',
                       borderRadius: '50%',
                       boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
