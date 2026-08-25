@@ -1273,16 +1273,6 @@ export default function MapView() {
                 borderRadius: '50%',
                 boxShadow: '0 1px 4px rgba(0,0,0,0.4)',
               }} />
-              {props.SITE_NAME && (
-                <div style={{
-                  position: 'absolute', top: '14px', left: '50%', transform: 'translateX(-50%)',
-                  whiteSpace: 'nowrap', fontSize: '11px', fontWeight: 600,
-                  background: 'rgba(139,92,246,0.9)', color: 'white', padding: '2px 6px', borderRadius: '4px',
-                  pointerEvents: 'none',
-                }}>
-                  {props.SITE_NAME}
-                </div>
-              )}
             </div>
           );
         })}
