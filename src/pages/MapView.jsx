@@ -1268,17 +1268,14 @@ export default function MapView() {
               style={{ left, top, transform: 'translate(-50%, -100%)' }}
             >
               <div style={{
-                width: '30px', height: '30px',
-                background: '#8b5cf6', border: '3px solid #ffffff',
+                width: '12px', height: '12px',
+                background: '#8b5cf6', border: '2px solid #ffffff',
                 borderRadius: '50%',
-                boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <FishIcon style={{ width: '18px', height: '18px', color: 'white' }} />
-              </div>
+                boxShadow: '0 1px 4px rgba(0,0,0,0.4)',
+              }} />
               {props.SITE_NAME && (
                 <div style={{
-                  position: 'absolute', top: '34px', left: '50%', transform: 'translateX(-50%)',
+                  position: 'absolute', top: '14px', left: '50%', transform: 'translateX(-50%)',
                   whiteSpace: 'nowrap', fontSize: '11px', fontWeight: 600,
                   background: 'rgba(139,92,246,0.9)', color: 'white', padding: '2px 6px', borderRadius: '4px',
                   pointerEvents: 'none',
