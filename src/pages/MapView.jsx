@@ -21,6 +21,8 @@ import FishIcon from '@/components/FishIcon';
 import AppLogo from '@/components/AppLogo';
 import { useToast } from '@/components/ui/use-toast';
 import { prepareMapKit } from '@/lib/mapkitLoader';
+import GeoHubLayersPanel from '@/components/map/GeoHubLayersPanel';
+import AccessPointDialog from '@/components/map/AccessPointDialog';
 
 /* global mapkit */
 
@@ -98,6 +100,16 @@ export default function MapView() {
   const [loadedRouteId, setLoadedRouteId] = useState(null);
   const [imperial, setImperial] = useState(() => isImperial());
 
+  // Ontario GeoHub fishing data overlays
+  const [geoHubOpen, setGeoHubOpen] = useState(false);
+  const [showFishingAccess, setShowFishingAccess] = useState(false);
+  const [showAraLines, setShowAraLines] = useState(false);
+  const [fishingAccess, setFishingAccess] = useState([]);
+  const [araLines, setAraLines] = useState([]);
+  const [geoLoading, setGeoLoading] = useState({ fishing: false, ara: false });
+  const [araZoomHint, setAraZoomHint] = useState(false);
+  const [selectedAccessPoint, setSelectedAccessPoint] = useState(null);
+
 
   // Persist pins to localStorage so they survive page navigation
   const PINS_KEY = 'mapview_pins';
@@ -127,6 +139,8 @@ export default function MapView() {
   const handleAreaClickRef = useRef(() => {});
   const areaOverlayRef = useRef(null);
   const savedAreaOverlaysRef = useRef([]);
+  const araLineOverlaysRef = useRef([]);
+  const lastGeoBboxRef = useRef({ fishing: null, ara: null });
 
 
   useEffect(() => { pinModeRef.current = pinMode; }, [pinMode]);
@@ -764,6 +778,84 @@ export default function MapView() {
     mapRef.current.mapType = types[nextIdx];
   }, []);
 
+  // --- Ontario GeoHub layers (Fishing Access Points & ARA line segments) ---
+  const getCurrentBbox = useCallback(() => {
+    const map = mapRef.current;
+    if (!map || !map.region) return null;
+    const r = map.region;
+    const xmin = r.center.longitude - r.span.longitudeDelta / 2;
+    const xmax = r.center.longitude + r.span.longitudeDelta / 2;
+    const ymin = r.center.latitude - r.span.latitudeDelta / 2;
+    const ymax = r.center.latitude + r.span.latitudeDelta / 2;
+    return { xmin, ymin, xmax, ymax };
+  }, []);
+
+  const fetchGeoLayer = useCallback(async (layer) => {
+    const bbox = getCurrentBbox();
+    if (!bbox) return;
+    const key = layer === 'fishing-access-point' ? 'fishing' : 'ara';
+    // Skip refetch when the new viewport is already covered by the last fetch.
+    const last = lastGeoBboxRef.current[key];
+    if (last && bbox.xmin >= last.xmin && bbox.xmax <= last.xmax && bbox.ymin >= last.ymin && bbox.ymax <= last.ymax) {
+      return;
+    }
+    lastGeoBboxRef.current[key] = bbox;
+    setGeoLoading((s) => ({ ...s, [key]: true }));
+    try {
+      const res = await base44.functions.invoke('ontarioGeohub', { layer, bbox });
+      const features = res?.data?.features || [];
+      if (layer === 'fishing-access-point') setFishingAccess(features);
+      else setAraLines(features);
+    } catch (e) {
+      // best-effort — leave existing features in place
+    } finally {
+      setGeoLoading((s) => ({ ...s, [key]: false }));
+    }
+  }, [getCurrentBbox]);
+
+  // Fetch enabled GeoHub layers when the map region changes
+  useEffect(() => {
+    if (!mapReady || !mapRef.current) return;
+    if (!showFishingAccess && !showAraLines) return;
+    const bbox = getCurrentBbox();
+    if (!bbox) return;
+    const span = Math.max(bbox.xmax - bbox.xmin, bbox.ymax - bbox.ymin);
+    if (showFishingAccess) fetchGeoLayer('fishing-access-point');
+    if (showAraLines) {
+      if (span < 0.5) {
+        setAraZoomHint(false);
+        fetchGeoLayer('ara-line-segment');
+      } else {
+        setAraZoomHint(true);
+        setAraLines([]);
+      }
+    } else {
+      setAraZoomHint(false);
+    }
+  }, [mapVersion, mapReady, showFishingAccess, showAraLines, getCurrentBbox, fetchGeoLayer]);
+
+  // Render ARA line segments as polyline overlays
+  useEffect(() => {
+    if (!mapReady || !mapRef.current) return;
+    const map = mapRef.current;
+    araLineOverlaysRef.current.forEach((o) => { try { map.removeOverlay(o); } catch (e) {} });
+    araLineOverlaysRef.current = [];
+    if (!showAraLines) return;
+    araLines.forEach((feat) => {
+      const geom = feat.geometry;
+      if (!geom) return;
+      const paths = geom.type === 'MultiLineString' ? geom.coordinates : [geom.coordinates];
+      paths.forEach((path) => {
+        if (!path || path.length < 2) return;
+        const coords = path.map((c) => new mapkit.Coordinate(c[1], c[0]));
+        const style = new mapkit.Style({ strokeColor: '#0e8c73', lineWidth: 2, lineJoin: 'round', lineCap: 'round' });
+        const overlay = new mapkit.PolylineOverlay(coords, { style });
+        map.addOverlay(overlay);
+        araLineOverlaysRef.current.push(overlay);
+      });
+    });
+  }, [araLines, showAraLines, mapReady]);
+
   // Initialize map
   useEffect(() => {
     let cancelled = false;
@@ -1137,6 +1229,50 @@ export default function MapView() {
               }}>
                 {pin.label}
               </div>
+            </div>
+          );
+        })}
+        {/* Ontario GeoHub — Fishing Access Point markers */}
+        {mapReady && mapRef.current && showFishingAccess && fishingAccess.map((feat, idx) => {
+          const coords = feat.geometry?.coordinates;
+          const lon = coords?.[0];
+          const lat = coords?.[1];
+          if (lat == null || lon == null) return null;
+          const coord = new mapkit.Coordinate(lat, lon);
+          const point = mapRef.current.convertCoordinateToPointOnPage(coord);
+          if (!point) return null;
+          const containerRect = mapContainerRef.current?.getBoundingClientRect();
+          if (!containerRect) return null;
+          const left = point.x - containerRect.left;
+          const top = point.y - containerRect.top;
+          if (left < -30 || left > containerRect.width + 30 || top < -30 || top > containerRect.height + 30) return null;
+          const props = feat.properties || {};
+          return (
+            <div
+              key={`fap-${idx}`}
+              onClick={() => setSelectedAccessPoint(props)}
+              className="absolute z-[449] cursor-pointer"
+              style={{ left, top, transform: 'translate(-50%, -100%)' }}
+            >
+              <div style={{
+                width: '30px', height: '30px',
+                background: '#0e8c73', border: '3px solid #ffffff',
+                borderRadius: '50%',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <FishIcon style={{ width: '18px', height: '18px', color: 'white' }} />
+              </div>
+              {props.SITE_NAME && (
+                <div style={{
+                  position: 'absolute', top: '34px', left: '50%', transform: 'translateX(-50%)',
+                  whiteSpace: 'nowrap', fontSize: '11px', fontWeight: 600,
+                  background: 'rgba(14,140,115,0.9)', color: 'white', padding: '2px 6px', borderRadius: '4px',
+                  pointerEvents: 'none',
+                }}>
+                  {props.SITE_NAME}
+                </div>
+              )}
             </div>
           );
         })}
@@ -1527,6 +1663,24 @@ export default function MapView() {
         onToggleDraw={handleToggleDraw}
         onToggleMeasure={handleToggleMeasure}
         onToggleArea={handleToggleArea}
+        onOpenGeoHub={() => setGeoHubOpen(true)}
+        geoHubActive={showFishingAccess || showAraLines}
+      />
+
+      <GeoHubLayersPanel
+        open={geoHubOpen}
+        onOpenChange={setGeoHubOpen}
+        showFishingAccess={showFishingAccess}
+        showAraLines={showAraLines}
+        onToggleFishing={(v) => { setShowFishingAccess(v); if (!v) { setFishingAccess([]); lastGeoBboxRef.current.fishing = null; } }}
+        onToggleAra={(v) => { setShowAraLines(v); if (!v) { setAraLines([]); lastGeoBboxRef.current.ara = null; setAraZoomHint(false); } }}
+        loading={geoLoading}
+        araZoomHint={araZoomHint}
+      />
+      <AccessPointDialog
+        open={!!selectedAccessPoint}
+        onOpenChange={(o) => { if (!o) setSelectedAccessPoint(null); }}
+        point={selectedAccessPoint}
       />
 
       {/* Dialogs */}
