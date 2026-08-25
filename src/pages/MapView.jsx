@@ -1202,7 +1202,7 @@ export default function MapView() {
               {pin.marker === 'fish' ? (
                 <div style={{
                   width: '36px', height: '36px',
-                  background: '#10b981', border: '3px solid #ffffff',
+                  background: '#8b5cf6', border: '3px solid #ffffff',
                   borderRadius: '50%',
                   boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -1299,7 +1299,7 @@ export default function MapView() {
                   {pin.marker === 'fish' ? (
                     <div style={{
                       width: '32px', height: '32px',
-                      background: '#10b981', border: '3px solid #ffffff',
+                      background: '#8b5cf6', border: '3px solid #ffffff',
                       borderRadius: '50%',
                       boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
