@@ -1,6 +1,6 @@
 import React from "react";
 import { Switch } from "@/components/ui/switch";
-import { X, Loader2, Fish, Waves } from "lucide-react";
+import { X, Loader2, Waves } from "lucide-react";
 
 // Toggle panel for Ontario GeoHub fishing datasets overlaid on the map.
 export default function GeoHubLayersPanel({
@@ -36,8 +36,8 @@ export default function GeoHubLayersPanel({
         <div className="p-2">
           {/* Fishing Access Points */}
           <div className="flex items-start gap-3 px-2 py-2.5 rounded-xl hover:bg-accent/5">
-            <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-violet-500 text-white">
-              <Fish className="w-4 h-4" />
+            <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-violet-500">
+              <span className="block w-3 h-3 rounded-full bg-white" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-2">
