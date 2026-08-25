@@ -53,7 +53,7 @@ export default function MapControls({
           }`}
           title="Ontario fishing data layers"
         >
-          <FishIcon className="w-5 h-5" />
+          <FishIcon className="w-5 h-5" flip={false} />
         </button>
         <button
           onClick={onOpenRoutes}
