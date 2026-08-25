@@ -23,6 +23,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { prepareMapKit } from '@/lib/mapkitLoader';
 import GeoHubLayersPanel from '@/components/map/GeoHubLayersPanel';
 import AccessPointDialog from '@/components/map/AccessPointDialog';
+import AraLineDialog from '@/components/map/AraLineDialog';
 
 /* global mapkit */
 
@@ -109,6 +110,7 @@ export default function MapView() {
   const [geoLoading, setGeoLoading] = useState({ fishing: false, ara: false });
   const [araZoomHint, setAraZoomHint] = useState(false);
   const [selectedAccessPoint, setSelectedAccessPoint] = useState(null);
+  const [selectedAraLine, setSelectedAraLine] = useState(null);
 
 
   // Persist pins to localStorage so they survive page navigation
@@ -140,6 +142,7 @@ export default function MapView() {
   const areaOverlayRef = useRef(null);
   const savedAreaOverlaysRef = useRef([]);
   const araLineOverlaysRef = useRef([]);
+  const araFeatureByOverlayRef = useRef(new Map());
   const lastGeoBboxRef = useRef({ fishing: null, ara: null });
 
 
@@ -840,6 +843,7 @@ export default function MapView() {
     const map = mapRef.current;
     araLineOverlaysRef.current.forEach((o) => { try { map.removeOverlay(o); } catch (e) {} });
     araLineOverlaysRef.current = [];
+    araFeatureByOverlayRef.current.clear();
     if (!showAraLines) return;
     araLines.forEach((feat) => {
       const geom = feat.geometry;
@@ -849,9 +853,10 @@ export default function MapView() {
         if (!path || path.length < 2) return;
         const coords = path.map((c) => new mapkit.Coordinate(c[1], c[0]));
         const style = new mapkit.Style({ strokeColor: '#0e8c73', lineWidth: 2, lineJoin: 'round', lineCap: 'round' });
-        const overlay = new mapkit.PolylineOverlay(coords, { style });
+        const overlay = new mapkit.PolylineOverlay(coords, { style, selectable: true });
         map.addOverlay(overlay);
         araLineOverlaysRef.current.push(overlay);
+        araFeatureByOverlayRef.current.set(overlay, feat);
       });
     });
   }, [araLines, showAraLines, mapReady]);
@@ -888,6 +893,14 @@ export default function MapView() {
 
         map.addEventListener('region-change-end', () => {
           setMapVersion((v) => v + 1);
+        });
+
+        // Open the ARA detail dialog when a waterbody line is tapped
+        map.addEventListener('select', (event) => {
+          const overlay = event && (event.overlay || (event.overlays && event.overlays[0]));
+          if (overlay && araFeatureByOverlayRef.current.has(overlay)) {
+            setSelectedAraLine(araFeatureByOverlayRef.current.get(overlay));
+          }
         });
 
         setMapReady(true);
@@ -1681,6 +1694,11 @@ export default function MapView() {
         open={!!selectedAccessPoint}
         onOpenChange={(o) => { if (!o) setSelectedAccessPoint(null); }}
         point={selectedAccessPoint}
+      />
+      <AraLineDialog
+        open={!!selectedAraLine}
+        onOpenChange={(o) => { if (!o) setSelectedAraLine(null); }}
+        line={selectedAraLine}
       />
 
       {/* Dialogs */}
