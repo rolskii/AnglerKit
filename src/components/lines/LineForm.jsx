@@ -224,7 +224,7 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
              </div>
              <div className="space-y-1.5 col-span-2">
               <Label>Notes</Label>
-               <Textarea className="bg-muted" value={form.notes} onChange={(e) => set("notes", e.target.value)} rows={2} />
+               <Textarea className="bg-muted" value={form.notes} onChange={(e) => set("notes", e.target.value)} rows={4} />
             </div>
             <div className="space-y-1.5 col-span-2">
               <Label>Photos</Label>
