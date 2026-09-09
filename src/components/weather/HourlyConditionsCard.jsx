@@ -68,11 +68,17 @@ export default function HourlyConditionsCard({ hourly, selectedDate, daily, temp
   const handleScroll = () => {
     const container = scrollRef.current;
     if (!container) return;
-    const scrollLeft = container.scrollLeft;
-    const itemWidth = 64; // w-16 (64px) + gap-0
-    const firstVisibleIdx = Math.round(scrollLeft / itemWidth);
-    const clampedIdx = Math.max(0, Math.min(firstVisibleIdx, allHours.length - 1));
-    setVisibleDate(allHours[clampedIdx].localDate);
+    // Date follows the hour column at the CENTER of the viewport,
+    // so the date only rolls over once 12 AM itself is centered.
+    const centerX = container.scrollLeft + container.clientWidth / 2;
+    const children = container.children;
+    for (let i = 0; i < children.length; i++) {
+      const el = children[i];
+      if (centerX < el.offsetLeft + el.offsetWidth || i === children.length - 1) {
+        setVisibleDate(allHours[i].localDate);
+        return;
+      }
+    }
   };
 
   return (
