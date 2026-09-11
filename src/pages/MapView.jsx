@@ -69,6 +69,9 @@ const detectProvince = (lat, lon) => {
   if (lat >= 41.6 && lat <= 56.9 && lon >= -95.3 && lon <= -74.0) return 'ontario';
   if (lat >= 48.9 && lat <= 60.0 && lon >= -102.0 && lon <= -88.3) return 'manitoba';
   if (lat >= 43.3 && lat <= 47.1 && lon >= -67.0 && lon <= -59.7) return 'nova_scotia';
+  // Nova Scotia is checked first because the Quebec box overlaps the Gulf,
+  // which would otherwise swallow Cape Breton / Magdalen locations.
+  if (lat >= 44.9 && lat <= 62.6 && lon >= -80.0 && lon <= -57.0) return 'quebec';
   return null;
 };
 
@@ -136,14 +139,16 @@ export default function MapView() {
   const [showAraLines, setShowAraLines] = useState(false);
   const [fishingAccess, setFishingAccess] = useState([]);
   const [araLines, setAraLines] = useState([]);
-  const [geoLoading, setGeoLoading] = useState({ fishing: false, ara: false, manitoba: false, nova_scotia: false, bathy: false });
+  const [geoLoading, setGeoLoading] = useState({ fishing: false, ara: false, manitoba: false, nova_scotia: false, quebec: false, bathy: false });
   const [araZoomHint, setAraZoomHint] = useState(false);
   const [bathyZoomHint, setBathyZoomHint] = useState(false);
   // Multi-province fishing access overlays (each backed by its own data source)
   const [showManitoba, setShowManitoba] = useState(false);
   const [showNovaScotia, setShowNovaScotia] = useState(false);
+  const [showQuebec, setShowQuebec] = useState(false);
   const [manitobaAccess, setManitobaAccess] = useState([]);
   const [novaScotiaAccess, setNovaScotiaAccess] = useState([]);
+  const [quebecAccess, setQuebecAccess] = useState([]);
   const [selectedAccessPoint, setSelectedAccessPoint] = useState(null);
   const [selectedAraLine, setSelectedAraLine] = useState(null);
   // OpenSeaMap nautical chart tiles (transparent overlay above the base map)
@@ -186,7 +191,7 @@ export default function MapView() {
   const bathyLineOverlaysRef = useRef([]);
   const seaMapOverlayRef = useRef(null);
   const araFeatureByOverlayRef = useRef(new Map());
-  const lastGeoBboxRef = useRef({ fishing: null, ara: null, manitoba: null, nova_scotia: null, bathy: null });
+  const lastGeoBboxRef = useRef({ fishing: null, ara: null, manitoba: null, nova_scotia: null, quebec: null, bathy: null });
 
 
   useEffect(() => { pinModeRef.current = pinMode; }, [pinMode]);
@@ -886,6 +891,7 @@ export default function MapView() {
       const features = res?.data?.features || [];
       if (province === 'manitoba') setManitobaAccess(features);
       else if (province === 'nova_scotia') setNovaScotiaAccess(features);
+      else if (province === 'quebec') setQuebecAccess(features);
     } catch (e) {
       // best-effort — leave existing features in place
     } finally {
@@ -931,7 +937,7 @@ export default function MapView() {
   // Fetch enabled GeoHub layers when the map region changes
   useEffect(() => {
     if (!mapReady || !mapRef.current) return;
-    if (!showFishingAccess && !showAraLines && !showManitoba && !showNovaScotia && !showBathy) return;
+    if (!showFishingAccess && !showAraLines && !showManitoba && !showNovaScotia && !showQuebec && !showBathy) return;
     const bbox = getCurrentBbox();
     if (!bbox) return;
     const span = Math.max(bbox.xmax - bbox.xmin, bbox.ymax - bbox.ymin);
@@ -950,6 +956,7 @@ export default function MapView() {
     }
     if (showManitoba) fetchProvincialAccess('manitoba');
     if (showNovaScotia) fetchProvincialAccess('nova_scotia');
+    if (showQuebec) fetchProvincialAccess('quebec');
     if (showAraLines) {
       if (span < 0.5) {
         setAraZoomHint(false);
@@ -961,7 +968,7 @@ export default function MapView() {
     } else {
       setAraZoomHint(false);
     }
-  }, [mapVersion, mapReady, showFishingAccess, showAraLines, showManitoba, showNovaScotia, showBathy, getCurrentBbox, fetchGeoLayer, fetchProvincialAccess]);
+  }, [mapVersion, mapReady, showFishingAccess, showAraLines, showManitoba, showNovaScotia, showQuebec, showBathy, getCurrentBbox, fetchGeoLayer, fetchProvincialAccess]);
 
   // Render ARA line segments as polyline overlays
   useEffect(() => {
@@ -1123,6 +1130,7 @@ export default function MapView() {
     if (province === 'ontario') setShowFishingAccess(true);
     else if (province === 'manitoba') setShowManitoba(true);
     else if (province === 'nova_scotia') setShowNovaScotia(true);
+    else if (province === 'quebec') setShowQuebec(true);
   }, [gpsPos]);
 
   // Update track overlay
@@ -1432,6 +1440,7 @@ export default function MapView() {
         {showFishingAccess && renderAccessMarkers(fishingAccess, 'fap')}
         {showManitoba && renderAccessMarkers(manitobaAccess, 'mb')}
         {showNovaScotia && renderAccessMarkers(novaScotiaAccess, 'ns')}
+        {showQuebec && renderAccessMarkers(quebecAccess, 'qc')}
         {/* Ontario depth contour labels — depth badge at each contour's midpoint */}
         {mapReady && mapRef.current && showBathy && bathyLines.map((feat, idx) => {
           const geom = feat.geometry;
@@ -1847,7 +1856,7 @@ export default function MapView() {
         onToggleMeasure={handleToggleMeasure}
         onToggleArea={handleToggleArea}
         onOpenGeoHub={() => setGeoHubOpen(true)}
-        geoHubActive={showFishingAccess || showAraLines || showManitoba || showNovaScotia || showSeaMap || showBathy}
+        geoHubActive={showFishingAccess || showAraLines || showManitoba || showNovaScotia || showQuebec || showSeaMap || showBathy}
       />
 
       <GeoHubLayersPanel
@@ -1856,10 +1865,12 @@ export default function MapView() {
         showFishingAccess={showFishingAccess}
         showManitoba={showManitoba}
         showNovaScotia={showNovaScotia}
+        showQuebec={showQuebec}
         showAraLines={showAraLines}
         onToggleFishing={(v) => { setShowFishingAccess(v); if (!v) { setFishingAccess([]); lastGeoBboxRef.current.fishing = null; } }}
         onToggleManitoba={(v) => { setShowManitoba(v); if (!v) { setManitobaAccess([]); lastGeoBboxRef.current.manitoba = null; } }}
         onToggleNovaScotia={(v) => { setShowNovaScotia(v); if (!v) { setNovaScotiaAccess([]); lastGeoBboxRef.current.nova_scotia = null; } }}
+        onToggleQuebec={(v) => { setShowQuebec(v); if (!v) { setQuebecAccess([]); lastGeoBboxRef.current.quebec = null; } }}
         onToggleAra={(v) => { setShowAraLines(v); if (!v) { setAraLines([]); lastGeoBboxRef.current.ara = null; setAraZoomHint(false); } }}
         showSeaMap={showSeaMap}
         onToggleSeaMap={setShowSeaMap}

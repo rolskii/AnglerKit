@@ -11,12 +11,14 @@ export default function GeoHubLayersPanel({
   showFishingAccess,
   showManitoba,
   showNovaScotia,
+  showQuebec,
   showAraLines,
   showSeaMap,
   showBathy,
   onToggleFishing,
   onToggleManitoba,
   onToggleNovaScotia,
+  onToggleQuebec,
   onToggleAra,
   onToggleSeaMap,
   onToggleBathy,
@@ -89,6 +91,13 @@ export default function GeoHubLayersPanel({
             checked={showNovaScotia}
             onToggle={onToggleNovaScotia}
             loadingKey="nova_scotia"
+          />
+          <AccessRow
+            label="Quebec"
+            source="Allons pêcher (FédéCP) · boat launches, ramps, docks & wading access"
+            checked={showQuebec}
+            onToggle={onToggleQuebec}
+            loadingKey="quebec"
           />
 
           <div className="my-2 mx-2 border-t border-border" />

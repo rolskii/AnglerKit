@@ -45,6 +45,51 @@ const SOURCES = {
   },
 };
 
+// Quebec — "Allons pêcher" (FédéCP / MFFP). Unlike the other provinces there is
+// no ArcGIS service: the interactive map publishes every access point through a
+// single large JSON asset endpoint. We fetch it once per isolate, cache the point
+// features, then filter by the requested bbox on each call.
+const QUEBEC_ASSETS_URL = 'http://carte.allonspecher.com/app/aphome/GetAssets?v=2';
+let quebecSpotsCache = null;
+async function getQuebecSpots() {
+  if (quebecSpotsCache) return quebecSpotsCache;
+  const r = await fetch(QUEBEC_ASSETS_URL);
+  if (!r.ok) throw new Error(`Allons pêcher request failed (${r.status})`);
+  const data = await r.json();
+  const spots = JSON.parse(data.Spots || '[]');
+  quebecSpotsCache = (spots.features || (Array.isArray(spots) ? spots : [])).filter(
+    (f) => f && f.geometry && f.geometry.type === 'Point' && Array.isArray(f.geometry.coordinates)
+  );
+  return quebecSpotsCache;
+}
+
+const normQuebecAccess = (a) => ({
+  province: 'quebec',
+  source: 'Allons pêcher · FédéCP',
+  name: a.nom || 'Fishing Access Point',
+  rows: [
+    a.municipalite ? { label: 'Municipality', value: a.municipalite } : null,
+    a.localisation ? { label: 'Location', value: a.localisation } : null,
+    a.miseAleau ? { label: 'Boat Launch', value: 'Yes' } : null,
+    a.rampe ? { label: 'Ramp', value: 'Yes' } : null,
+    a.quaiPublic ? { label: 'Public Dock', value: 'Yes' } : null,
+    a.pecheAgue ? { label: 'Wading Access', value: 'Yes' } : null,
+    a.pecheDhiver ? { label: 'Winter Fishing', value: 'Yes' } : null,
+    a.stationnement ? { label: 'Parking', value: 'Yes' } : null,
+    a.lavageBateau ? { label: 'Boat Wash Station', value: 'Yes' } : null,
+    a.payant ? { label: 'Paid Access', value: 'Yes' } : null,
+    a.restrictionMoteur ? { label: 'Motor Restriction', value: 'Yes' } : null,
+    a.residentSeulement ? { label: 'Residents Only', value: 'Yes' } : null,
+    a.zoneNumber ? { label: 'Fishing Zone', value: a.zoneNumber } : null,
+    Array.isArray(a.poissons) && a.poissons.length
+      ? { label: 'Species', value: a.poissons.map((p) => p.nom).join(', ') }
+      : null,
+  ].filter(Boolean),
+  comments: a.commentaires || '',
+  photos: [],
+  infoUrl: 'http://carte.allonspecher.com/',
+});
+
 export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
@@ -54,6 +99,27 @@ export default async function (req) {
     const body = await req.json().catch(() => ({}));
     const province = body.province;
     const bbox = body.bbox;
+    if (province === 'quebec') {
+      if (!bbox || [bbox.xmin, bbox.ymin, bbox.xmax, bbox.ymax].some((v) => v == null || isNaN(v))) {
+        return Response.json({ error: 'Invalid bbox' }, { status: 400 });
+      }
+      let spots;
+      try {
+        spots = await getQuebecSpots();
+      } catch (e) {
+        return Response.json({ error: e?.message || 'Quebec access request failed' }, { status: 502 });
+      }
+      const limit = Math.min(Math.max(parseInt(body.limit, 10) || 1000, 1), 2000);
+      const features = spots
+        .filter((f) => {
+          const lon = f.geometry.coordinates[0];
+          const lat = f.geometry.coordinates[1];
+          return lon >= bbox.xmin && lon <= bbox.xmax && lat >= bbox.ymin && lat <= bbox.ymax;
+        })
+        .slice(0, limit)
+        .map((f) => ({ type: 'Feature', geometry: f.geometry, properties: normQuebecAccess(f.properties || {}) }));
+      return Response.json({ features, count: features.length, province });
+    }
     const src = SOURCES[province];
     if (!src || !bbox || [bbox.xmin, bbox.ymin, bbox.xmax, bbox.ymax].some((v) => v == null || isNaN(v))) {
       return Response.json({ error: 'Invalid province or bbox' }, { status: 400 });
