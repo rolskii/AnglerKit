@@ -135,6 +135,8 @@ export default function MapView() {
   const [novaScotiaAccess, setNovaScotiaAccess] = useState([]);
   const [selectedAccessPoint, setSelectedAccessPoint] = useState(null);
   const [selectedAraLine, setSelectedAraLine] = useState(null);
+  // OpenSeaMap nautical chart tiles (transparent overlay above the base map)
+  const [showSeaMap, setShowSeaMap] = useState(false);
 
 
   // Persist pins to localStorage so they survive page navigation
@@ -166,6 +168,7 @@ export default function MapView() {
   const areaOverlayRef = useRef(null);
   const savedAreaOverlaysRef = useRef([]);
   const araLineOverlaysRef = useRef([]);
+  const seaMapOverlayRef = useRef(null);
   const araFeatureByOverlayRef = useRef(new Map());
   const lastGeoBboxRef = useRef({ fishing: null, ara: null, manitoba: null, nova_scotia: null });
 
@@ -949,6 +952,21 @@ export default function MapView() {
     });
   }, [araLines, showAraLines, mapReady]);
 
+  // OpenSeaMap nautical chart tiles (depth contours, buoys, harbour markers)
+  useEffect(() => {
+    if (!mapReady || !mapRef.current) return;
+    const map = mapRef.current;
+    if (showSeaMap) {
+      if (!seaMapOverlayRef.current) {
+        seaMapOverlayRef.current = new mapkit.TileOverlay('https://tiles.openseamap.org/{z}/{x}/{y}.png');
+        map.addOverlay(seaMapOverlayRef.current);
+      }
+    } else if (seaMapOverlayRef.current) {
+      try { map.removeOverlay(seaMapOverlayRef.current); } catch (e) {}
+      seaMapOverlayRef.current = null;
+    }
+  }, [showSeaMap, mapReady]);
+
   // Initialize map
   useEffect(() => {
     let cancelled = false;
@@ -1726,7 +1744,7 @@ export default function MapView() {
         onToggleMeasure={handleToggleMeasure}
         onToggleArea={handleToggleArea}
         onOpenGeoHub={() => setGeoHubOpen(true)}
-        geoHubActive={showFishingAccess || showAraLines || showManitoba || showNovaScotia}
+        geoHubActive={showFishingAccess || showAraLines || showManitoba || showNovaScotia || showSeaMap}
       />
 
       <GeoHubLayersPanel
@@ -1740,6 +1758,8 @@ export default function MapView() {
         onToggleManitoba={(v) => { setShowManitoba(v); if (!v) { setManitobaAccess([]); lastGeoBboxRef.current.manitoba = null; } }}
         onToggleNovaScotia={(v) => { setShowNovaScotia(v); if (!v) { setNovaScotiaAccess([]); lastGeoBboxRef.current.nova_scotia = null; } }}
         onToggleAra={(v) => { setShowAraLines(v); if (!v) { setAraLines([]); lastGeoBboxRef.current.ara = null; setAraZoomHint(false); } }}
+        showSeaMap={showSeaMap}
+        onToggleSeaMap={setShowSeaMap}
         loading={geoLoading}
         araZoomHint={araZoomHint}
       />

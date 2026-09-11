@@ -1,6 +1,6 @@
 import React from "react";
 import { Switch } from "@/components/ui/switch";
-import { X, Loader2, Waves } from "lucide-react";
+import { X, Loader2, Waves, Anchor } from "lucide-react";
 
 // Toggle panel for provincial fishing-access datasets overlaid on the map.
 // Each province is backed by its own open-data source (Ontario LIO, Manitoba
@@ -12,10 +12,12 @@ export default function GeoHubLayersPanel({
   showManitoba,
   showNovaScotia,
   showAraLines,
+  showSeaMap,
   onToggleFishing,
   onToggleManitoba,
   onToggleNovaScotia,
   onToggleAra,
+  onToggleSeaMap,
   loading,
   araZoomHint,
 }) {
@@ -113,6 +115,26 @@ export default function GeoHubLayersPanel({
                   <Loader2 className="w-3 h-3 animate-spin" /> Loading…
                 </p>
               )}
+            </div>
+          </div>
+
+          <div className="my-2 mx-2 border-t border-border" />
+
+          <p className="px-2 pt-1 pb-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+            Nautical Charts
+          </p>
+          <div className="flex items-start gap-3 px-2 py-2.5 rounded-xl hover:bg-accent/5">
+            <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-sky-600 text-white">
+              <Anchor className="w-4 h-4" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-sm font-medium">OpenSeaMap Depths</span>
+                <Switch checked={showSeaMap} onCheckedChange={onToggleSeaMap} />
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-snug">
+                Depth contours, buoys &amp; harbour markers (© OpenSeaMap contributors).
+              </p>
             </div>
           </div>
         </div>
