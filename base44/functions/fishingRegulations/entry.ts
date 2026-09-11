@@ -100,13 +100,62 @@ const pickWaterbody = (features) => {
   return {
     name: best.OFFICIAL_WATERBODY_NAME || best.CORPORATE_WATERBODY_NAME || best.OFFICIAL_NAME_LABEL || null,
     speciesSummary: (best.FISH_SPECIES_SUMMARY || '').trim() || null,
+    layer: best._layer ?? null,
   };
+};
+
+// A single ARA segment often lists only part of a waterbody's species — the
+// Moira River's muskellunge are recorded on just 2 of its 26 segments, for
+// example. Merge the species lists of every same-named segment in this zone so
+// the waterbody reflects its full species list.
+const unionWaterbodySpecies = async (layerId, name, zone) => {
+  if (!layerId || !name) return [];
+  const q = name.replace(/'/g, "''");
+  const where = [
+    `(OFFICIAL_WATERBODY_NAME = '${q}' OR (OFFICIAL_WATERBODY_NAME IS NULL AND CORPORATE_WATERBODY_NAME = '${q}'))`,
+    zone ? `FISHERIES_MANAGEMENT_ZONE_ID = ${zone}` : '',
+  ]
+    .filter(Boolean)
+    .join(' AND ');
+  try {
+    const params = new URLSearchParams({
+      where,
+      outFields: 'FISH_SPECIES_SUMMARY',
+      returnGeometry: 'false',
+      f: 'json',
+      resultRecordCount: '200',
+    });
+    const r = await fetch(`${ARA_SERVICE}/${layerId}/query?${params.toString()}`);
+    if (!r.ok) return [];
+    const data = await r.json();
+    const seen = new Set();
+    const species = [];
+    for (const f of data?.features || []) {
+      for (const s of (f?.attributes?.FISH_SPECIES_SUMMARY || '').split(',')) {
+        const t = s.trim();
+        if (t && !seen.has(t)) {
+          seen.add(t);
+          species.push(t);
+        }
+      }
+    }
+    return species;
+  } catch {
+    return [];
+  }
+};
+
+const withFullSpecies = async (waterbody, zone) => {
+  if (!waterbody) return waterbody;
+  const merged = await unionWaterbodySpecies(waterbody.layer, waterbody.name, zone);
+  const origCount = (waterbody.speciesSummary || '').split(',').filter((s) => s.trim()).length;
+  return merged.length > origCount ? { ...waterbody, speciesSummary: merged.join(', ') } : waterbody;
 };
 
 // Look up the waterbody under the map centre: the lake polygon that actually
 // contains the point first (so a neighbouring lake in the area is never
 // picked), then a small envelope fallback for rivers/streams and near-shore.
-const lookupOntarioWaterbody = async (lat, lon) => {
+const lookupOntarioWaterbody = async (lat, lon, zone) => {
   // Layer 2 = ARA Water Poly Segment (lakes) — it has no OFFICIAL_NAME_LABEL field.
   // Layer 1 = ARA Water Line Segment (rivers/streams).
   const lakeFields = 'OFFICIAL_WATERBODY_NAME,CORPORATE_WATERBODY_NAME,FISH_SPECIES_SUMMARY';
@@ -114,18 +163,20 @@ const lookupOntarioWaterbody = async (lat, lon) => {
 
   // Exact containment — only the waterbody polygon under the point matches
   const lake = pickWaterbody(
-    await araQuery(2, lakeFields, JSON.stringify({ x: lon, y: lat, spatialReference: { wkid: 4326 } }), 'esriGeometryPoint')
+    (await araQuery(2, lakeFields, JSON.stringify({ x: lon, y: lat, spatialReference: { wkid: 4326 } }), 'esriGeometryPoint')).map(
+      (a) => ({ ...a, _layer: 2 })
+    )
   );
-  if (lake) return lake;
+  if (lake) return withFullSpecies(lake, zone);
 
   // Fallback: ~400 m envelope around the map centre
   const pad = 0.004;
   const geom = `${lon - pad},${lat - pad},${lon + pad},${lat + pad}`;
   const results = await Promise.all([
-    araQuery(2, lakeFields, geom, 'esriGeometryEnvelope'),
-    araQuery(1, lineFields, geom, 'esriGeometryEnvelope'),
+    araQuery(2, lakeFields, geom, 'esriGeometryEnvelope').then((fs) => fs.map((a) => ({ ...a, _layer: 2 }))),
+    araQuery(1, lineFields, geom, 'esriGeometryEnvelope').then((fs) => fs.map((a) => ({ ...a, _layer: 1 }))),
   ]);
-  return pickWaterbody(results.flat());
+  return withFullSpecies(pickWaterbody(results.flat()), zone);
 };
 
 // --- Species matching: keep only zone-table rows for species the waterbody has ---
@@ -250,7 +301,7 @@ export default async function (req) {
           const html = await r.text();
           const parsed = parseOntarioZonePage(html);
           if (parsed) {
-            const waterbody = await lookupOntarioWaterbody(lat, lon);
+            const waterbody = await lookupOntarioWaterbody(lat, lon, zone);
             const seasons = waterbody?.speciesSummary
               ? filterSeasonsBySpecies(parsed.seasons, waterbody.speciesSummary)
               : parsed.seasons;
