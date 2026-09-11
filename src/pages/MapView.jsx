@@ -138,8 +138,8 @@ export default function MapView() {
   const [selectedAraLine, setSelectedAraLine] = useState(null);
   // OpenSeaMap nautical chart tiles (transparent overlay above the base map)
   const [showSeaMap, setShowSeaMap] = useState(false);
-  // Ontario MNRF lake depth contours (bathymetry lines from LIO open data)
-  const [showBathy, setShowBathy] = useState(false);
+  // Ontario MNRF lake depth contours (bathymetry lines from LIO open data) — ON by default
+  const [showBathy, setShowBathy] = useState(true);
   const [bathyLines, setBathyLines] = useState([]);
 
 
