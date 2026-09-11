@@ -6,6 +6,11 @@ const FMZ_LAYER =
 
 const ONTARIO_REG_SUMMARY = 'https://www.ontario.ca/document/ontario-fishing-regulations-summary';
 
+// Ontario LIO Aquatic Resource Area layers — waterbody polygons (lakes) and
+// line segments (rivers/streams). Both carry FISH_SPECIES_SUMMARY, the list of
+// species recorded as present in that specific waterbody.
+const ARA_SERVICE = 'https://ws.lioservices.lrc.gov.on.ca/arcgis2/rest/services/LIO_OPEN_DATA/LIO_Open07/MapServer';
+
 // Rough province bounding boxes — same boxes the map uses for auto layer selection
 const detectProvince = (lat, lon) => {
   if (lat >= 41.6 && lat <= 56.9 && lon >= -95.3 && lon <= -74.0) return 'ontario';
@@ -64,6 +69,126 @@ const parseOntarioZonePage = (html) => {
   return { seasons, generalRules };
 };
 
+// Look up the waterbody (ARA polygon first, then line segment) near the point
+// and return its official name plus its recorded fish species summary.
+const lookupOntarioWaterbody = async (lat, lon) => {
+  const pad = 0.004; // ~400 m envelope around the map centre
+  const geom = `${lon - pad},${lat - pad},${lon + pad},${lat + pad}`;
+  // Layer 2 = ARA Water Poly Segment (lakes) — it has no OFFICIAL_NAME_LABEL field.
+  // Layer 1 = ARA Water Line Segment (rivers/streams).
+  const layers = [
+    { id: 2, outFields: 'OFFICIAL_WATERBODY_NAME,CORPORATE_WATERBODY_NAME,FISH_SPECIES_SUMMARY' },
+    { id: 1, outFields: 'OFFICIAL_WATERBODY_NAME,CORPORATE_WATERBODY_NAME,OFFICIAL_NAME_LABEL,FISH_SPECIES_SUMMARY' },
+  ];
+  const results = await Promise.all(
+    layers.map(async ({ id, outFields }) => {
+      try {
+        const params = new URLSearchParams({
+          where: '1=1',
+          geometry: geom,
+          geometryType: 'esriGeometryEnvelope',
+          inSR: '4326',
+          spatialRel: 'esriSpatialRelIntersects',
+          outFields,
+          returnGeometry: 'false',
+          f: 'json',
+          resultRecordCount: '20',
+        });
+        const r = await fetch(`${ARA_SERVICE}/${id}/query?${params.toString()}`);
+        if (!r.ok) return [];
+        const data = await r.json();
+        return (data?.features || []).map((f) => f?.attributes || {});
+      } catch (e) {
+        return [];
+      }
+    })
+  );
+  const features = results.flat();
+  if (features.length === 0) return null;
+  // Prefer a feature that actually lists species
+  const best = features.find((a) => (a.FISH_SPECIES_SUMMARY || '').trim()) || features[0];
+  return {
+    name: best.OFFICIAL_WATERBODY_NAME || best.CORPORATE_WATERBODY_NAME || best.OFFICIAL_NAME_LABEL || null,
+    speciesSummary: (best.FISH_SPECIES_SUMMARY || '').trim() || null,
+  };
+};
+
+// --- Species matching: keep only zone-table rows for species the waterbody has ---
+// Zone-table entries use consistent naming across FMZs; map each entry to the
+// phrases a waterbody species summary uses when that species is present. The
+// first key whose text appears in the entry name wins. Generic words alone
+// ("trout", "northern") never match, so summaries listing e.g. "Northern Hog
+// Sucker" don't drag in northern pike rules.
+const SPECIES_PHRASES = [
+  ['aggregate', []], // combined-limit rule, not a species — always keep
+  ['atlantic salmon', ['atlantic salmon']],
+  ['pacific salmon', ['chinook', 'coho', 'pink salmon', 'sockeye', 'chum salmon', 'kokanee', 'pacific salmon']],
+  ['chinook', ['chinook']],
+  ['coho', ['coho']],
+  ['kokanee', ['kokanee']],
+  ['brook trout', ['brook trout', 'speckled trout']],
+  ['brown trout', ['brown trout']],
+  ['rainbow trout', ['rainbow trout', 'steelhead']],
+  ['lake trout', ['lake trout', 'splake', 'togue']],
+  ['splake', ['splake', 'lake trout']],
+  ['walleye', ['walleye', 'sauger', 'yellow pickerel', 'pickerel']],
+  ['sauger', ['sauger', 'walleye']],
+  ['northern pike', ['northern pike', 'jackfish']],
+  ['pike', ['pike']],
+  ['muskellunge', ['muskellunge', 'muskie', 'musky', 'tiger muskie']],
+  ['largemouth', ['largemouth', 'smallmouth']],
+  ['smallmouth', ['smallmouth', 'largemouth']],
+  ['sunfish', ['sunfish', 'rock bass', 'pumpkinseed', 'bluegill']],
+  ['rock bass', ['rock bass', 'sunfish', 'pumpkinseed', 'bluegill']],
+  ['yellow perch', ['yellow perch', 'perch']],
+  ['white perch', ['white perch']],
+  ['crappie', ['crappie']],
+  ['channel catfish', ['channel catfish', 'catfish']],
+  ['catfish', ['catfish']],
+  ['bullhead', ['bullhead']],
+  ['burbot', ['burbot', 'ling', 'eelpout']],
+  ['lake whitefish', ['whitefish', 'cisco', 'lake herring']],
+  ['whitefish', ['whitefish', 'cisco', 'lake herring']],
+  ['cisco', ['cisco', 'lake herring', 'whitefish']],
+  ['sturgeon', ['sturgeon']],
+  ['sucker', ['sucker', 'redhorse']],
+  ['redhorse', ['redhorse', 'sucker']],
+  ['goldeye', ['goldeye', 'mooneye']],
+  ['mooneye', ['mooneye', 'goldeye']],
+  ['bowfin', ['bowfin']],
+  ['carp', ['carp']],
+  ['smelt', ['smelt']],
+  ['gar', ['gar']],
+];
+const SPECIES_STOPWORDS = new Set([
+  'other', 'others', 'type', 'group', 'species', 'including', 'general', 'water', 'fish', 'all',
+]);
+const GENERIC_WORDS = new Set([
+  'trout', 'salmon', 'bass', 'pike', 'perch', 'northern', 'brook', 'brown', 'rainbow',
+  'lake', 'white', 'black', 'yellow', 'combined', 'limits', 'splake', 'channel',
+]);
+
+const seasonMatches = (speciesName, summary) => {
+  const entry = stripTags(speciesName).toLowerCase();
+  for (const [key, phrases] of SPECIES_PHRASES) {
+    if (entry.includes(key)) {
+      return phrases.length === 0 || phrases.some((p) => summary.includes(p));
+    }
+  }
+  // Unknown entry — match on its distinctive long words only
+  const tokens = entry
+    .split(/[^a-z]+/)
+    .filter((w) => w.length >= 5 && !SPECIES_STOPWORDS.has(w) && !GENERIC_WORDS.has(w));
+  return tokens.some((t) => summary.includes(t));
+};
+
+const filterSeasonsBySpecies = (seasons, speciesSummary) => {
+  const summary = stripTags(speciesSummary).toLowerCase();
+  if (!summary) return seasons;
+  const filtered = seasons.filter((s) => seasonMatches(s.species, summary));
+  return filtered.length > 0 ? filtered : seasons;
+};
+
 export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
@@ -110,14 +235,21 @@ export default async function (req) {
           const html = await r.text();
           const parsed = parseOntarioZonePage(html);
           if (parsed) {
+            const waterbody = await lookupOntarioWaterbody(lat, lon);
+            const seasons = waterbody?.speciesSummary
+              ? filterSeasonsBySpecies(parsed.seasons, waterbody.speciesSummary)
+              : parsed.seasons;
             return Response.json({
               supported: true,
               province,
               zone,
               regulations: {
                 source: 'official',
-                areaLabel: `Ontario — FMZ ${zone}`,
-                seasons: parsed.seasons,
+                areaLabel: waterbody?.name
+                  ? `${waterbody.name} · Ontario FMZ ${zone}`
+                  : `Ontario — FMZ ${zone}`,
+                waterbody: waterbody || null,
+                seasons,
                 generalRules: parsed.generalRules,
                 exceptionsNote:
                   'Zone-wide rules apply to all waters in this zone except where species exceptions, waterbody exceptions or fish sanctuaries apply. Check the official summary for the specific waterbody you plan to fish.',

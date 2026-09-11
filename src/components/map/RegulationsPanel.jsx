@@ -1,5 +1,5 @@
 import React from "react";
-import { X, Loader2, ScrollText, AlertTriangle, ExternalLink, CalendarRange, ListChecks } from "lucide-react";
+import { X, Loader2, ScrollText, AlertTriangle, ExternalLink, CalendarRange, ListChecks, Fish } from "lucide-react";
 
 const PROVINCE_LABELS = {
   ontario: "Ontario",
@@ -72,6 +72,20 @@ export default function RegulationsPanel({ open, onOpenChange, data, loading, er
 
           {!loading && !error && regs && (
             <>
+              {/* Waterbody species scope */}
+              {regs.waterbody?.speciesSummary && (
+                <div className="rounded-xl border border-teal-500/30 bg-teal-500/5 px-3 py-2.5">
+                  <div className="flex items-center gap-1.5 mb-1 text-[11px] font-semibold uppercase tracking-wide text-teal-700 dark:text-teal-400">
+                    <Fish className="w-3.5 h-3.5" /> Species in This Waterbody
+                  </div>
+                  <p className="text-sm leading-snug">{regs.waterbody.speciesSummary}</p>
+                  <p className="text-[11px] text-muted-foreground mt-1.5 leading-snug">
+                    Showing regulations only for species recorded in{" "}
+                    {regs.waterbody.name || "this waterbody"}.
+                  </p>
+                </div>
+              )}
+
               {/* Seasons */}
               <div>
                 <div className="flex items-center gap-1.5 mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
