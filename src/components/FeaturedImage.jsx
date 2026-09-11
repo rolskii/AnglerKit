@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
-import { Camera, Sparkles } from "lucide-react";
+import { Camera, Sparkles, Star } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { getStarredPhotos } from "@/lib/featuredImage";
 import gearEmptyHero from "@/assets/gear-empty-hero.jpg";
 
 const entityRoutes = {
@@ -29,6 +30,7 @@ const todayStr = () => {
 
 export default function FeaturedImage() {
   const [featured, setFeatured] = useState(null);
+  const [hasAnyImages, setHasAnyImages] = useState(false);
   const [loading, setLoading] = useState(true);
   const [labelColor, setLabelColor] = useState("white");
   const imgRef = useRef(null);
@@ -99,39 +101,34 @@ export default function FeaturedImage() {
     return allImages;
   };
 
+  // Featured photos are only the ones the user starred in their gear/catch
+  // cards. Rotate daily through the starred group (or pick a new one on refresh).
   const loadFeatured = async (forceNew = false) => {
     setLoading(true);
-    const isExcluded = (img) => img && img.link === "/lines";
-
     try {
-      const userStored = localStorage.getItem("featuredImageUser");
-      if (userStored && !forceNew) {
-        const parsed = JSON.parse(userStored);
-        if (!isExcluded(parsed)) {
-          setFeatured(parsed);
-          setLoading(false);
-          return;
-        }
-        localStorage.removeItem("featuredImageUser");
+      const starred = getStarredPhotos();
+      if (starred.length === 0) {
+        // No starred photos — check whether any photos exist at all so the
+        // card can tell "star something" apart from "add your first gear".
+        const allImages = await fetchAllGearImages();
+        setHasAnyImages(allImages.length > 0);
+        localStorage.removeItem("featuredImageDaily");
+        setFeatured(null);
+        return;
       }
-    } catch {}
-
-    try {
+      setHasAnyImages(true);
       if (!forceNew) {
         const dailyStored = localStorage.getItem("featuredImageDaily");
         if (dailyStored) {
           const parsed = JSON.parse(dailyStored);
-          if (parsed.date === todayStr() && parsed.image && !isExcluded(parsed.image)) {
+          if (parsed.date === todayStr() && parsed.image && starred.some((s) => s.image_url === parsed.image.image_url)) {
             setFeatured(parsed.image);
-            setLoading(false);
             return;
           }
           localStorage.removeItem("featuredImageDaily");
         }
       }
-      const allImages = await fetchAllGearImages();
-      if (allImages.length === 0) { setLoading(false); return; }
-      const random = allImages[Math.floor(Math.random() * allImages.length)];
+      const random = starred[Math.floor(Math.random() * starred.length)];
       localStorage.setItem("featuredImageDaily", JSON.stringify({ date: todayStr(), image: random }));
       setFeatured(random);
     } catch (e) {} finally {
@@ -159,6 +156,24 @@ export default function FeaturedImage() {
   }
 
   if (!featured) {
+    if (hasAnyImages) {
+      // Photos exist but none are starred yet — prompt the user to star some.
+      return (
+        <Card className="rounded-2xl border-0 shadow-sm overflow-hidden">
+          <div className="aspect-square flex flex-col items-center justify-center gap-3 bg-muted/40 text-center px-8">
+            <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
+              <Star className="w-7 h-7 text-primary" strokeWidth={1.75} />
+            </div>
+            <div>
+              <h3 className="text-lg font-heading font-bold tracking-tight">No photos starred yet</h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                Star photos in your gear and catch cards and they&apos;ll be featured here.
+              </p>
+            </div>
+          </div>
+        </Card>
+      );
+    }
     return (
       <div className="space-y-3">
         <button
