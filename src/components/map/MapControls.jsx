@@ -51,7 +51,7 @@ export default function MapControls({
               ? 'bg-emerald-600 text-white border-emerald-600'
               : 'bg-background/90 text-foreground border-border'
           }`}
-          title="Ontario fishing data layers"
+          title="Fishing Data Layers"
         >
           <FishIcon className="w-5 h-5" flip={false} />
         </button>
