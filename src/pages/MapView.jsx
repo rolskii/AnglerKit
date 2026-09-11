@@ -960,8 +960,10 @@ export default function MapView() {
       if (!seaMapOverlayRef.current) {
         // MapKit JS 6 separates tile overlays from regular overlays — adding a
         // TileOverlay via addOverlay() throws, so use addTileOverlay() here.
-        // OpenSeaMap serves tiles up to zoom 18, so cap maximumZ to match.
-        seaMapOverlayRef.current = new mapkit.TileOverlay('https://tiles.openseamap.org/{z}/{x}/{y}.png', { maximumZ: 18 });
+        // OpenSeaMap's chart layer (seamarks: buoys, lights, harbour marks) —
+        // the old {z}/{x}/{y} root path now serves blank placeholder tiles.
+        // Seamark tiles are served up to zoom 18, so cap maximumZ to match.
+        seaMapOverlayRef.current = new mapkit.TileOverlay('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', { maximumZ: 18 });
         map.addTileOverlay(seaMapOverlayRef.current);
       }
     } else if (seaMapOverlayRef.current) {

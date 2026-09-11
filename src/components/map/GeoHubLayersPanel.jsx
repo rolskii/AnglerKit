@@ -129,11 +129,11 @@ export default function GeoHubLayersPanel({
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-sm font-medium">OpenSeaMap Depths</span>
+                <span className="text-sm font-medium">OpenSeaMap Seamarks</span>
                 <Switch checked={showSeaMap} onCheckedChange={onToggleSeaMap} />
               </div>
               <p className="text-[11px] text-muted-foreground leading-snug">
-                Depth contours, buoys &amp; harbour markers (© OpenSeaMap contributors).
+                Buoys, lights &amp; harbour markers (© OpenSeaMap contributors).
               </p>
             </div>
           </div>
