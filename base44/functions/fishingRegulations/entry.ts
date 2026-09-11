@@ -71,39 +71,29 @@ const parseOntarioZonePage = (html) => {
 
 // Look up the waterbody (ARA polygon first, then line segment) near the point
 // and return its official name plus its recorded fish species summary.
-const lookupOntarioWaterbody = async (lat, lon) => {
-  const pad = 0.004; // ~400 m envelope around the map centre
-  const geom = `${lon - pad},${lat - pad},${lon + pad},${lat + pad}`;
-  // Layer 2 = ARA Water Poly Segment (lakes) — it has no OFFICIAL_NAME_LABEL field.
-  // Layer 1 = ARA Water Line Segment (rivers/streams).
-  const layers = [
-    { id: 2, outFields: 'OFFICIAL_WATERBODY_NAME,CORPORATE_WATERBODY_NAME,FISH_SPECIES_SUMMARY' },
-    { id: 1, outFields: 'OFFICIAL_WATERBODY_NAME,CORPORATE_WATERBODY_NAME,OFFICIAL_NAME_LABEL,FISH_SPECIES_SUMMARY' },
-  ];
-  const results = await Promise.all(
-    layers.map(async ({ id, outFields }) => {
-      try {
-        const params = new URLSearchParams({
-          where: '1=1',
-          geometry: geom,
-          geometryType: 'esriGeometryEnvelope',
-          inSR: '4326',
-          spatialRel: 'esriSpatialRelIntersects',
-          outFields,
-          returnGeometry: 'false',
-          f: 'json',
-          resultRecordCount: '20',
-        });
-        const r = await fetch(`${ARA_SERVICE}/${id}/query?${params.toString()}`);
-        if (!r.ok) return [];
-        const data = await r.json();
-        return (data?.features || []).map((f) => f?.attributes || {});
-      } catch (e) {
-        return [];
-      }
-    })
-  );
-  const features = results.flat();
+const araQuery = async (layerId, outFields, geometry, geometryType) => {
+  try {
+    const params = new URLSearchParams({
+      where: '1=1',
+      geometry,
+      geometryType,
+      inSR: '4326',
+      spatialRel: 'esriSpatialRelIntersects',
+      outFields,
+      returnGeometry: 'false',
+      f: 'json',
+      resultRecordCount: '20',
+    });
+    const r = await fetch(`${ARA_SERVICE}/${layerId}/query?${params.toString()}`);
+    if (!r.ok) return [];
+    const data = await r.json();
+    return (data?.features || []).map((f) => f?.attributes || {});
+  } catch (e) {
+    return [];
+  }
+};
+
+const pickWaterbody = (features) => {
   if (features.length === 0) return null;
   // Prefer a feature that actually lists species
   const best = features.find((a) => (a.FISH_SPECIES_SUMMARY || '').trim()) || features[0];
@@ -111,6 +101,31 @@ const lookupOntarioWaterbody = async (lat, lon) => {
     name: best.OFFICIAL_WATERBODY_NAME || best.CORPORATE_WATERBODY_NAME || best.OFFICIAL_NAME_LABEL || null,
     speciesSummary: (best.FISH_SPECIES_SUMMARY || '').trim() || null,
   };
+};
+
+// Look up the waterbody under the map centre: the lake polygon that actually
+// contains the point first (so a neighbouring lake in the area is never
+// picked), then a small envelope fallback for rivers/streams and near-shore.
+const lookupOntarioWaterbody = async (lat, lon) => {
+  // Layer 2 = ARA Water Poly Segment (lakes) — it has no OFFICIAL_NAME_LABEL field.
+  // Layer 1 = ARA Water Line Segment (rivers/streams).
+  const lakeFields = 'OFFICIAL_WATERBODY_NAME,CORPORATE_WATERBODY_NAME,FISH_SPECIES_SUMMARY';
+  const lineFields = 'OFFICIAL_WATERBODY_NAME,CORPORATE_WATERBODY_NAME,OFFICIAL_NAME_LABEL,FISH_SPECIES_SUMMARY';
+
+  // Exact containment — only the waterbody polygon under the point matches
+  const lake = pickWaterbody(
+    await araQuery(2, lakeFields, JSON.stringify({ x: lon, y: lat, spatialReference: { wkid: 4326 } }), 'esriGeometryPoint')
+  );
+  if (lake) return lake;
+
+  // Fallback: ~400 m envelope around the map centre
+  const pad = 0.004;
+  const geom = `${lon - pad},${lat - pad},${lon + pad},${lat + pad}`;
+  const results = await Promise.all([
+    araQuery(2, lakeFields, geom, 'esriGeometryEnvelope'),
+    araQuery(1, lineFields, geom, 'esriGeometryEnvelope'),
+  ]);
+  return pickWaterbody(results.flat());
 };
 
 // --- Species matching: keep only zone-table rows for species the waterbody has ---
