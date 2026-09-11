@@ -133,11 +133,18 @@ export default function RegulationsPanel({ open, onOpenChange, data, loading, er
           )}
 
           {/* Disclaimer */}
-          {!loading && (
+          {!loading && data?.regulations?.source === 'official' ? (
             <p className="text-[11px] text-muted-foreground/70 leading-snug pt-1">
-              AI-generated summary of the official regulations and may be out of date. Always verify with
-              the official source before fishing.
+              Sourced directly from the official regulations page. Waterbody-specific exceptions may
+              still apply — always verify before fishing.
             </p>
+          ) : (
+            !loading && (
+              <p className="text-[11px] text-muted-foreground/70 leading-snug pt-1">
+                AI-generated summary of the official regulations and may be out of date. Always verify
+                with the official source before fishing.
+              </p>
+            )
           )}
         </div>
       </div>
