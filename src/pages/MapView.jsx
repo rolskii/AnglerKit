@@ -62,6 +62,16 @@ const pinMarkerFactory = () => {
 
 // Normalize an Ontario GeoHub Fishing Access Point's raw attributes into the
 // common shape consumed by AccessPointDialog (shared with other provinces).
+// Rough province bounding boxes — used to auto-enable the matching provincial
+// access layer on the first GPS fix. Ontario is checked first because
+// northwest Ontario overlaps Manitoba's box. Outside these boxes, no layer.
+const detectProvince = (lat, lon) => {
+  if (lat >= 41.6 && lat <= 56.9 && lon >= -95.3 && lon <= -74.0) return 'ontario';
+  if (lat >= 48.9 && lat <= 60.0 && lon >= -102.0 && lon <= -88.3) return 'manitoba';
+  if (lat >= 43.3 && lat <= 47.1 && lon >= -67.0 && lon <= -59.7) return 'nova_scotia';
+  return null;
+};
+
 const YESNO = (v) => (v && v.toUpperCase() === 'Y' ? 'Yes' : v && v.toUpperCase() === 'N' ? 'No' : v || '');
 const normOntarioAccess = (p) => ({
   province: 'ontario',
@@ -171,6 +181,7 @@ export default function MapView() {
   const handleAreaClickRef = useRef(() => {});
   const areaOverlayRef = useRef(null);
   const savedAreaOverlaysRef = useRef([]);
+  const autoProvinceRef = useRef(false);
   const araLineOverlaysRef = useRef([]);
   const bathyLineOverlaysRef = useRef([]);
   const seaMapOverlayRef = useRef(null);
@@ -1102,6 +1113,17 @@ export default function MapView() {
     );
     return () => { cancelled = true; };
   }, [mapReady, gpsPos]);
+
+  // Auto-enable the provincial fishing-access layer matching the user's
+  // location on the first GPS fix (runs once; manual toggles afterwards win).
+  useEffect(() => {
+    if (!gpsPos || autoProvinceRef.current) return;
+    autoProvinceRef.current = true;
+    const province = detectProvince(gpsPos[0], gpsPos[1]);
+    if (province === 'ontario') setShowFishingAccess(true);
+    else if (province === 'manitoba') setShowManitoba(true);
+    else if (province === 'nova_scotia') setShowNovaScotia(true);
+  }, [gpsPos]);
 
   // Update track overlay
   useEffect(() => {
