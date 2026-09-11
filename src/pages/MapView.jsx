@@ -1427,11 +1427,14 @@ export default function MapView() {
           const left = point.x - containerRect.left;
           const top = point.y - containerRect.top;
           if (left < -40 || left > containerRect.width + 40 || top < -20 || top > containerRect.height + 20) return null;
-          const depth = Math.abs(feat.properties?.DEPTH ?? 0);
+          const depthM = Math.abs(feat.properties?.DEPTH ?? 0);
+          const depthLabel = imperial
+            ? `${Math.round(depthM * 3.28084)} ft`
+            : `${depthM % 1 === 0 ? depthM : depthM.toFixed(1)} m`;
           return (
             <div key={`bathy-${idx}`} className="absolute z-[453] pointer-events-none" style={{ left, top, transform: 'translate(-50%, -50%)' }}>
               <span style={{ fontSize: '10px', fontWeight: 600, background: 'rgba(30,58,138,0.85)', color: 'white', padding: '1px 5px', borderRadius: '4px', whiteSpace: 'nowrap' }}>
-                {depth % 1 === 0 ? depth : depth.toFixed(1)} m
+                {depthLabel}
               </span>
             </div>
           );

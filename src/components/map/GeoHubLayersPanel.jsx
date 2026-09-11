@@ -150,7 +150,7 @@ export default function GeoHubLayersPanel({
                 <Switch checked={showBathy} onCheckedChange={onToggleBathy} />
               </div>
               <p className="text-[11px] text-muted-foreground leading-snug">
-                Ontario lake depth contours in metres (MNRF bathymetry). Coverage varies by lake.
+                Ontario lake depth contours (MNRF bathymetry). Follows your unit preference. Coverage varies by lake.
               </p>
               {bathyZoomHint && (
                 <p className="text-[11px] text-amber-600 dark:text-amber-400 leading-snug mt-1">
