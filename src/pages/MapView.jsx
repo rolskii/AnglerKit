@@ -987,9 +987,9 @@ export default function MapView() {
       const geom = feat.geometry;
       if (!geom) return;
       const paths = geom.type === 'MultiLineString' ? geom.coordinates : [geom.coordinates];
-      const depth = Math.abs(feat.properties?.DEPTH ?? 0);
+      const depthFt = Math.abs(feat.properties?.DEPTH ?? 0) * 3.28084;
       const color =
-        depth <= 3 ? '#38bdf8' : depth <= 6 ? '#0ea5e9' : depth <= 12 ? '#0284c7' : depth <= 20 ? '#1d4ed8' : '#1e3a8a';
+        depthFt <= 10 ? '#38bdf8' : depthFt <= 20 ? '#0ea5e9' : depthFt <= 40 ? '#0284c7' : depthFt <= 65 ? '#1d4ed8' : '#1e3a8a';
       paths.forEach((path) => {
         if (!path || path.length < 2) return;
         const coords = path.map((c) => new mapkit.Coordinate(c[1], c[0]));
@@ -1428,9 +1428,7 @@ export default function MapView() {
           const top = point.y - containerRect.top;
           if (left < -40 || left > containerRect.width + 40 || top < -20 || top > containerRect.height + 20) return null;
           const depthM = Math.abs(feat.properties?.DEPTH ?? 0);
-          const depthLabel = imperial
-            ? `${Math.round(depthM * 3.28084)} ft`
-            : `${depthM % 1 === 0 ? depthM : depthM.toFixed(1)} m`;
+          const depthLabel = `${Math.round(depthM * 3.28084)} ft`;
           return (
             <div key={`bathy-${idx}`} className="absolute z-[453] pointer-events-none" style={{ left, top, transform: 'translate(-50%, -50%)' }}>
               <span style={{ fontSize: '10px', fontWeight: 600, background: 'rgba(30,58,138,0.85)', color: 'white', padding: '1px 5px', borderRadius: '4px', whiteSpace: 'nowrap' }}>
