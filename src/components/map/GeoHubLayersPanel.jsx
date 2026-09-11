@@ -155,7 +155,7 @@ export default function GeoHubLayersPanel({
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-sm font-medium">Lake Depth Contours</span>
+                <span className="text-sm font-medium">Ontario Lake Contours</span>
                 <Switch checked={showBathy} onCheckedChange={onToggleBathy} />
               </div>
               <p className="text-[11px] text-muted-foreground leading-snug">
