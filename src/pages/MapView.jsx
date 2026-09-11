@@ -24,6 +24,7 @@ import { prepareMapKit } from '@/lib/mapkitLoader';
 import GeoHubLayersPanel from '@/components/map/GeoHubLayersPanel';
 import AccessPointDialog from '@/components/map/AccessPointDialog';
 import AraLineDialog from '@/components/map/AraLineDialog';
+import RegulationsPanel from '@/components/map/RegulationsPanel';
 
 /* global mapkit */
 
@@ -156,6 +157,11 @@ export default function MapView() {
   // Ontario MNRF lake depth contours (bathymetry lines from LIO open data) — ON by default
   const [showBathy, setShowBathy] = useState(true);
   const [bathyLines, setBathyLines] = useState([]);
+  // Fishing regulations lookup for the map centre (province + Ontario FMZ)
+  const [regsOpen, setRegsOpen] = useState(false);
+  const [regsLoading, setRegsLoading] = useState(false);
+  const [regsData, setRegsData] = useState(null);
+  const [regsError, setRegsError] = useState(null);
 
 
   // Persist pins to localStorage so they survive page navigation
@@ -933,6 +939,27 @@ export default function MapView() {
       );
     });
   };
+
+  // Look up fishing regulations for the current map centre (province + FMZ)
+  const openRegulations = useCallback(async () => {
+    setRegsOpen(true);
+    setRegsData(null);
+    setRegsError(null);
+    const map = mapRef.current;
+    if (!map || !map.center) return;
+    setRegsLoading(true);
+    try {
+      const res = await base44.functions.invoke('fishingRegulations', {
+        lat: map.center.latitude,
+        lon: map.center.longitude,
+      });
+      setRegsData(res?.data || null);
+    } catch (e) {
+      setRegsError(e?.response?.data?.error || e?.message || 'Failed to load regulations');
+    } finally {
+      setRegsLoading(false);
+    }
+  }, []);
 
   // Fetch enabled GeoHub layers when the map region changes
   useEffect(() => {
@@ -1856,6 +1883,7 @@ export default function MapView() {
         onToggleMeasure={handleToggleMeasure}
         onToggleArea={handleToggleArea}
         onOpenGeoHub={() => setGeoHubOpen(true)}
+        onOpenRegs={openRegulations}
         geoHubActive={showFishingAccess || showAraLines || showManitoba || showNovaScotia || showQuebec || showSeaMap || showBathy}
       />
 
@@ -1879,6 +1907,13 @@ export default function MapView() {
         loading={geoLoading}
         bathyZoomHint={bathyZoomHint}
         araZoomHint={araZoomHint}
+      />
+      <RegulationsPanel
+        open={regsOpen}
+        onOpenChange={setRegsOpen}
+        data={regsData}
+        loading={regsLoading}
+        error={regsError}
       />
       <AccessPointDialog
         open={!!selectedAccessPoint}

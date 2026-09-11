@@ -1,5 +1,5 @@
 import React from 'react';
-import { Play, Pause, Square, MapPin, Save, Crosshair, Layers, FolderOpen, Circle, Route, Pencil, Ruler, Hexagon } from 'lucide-react';
+import { Play, Pause, Square, MapPin, Save, Crosshair, Layers, FolderOpen, Circle, Route, Pencil, Ruler, Hexagon, ScrollText } from 'lucide-react';
 import FishIcon from '@/components/FishIcon';
 
 const ctrlBase = "flex items-center justify-center rounded-full shadow-lg backdrop-blur-xl transition-all active:scale-90";
@@ -32,6 +32,7 @@ export default function MapControls({
   onToggleArea,
   onOpenGeoHub,
   geoHubActive,
+  onOpenRegs,
 }) {
   return (
     <>
@@ -54,6 +55,13 @@ export default function MapControls({
           title="Fishing Data Layers"
         >
           <FishIcon className="w-5 h-5" flip={false} />
+        </button>
+        <button
+          onClick={onOpenRegs}
+          className={`${ctrlBase} ${ctrlSize} bg-background/90 text-foreground border border-border`}
+          title="Fishing regulations for this area"
+        >
+          <ScrollText className="w-5 h-5" />
         </button>
         <button
           onClick={onOpenRoutes}
