@@ -54,7 +54,7 @@ export default function GeoHubLayersPanel({
       <div className="absolute top-16 right-3 z-[550] w-72 max-w-[calc(100vw-1.5rem)] rounded-2xl border border-border bg-background/95 backdrop-blur-xl shadow-2xl">
         <div className="flex items-center justify-between px-4 py-3 border-b border-border">
           <div>
-            <h3 className="font-heading font-semibold text-sm">Fishing Access Data</h3>
+            <h3 className="font-heading font-semibold text-sm">Fishing Data Layers</h3>
             <p className="text-[11px] text-muted-foreground">Multi-province open data</p>
           </div>
           <button
