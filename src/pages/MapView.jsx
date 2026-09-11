@@ -126,8 +126,9 @@ export default function MapView() {
   const [showAraLines, setShowAraLines] = useState(false);
   const [fishingAccess, setFishingAccess] = useState([]);
   const [araLines, setAraLines] = useState([]);
-  const [geoLoading, setGeoLoading] = useState({ fishing: false, ara: false, manitoba: false, nova_scotia: false });
+  const [geoLoading, setGeoLoading] = useState({ fishing: false, ara: false, manitoba: false, nova_scotia: false, bathy: false });
   const [araZoomHint, setAraZoomHint] = useState(false);
+  const [bathyZoomHint, setBathyZoomHint] = useState(false);
   // Multi-province fishing access overlays (each backed by its own data source)
   const [showManitoba, setShowManitoba] = useState(false);
   const [showNovaScotia, setShowNovaScotia] = useState(false);
@@ -137,6 +138,9 @@ export default function MapView() {
   const [selectedAraLine, setSelectedAraLine] = useState(null);
   // OpenSeaMap nautical chart tiles (transparent overlay above the base map)
   const [showSeaMap, setShowSeaMap] = useState(false);
+  // Ontario MNRF lake depth contours (bathymetry lines from LIO open data)
+  const [showBathy, setShowBathy] = useState(false);
+  const [bathyLines, setBathyLines] = useState([]);
 
 
   // Persist pins to localStorage so they survive page navigation
@@ -168,9 +172,10 @@ export default function MapView() {
   const areaOverlayRef = useRef(null);
   const savedAreaOverlaysRef = useRef([]);
   const araLineOverlaysRef = useRef([]);
+  const bathyLineOverlaysRef = useRef([]);
   const seaMapOverlayRef = useRef(null);
   const araFeatureByOverlayRef = useRef(new Map());
-  const lastGeoBboxRef = useRef({ fishing: null, ara: null, manitoba: null, nova_scotia: null });
+  const lastGeoBboxRef = useRef({ fishing: null, ara: null, manitoba: null, nova_scotia: null, bathy: null });
 
 
   useEffect(() => { pinModeRef.current = pinMode; }, [pinMode]);
@@ -823,7 +828,7 @@ export default function MapView() {
   const fetchGeoLayer = useCallback(async (layer) => {
     const bbox = getCurrentBbox();
     if (!bbox) return;
-    const key = layer === 'fishing-access-point' ? 'fishing' : 'ara';
+    const key = layer === 'fishing-access-point' ? 'fishing' : layer === 'ara-line-segment' ? 'ara' : 'bathy';
     // Skip refetch when the new viewport is already covered by the last fetch.
     const last = lastGeoBboxRef.current[key];
     if (last && bbox.xmin >= last.xmin && bbox.xmax <= last.xmax && bbox.ymin >= last.ymin && bbox.ymax <= last.ymax) {
@@ -832,12 +837,19 @@ export default function MapView() {
     lastGeoBboxRef.current[key] = bbox;
     setGeoLoading((s) => ({ ...s, [key]: true }));
     try {
-      const res = await base44.functions.invoke('ontarioGeohub', { layer, bbox });
+      const res = await base44.functions.invoke('ontarioGeohub', {
+        layer,
+        bbox,
+        // Depth contours come as many small segments — request more per fetch
+        limit: layer === 'bathymetry-line' ? 2000 : undefined,
+      });
       const features = res?.data?.features || [];
       if (layer === 'fishing-access-point') {
         setFishingAccess(features.map((f) => ({ ...f, properties: normOntarioAccess(f.properties || {}) })));
-      } else {
+      } else if (layer === 'ara-line-segment') {
         setAraLines(features);
+      } else {
+        setBathyLines(features);
       }
     } catch (e) {
       // best-effort — leave existing features in place
@@ -908,11 +920,23 @@ export default function MapView() {
   // Fetch enabled GeoHub layers when the map region changes
   useEffect(() => {
     if (!mapReady || !mapRef.current) return;
-    if (!showFishingAccess && !showAraLines && !showManitoba && !showNovaScotia) return;
+    if (!showFishingAccess && !showAraLines && !showManitoba && !showNovaScotia && !showBathy) return;
     const bbox = getCurrentBbox();
     if (!bbox) return;
     const span = Math.max(bbox.xmax - bbox.xmin, bbox.ymax - bbox.ymin);
     if (showFishingAccess) fetchGeoLayer('fishing-access-point');
+    if (showBathy) {
+      // Contours are dense — only load at lake-scale zoom to keep payloads small
+      if (span < 0.5) {
+        setBathyZoomHint(false);
+        fetchGeoLayer('bathymetry-line');
+      } else {
+        setBathyZoomHint(true);
+        setBathyLines([]);
+      }
+    } else {
+      setBathyZoomHint(false);
+    }
     if (showManitoba) fetchProvincialAccess('manitoba');
     if (showNovaScotia) fetchProvincialAccess('nova_scotia');
     if (showAraLines) {
@@ -926,7 +950,7 @@ export default function MapView() {
     } else {
       setAraZoomHint(false);
     }
-  }, [mapVersion, mapReady, showFishingAccess, showAraLines, showManitoba, showNovaScotia, getCurrentBbox, fetchGeoLayer, fetchProvincialAccess]);
+  }, [mapVersion, mapReady, showFishingAccess, showAraLines, showManitoba, showNovaScotia, showBathy, getCurrentBbox, fetchGeoLayer, fetchProvincialAccess]);
 
   // Render ARA line segments as polyline overlays
   useEffect(() => {
@@ -952,7 +976,32 @@ export default function MapView() {
     });
   }, [araLines, showAraLines, mapReady]);
 
-  // OpenSeaMap nautical chart tiles (depth contours, buoys, harbour markers)
+  // Render Ontario bathymetry contour lines as polyline overlays, colored by depth
+  useEffect(() => {
+    if (!mapReady || !mapRef.current) return;
+    const map = mapRef.current;
+    bathyLineOverlaysRef.current.forEach((o) => { try { map.removeOverlay(o); } catch (e) {} });
+    bathyLineOverlaysRef.current = [];
+    if (!showBathy) return;
+    bathyLines.forEach((feat) => {
+      const geom = feat.geometry;
+      if (!geom) return;
+      const paths = geom.type === 'MultiLineString' ? geom.coordinates : [geom.coordinates];
+      const depth = Math.abs(feat.properties?.DEPTH ?? 0);
+      const color =
+        depth <= 3 ? '#38bdf8' : depth <= 6 ? '#0ea5e9' : depth <= 12 ? '#0284c7' : depth <= 20 ? '#1d4ed8' : '#1e3a8a';
+      paths.forEach((path) => {
+        if (!path || path.length < 2) return;
+        const coords = path.map((c) => new mapkit.Coordinate(c[1], c[0]));
+        const style = new mapkit.Style({ strokeColor: color, lineWidth: 2, lineJoin: 'round', lineCap: 'round' });
+        const overlay = new mapkit.PolylineOverlay(coords, { style });
+        map.addOverlay(overlay);
+        bathyLineOverlaysRef.current.push(overlay);
+      });
+    });
+  }, [bathyLines, showBathy, mapReady]);
+
+  // OpenSeaMap seamark tiles (buoys, lights & harbour markers)
   useEffect(() => {
     if (!mapReady || !mapRef.current) return;
     const map = mapRef.current;
@@ -1361,6 +1410,32 @@ export default function MapView() {
         {showFishingAccess && renderAccessMarkers(fishingAccess, 'fap')}
         {showManitoba && renderAccessMarkers(manitobaAccess, 'mb')}
         {showNovaScotia && renderAccessMarkers(novaScotiaAccess, 'ns')}
+        {/* Ontario depth contour labels — depth badge at each contour's midpoint */}
+        {mapReady && mapRef.current && showBathy && bathyLines.map((feat, idx) => {
+          const geom = feat.geometry;
+          if (!geom) return null;
+          const paths = geom.type === 'MultiLineString' ? geom.coordinates : [geom.coordinates];
+          let longest = null;
+          paths.forEach((path) => { if (path && path.length > (longest?.length || 0)) longest = path; });
+          if (!longest || longest.length < 2) return null;
+          const mid = longest[Math.floor(longest.length / 2)];
+          const coord = new mapkit.Coordinate(mid[1], mid[0]);
+          const point = mapRef.current.convertCoordinateToPointOnPage(coord);
+          if (!point) return null;
+          const containerRect = mapContainerRef.current?.getBoundingClientRect();
+          if (!containerRect) return null;
+          const left = point.x - containerRect.left;
+          const top = point.y - containerRect.top;
+          if (left < -40 || left > containerRect.width + 40 || top < -20 || top > containerRect.height + 20) return null;
+          const depth = Math.abs(feat.properties?.DEPTH ?? 0);
+          return (
+            <div key={`bathy-${idx}`} className="absolute z-[453] pointer-events-none" style={{ left, top, transform: 'translate(-50%, -50%)' }}>
+              <span style={{ fontSize: '10px', fontWeight: 600, background: 'rgba(30,58,138,0.85)', color: 'white', padding: '1px 5px', borderRadius: '4px', whiteSpace: 'nowrap' }}>
+                {depth % 1 === 0 ? depth : depth.toFixed(1)} m
+              </span>
+            </div>
+          );
+        })}
         {/* All routes centroid markers — clickable to view stats & rename */}
         {mapReady && mapRef.current && showAllRoutes && savedRoutes.map((route, idx) => {
           // Pins-only entries: show each pin as a clickable marker
@@ -1749,7 +1824,7 @@ export default function MapView() {
         onToggleMeasure={handleToggleMeasure}
         onToggleArea={handleToggleArea}
         onOpenGeoHub={() => setGeoHubOpen(true)}
-        geoHubActive={showFishingAccess || showAraLines || showManitoba || showNovaScotia || showSeaMap}
+        geoHubActive={showFishingAccess || showAraLines || showManitoba || showNovaScotia || showSeaMap || showBathy}
       />
 
       <GeoHubLayersPanel
@@ -1765,7 +1840,10 @@ export default function MapView() {
         onToggleAra={(v) => { setShowAraLines(v); if (!v) { setAraLines([]); lastGeoBboxRef.current.ara = null; setAraZoomHint(false); } }}
         showSeaMap={showSeaMap}
         onToggleSeaMap={setShowSeaMap}
+        showBathy={showBathy}
+        onToggleBathy={(v) => { setShowBathy(v); if (!v) { setBathyLines([]); lastGeoBboxRef.current.bathy = null; setBathyZoomHint(false); } }}
         loading={geoLoading}
+        bathyZoomHint={bathyZoomHint}
         araZoomHint={araZoomHint}
       />
       <AccessPointDialog

@@ -3,19 +3,29 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.43';
 // Ontario GeoHub (LIO open data) proxy. Returns GeoJSON features for a given
 // layer within a bounding box. Public, key-less data, but we still require an
 // authenticated app user so the endpoint isn't openly abused.
-const SERVICE =
+const SERVICE_OPEN07 =
   'https://ws.lioservices.lrc.gov.on.ca/arcgis2/rest/services/LIO_OPEN_DATA/LIO_Open07/MapServer';
+const SERVICE_OPEN01 =
+  'https://ws.lioservices.lrc.gov.on.ca/arcgis2/rest/services/LIO_OPEN_DATA/LIO_Open01/MapServer';
 
 const LAYERS = {
   'fishing-access-point': {
+    service: SERVICE_OPEN07,
     id: 15,
     outFields:
       'OGF_ID,SITE_NAME,FISHING_ACCESS_POINT_TYPE,PARKING_PRESENCE_FLG,SITE_OWNERSHIP_TYPE,ACCESSIBILITY_FLG,USER_FEE_FLG,GENERAL_COMMENTS,SITE_PHOTO_URL,ADDITIONAL_INFORMATION_URL',
   },
   'ara-line-segment': {
+    service: SERVICE_OPEN07,
     id: 1,
     outFields:
       'OGF_ID,ARA_IDENT,OFFICIAL_WATERBODY_NAME,CORPORATE_WATERBODY_NAME,WATERBODY_TYPE,THERMAL_REGIME,FISHERIES_MANAGEMENT_ZONE_ID,FISH_SPECIES_SUMMARY,MAXIMUM_DEPTH,MEAN_DEPTH,SURFACE_AREA,OFFICIAL_NAME_LABEL',
+  },
+  // MNRF bathymetry — digitized lake depth contour lines (DEPTH in metres)
+  'bathymetry-line': {
+    service: SERVICE_OPEN01,
+    id: 30,
+    outFields: 'OGF_ID,DEPTH',
   },
 };
 
@@ -48,7 +58,7 @@ export default async function (req) {
       resultRecordCount: String(limit),
     });
 
-    const r = await fetch(`${SERVICE}/${cfg.id}/query?${params.toString()}`);
+    const r = await fetch(`${cfg.service}/${cfg.id}/query?${params.toString()}`);
     if (!r.ok) return Response.json({ error: `GeoHub request failed (${r.status})` }, { status: 502 });
     const data = await r.json();
     const features = Array.isArray(data.features) ? data.features : [];
