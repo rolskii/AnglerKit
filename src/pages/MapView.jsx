@@ -26,6 +26,7 @@ import AccessPointDialog from '@/components/map/AccessPointDialog';
 import AraLineDialog from '@/components/map/AraLineDialog';
 import RegulationsPanel from '@/components/map/RegulationsPanel';
 import { parseMapShareParams } from '@/lib/mapShare';
+import { buildMapShareCardHtml } from '@/lib/mapShareCard';
 
 /* global mapkit */
 
@@ -132,6 +133,7 @@ export default function MapView() {
   // A shared map link (?c=…&z=…&l=…): pins the exact view — centre, zoom and
   // fishing layers — instead of the normal GPS start.
   const [sharedView] = useState(() => parseMapShareParams());
+  const [mapShareBusy, setMapShareBusy] = useState(false);
 
 
   // Persist pins to localStorage so they survive page navigation
@@ -919,6 +921,64 @@ export default function MapView() {
       setRegsLoading(false);
     }
   }, []);
+
+  // Share the current view as a self-contained map card (an HTML file with an
+  // embedded map preview and direct links) — the recipient doesn't need the
+  // app installed to view it.
+  const handleShareMap = useCallback(async () => {
+    const map = mapRef.current;
+    if (!map || !map.region || mapShareBusy) return;
+    const r = map.region;
+    const latStr = r.center.latitude.toFixed(5);
+    const lonStr = r.center.longitude.toFixed(5);
+    setMapShareBusy(true);
+    try {
+      const html = await buildMapShareCardHtml({
+        lat: r.center.latitude,
+        lon: r.center.longitude,
+        spanLat: r.span.latitudeDelta,
+        spanLon: r.span.longitudeDelta,
+        layers: {
+          access: showAccessPoints,
+          ara: showAraLines,
+          bathy: showBathy,
+          seamap: showSeaMap,
+          routes: showAllRoutes,
+        },
+      });
+      const file = new File([html], `fishing-map-${latStr},${lonStr}.html`, { type: 'text/html' });
+
+      if (navigator.canShare?.({ files: [file] })) {
+        try {
+          await navigator.share({ title: 'Fishing map', files: [file] });
+          return;
+        } catch (e) {
+          if (e?.name === 'AbortError') return;
+        }
+      }
+
+      // Fallback: save the card file and copy a plain maps link.
+      const url = URL.createObjectURL(file);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = file.name;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+      const linkText = `Fishing map: ${latStr}, ${lonStr} — https://www.google.com/maps/search/?api=1&query=${latStr},${lonStr}`;
+      try {
+        await navigator.clipboard.writeText(linkText);
+        toast({ title: 'Map card saved', description: 'A maps link was copied to the clipboard.' });
+      } catch {
+        toast({ title: 'Map card saved to your device' });
+      }
+    } catch (e) {
+      toast({ title: 'Could not create the map card' });
+    } finally {
+      setMapShareBusy(false);
+    }
+  }, [showAccessPoints, showAraLines, showBathy, showSeaMap, showAllRoutes, toast, mapShareBusy]);
 
   // Fetch enabled GeoHub layers when the map region changes
   useEffect(() => {
@@ -1861,6 +1921,7 @@ export default function MapView() {
         onToggleArea={handleToggleArea}
         onOpenGeoHub={() => setGeoHubOpen(true)}
         onOpenRegs={openRegulations}
+        onShareMap={handleShareMap}
         geoHubActive={showAccessPoints || showAraLines || showSeaMap || showBathy}
       />
 
