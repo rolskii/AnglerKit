@@ -487,7 +487,18 @@ export default async function (req) {
       const filtered = filterSeasonsBySpecies(seasons, waterbody.speciesSummary);
       if (filtered.length > 0) seasons = filtered;
     }
-    const regulations = { source: 'ai', ...llm, seasons, waterbody };
+    // Build the payload from explicit plain fields — spreading the raw LLM
+    // response can carry non-serializable (cyclic) references that break
+    // JSON.stringify when caching and returning the result.
+    const regulations = {
+      source: 'ai',
+      areaLabel: llm.areaLabel || placeLabel,
+      seasons,
+      generalRules: Array.isArray(llm.generalRules) ? llm.generalRules : [],
+      exceptionsNote: llm.exceptionsNote || '',
+      links: Array.isArray(llm.links) ? llm.links : [],
+      waterbody,
+    };
     // Save to the shared cache — later lookups of this area this year are free
     try {
       if (cachedEntry) {
