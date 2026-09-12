@@ -119,7 +119,7 @@ export default function WeeklyBiteForecast({ open, onOpenChange, startDate, onSe
                   {[1, 2, 3, 4, 5, 6, 7].map((n) => (
                     <FishIcon
                       key={n}
-                      className={`w-7 h-7 text-primary transition-opacity ${n <= day.rating ? 'opacity-100' : 'opacity-25'}`}
+                      className={`w-8 h-8 text-primary transition-opacity ${n <= day.rating ? 'opacity-100' : 'opacity-25'}`}
                     />
                   ))}
                 </div>
