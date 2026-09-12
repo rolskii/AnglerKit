@@ -1,3 +1,6 @@
+// fishingRegulations — v2 re-deploy. Builds the AI-path response payload from
+// explicit plain fields (never spreads the raw LLM object) so JSON.stringify
+// can never hit a cyclic reference.
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.48';
 import { reverseGeocode } from '../../shared/appleMapsAuth.ts';
 
