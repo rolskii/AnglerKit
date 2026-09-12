@@ -27,6 +27,8 @@ import AraLineDialog from '@/components/map/AraLineDialog';
 import RegulationsPanel from '@/components/map/RegulationsPanel';
 import { parseMapShareParams } from '@/lib/mapShare';
 import { buildMapShareCardHtml } from '@/lib/mapShareCard';
+import { captureMapScreenshot, buildOsmPreviewDataUrl } from '@/lib/mapScreenshot';
+import { fetchAsDataUrl } from '@/lib/imageDataUrl';
 
 /* global mapkit */
 
@@ -934,25 +936,23 @@ export default function MapView() {
     setMapShareBusy(true);
     try {
       // Live screenshot of the map view (includes depth contours and other
-      // active overlays); falls back to an OpenStreetMap tile preview if the
-      // snapshot API is unavailable.
-      const screenshot = await new Promise((resolve) => {
-        try {
-          map.snapshot({ size: { width: 700, height: 700 } }, (error, data) => {
-            if (error || !data) return resolve(null);
-            resolve(typeof data === 'string' && data.startsWith('data:') ? data : `data:image/png;base64,${data}`);
-          });
-        } catch (e) {
-          resolve(null);
-        }
-      });
-      const html = await buildMapShareCardHtml({
+      // active overlays), embedded as base64; falls back to a composed
+      // OpenStreetMap preview if the capture comes back blank. Both render in
+      // file previews that block remote images.
+      const liveShot = await captureMapScreenshot(mapContainerRef.current);
+      const previewImage = liveShot || (await buildOsmPreviewDataUrl({
         lat: r.center.latitude,
         lon: r.center.longitude,
         spanLat: r.span.latitudeDelta,
         spanLon: r.span.longitudeDelta,
-        screenshot,
-        logoUrl: APP_LOGO_URL,
+      }));
+      const logoDataUrl = await fetchAsDataUrl(APP_LOGO_URL);
+      const html = await buildMapShareCardHtml({
+        lat: r.center.latitude,
+        lon: r.center.longitude,
+        previewImage,
+        isScreenshot: !!liveShot,
+        logoDataUrl,
         layers: {
           access: showAccessPoints,
           ara: showAraLines,

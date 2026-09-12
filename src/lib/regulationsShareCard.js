@@ -10,7 +10,7 @@ function esc(s) {
     .replace(/"/g, '&quot;');
 }
 
-export async function buildRegulationsShareCardHtml(regs) {
+export async function buildRegulationsShareCardHtml(regs, logoDataUrl = '') {
   if (!regs) throw new Error('No regulations data');
 
   const speciesBox = regs.waterbody?.speciesSummary
@@ -53,7 +53,8 @@ export async function buildRegulationsShareCardHtml(regs) {
   body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #eef2f6; color: #0f172a; padding: 20px; }
   .card { max-width: 600px; margin: 0 auto; background: #fff; border-radius: 16px; box-shadow: 0 4px 20px rgba(15,23,42,.08); overflow: hidden; }
   .head { display: flex; align-items: center; gap: 12px; padding: 18px 20px 14px; border-bottom: 1px solid #e2e8f0; }
-  .badge { width: 36px; height: 36px; border-radius: 10px; background: #1e5aa8; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+  .badge { width: 36px; height: 36px; border-radius: 10px; background: #1e5aa8; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; overflow: hidden; }
+  .badge img { width: 100%; height: 100%; border-radius: 8px; object-fit: cover; display: block; }
   h1 { margin: 0; font-size: 19px; }
   .area { margin-top: 2px; color: #64748b; font-size: 13px; }
   .body { padding: 16px 20px 18px; }
@@ -78,7 +79,7 @@ export async function buildRegulationsShareCardHtml(regs) {
 <body>
   <div class="card">
     <div class="head">
-      <div class="badge">&#9875;</div>
+      <div class="badge">${logoDataUrl ? `<img src="${esc(logoDataUrl)}" alt="AnglerKit" />` : '&#9875;'}</div>
       <div>
         <h1>Fishing Regulations</h1>
         <div class="area">${esc(regs.areaLabel || '')}</div>

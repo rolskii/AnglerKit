@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Share2, Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { buildRegulationsShareCardHtml } from "@/lib/regulationsShareCard";
+import { fetchAsDataUrl } from "@/lib/imageDataUrl";
+import { APP_LOGO_URL } from "@/components/AppLogo";
 
 // Shares the regulations summary as a self-contained HTML card (with clickable
 // official links at the bottom) — the recipient doesn't need the app.
@@ -18,7 +20,10 @@ export default function RegulationsShareButton({ data }) {
       ...(regs.links || []).map((l) => l.url),
     ].join("\n");
     try {
-      const html = await buildRegulationsShareCardHtml(regs);
+      // Embed the app logo as base64 — remote image URLs are blocked in
+      // some file previews, data URLs always render.
+      const logoDataUrl = await fetchAsDataUrl(APP_LOGO_URL);
+      const html = await buildRegulationsShareCardHtml(regs, logoDataUrl);
       const fileName = `regulations-${(regs.areaLabel || "summary").replace(/[^\w]+/g, "-").slice(0, 40).toLowerCase()}.html`;
       const file = new File([html], fileName, { type: "text/html" });
 
