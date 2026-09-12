@@ -230,7 +230,7 @@ export default function Moon() {
     const phase = calculateMoonPhase(date);
     setMoonData({
       date: date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
-      dateLong: date.toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric' }),
+      dateLong: date.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' }),
       phase: phase.name,
       illumination: Math.round(phase.illumination * 100),
       location: location,
