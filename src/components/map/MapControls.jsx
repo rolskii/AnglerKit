@@ -57,7 +57,7 @@ export default function MapControls({
           <FishIcon className="w-5 h-5" flip={false} />
         </button>
         <button
-          onClick={onOpenRegs}
+          onClick={() => onOpenRegs()}
           className={`${ctrlBase} ${ctrlSize} bg-background/90 text-foreground border border-border`}
           title="Fishing regulations for this area"
         >
