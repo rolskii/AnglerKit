@@ -18,7 +18,7 @@ import { Link } from 'react-router-dom';
 import BottomTabBar from '@/components/BottomTabBar';
 import MapSearchBar from '@/components/map/MapSearchBar';
 import FishIcon from '@/components/FishIcon';
-import AppLogo from '@/components/AppLogo';
+import AppLogo, { APP_LOGO_URL } from '@/components/AppLogo';
 import { useToast } from '@/components/ui/use-toast';
 import { prepareMapKit } from '@/lib/mapkitLoader';
 import GeoHubLayersPanel from '@/components/map/GeoHubLayersPanel';
@@ -933,11 +933,26 @@ export default function MapView() {
     const lonStr = r.center.longitude.toFixed(5);
     setMapShareBusy(true);
     try {
+      // Live screenshot of the map view (includes depth contours and other
+      // active overlays); falls back to an OpenStreetMap tile preview if the
+      // snapshot API is unavailable.
+      const screenshot = await new Promise((resolve) => {
+        try {
+          map.snapshot({ size: { width: 700, height: 700 } }, (error, data) => {
+            if (error || !data) return resolve(null);
+            resolve(typeof data === 'string' && data.startsWith('data:') ? data : `data:image/png;base64,${data}`);
+          });
+        } catch (e) {
+          resolve(null);
+        }
+      });
       const html = await buildMapShareCardHtml({
         lat: r.center.latitude,
         lon: r.center.longitude,
         spanLat: r.span.latitudeDelta,
         spanLon: r.span.longitudeDelta,
+        screenshot,
+        logoUrl: APP_LOGO_URL,
         layers: {
           access: showAccessPoints,
           ara: showAraLines,

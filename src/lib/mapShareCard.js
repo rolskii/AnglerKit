@@ -37,7 +37,7 @@ const LAYER_LABELS = {
   routes: 'Saved routes',
 };
 
-export async function buildMapShareCardHtml({ lat, lon, spanLat, spanLon, layers = {} }) {
+export async function buildMapShareCardHtml({ lat, lon, spanLat, spanLon, layers = {}, screenshot = null, logoUrl = '' }) {
   if (lat == null || lon == null) throw new Error('No map view to share');
 
   const z = zoomForSpan(spanLat || 0.01, spanLon || 0.01, lat);
@@ -80,7 +80,9 @@ export async function buildMapShareCardHtml({ lat, lon, spanLat, spanLon, layers
   body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #eef2f6; color: #0f172a; padding: 20px; }
   .card { max-width: 600px; margin: 0 auto; background: #fff; border-radius: 16px; box-shadow: 0 4px 20px rgba(15,23,42,.08); overflow: hidden; }
   .head { display: flex; align-items: center; gap: 12px; padding: 18px 20px 14px; border-bottom: 1px solid #e2e8f0; }
-  .badge { width: 36px; height: 36px; border-radius: 10px; background: #1e5aa8; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+  .badge { width: 36px; height: 36px; border-radius: 10px; background: #1e5aa8; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; overflow: hidden; }
+  .badge img { width: 100%; height: 100%; border-radius: 8px; object-fit: cover; display: block; }
+  .shot { width: 100%; height: 100%; object-fit: cover; display: block; }
   h1 { margin: 0; font-size: 19px; }
   .coords { margin-top: 2px; color: #64748b; font-size: 13px; }
   .preview { position: relative; width: 100%; aspect-ratio: 1 / 1; background: #dbe4ec; overflow: hidden; }
@@ -103,14 +105,16 @@ export async function buildMapShareCardHtml({ lat, lon, spanLat, spanLon, layers
 <body>
   <div class="card">
     <div class="head">
-      <div class="badge">&#9875;</div>
+      <div class="badge"><img src="${esc(logoUrl)}" alt="AnglerKit" /></div>
       <div>
         <h1>Fishing Map</h1>
         <div class="coords">${latStr}, ${lonStr}</div>
       </div>
     </div>
     <div class="preview">
-      <div class="tiles">${tileImgs.join('')}</div>
+      ${screenshot
+        ? `<img class="shot" src="${esc(screenshot)}" alt="Map view" />`
+        : `<div class="tiles">${tileImgs.join('')}</div>`}
       <div class="marker"></div>
       <div class="badge-pin"></div>
     </div>
@@ -119,7 +123,9 @@ export async function buildMapShareCardHtml({ lat, lon, spanLat, spanLon, layers
       <a class="g" href="${gmapsUrl}" target="_blank" rel="noopener noreferrer">Open in Google Maps</a>
       <a class="a" href="${amapsUrl}" target="_blank" rel="noopener noreferrer">Open in Apple Maps</a>
     </div>
-    <div class="attribution">Map preview &copy; OpenStreetMap contributors — note: fishing overlays (depth contours, access points) are not shown in this preview.</div>
+    <div class="attribution">${screenshot
+      ? 'Live screenshot of the shared map view, including any active fishing layers.'
+      : 'Map preview &copy; OpenStreetMap contributors — note: fishing overlays (depth contours, access points) are not shown in this preview.'}</div>
   </div>
   <footer>Shared from AnglerKit</footer>
 </body>
