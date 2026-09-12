@@ -453,10 +453,10 @@ export default function Moon() {
                     />
                   ))}
                 </div>
-                <div className="flex flex-col items-start gap-1.5 mt-2">
+                <div className="flex flex-col items-stretch gap-1.5 mt-2">
                   <Popover>
                     <PopoverTrigger asChild>
-                      <button className="text-xs text-primary/70 hover:text-primary transition-colors bg-primary/10 hover:bg-primary/20 px-2 py-0.5 rounded-full border border-primary/20 font-medium">
+                      <button className="text-xs text-primary/70 hover:text-primary transition-colors bg-primary/10 hover:bg-primary/20 px-2 py-0.5 rounded-full border border-primary/20 font-medium text-left">
                         For: {moonData.date}
                       </button>
                     </PopoverTrigger>
@@ -499,8 +499,8 @@ export default function Moon() {
                     onClick={() => setLocationDialogOpen(true)}
                     className="text-xs text-muted-foreground flex items-center gap-1 hover:text-primary transition-colors"
                   >
-                    <MapPin className="w-3 h-3" />
-                    <span className="max-w-[120px] truncate">{location}</span>
+                    <MapPin className="w-3 h-3 shrink-0" />
+                    <span className="min-w-0 flex-1 truncate text-left">{location}</span>
                     <ChevronDown className="w-3 h-3 opacity-60" />
                   </button>
                 </div>
