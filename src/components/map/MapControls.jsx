@@ -1,5 +1,5 @@
 import React from 'react';
-import { Play, Pause, Square, MapPin, Save, Crosshair, Layers, FolderOpen, Circle, Route, Pencil, Ruler, Hexagon, ScrollText, Share2 } from 'lucide-react';
+import { Play, Pause, Square, MapPin, Save, Crosshair, Layers, FolderOpen, Circle, Route, Pencil, Ruler, Hexagon, ScrollText } from 'lucide-react';
 import FishIcon from '@/components/FishIcon';
 
 const ctrlBase = "flex items-center justify-center rounded-full shadow-lg backdrop-blur-xl transition-all active:scale-90";
@@ -33,7 +33,6 @@ export default function MapControls({
   onOpenGeoHub,
   geoHubActive,
   onOpenRegs,
-  onShareMap,
 }) {
   return (
     <>
@@ -63,13 +62,6 @@ export default function MapControls({
           title="Fishing regulations for this area"
         >
           <ScrollText className="w-5 h-5" />
-        </button>
-        <button
-          onClick={onShareMap}
-          className={`${ctrlBase} ${ctrlSize} bg-background/90 text-foreground border border-border`}
-          title="Share this map view"
-        >
-          <Share2 className="w-5 h-5" />
         </button>
         <button
           onClick={onOpenRoutes}
