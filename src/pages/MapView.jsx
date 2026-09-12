@@ -941,7 +941,7 @@ export default function MapView() {
   };
 
   // Look up fishing regulations for the current map centre (province + FMZ)
-  const openRegulations = useCallback(async () => {
+  const openRegulations = useCallback(async (refresh = false) => {
     setRegsOpen(true);
     setRegsData(null);
     setRegsError(null);
@@ -952,6 +952,7 @@ export default function MapView() {
       const res = await base44.functions.invoke('fishingRegulations', {
         lat: map.center.latitude,
         lon: map.center.longitude,
+        refresh, // true = skip the shared cache and re-fetch
       });
       setRegsData(res?.data || null);
     } catch (e) {
@@ -1914,6 +1915,7 @@ export default function MapView() {
         data={regsData}
         loading={regsLoading}
         error={regsError}
+        onRefresh={() => openRegulations(true)}
       />
       <AccessPointDialog
         open={!!selectedAccessPoint}

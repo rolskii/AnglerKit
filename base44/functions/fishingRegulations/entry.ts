@@ -362,6 +362,37 @@ export default async function (req) {
       }
     }
 
+    // --- Shared regulations cache (LLM path only) ---
+    // Lookups outside Ontario are AI-sourced and cost integration credits.
+    // Cache one entry per ~5 km map area per regulations year: the first angler
+    // to look a spot up pays once, every later lookup returns instantly with
+    // no AI call. `refresh: true` re-fetches and overwrites the entry.
+    const regsYear = new Date().getFullYear();
+    const grid = (v) => Math.round(v * 20) / 20; // 0.05° grid ≈ 5.5 km cells
+    const areaKey = province || region?.name || 'unknown';
+    const cacheKey = `${areaKey}|${grid(lat)},${grid(lon)}|${regsYear}`;
+    let cachedEntry = null;
+    try {
+      const hits = await base44.entities.RegulationsCache.filter({ cache_key: cacheKey }, '-created_date', 1);
+      cachedEntry = hits?.[0] || null;
+    } catch (e) {
+      // cache unavailable — fall through to the live lookup
+    }
+    if (cachedEntry?.result && !body.refresh) {
+      try {
+        return Response.json({
+          supported: true,
+          province,
+          zone,
+          region: region || null,
+          cached: true,
+          regulations: JSON.parse(cachedEntry.result),
+        });
+      } catch (e) {
+        cachedEntry = null; // corrupt entry — re-fetch below and overwrite
+      }
+    }
+
     // LLM path — other provinces/states, and Ontario fallback when the page fetch fails
     const placeLabel = province
       ? `${AREA_PROVINCE_NAMES[province]}, Canada`
@@ -456,12 +487,35 @@ export default async function (req) {
       const filtered = filterSeasonsBySpecies(seasons, waterbody.speciesSummary);
       if (filtered.length > 0) seasons = filtered;
     }
+    const regulations = { source: 'ai', ...llm, seasons, waterbody };
+    // Save to the shared cache — later lookups of this area this year are free
+    try {
+      if (cachedEntry) {
+        await base44.entities.RegulationsCache.update(cachedEntry.id, {
+          result: JSON.stringify(regulations),
+          waterbody_name: waterbody?.name || '',
+        });
+      } else {
+        await base44.entities.RegulationsCache.create({
+          cache_key: cacheKey,
+          area_label: areaKey,
+          lat,
+          lon,
+          waterbody_name: waterbody?.name || '',
+          regs_year: regsYear,
+          result: JSON.stringify(regulations),
+        });
+      }
+    } catch (e) {
+      // caching is best-effort — the live result still returns
+    }
     return Response.json({
       supported: true,
       province,
       zone,
       region: region || null,
-      regulations: { source: 'ai', ...llm, seasons, waterbody },
+      cached: false,
+      regulations,
     });
   } catch (error) {
     return Response.json({ error: error?.message || 'Unknown error' }, { status: 500 });

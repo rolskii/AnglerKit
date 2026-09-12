@@ -1,0 +1,48 @@
+{
+  "name": "RegulationsCache",
+  "type": "object",
+  "properties": {
+    "cache_key": {
+      "type": "string",
+      "description": "Shared cache key: area|grid-lat,grid-lon|regs-year"
+    },
+    "area_label": {
+      "type": "string",
+      "description": "Province or state the cached result is for"
+    },
+    "lat": {
+      "type": "number",
+      "description": "Map-centre latitude the entry was cached from"
+    },
+    "lon": {
+      "type": "number",
+      "description": "Map-centre longitude the entry was cached from"
+    },
+    "waterbody_name": {
+      "type": "string",
+      "description": "Waterbody identified at the cached location"
+    },
+    "regs_year": {
+      "type": "number",
+      "description": "Regulations season year the entry is valid for"
+    },
+    "result": {
+      "type": "string",
+      "description": "JSON-stringified regulations payload"
+    }
+  },
+  "required": [
+    "cache_key",
+    "result"
+  ],
+  "rls": {
+    "read": {},
+    "create": true,
+    "update": true,
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

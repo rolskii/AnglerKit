@@ -1,5 +1,5 @@
 import React from "react";
-import { X, Loader2, ScrollText, AlertTriangle, ExternalLink, CalendarRange, ListChecks, Fish } from "lucide-react";
+import { X, Loader2, ScrollText, AlertTriangle, ExternalLink, CalendarRange, ListChecks, Fish, RotateCw } from "lucide-react";
 
 const PROVINCE_LABELS = {
   ontario: "Ontario",
@@ -11,7 +11,7 @@ const PROVINCE_LABELS = {
 // Bottom-sheet panel showing fishing regulations for the current map centre.
 // The backend resolves the province (and the Ontario FMZ) under the map
 // centre, then returns a structured summary sourced from official regs.
-export default function RegulationsPanel({ open, onOpenChange, data, loading, error }) {
+export default function RegulationsPanel({ open, onOpenChange, data, loading, error, onRefresh }) {
   if (!open) return null;
 
   const regs = data?.regulations;
@@ -38,6 +38,16 @@ export default function RegulationsPanel({ open, onOpenChange, data, loading, er
             <h3 className="font-heading font-semibold text-sm">Fishing Regulations</h3>
             <p className="text-[11px] text-muted-foreground leading-snug">{subtitle || "Map centre"}</p>
           </div>
+          {onRefresh && !loading && data?.regulations && (
+            <button
+              type="button"
+              onClick={onRefresh}
+              className="p-1.5 rounded-lg hover:bg-accent/10 text-muted-foreground"
+              aria-label="Refresh regulations"
+            >
+              <RotateCw className="w-4 h-4" />
+            </button>
+          )}
           <button
             type="button"
             onClick={() => onOpenChange(false)}
@@ -154,8 +164,9 @@ export default function RegulationsPanel({ open, onOpenChange, data, loading, er
           ) : (
             !loading && (
               <p className="text-[11px] text-muted-foreground/70 leading-snug pt-1">
-                AI-generated summary of the official regulations and may be out of date. Always verify
-                with the official source before fishing.
+                {data?.cached
+                  ? "Loaded from the shared cache — no AI lookup needed, and other anglers browsing this spot get it free too. Still an AI-generated summary of the official regulations; always verify with the official source before fishing."
+                  : "AI-generated summary of the official regulations and may be out of date. Always verify with the official source before fishing."}
               </p>
             )
           )}
