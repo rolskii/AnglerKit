@@ -409,9 +409,7 @@ export default function Moon() {
     const scaleFactor = 0.55 + (rating / 7) * 0.45;
     const dayLevels = fullLevels.map(l => Math.round(l * scaleFactor)).slice(10);
     const isTodayDay = dateStr === todayStr();
-    const highlightIndex = isTodayDay
-      ? (currentSlot >= 10 ? currentSlot - 10 : null)
-      : dayLevels.indexOf(Math.max(...dayLevels));
+    const highlightIndex = isTodayDay && currentSlot >= 10 ? currentSlot - 10 : null;
     return {
       dateStr,
       label: isTodayDay ? 'Today' : offset === 0 ? date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : offset === 1 ? 'Tomorrow' : date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
