@@ -83,19 +83,20 @@ const DayGraph = ({ day }) => {
             strokeLinejoin="round"
             vectorEffect="non-scaling-stroke"
           />
-          {highlightX != null && (
-            <circle
-              cx={highlightX}
-              cy={points[highlightIndex]?.y ?? height}
-              r="2"
-              fill="#f87171"
-              stroke="white"
-              strokeWidth="0.5"
-              vectorEffect="non-scaling-stroke"
-            />
-          )}
         </svg>
         <div className="absolute inset-0 pointer-events-none">
+          {highlightX != null && (
+            <div
+              className="absolute"
+              style={{
+                left: `${(highlightIndex / (levels.length - 1)) * 100}%`,
+                top: `${((points[highlightIndex]?.y ?? height) / height) * 100}%`,
+                transform: "translate(-50%, -50%)",
+              }}
+            >
+              <div className="w-2.5 h-2.5 rounded-full bg-red-400 border-2 border-white shadow-sm" />
+            </div>
+          )}
           {peaks.map((peakIdx) => {
             const px = (peakIdx / (levels.length - 1)) * 100;
             const py = 100 - (levels[peakIdx] / maxLevel) * 100;
