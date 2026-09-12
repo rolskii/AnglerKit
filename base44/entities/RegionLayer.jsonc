@@ -1,0 +1,54 @@
+{
+  "name": "RegionLayer",
+  "type": "object",
+  "properties": {
+    "cache_key": {
+      "type": "string",
+      "description": "Grid resolution records ('grid|lat,lon') and per-region adapter config records ('cfg:access|Region' / 'cfg:bathy|Region')"
+    },
+    "layer_type": {
+      "type": "string",
+      "enum": [
+        "grid",
+        "access",
+        "bathy"
+      ],
+      "description": "The map layer this record resolves or configures"
+    },
+    "region": {
+      "type": "string",
+      "description": "Region name (Canadian province or US state) resolved at the map centre"
+    },
+    "country": {
+      "type": "string",
+      "description": "Country code (CA or US) of the resolved region"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "resolved",
+        "ok",
+        "unsupported"
+      ],
+      "description": "resolved = grid record naming the region; ok = usable adapter config; unsupported = no official machine-readable source for this region+layer"
+    },
+    "config": {
+      "type": "string",
+      "description": "JSON-stringified adapter config (ArcGIS endpoint, layer index, field mapping) for this region and layer"
+    }
+  },
+  "required": [
+    "cache_key",
+    "layer_type"
+  ],
+  "rls": {
+    "read": {},
+    "create": true,
+    "update": true,
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
