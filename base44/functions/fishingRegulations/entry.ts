@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.48';
+import { reverseGeocode } from '../../shared/appleMapsAuth.ts';
 
 // Ontario LIO "Fisheries Management Zone" boundary layer (FMZ 1-20 polygons)
 const FMZ_LAYER =
@@ -18,6 +19,21 @@ const detectProvince = (lat, lon) => {
   if (lat >= 43.3 && lat <= 47.1 && lon >= -67.0 && lon <= -59.7) return 'nova_scotia';
   if (lat >= 44.9 && lat <= 62.6 && lon >= -80.0 && lon <= -57.0) return 'quebec';
   return null;
+};
+
+// Official province names from the Apple reverse geocoder → our province keys.
+const REGION_TO_PROVINCE = {
+  Ontario: 'ontario',
+  Quebec: 'quebec',
+  Manitoba: 'manitoba',
+  'Nova Scotia': 'nova_scotia',
+};
+
+const AREA_PROVINCE_NAMES = {
+  ontario: 'Ontario',
+  quebec: 'Quebec',
+  manitoba: 'Manitoba',
+  nova_scotia: 'Nova Scotia',
 };
 
 const AREA_HINTS = {
@@ -268,8 +284,18 @@ export default async function (req) {
       return Response.json({ error: 'lat and lon are required' }, { status: 400 });
     }
 
-    const province = detectProvince(lat, lon);
-    if (!province) {
+    // Resolve the jurisdiction under the map centre. The Apple Maps reverse
+    // geocoder is authoritative (bounding boxes mislabel points near
+    // provincial/state borders); the province boxes are only a fallback for
+    // when the reverse geocode fails (e.g. mid-lake with no nearby address).
+    const region = await reverseGeocode(lat, lon);
+    if (region && region.countryCode !== 'CA' && region.countryCode !== 'US') {
+      return Response.json({ supported: false, province: null, zone: null, regulations: null });
+    }
+    const province = region?.name
+      ? REGION_TO_PROVINCE[region.name] || null
+      : detectProvince(lat, lon);
+    if (!region?.name && !province) {
       return Response.json({ supported: false, province: null, zone: null, regulations: null });
     }
 
@@ -335,18 +361,24 @@ export default async function (req) {
       }
     }
 
-    // LLM path — other provinces, and Ontario fallback when the page fetch fails
+    // LLM path — other provinces/states, and Ontario fallback when the page fetch fails
+    const placeLabel = province
+      ? `${AREA_PROVINCE_NAMES[province]}, Canada`
+      : `${region.name}, ${region.countryCode === 'US' ? 'United States' : 'Canada'}`;
+    const areaHint = province
+      ? AREA_HINTS[province](zone)
+      : `${region.name} (${region.countryCode === 'US' ? 'United States' : 'Canada'}). Use the current official recreational fishing regulations for this jurisdiction as the source of truth: for a US state, the state fish and wildlife agency's current fishing guide; for a Canadian province or territory, the official provincial or territorial angling regulations.`;
     const prompt = [
       `Today's date is ${new Date().toISOString().slice(0, 10)}.`,
-      `An angler is viewing a map centred in ${province}, Canada${zone ? ` - Fisheries Management Zone ${zone}` : ''}.`,
-      `Look up the current official recreational fishing regulations for this exact area. ${AREA_HINTS[province](zone)}`,
+      `An angler is viewing a map centred in ${placeLabel}${zone ? ` - Fisheries Management Zone ${zone}` : ''}.`,
+      `Look up the current official recreational fishing regulations for this exact area. ${areaHint}`,
       'Summarize for a recreational angler:',
       '1. "seasons": the COMPLETE open-seasons and catch & possession limits table for this exact zone, with dates for the current season year. List EVERY species group the official zone table covers, not just the main ones: walleye/sauger, northern pike, largemouth & smallmouth bass, yellow perch, black crappie, sunfish & bluegill, rock bass, brown bullhead & other catfish, burbot, lake whitefish, lake trout & splake, brook trout, brown trout, rainbow trout & steelhead, Pacific salmon (chinook & coho), Atlantic salmon, muskellunge, sturgeon, goldeye & mooneye, white & shorthead redhorse suckers, and any other species group the zone table includes. Include an entry even when the season is closed or catch-and-release only, and state that in the season field.',
       '2. "generalRules": the key area-wide or province-wide rules an angler must know (licence requirements, bait restrictions, gear/line limits, sanctuaries, catch-and-release waters, protected species).',
       '3. "exceptionsNote": one or two sentences warning that waterbody-specific exceptions apply and the angler must check the official source before fishing.',
       '4. "links": links to the official sources used (regulations summary page, zone page, licence page).',
       'Only state dates, limits and rules that appear in the official sources - never guess or invent numbers.',
-      '"areaLabel" should name the jurisdiction and zone (e.g. "Ontario - FMZ 17" or "Quebec (province-wide)").',
+      '"areaLabel" should name the jurisdiction and zone (e.g. "Ontario - FMZ 17", "Quebec (province-wide)" or "Michigan").',
     ].join(' ');
 
     const llm = await base44.integrations.Core.InvokeLLM({
@@ -387,6 +419,7 @@ export default async function (req) {
       supported: true,
       province,
       zone,
+      region: region || null,
       regulations: { source: 'ai', ...llm },
     });
   } catch (error) {

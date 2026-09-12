@@ -1,61 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
-import { SignJWT } from 'npm:jose@5.9.6';
-
-const MAPS_BASE = 'https://maps-api.apple.com/v1';
-
-async function generateMapsJWT(scope, origin) {
-  const teamId = Deno.env.get('APPLE_MAPS_TEAM_ID');
-  const keyId = Deno.env.get('APPLE_MAPS_KEY_ID');
-  const privateKeyRaw = Deno.env.get('APPLE_MAPS_PRIVATE_KEY');
-
-  if (!teamId || !keyId || !privateKeyRaw) {
-    throw new Error('Missing Apple Maps credentials. Set APPLE_MAPS_TEAM_ID, APPLE_MAPS_KEY_ID, and APPLE_MAPS_PRIVATE_KEY.');
-  }
-
-  let privateKeyPem = privateKeyRaw.trim();
-  if (!privateKeyPem.includes('BEGIN PRIVATE KEY')) {
-    privateKeyPem = `-----BEGIN PRIVATE KEY-----\n${privateKeyPem}\n-----END PRIVATE KEY-----`;
-  }
-
-  const pemContents = privateKeyPem
-    .replace('-----BEGIN PRIVATE KEY-----', '')
-    .replace('-----END PRIVATE KEY-----', '')
-    .replace(/\s/g, '');
-
-  const binaryDer = Uint8Array.from(atob(pemContents), (c) => c.charCodeAt(0));
-
-  const key = await crypto.subtle.importKey(
-    'pkcs8',
-    binaryDer.buffer,
-    { name: 'ECDSA', namedCurve: 'P-256' },
-    false,
-    ['sign']
-  );
-
-  const now = Math.floor(Date.now() / 1000);
-  const payload = { scope };
-  if (origin) payload.origin = origin;
-
-  return await new SignJWT(payload)
-    .setProtectedHeader({ alg: 'ES256', kid: keyId, typ: 'JWT' })
-    .setIssuer(teamId)
-    .setIssuedAt(now)
-    .setExpirationTime(now + 3600)
-    .sign(key);
-}
-
-async function getMapsAccessToken() {
-  const jwt = await generateMapsJWT('server_api');
-  const tokenRes = await fetch(`${MAPS_BASE}/token`, {
-    headers: { Authorization: `Bearer ${jwt}` },
-  });
-  if (!tokenRes.ok) {
-    const text = await tokenRes.text();
-    throw new Error(`Token exchange failed: ${tokenRes.status} - ${text}`);
-  }
-  const tokenData = await tokenRes.json();
-  return tokenData.accessToken;
-}
+import { MAPS_BASE, generateMapsJwt, getMapsAccessToken } from '../../shared/appleMapsAuth.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -70,7 +14,7 @@ Deno.serve(async (req) => {
       if (!origin) {
         return Response.json({ error: 'Missing origin parameter' }, { status: 400 });
       }
-      const token = await generateMapsJWT('mapkit_js', origin);
+      const token = await generateMapsJwt('mapkit_js', origin);
       return Response.json({ token });
     }
 

@@ -65,8 +65,7 @@ export default function RegulationsPanel({ open, onOpenChange, data, loading, er
 
           {!loading && !error && data && !data.supported && (
             <p className="text-sm text-muted-foreground py-4">
-              Move the map to a location in Ontario, Quebec, Manitoba or Nova Scotia to see its fishing
-              regulations.
+              Move the map to a location in Canada or the United States to see its fishing regulations.
             </p>
           )}
 
