@@ -103,7 +103,7 @@ const araQuery = async (layerId, outFields, geometry, geometryType) => {
       f: 'json',
       resultRecordCount: '20',
     });
-    const r = await fetch(`${ARA_SERVICE}/${layerId}/query?${params.toString()}`);
+    const r = await fetch(`${ARA_SERVICE}/${layerId}/query?${params.toString()}`, { signal: AbortSignal.timeout(10000) });
     if (!r.ok) return [];
     const data = await r.json();
     return (data?.features || []).map((f) => f?.attributes || {});
@@ -144,7 +144,7 @@ const unionWaterbodySpecies = async (layerId, name, zone) => {
       f: 'json',
       resultRecordCount: '200',
     });
-    const r = await fetch(`${ARA_SERVICE}/${layerId}/query?${params.toString()}`);
+    const r = await fetch(`${ARA_SERVICE}/${layerId}/query?${params.toString()}`, { signal: AbortSignal.timeout(10000) });
     if (!r.ok) return [];
     const data = await r.json();
     const seen = new Set();
@@ -316,7 +316,7 @@ export default async function (req) {
         returnGeometry: 'false',
         f: 'json',
       });
-      const r = await fetch(`${FMZ_LAYER}?${params.toString()}`);
+      const r = await fetch(`${FMZ_LAYER}?${params.toString()}`, { signal: AbortSignal.timeout(12000) });
       if (!r.ok) return Response.json({ error: `Zone lookup failed (${r.status})` }, { status: 502 });
       const zdata = await r.json();
       zone = zdata?.features?.[0]?.attributes?.FISHERIES_MANAGEMENT_ZONE_ID ?? null;
@@ -326,7 +326,7 @@ export default async function (req) {
     if (province === 'ontario' && zone) {
       const zoneUrl = `${ONTARIO_REG_SUMMARY}/fisheries-management-zone-${zone}`;
       try {
-        const r = await fetch(zoneUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+        const r = await fetch(zoneUrl, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(12000) });
         if (r.ok) {
           const html = await r.text();
           const parsed = parseOntarioZonePage(html);

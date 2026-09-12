@@ -897,11 +897,17 @@ export default function MapView() {
     if (!map || !map.center) return;
     setRegsLoading(true);
     try {
-      const res = await base44.functions.invoke('fishingRegulations', {
+      // Safety net: never spin forever — if the lookup hangs, show a retryable
+      // message instead of the endless "Checking…" spinner.
+      const invokePromise = base44.functions.invoke('fishingRegulations', {
         lat: map.center.latitude,
         lon: map.center.longitude,
         refresh, // true = skip the shared cache and re-fetch
       });
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('The lookup is taking longer than usual — tap the regulations button again to retry.')), 45000)
+      );
+      const res = await Promise.race([invokePromise, timeoutPromise]);
       setRegsData(res?.data || null);
     } catch (e) {
       setRegsError(e?.response?.data?.error || e?.message || 'Failed to load regulations');

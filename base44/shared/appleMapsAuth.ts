@@ -49,6 +49,7 @@ export async function getMapsAccessToken() {
   const jwt = await generateMapsJwt('server_api');
   const tokenRes = await fetch(`${MAPS_BASE}/token`, {
     headers: { Authorization: `Bearer ${jwt}` },
+    signal: AbortSignal.timeout(8000),
   });
   if (!tokenRes.ok) {
     const text = await tokenRes.text();
@@ -65,6 +66,7 @@ export async function reverseGeocode(lat, lon) {
     const token = await getMapsAccessToken();
     const r = await fetch(`${MAPS_BASE}/reverseGeocode?loc=${encodeURIComponent(`${lat},${lon}`)}`, {
       headers: { Authorization: `Bearer ${token}` },
+      signal: AbortSignal.timeout(8000),
     });
     if (!r.ok) return null;
     const data = await r.json();
