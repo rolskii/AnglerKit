@@ -230,6 +230,7 @@ export default function Moon() {
     const phase = calculateMoonPhase(date);
     setMoonData({
       date: date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
+      dateLong: date.toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric' }),
       phase: phase.name,
       illumination: Math.round(phase.illumination * 100),
       location: location,
@@ -457,7 +458,7 @@ export default function Moon() {
                   <Popover>
                     <PopoverTrigger asChild>
                       <button className="w-[204px] text-xs text-primary/70 hover:text-primary transition-colors bg-primary/10 hover:bg-primary/20 px-2 py-0.5 rounded-full border border-primary/20 font-medium text-left">
-                        For: {moonData.date}
+                        For: {moonData.dateLong}
                       </button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0 pl-3" align="start">
