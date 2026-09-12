@@ -214,7 +214,7 @@ const SPECIES_PHRASES = [
   ['lake trout', ['lake trout', 'splake', 'togue']],
   ['splake', ['splake', 'lake trout']],
   ['walleye', ['walleye', 'sauger', 'yellow pickerel', 'pickerel']],
-  ['sauger', ['sauger', 'walleye']],
+  ['sauger', ['sauger']],
   ['northern pike', ['northern pike', 'jackfish']],
   ['pike', ['pike']],
   ['muskellunge', ['muskellunge', 'muskie', 'musky', 'tiger muskie']],
@@ -257,11 +257,12 @@ const seasonMatches = (speciesName, summary) => {
       return phrases.length === 0 || phrases.some((p) => summary.includes(p));
     }
   }
-  // Unknown entry — match on its distinctive long words only
+  // Unknown entry — match on its distinctive long words only (whole words:
+  // 'north' must not match inside 'northern pike')
   const tokens = entry
     .split(/[^a-z]+/)
     .filter((w) => w.length >= 5 && !SPECIES_STOPWORDS.has(w) && !GENERIC_WORDS.has(w));
-  return tokens.some((t) => summary.includes(t));
+  return tokens.some((t) => new RegExp(`\\b${t}\\b`).test(summary));
 };
 
 const filterSeasonsBySpecies = (seasons, speciesSummary) => {
@@ -371,6 +372,7 @@ export default async function (req) {
     const prompt = [
       `Today's date is ${new Date().toISOString().slice(0, 10)}.`,
       `An angler is viewing a map centred in ${placeLabel}${zone ? ` - Fisheries Management Zone ${zone}` : ''}.`,
+      `The map centre coordinates are ${lat}, ${lon}.`,
       `Look up the current official recreational fishing regulations for this exact area. ${areaHint}`,
       'Summarize for a recreational angler:',
       '1. "seasons": the COMPLETE open-seasons and catch & possession limits table for this exact zone, with dates for the current season year. List EVERY species group the official zone table covers, not just the main ones: walleye/sauger, northern pike, largemouth & smallmouth bass, yellow perch, black crappie, sunfish & bluegill, rock bass, brown bullhead & other catfish, burbot, lake whitefish, lake trout & splake, brook trout, brown trout, rainbow trout & steelhead, Pacific salmon (chinook & coho), Atlantic salmon, muskellunge, sturgeon, goldeye & mooneye, white & shorthead redhorse suckers, and any other species group the zone table includes. Include an entry even when the season is closed or catch-and-release only, and state that in the season field.',
@@ -383,6 +385,10 @@ export default async function (req) {
 
     const llm = await base44.integrations.Core.InvokeLLM({
       prompt,
+      // The default web-search model returns partial species tables; the pro
+      // model reliably returns the complete state/province-wide table needed
+      // for waterbody-level filtering.
+      model: 'gemini_3_1_pro',
       add_context_from_internet: true,
       response_json_schema: {
         type: 'object',
@@ -415,12 +421,47 @@ export default async function (req) {
       },
     });
 
+    // Identify the waterbody at the map centre and the species documented in
+    // it — a separate small lookup (the pro model reliably returns the full
+    // regs table but often skips this part of a combined prompt).
+    let waterbody = null;
+    try {
+      const wb = await base44.integrations.Core.InvokeLLM({
+        prompt: [
+          `Today's date is ${new Date().toISOString().slice(0, 10)}.`,
+          `An angler's map is centred at coordinates ${lat}, ${lon}. Identify the specific lake or river at or nearest these coordinates - the waterbody an angler there would be fishing. List the fish species documented as present in that waterbody, from official state or provincial fisheries sources (state fishing guide, lake surveys, agency fish pages).`,
+          'Return "name": the waterbody name, and "species": an array of the species common names. If the coordinates are not on or near a distinct waterbody, return an empty "species" array.',
+        ].join(' '),
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            name: { type: 'string' },
+            species: { type: 'array', items: { type: 'string' } },
+          },
+          required: ['name', 'species'],
+        },
+      });
+      const wbSpecies = Array.isArray(wb.species) ? wb.species.filter((s) => s && s.trim()) : [];
+      if (wbSpecies.length > 0) waterbody = { name: wb.name || null, speciesSummary: wbSpecies.join(', ') };
+    } catch (e) {
+      // waterbody identification is best-effort — fall back to the full table
+    }
+
+    // Filter the state/province-wide table down to the waterbody's species —
+    // the same matcher the Ontario official path uses. Falls back to the full
+    // table when no waterbody species could be identified.
+    let seasons = llm.seasons || [];
+    if (waterbody) {
+      const filtered = filterSeasonsBySpecies(seasons, waterbody.speciesSummary);
+      if (filtered.length > 0) seasons = filtered;
+    }
     return Response.json({
       supported: true,
       province,
       zone,
       region: region || null,
-      regulations: { source: 'ai', ...llm },
+      regulations: { source: 'ai', ...llm, seasons, waterbody },
     });
   } catch (error) {
     return Response.json({ error: error?.message || 'Unknown error' }, { status: 500 });
