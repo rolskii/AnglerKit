@@ -1,5 +1,6 @@
 import React from "react";
 import { X, Loader2, ScrollText, AlertTriangle, ExternalLink, CalendarRange, ListChecks, Fish, RotateCw } from "lucide-react";
+import RegulationsShareButton from "./RegulationsShareButton";
 
 const PROVINCE_LABELS = {
   ontario: "Ontario",
@@ -38,6 +39,7 @@ export default function RegulationsPanel({ open, onOpenChange, data, loading, er
             <h3 className="font-heading font-semibold text-sm">Fishing Regulations</h3>
             <p className="text-[11px] text-muted-foreground leading-snug">{subtitle || "Map centre"}</p>
           </div>
+          {regs && <RegulationsShareButton data={data} />}
           {onRefresh && !loading && data?.regulations && (
             <button
               type="button"

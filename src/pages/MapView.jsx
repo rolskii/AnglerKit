@@ -25,6 +25,7 @@ import GeoHubLayersPanel from '@/components/map/GeoHubLayersPanel';
 import AccessPointDialog from '@/components/map/AccessPointDialog';
 import AraLineDialog from '@/components/map/AraLineDialog';
 import RegulationsPanel from '@/components/map/RegulationsPanel';
+import { buildMapShareUrl, parseMapShareParams } from '@/lib/mapShare';
 
 /* global mapkit */
 
@@ -128,6 +129,9 @@ export default function MapView() {
   const [regsLoading, setRegsLoading] = useState(false);
   const [regsData, setRegsData] = useState(null);
   const [regsError, setRegsError] = useState(null);
+  // A shared map link (?c=…&z=…&l=…): pins the exact view — centre, zoom and
+  // fishing layers — instead of the normal GPS start.
+  const [sharedView] = useState(() => parseMapShareParams());
 
 
   // Persist pins to localStorage so they survive page navigation
@@ -916,6 +920,47 @@ export default function MapView() {
     }
   }, []);
 
+  // Share the current view as a map link: the recipient's map opens at the
+  // same centre and zoom with the sender's fishing layers already enabled.
+  const handleShareMap = useCallback(async () => {
+    const map = mapRef.current;
+    if (!map || !map.region) return;
+    const r = map.region;
+    const url = buildMapShareUrl(
+      {
+        latitude: r.center.latitude,
+        longitude: r.center.longitude,
+        latitudeDelta: r.span.latitudeDelta,
+        longitudeDelta: r.span.longitudeDelta,
+      },
+      {
+        access: showAccessPoints,
+        ara: showAraLines,
+        bathy: showBathy,
+        seamap: showSeaMap,
+        routes: showAllRoutes,
+      }
+    );
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: 'Fishing map',
+          text: 'Check out this fishing spot — the map link opens at the exact same view.',
+          url,
+        });
+        return;
+      }
+    } catch (e) {
+      if (e?.name === 'AbortError') return;
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      toast({ title: 'Map link copied', description: 'Paste it anywhere to share this exact view and layers.' });
+    } catch {
+      toast({ title: 'Could not share the map link' });
+    }
+  }, [showAccessPoints, showAraLines, showBathy, showSeaMap, showAllRoutes, toast]);
+
   // Fetch enabled GeoHub layers when the map region changes
   useEffect(() => {
     if (!mapReady || !mapRef.current) return;
@@ -1028,12 +1073,23 @@ export default function MapView() {
         if (cancelled || !mapContainerRef.current) return;
 
         const sharedLoc = getSharedLocation();
-        const center = new mapkit.Coordinate(sharedLoc.coords.lat, sharedLoc.coords.lon);
-        const map = new mapkit.Map(mapContainerRef.current, {
-          center,
-          cameraDistance: 300,
-          mapType: mapkit.Map.MapTypes.Hybrid,
-        });
+        const center = new mapkit.Coordinate(
+          sharedView?.lat ?? sharedLoc.coords.lat,
+          sharedView?.lon ?? sharedLoc.coords.lon
+        );
+        const map = sharedView
+          ? new mapkit.Map(mapContainerRef.current, {
+              region: new mapkit.CoordinateRegion(
+                center,
+                new mapkit.CoordinateSpan(sharedView.spanLat, sharedView.spanLon)
+              ),
+              mapType: mapkit.Map.MapTypes.Hybrid,
+            })
+          : new mapkit.Map(mapContainerRef.current, {
+              center,
+              cameraDistance: 300,
+              mapType: mapkit.Map.MapTypes.Hybrid,
+            });
         mapRef.current = map;
 
         map.addEventListener('single-tap', (event) => {
@@ -1080,6 +1136,9 @@ export default function MapView() {
 
   // Request GPS position and recenter map once available
   useEffect(() => {
+    // A shared link pins the sender's view — don't yank the recipient to
+    // their own GPS location on open.
+    if (sharedView) return;
     if (!mapReady || !mapRef.current || gpsPos) return;
     if (!navigator.geolocation) return;
     let cancelled = false;
@@ -1099,6 +1158,21 @@ export default function MapView() {
     );
     return () => { cancelled = true; };
   }, [mapReady, gpsPos]);
+
+  // Apply the fishing layers carried by a shared map link, then clear the
+  // link params so a refresh returns to the normal GPS-start behaviour.
+  useEffect(() => {
+    if (!sharedView || !mapReady) return;
+    setShowAccessPoints(!!sharedView.layers.access);
+    setShowAraLines(!!sharedView.layers.ara);
+    setShowBathy(!!sharedView.layers.bathy);
+    setShowSeaMap(!!sharedView.layers.seamap);
+    if (sharedView.layers.routes) {
+      loadRoutes();
+      setShowAllRoutes(true);
+    }
+    window.history.replaceState({}, '', window.location.pathname);
+  }, [mapReady, loadRoutes, sharedView]);
 
   // Auto-enable the access-points layer on the first GPS fix (runs once;
   // manual toggles afterwards win). The region is resolved server-side.
@@ -1828,6 +1902,7 @@ export default function MapView() {
         onToggleArea={handleToggleArea}
         onOpenGeoHub={() => setGeoHubOpen(true)}
         onOpenRegs={openRegulations}
+        onShareMap={handleShareMap}
         geoHubActive={showAccessPoints || showAraLines || showSeaMap || showBathy}
       />
 
