@@ -70,10 +70,15 @@ export default function LineForm({ open, onOpenChange, onSubmit, initial, reels,
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{initial ? "Edit Line" : "Add Line"}</DialogTitle>
-          </DialogHeader>
+        <DialogContent
+          className="max-w-2xl max-h-[90vh] overflow-y-auto"
+          // Don't auto-focus the first field on open — focusing the Species
+          // select makes iOS pop its picker open immediately.
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
+        <DialogHeader>
+          <DialogTitle>{initial ? "Edit Line" : "Add Line"}</DialogTitle>
+        </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
