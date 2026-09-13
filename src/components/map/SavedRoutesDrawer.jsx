@@ -104,7 +104,7 @@ export default function SavedRoutesDrawer({ open, onOpenChange, routes, onLoad, 
           <SheetTitle>Saved Routes & Pins</SheetTitle>
         </SheetHeader>
         {routes.length > 1 && (
-          <div className="flex items-center gap-1.5 px-2 pb-2">
+          <div className="flex flex-wrap items-center gap-1.5 px-2 pb-2">
             <span className="text-xs text-muted-foreground shrink-0">Sort</span>
             {SORT_OPTIONS.map((opt) => (
               <button
