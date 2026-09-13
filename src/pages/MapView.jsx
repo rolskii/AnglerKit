@@ -137,6 +137,7 @@ export default function MapView() {
   // fishing layers — instead of the normal GPS start.
   const [sharedView] = useState(() => parseMapShareParams());
   const [mapShareBusy, setMapShareBusy] = useState(false);
+  const mapShareLockRef = useRef(false);
 
 
   // Persist pins to localStorage so they survive page navigation
@@ -930,7 +931,8 @@ export default function MapView() {
   // app installed to view it.
   const handleShareMap = useCallback(async () => {
     const map = mapRef.current;
-    if (!map || !map.region || mapShareBusy) return;
+    if (!map || !map.region || mapShareBusy || mapShareLockRef.current) return;
+    mapShareLockRef.current = true;
     const r = map.region;
     const latStr = r.center.latitude.toFixed(5);
     const lonStr = r.center.longitude.toFixed(5);
@@ -1022,6 +1024,7 @@ export default function MapView() {
     } catch (e) {
       toast({ title: 'Could not create the map card' });
     } finally {
+      mapShareLockRef.current = false;
       setMapShareBusy(false);
     }
   }, [showAccessPoints, showAraLines, showBathy, showSeaMap, showAllRoutes, toast, mapShareBusy, bathyLines, araLines, accessPoints, savedRoutes, trackPoints, pins, drawings, savedMeasurements, measurePoints, savedAreas, areaPoints]);

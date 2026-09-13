@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { Share2, Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { buildRegulationsShareCardHtml } from "@/lib/regulationsShareCard";
@@ -10,10 +10,18 @@ import { APP_LOGO_URL } from "@/components/AppLogo";
 export default function RegulationsShareButton({ data }) {
   const { toast } = useToast();
   const [busy, setBusy] = useState(false);
+  const shareLockRef = useRef(false);
+  const lastShareAtRef = useRef(0);
   const regs = data?.regulations;
 
   const handleShare = async () => {
-    if (!regs || busy) return;
+    if (!regs || shareLockRef.current) return;
+    // iOS can fire two click events for a single tap, and a quick double-tap
+    // re-enters before the busy state re-renders — a synchronous lock plus a
+    // short cooldown keeps the card from being shared twice.
+    if (Date.now() - lastShareAtRef.current < 2000) return;
+    shareLockRef.current = true;
+    lastShareAtRef.current = Date.now();
     setBusy(true);
     const summaryText = [
       regs.areaLabel ? `Fishing regulations — ${regs.areaLabel}` : "Fishing regulations",
