@@ -122,7 +122,14 @@ export default function SavedRoutesDrawer({ open, onOpenChange, routes, onLoad, 
       ? new Date(row.route.updated_date || row.route.created_date || 0).getTime()
       : t;
   };
-  const TYPE_RANK = { route: 0, pin: 1, area: 2, meas: 3 };
+  // Type groups: Routes, Fish spots, Pins, Areas, Measurements
+  const typeRank = (row) => {
+    if (row.kind === 'route') return 0;
+    if (row.kind === 'pin' && row.marker === 'fish') return 1;
+    if (row.kind === 'pin') return 2;
+    if (row.kind === 'area') return 3;
+    return 4;
+  };
 
   const sortedRows = useMemo(() => {
     const list = [...rows];
@@ -131,7 +138,7 @@ export default function SavedRoutesDrawer({ open, onOpenChange, routes, onLoad, 
     } else if (sortBy === 'oldest') {
       list.sort((a, b) => recDate(a) - recDate(b));
     } else if (sortBy === 'type') {
-      list.sort((a, b) => TYPE_RANK[a.kind] - TYPE_RANK[b.kind] || recDate(b) - recDate(a));
+      list.sort((a, b) => typeRank(a) - typeRank(b) || recDate(b) - recDate(a));
     } else {
       list.sort((a, b) => recDate(b) - recDate(a));
     }
