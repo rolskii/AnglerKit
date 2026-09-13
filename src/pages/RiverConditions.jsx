@@ -310,7 +310,17 @@ export default function RiverConditions() {
                     <div className="flex items-center gap-1.5">
                       <p className="text-sm font-semibold truncate">{data.station.name}</p>
                     </div>
-                    <p className="text-xs text-muted-foreground">Station {data.station.id} · {data.station.distanceKm} km away · <span className="font-semibold text-foreground">Updated {data.current?.datetimeLocal ? new Date(data.current.datetimeLocal).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '—'}</span></p>
+                    <p className="text-xs text-muted-foreground">
+                      <a
+                        href={`https://wateroffice.ec.gc.ca/report/real_time_e.html?stn=${data.station.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-orange-500 font-semibold underline-offset-2 hover:underline"
+                      >
+                        Station {data.station.id}
+                      </a>
+                      {' '}· {data.station.distanceKm} km away · <span className="font-semibold text-foreground">Updated {data.current?.datetimeLocal ? new Date(data.current.datetimeLocal).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '—'}</span>
+                    </p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2">
