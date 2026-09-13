@@ -65,10 +65,15 @@ export default function SavedRoutesDrawer({ open, onOpenChange, routes, onLoad, 
   const [sortBy, setSortBy] = useState('newest'); // 'newest' | 'oldest' | 'name'
   const sortedRoutes = useMemo(() => {
     const list = [...routes];
+    // Sort by the trip date shown on each row (falls back to when it was saved)
+    const recDate = (r) => {
+      const t = r.date ? new Date(r.date + 'T00:00:00').getTime() : NaN;
+      return isNaN(t) ? new Date(r.updated_date || r.created_date || 0).getTime() : t;
+    };
     if (sortBy === 'name') {
       list.sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' }));
     } else if (sortBy === 'oldest') {
-      list.sort((a, b) => new Date(a.updated_date || a.created_date || 0) - new Date(b.updated_date || b.created_date || 0));
+      list.sort((a, b) => recDate(a) - recDate(b));
     } else if (sortBy === 'type') {
       // Group by what the record holds: Routes, Pins, Areas, Measurements
       const typeRank = (r) => {
@@ -80,12 +85,9 @@ export default function SavedRoutesDrawer({ open, onOpenChange, routes, onLoad, 
         if (areas > 0 && pins === 0) return 2; // Area
         return 1; // Pin
       };
-      list.sort((a, b) =>
-        typeRank(a) - typeRank(b) ||
-        new Date(b.updated_date || b.created_date || 0) - new Date(a.updated_date || a.created_date || 0)
-      );
+      list.sort((a, b) => typeRank(a) - typeRank(b) || recDate(b) - recDate(a));
     } else {
-      list.sort((a, b) => new Date(b.updated_date || b.created_date || 0) - new Date(a.updated_date || a.created_date || 0));
+      list.sort((a, b) => recDate(b) - recDate(a));
     }
     return list;
   }, [routes, sortBy]);
