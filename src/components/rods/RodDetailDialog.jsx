@@ -5,7 +5,7 @@ import {
 import { Button } from "@/components/ui/button";
 import RodCard from "@/components/rods/RodCard";
 
-export default function RodDetailDialog({ open, onOpenChange, rod, lineCount, pairedLines, onEdit, onDelete }) {
+export default function RodDetailDialog({ open, onOpenChange, rod, lineCount, pairedLines, associatedReels, reels, onEdit, onDelete }) {
   if (!rod) return null;
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -13,7 +13,7 @@ export default function RodDetailDialog({ open, onOpenChange, rod, lineCount, pa
         <DialogHeader>
           <DialogTitle>Rod Details</DialogTitle>
         </DialogHeader>
-        <RodCard rod={rod} lineCount={lineCount} pairedLines={pairedLines} onEdit={onEdit} onDelete={onDelete} />
+        <RodCard rod={rod} lineCount={lineCount} pairedLines={pairedLines} associatedReels={associatedReels} reels={reels} onEdit={onEdit} onDelete={onDelete} />
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
         </DialogFooter>

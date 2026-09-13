@@ -33,6 +33,7 @@ export default function Rods() {
   const navigate = useNavigate();
   const [rods, setRods] = useState([]);
   const [lines, setLines] = useState([]);
+  const [reels, setReels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("species");
@@ -49,12 +50,14 @@ export default function Rods() {
   const load = async () => {
     setLoading(true);
     try {
-      const [r, l] = await Promise.all([
+      const [r, l, re] = await Promise.all([
         base44.entities.Rod.list("-updated_date", 200),
         base44.entities.FlyLine.list("-updated_date", 200),
+        base44.entities.Reel.list("-updated_date", 200),
       ]);
       setRods(r);
       setLines(l);
+      setReels(re);
     } catch (e) {
       toast.error("Failed to load rods");
     } finally {
@@ -91,6 +94,19 @@ export default function Rods() {
       if (l.rod) {
         if (!map[l.rod]) map[l.rod] = [];
         map[l.rod].push(l);
+      }
+    });
+    return map;
+  }, [lines]);
+
+  // Reels associated with each rod — the distinct reels named on lines
+  // that are paired with that rod (lines store both their rod and reel).
+  const reelsByRod = useMemo(() => {
+    const map = {};
+    lines.forEach((l) => {
+      if (l.rod && l.reel) {
+        if (!map[l.rod]) map[l.rod] = [];
+        if (!map[l.rod].includes(l.reel)) map[l.rod].push(l.reel);
       }
     });
     return map;
@@ -267,6 +283,7 @@ export default function Rods() {
                 <SortHeader label="Type" field="type" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Material" field="material" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <th className="text-left font-semibold text-[11px] uppercase tracking-wider text-muted-foreground px-3 py-3 whitespace-nowrap">Lines</th>
+                <th className="text-left font-semibold text-[11px] uppercase tracking-wider text-muted-foreground px-3 py-3 whitespace-nowrap">Reels</th>
                 <SortHeader label="Condition" field="condition" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Value" field="value" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
               </tr>
@@ -282,6 +299,7 @@ export default function Rods() {
                   <td className="px-3 py-2.5">{rod.type}</td>
                   <td className="px-3 py-2.5">{rod.material}</td>
                   <td className="px-3 py-2.5 text-muted-foreground">{linesByRod[rod.name] || 0}</td>
+                  <td className="px-3 py-2.5 text-muted-foreground">{(reelsByRod[rod.name] || []).length}</td>
                   <td className="px-3 py-2.5">
                     {rod.condition && (
                       <span className={`px-2 py-0.5 rounded text-xs font-medium ${conditionColor[rod.condition] || ""}`}>
@@ -303,6 +321,8 @@ export default function Rods() {
         rod={viewTarget}
         lineCount={viewTarget ? linesByRod[viewTarget.name] || 0 : 0}
         pairedLines={viewTarget ? pairedLinesByRod[viewTarget.name] || [] : []}
+        associatedReels={viewTarget ? reelsByRod[viewTarget.name] || [] : []}
+        reels={reels}
         onEdit={(r) => { setViewTarget(null); setEditing(r); setPrefill(null); setFormOpen(true); }}
         onDelete={(r) => { setViewTarget(null); setDeleteTarget(r); }}
       />

@@ -15,8 +15,22 @@ const conditionColor = {
   "Poor": "bg-rose-100 text-rose-700",
 };
 
-export default function RodCard({ rod, lineCount, pairedLines, onEdit, onDelete }) {
+// Resolve a stored reel name to its full description (matches LineCard)
+const resolveReel = (name, reels) => {
+  if (!name) return null;
+  const reel = (reels || []).find((r) => r.name === name);
+  if (!reel) return name;
+  const desc = [reel.brand, reel.model, reel.size]
+    .filter(Boolean)
+    .map((v) => String(v).trim())
+    .filter(Boolean)
+    .join(" · ");
+  return desc || name;
+};
+
+export default function RodCard({ rod, lineCount, pairedLines, associatedReels = [], reels = [], onEdit, onDelete }) {
   const cardRef = useRef(null);
+  const reelLabels = (associatedReels || []).map((name) => resolveReel(name, reels));
   const card = {
     title: rod.name,
     subtitle: [rod.brand, rod.model, rod.length, rod.line_weight ? `${rod.line_weight}wt` : null].filter(Boolean).join(" · ") || "—",
@@ -33,6 +47,7 @@ export default function RodCard({ rod, lineCount, pairedLines, onEdit, onDelete 
       { label: "Serial #", value: rod.serial_number },
       { label: "Value", value: rod.value != null ? `$${rod.value}` : null },
       { label: "Acquired", value: formatGearDate(rod.date_acquired) },
+      ...(reelLabels.length > 0 ? [{ label: "Associated Reels", value: reelLabels.join(", ") }] : []),
     ],
     sections: pairedLines && pairedLines.length > 0 ? [{
       title: "Paired Lines",
@@ -108,6 +123,23 @@ export default function RodCard({ rod, lineCount, pairedLines, onEdit, onDelete 
           </ul>
         ) : (
           <p className="text-sm text-muted-foreground">No lines paired with this rod.</p>
+        )}
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium">Associated Reels:</span>
+          <Badge variant="secondary" className="text-xs">
+            {reelLabels.length} reel{reelLabels.length !== 1 ? "s" : ""}
+          </Badge>
+        </div>
+        {reelLabels.length > 0 ? (
+          <ul className="space-y-1.5">
+            {reelLabels.map((label, i) => (
+              <li key={i} className="text-sm border border-border rounded-md p-2.5 bg-muted/30 font-medium">
+                {label}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-muted-foreground">No reels associated with this rod.</p>
         )}
       </div>
 
