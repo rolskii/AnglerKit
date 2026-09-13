@@ -15,8 +15,24 @@ const conditionColor = {
   "Poor": "bg-rose-100 text-rose-700",
 };
 
-export default function LineCard({ line, onEdit, onDelete }) {
+// Resolve a stored rod/reel name (e.g. "One") to its full description
+const resolveGear = (name, list, keys) => {
+  if (!name) return null;
+  const item = (list || []).find((g) => g.name === name);
+  if (!item) return name;
+  const desc = keys
+    .map((k) => (k === "line_weight" && item[k] ? `${item[k]} wt` : item[k]))
+    .filter(Boolean)
+    .map((v) => String(v).trim())
+    .filter(Boolean)
+    .join(" · ");
+  return desc || name;
+};
+
+export default function LineCard({ line, onEdit, onDelete, rods = [], reels = [] }) {
   const cardRef = useRef(null);
+  const rodLabel = resolveGear(line.rod, rods, ["brand", "model", "length", "line_weight"]);
+  const reelLabel = resolveGear(line.reel, reels, ["brand", "model", "size"]);
   const card = {
     title: `${line.brand} ${line.model}`,
     subtitle: `${line.species} · ${line.description || "—"}`,
@@ -28,8 +44,8 @@ export default function LineCard({ line, onEdit, onDelete }) {
       { label: "Total Len", value: line.total_length ? `${line.total_length} ft` : null },
       { label: "Colour", value: line.colour },
       { label: "Value", value: line.value != null ? `$${line.value}` : null },
-      { label: "Reel", value: line.reel },
-      { label: "Rod", value: line.rod },
+      { label: "Reel", value: reelLabel },
+      { label: "Rod", value: rodLabel },
       { label: "Acquired", value: formatGearDate(line.date_acquired) },
     ],
     sections: [],
@@ -68,11 +84,11 @@ export default function LineCard({ line, onEdit, onDelete }) {
       <div className="flex flex-col gap-1.5 text-sm border-t border-border pt-3">
         <div className="flex items-center gap-2 text-muted-foreground">
           <span className="font-medium shrink-0">Reel:</span>
-          <span className="truncate">{line.reel || "No reel"}</span>
+          <span className="truncate">{reelLabel || "No reel"}</span>
         </div>
         <div className="flex items-center gap-2 text-muted-foreground">
           <span className="font-medium shrink-0">Rod:</span>
-          <span className="truncate">{line.rod || "No rod"}</span>
+          <span className="truncate">{rodLabel || "No rod"}</span>
         </div>
       </div>
 

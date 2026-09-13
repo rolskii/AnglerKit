@@ -249,6 +249,8 @@ export default function Lines() {
         open={!!viewTarget}
         onOpenChange={(o) => !o && setViewTarget(null)}
         line={viewTarget}
+        rods={rods}
+        reels={reels}
         onEdit={(l) => { setViewTarget(null); setEditing(l); setPrefill(null); setFormOpen(true); }}
         onDelete={(l) => { setViewTarget(null); setDeleteTarget(l); }}
       />

@@ -5,7 +5,7 @@ import {
 import { Button } from "@/components/ui/button";
 import LineCard from "@/components/lines/LineCard";
 
-export default function LineDetailDialog({ open, onOpenChange, line, onEdit, onDelete }) {
+export default function LineDetailDialog({ open, onOpenChange, line, onEdit, onDelete, rods = [], reels = [] }) {
   if (!line) return null;
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -13,7 +13,7 @@ export default function LineDetailDialog({ open, onOpenChange, line, onEdit, onD
         <DialogHeader>
           <DialogTitle>Line Details</DialogTitle>
         </DialogHeader>
-        <LineCard line={line} onEdit={onEdit} onDelete={onDelete} />
+        <LineCard line={line} onEdit={onEdit} onDelete={onDelete} rods={rods} reels={reels} />
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
         </DialogFooter>
