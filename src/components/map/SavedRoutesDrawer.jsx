@@ -142,6 +142,9 @@ export default function SavedRoutesDrawer({ open, onOpenChange, routes, onLoad, 
                 });
               });
 
+              // A saved record with no GPS track and only areas is an area
+              // save — show the area icon, not the route icon.
+              const isAreaOnly = !hasTrack && pinCount === 0 && measureCount === 0 && areaCount > 0;
               return (
                 <div key={r.id} className="space-y-0.5">
                   {/* Route header — navigates to the whole route's bounding box */}
@@ -151,8 +154,10 @@ export default function SavedRoutesDrawer({ open, onOpenChange, routes, onLoad, 
                       className="flex-1 flex items-center gap-3 text-left min-w-0"
                       disabled={children.length === 0 && !hasTrack}
                     >
-                      <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-primary/10">
-                        <Route className="w-5 h-5 text-primary" />
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${isAreaOnly ? 'bg-emerald-500/10' : 'bg-primary/10'}`}>
+                        {isAreaOnly
+                          ? <Hexagon className="w-5 h-5 text-emerald-500" />
+                          : <Route className="w-5 h-5 text-primary" />}
                       </div>
                       <div className="min-w-0">
                         <p className="text-sm font-medium truncate">{r.name}</p>
