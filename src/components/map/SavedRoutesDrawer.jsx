@@ -69,6 +69,21 @@ export default function SavedRoutesDrawer({ open, onOpenChange, routes, onLoad, 
       list.sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' }));
     } else if (sortBy === 'oldest') {
       list.sort((a, b) => new Date(a.updated_date || a.created_date || 0) - new Date(b.updated_date || b.created_date || 0));
+    } else if (sortBy === 'type') {
+      // Group by what the record holds: Routes, Pins, Areas, Measurements
+      const typeRank = (r) => {
+        if ((r.track?.length || 0) > 0) return 0; // Route
+        const pins = r.pins?.length || 0;
+        const areas = r.areas?.length || 0;
+        const meas = r.measurements?.length || 0;
+        if (meas > 0 && pins === 0 && areas === 0) return 3; // Measurement
+        if (areas > 0 && pins === 0) return 2; // Area
+        return 1; // Pin
+      };
+      list.sort((a, b) =>
+        typeRank(a) - typeRank(b) ||
+        new Date(b.updated_date || b.created_date || 0) - new Date(a.updated_date || a.created_date || 0)
+      );
     } else {
       list.sort((a, b) => new Date(b.updated_date || b.created_date || 0) - new Date(a.updated_date || a.created_date || 0));
     }
@@ -79,6 +94,7 @@ export default function SavedRoutesDrawer({ open, onOpenChange, routes, onLoad, 
     { id: 'newest', label: 'Newest' },
     { id: 'oldest', label: 'Oldest' },
     { id: 'name', label: 'Name A–Z' },
+    { id: 'type', label: 'Type' },
   ];
 
   return (
