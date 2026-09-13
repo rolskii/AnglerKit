@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { MapPin, Route, Trash2, Calendar, Navigation, Ruler, Hexagon } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -62,17 +62,54 @@ export default function SavedRoutesDrawer({ open, onOpenChange, routes, onLoad, 
   const fmtDate = (date) =>
     date ? new Date(date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : null;
 
+  const [sortBy, setSortBy] = useState('newest'); // 'newest' | 'oldest' | 'name'
+  const sortedRoutes = useMemo(() => {
+    const list = [...routes];
+    if (sortBy === 'name') {
+      list.sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' }));
+    } else if (sortBy === 'oldest') {
+      list.sort((a, b) => new Date(a.updated_date || a.created_date || 0) - new Date(b.updated_date || b.created_date || 0));
+    } else {
+      list.sort((a, b) => new Date(b.updated_date || b.created_date || 0) - new Date(a.updated_date || a.created_date || 0));
+    }
+    return list;
+  }, [routes, sortBy]);
+
+  const SORT_OPTIONS = [
+    { id: 'newest', label: 'Newest' },
+    { id: 'oldest', label: 'Oldest' },
+    { id: 'name', label: 'Name A–Z' },
+  ];
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="max-h-[70vh] flex flex-col">
         <SheetHeader>
           <SheetTitle>Saved Routes & Pins</SheetTitle>
         </SheetHeader>
+        {routes.length > 1 && (
+          <div className="flex items-center gap-1.5 px-2 pb-2">
+            <span className="text-xs text-muted-foreground shrink-0">Sort</span>
+            {SORT_OPTIONS.map((opt) => (
+              <button
+                key={opt.id}
+                onClick={() => setSortBy(opt.id)}
+                className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+                  sortBy === opt.id
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground hover:bg-accent/10'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        )}
         <div className="overflow-y-auto flex-1 mt-2 space-y-0.5">
-          {routes.length === 0 ? (
+          {sortedRoutes.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-8">No saved routes or pins yet. Drop pins on the map and save them!</p>
           ) : (
-            routes.map((r) => {
+            sortedRoutes.map((r) => {
               const hasTrack = (r.track?.length || 0) > 0;
               const pinCount = r.pins?.length || 0;
               const areaCount = r.areas?.length || 0;
