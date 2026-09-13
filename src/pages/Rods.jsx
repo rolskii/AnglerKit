@@ -9,7 +9,7 @@ import RodDetailDialog from "@/components/rods/RodDetailDialog";
 import ViewToggle from "@/components/ViewToggle";
 import GearThumbnail from "@/components/GearThumbnail";
 import GearEmptyState from "@/components/gear/GearEmptyState";
-import GearFilterChips from "@/components/gear/GearFilterChips";
+import GearFilterSelects from "@/components/gear/GearFilterSelects";
 import { RodIcon } from "@/components/GearIcons";
 import gearEmptyRods from "@/assets/gear-empty-rods.jpg";
 import { useViewMode } from "@/hooks/useViewMode";
@@ -218,7 +218,7 @@ export default function Rods() {
         <ViewToggle viewMode={viewMode} setViewMode={setViewMode} />
       </div>
 
-      <GearFilterChips
+      <GearFilterSelects
         items={rods}
         fields={[{ key: "species", label: "Species" }, { key: "brand", label: "Brand" }]}
         filters={filters}

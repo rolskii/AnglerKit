@@ -10,7 +10,7 @@ import GearThumbnail from "@/components/GearThumbnail";
 import { useViewMode } from "@/hooks/useViewMode";
 import LineForm from "@/components/lines/LineForm";
 import GearEmptyState from "@/components/gear/GearEmptyState";
-import GearFilterChips from "@/components/gear/GearFilterChips";
+import GearFilterSelects from "@/components/gear/GearFilterSelects";
 import { LinesIcon } from "@/components/GearIcons";
 import gearEmptyLines from "@/assets/gear-empty-lines.jpg";
 import {
@@ -178,7 +178,7 @@ export default function Lines() {
         <ViewToggle viewMode={viewMode} setViewMode={setViewMode} />
       </div>
 
-      <GearFilterChips
+      <GearFilterSelects
         items={lines}
         fields={[{ key: "species", label: "Species" }, { key: "brand", label: "Brand" }]}
         filters={filters}

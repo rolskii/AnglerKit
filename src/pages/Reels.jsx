@@ -9,7 +9,7 @@ import ReelDetailDialog from "@/components/reels/ReelDetailDialog";
 import ViewToggle from "@/components/ViewToggle";
 import GearThumbnail from "@/components/GearThumbnail";
 import GearEmptyState from "@/components/gear/GearEmptyState";
-import GearFilterChips from "@/components/gear/GearFilterChips";
+import GearFilterSelects from "@/components/gear/GearFilterSelects";
 import { ReelIcon } from "@/components/GearIcons";
 import gearEmptyReels from "@/assets/gear-empty-reels.jpg";
 import { useViewMode } from "@/hooks/useViewMode";
@@ -191,7 +191,7 @@ export default function Reels() {
         <ViewToggle viewMode={viewMode} setViewMode={setViewMode} />
       </div>
 
-      <GearFilterChips
+      <GearFilterSelects
         items={reels}
         fields={[{ key: "species", label: "Species" }, { key: "brand", label: "Brand" }]}
         filters={filters}
