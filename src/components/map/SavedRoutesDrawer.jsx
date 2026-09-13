@@ -62,35 +62,81 @@ export default function SavedRoutesDrawer({ open, onOpenChange, routes, onLoad, 
   const fmtDate = (date) =>
     date ? new Date(date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : null;
 
-  const [sortBy, setSortBy] = useState('newest'); // 'newest' | 'oldest' | 'name'
-  const sortedRoutes = useMemo(() => {
-    const list = [...routes];
-    // Sort by the trip date shown on each row (falls back to when it was saved)
-    const recDate = (r) => {
-      const t = r.date ? new Date(r.date + 'T00:00:00').getTime() : NaN;
-      return isNaN(t) ? new Date(r.updated_date || r.created_date || 0).getTime() : t;
-    };
+  // Flatten every saved feature (routes, pins, areas, measurements) into one
+  // sortable row — so the sort applies to what's actually visible in the list,
+  // even when a single saved record holds several features.
+  const rows = useMemo(() => {
+    const list = [];
+    routes.forEach((r) => {
+      if ((r.track?.length || 0) > 0) {
+        list.push({ kind: 'route', route: r, label: r.name || 'Unnamed', date: r.date, key: `${r.id}-route` });
+      }
+      (r.pins || []).forEach((pin, idx) => {
+        list.push({
+          kind: 'pin',
+          route: r,
+          pinIdx: idx,
+          coords: [pin.lat, pin.lon],
+          marker: pin.marker,
+          label: pin.label || 'Unnamed',
+          date: r.date,
+          key: `${r.id}-pin-${idx}`,
+        });
+      });
+      (r.areas || []).forEach((area, idx) => {
+        const c = centerOfPoints(area.points);
+        if (!c) return;
+        list.push({
+          kind: 'area',
+          route: r,
+          areaIdx: idx,
+          coords: c,
+          area_m2: area.area_m2,
+          label: r.name || 'Unnamed',
+          date: r.date,
+          key: `${r.id}-area-${idx}`,
+        });
+      });
+      (r.measurements || []).forEach((m, idx) => {
+        const c = centerOfPoints(m.points);
+        if (!c) return;
+        list.push({
+          kind: 'meas',
+          route: r,
+          coords: c,
+          distance_km: m.distance_km,
+          label: r.name || 'Unnamed',
+          date: r.date,
+          key: `${r.id}-meas-${idx}`,
+        });
+      });
+    });
+    return list;
+  }, [routes]);
+
+  const [sortBy, setSortBy] = useState('newest'); // 'newest' | 'oldest' | 'name' | 'type'
+  // Sort by the trip date shown on each row (falls back to when it was saved)
+  const recDate = (row) => {
+    const t = row.date ? new Date(row.date + 'T00:00:00').getTime() : NaN;
+    return isNaN(t)
+      ? new Date(row.route.updated_date || row.route.created_date || 0).getTime()
+      : t;
+  };
+  const TYPE_RANK = { route: 0, pin: 1, area: 2, meas: 3 };
+
+  const sortedRows = useMemo(() => {
+    const list = [...rows];
     if (sortBy === 'name') {
-      list.sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' }));
+      list.sort((a, b) => (a.label || '').localeCompare(b.label || '', undefined, { sensitivity: 'base' }));
     } else if (sortBy === 'oldest') {
       list.sort((a, b) => recDate(a) - recDate(b));
     } else if (sortBy === 'type') {
-      // Group by what the record holds: Routes, Pins, Areas, Measurements
-      const typeRank = (r) => {
-        if ((r.track?.length || 0) > 0) return 0; // Route
-        const pins = r.pins?.length || 0;
-        const areas = r.areas?.length || 0;
-        const meas = r.measurements?.length || 0;
-        if (meas > 0 && pins === 0 && areas === 0) return 3; // Measurement
-        if (areas > 0 && pins === 0) return 2; // Area
-        return 1; // Pin
-      };
-      list.sort((a, b) => typeRank(a) - typeRank(b) || recDate(b) - recDate(a));
+      list.sort((a, b) => TYPE_RANK[a.kind] - TYPE_RANK[b.kind] || recDate(b) - recDate(a));
     } else {
       list.sort((a, b) => recDate(b) - recDate(a));
     }
     return list;
-  }, [routes, sortBy]);
+  }, [rows, sortBy]);
 
   const SORT_OPTIONS = [
     { id: 'newest', label: 'Newest' },
@@ -105,7 +151,7 @@ export default function SavedRoutesDrawer({ open, onOpenChange, routes, onLoad, 
         <SheetHeader>
           <SheetTitle>Saved Routes & Pins</SheetTitle>
         </SheetHeader>
-        {routes.length > 1 && (
+        {rows.length > 1 && (
           <div className="flex flex-wrap items-center gap-1.5 px-2 pb-2">
             <span className="text-xs text-muted-foreground shrink-0">Sort</span>
             {SORT_OPTIONS.map((opt) => (
@@ -124,154 +170,22 @@ export default function SavedRoutesDrawer({ open, onOpenChange, routes, onLoad, 
           </div>
         )}
         <div className="overflow-y-auto flex-1 mt-2 space-y-0.5">
-          {sortedRoutes.length === 0 ? (
+          {sortedRows.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-8">No saved routes or pins yet. Drop pins on the map and save them!</p>
           ) : (
-            sortedRoutes.map((r) => {
-              const hasTrack = (r.track?.length || 0) > 0;
-              const pinCount = r.pins?.length || 0;
-              const areaCount = r.areas?.length || 0;
-              const measureCount = r.measurements?.length || 0;
+            sortedRows.map((row) => {
+              const r = row.route;
 
-              // Pins-only route: keep the original flat per-pin rows
-              if (!hasTrack && pinCount > 0 && areaCount === 0 && measureCount === 0) {
-                return r.pins.map((pin, pIdx) => (
-                  <div key={`${r.id}-${pIdx}`} className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/10 transition-colors">
-                    <button onClick={() => onLoad(r, [pin.lat, pin.lon])} className="flex-1 flex items-center gap-3 text-left min-w-0">
-                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${pin.marker === 'fish' ? 'bg-emerald-500/10' : 'bg-amber-500/10'}`}>
-                        {pin.marker === 'fish'
-                          ? <FishIcon className="w-5 h-5 text-emerald-500" />
-                          : <MapPin className="w-5 h-5 text-amber-500" />}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium truncate">{pin.label || 'Unnamed'}</p>
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                          {r.date && (
-                            <span className="flex items-center gap-0.5">
-                              <Calendar className="w-3 h-3" />
-                              {fmtDate(r.date)}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </button>
-                    <a
-                      href={`https://maps.apple.com/?daddr=${pin.lat},${pin.lon}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors shrink-0"
-                      title="Navigate to this location"
-                    >
-                      <Navigation className="w-4 h-4" />
-                    </a>
-                    <button
-                      onClick={() => handleDeletePin(r, pIdx)}
-                      className="p-2 text-muted-foreground hover:text-destructive transition-colors shrink-0"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                ));
-              }
-
-              // Area-only route: one flat row per saved area, just like pins
-              if (!hasTrack && pinCount === 0 && measureCount === 0 && areaCount > 0) {
-                return (r.areas || []).map((area, aIdx) => {
-                  const c = centerOfPoints(area.points);
-                  if (!c) return null;
-                  return (
-                    <div key={`${r.id}-area-${aIdx}`} className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/10 transition-colors">
-                      <button onClick={() => onLoad(r, c)} className="flex-1 flex items-center gap-3 text-left min-w-0">
-                        <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-emerald-500/10">
-                          <Hexagon className="w-5 h-5 text-emerald-500" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium truncate">{r.name}</p>
-                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                            {area.area_m2 != null && <span>{formatArea(area.area_m2, isImperial())}</span>}
-                            {r.date && (
-                              <span className="flex items-center gap-0.5">
-                                <Calendar className="w-3 h-3" />
-                                {fmtDate(r.date)}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </button>
-                      <a
-                        href={`https://maps.apple.com/?daddr=${c[0]},${c[1]}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors shrink-0"
-                        title="Navigate to this location"
-                      >
-                        <Navigation className="w-4 h-4" />
-                      </a>
-                      <button
-                        onClick={() => handleDeleteArea(r, aIdx)}
-                        className="p-2 text-muted-foreground hover:text-destructive transition-colors shrink-0"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  );
-                });
-              }
-
-              // Any other route: a header row for the whole route, then a
-              // navigable child row for each pin / area / measurement so every
-              // saved feature is reachable directly — just like pins.
-              const children = [];
-              (r.pins || []).forEach((pin, idx) => {
-                children.push({
-                  key: `pin-${idx}`,
-                  coords: [pin.lat, pin.lon],
-                  icon: pin.marker === 'fish'
-                    ? <FishIcon className="w-4 h-4 text-emerald-500" />
-                    : <MapPin className="w-4 h-4 text-amber-500" />,
-                  bg: pin.marker === 'fish' ? 'bg-emerald-500/10' : 'bg-amber-500/10',
-                  label: pin.label || `Pin ${idx + 1}`,
-                });
-              });
-              (r.areas || []).forEach((area, idx) => {
-                const c = centerOfPoints(area.points);
-                if (!c) return;
-                children.push({
-                  key: `area-${idx}`,
-                  coords: c,
-                  icon: <Hexagon className="w-4 h-4 text-primary" />,
-                  bg: 'bg-primary/10',
-                  label: area.label || `Area ${idx + 1}`,
-                });
-              });
-              (r.measurements || []).forEach((m, idx) => {
-                const c = centerOfPoints(m.points);
-                if (!c) return;
-                children.push({
-                  key: `meas-${idx}`,
-                  coords: c,
-                  icon: <Ruler className="w-4 h-4 text-primary" />,
-                  bg: 'bg-primary/10',
-                  label: m.label || `Measurement ${idx + 1}`,
-                });
-              });
-
-              // A saved record with no GPS track and only areas is an area
-              // save — show the area icon, not the route icon.
-              const isAreaOnly = !hasTrack && pinCount === 0 && measureCount === 0 && areaCount > 0;
-              return (
-                <div key={r.id} className="space-y-0.5">
-                  {/* Route header — navigates to the whole route's bounding box */}
-                  <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/10 transition-colors">
-                    <button
-                      onClick={() => onLoad(r)}
-                      className="flex-1 flex items-center gap-3 text-left min-w-0"
-                      disabled={children.length === 0 && !hasTrack}
-                    >
-                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${isAreaOnly ? 'bg-emerald-500/10' : 'bg-primary/10'}`}>
-                        {isAreaOnly
-                          ? <Hexagon className="w-5 h-5 text-emerald-500" />
-                          : <Route className="w-5 h-5 text-primary" />}
+              // Route header row — navigates to the whole route's bounding box
+              if (row.kind === 'route') {
+                const pinCount = r.pins?.length || 0;
+                const areaCount = r.areas?.length || 0;
+                const measureCount = r.measurements?.length || 0;
+                return (
+                  <div key={row.key} className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/10 transition-colors">
+                    <button onClick={() => onLoad(r)} className="flex-1 flex items-center gap-3 text-left min-w-0">
+                      <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-primary/10">
+                        <Route className="w-5 h-5 text-primary" />
                       </div>
                       <div className="min-w-0">
                         <p className="text-sm font-medium truncate">{r.name}</p>
@@ -302,30 +216,129 @@ export default function SavedRoutesDrawer({ open, onOpenChange, routes, onLoad, 
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
+                );
+              }
 
-                  {/* One navigable row per saved feature */}
-                  {children.map((child) => (
-                    <div key={`${r.id}-${child.key}`} className="flex items-center gap-3 pl-11 pr-2 py-1.5 rounded-lg hover:bg-accent/10 transition-colors">
-                      <button
-                        onClick={() => onLoad(r, child.coords)}
-                        className="flex-1 flex items-center gap-3 text-left min-w-0"
-                      >
-                        <div className={`w-7 h-7 rounded-md flex items-center justify-center shrink-0 ${child.bg}`}>
-                          {child.icon}
+              // Pin row
+              if (row.kind === 'pin') {
+                return (
+                  <div key={row.key} className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/10 transition-colors">
+                    <button onClick={() => onLoad(r, row.coords)} className="flex-1 flex items-center gap-3 text-left min-w-0">
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${row.marker === 'fish' ? 'bg-emerald-500/10' : 'bg-amber-500/10'}`}>
+                        {row.marker === 'fish'
+                          ? <FishIcon className="w-5 h-5 text-emerald-500" />
+                          : <MapPin className="w-5 h-5 text-amber-500" />}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium truncate">{row.label}</p>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                          {r.date && (
+                            <span className="flex items-center gap-0.5">
+                              <Calendar className="w-3 h-3" />
+                              {fmtDate(r.date)}
+                            </span>
+                          )}
                         </div>
-                        <p className="text-sm truncate">{child.label}</p>
-                      </button>
-                      <a
-                        href={`https://maps.apple.com/?daddr=${child.coords[0]},${child.coords[1]}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-1.5 text-primary hover:bg-primary/10 rounded-lg transition-colors shrink-0"
-                        title="Navigate to this location"
-                      >
-                        <Navigation className="w-3.5 h-3.5" />
-                      </a>
+                      </div>
+                    </button>
+                    <a
+                      href={`https://maps.apple.com/?daddr=${row.coords[0]},${row.coords[1]}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors shrink-0"
+                      title="Navigate to this location"
+                    >
+                      <Navigation className="w-4 h-4" />
+                    </a>
+                    <button
+                      onClick={() => handleDeletePin(r, row.pinIdx)}
+                      className="p-2 text-muted-foreground hover:text-destructive transition-colors shrink-0"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                );
+              }
+
+              // Area row
+              if (row.kind === 'area') {
+                return (
+                  <div key={row.key} className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/10 transition-colors">
+                    <button onClick={() => onLoad(r, row.coords)} className="flex-1 flex items-center gap-3 text-left min-w-0">
+                      <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-emerald-500/10">
+                        <Hexagon className="w-5 h-5 text-emerald-500" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium truncate">{row.label}</p>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                          {row.area_m2 != null && <span>{formatArea(row.area_m2, isImperial())}</span>}
+                          {r.date && (
+                            <span className="flex items-center gap-0.5">
+                              <Calendar className="w-3 h-3" />
+                              {fmtDate(r.date)}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                    <a
+                      href={`https://maps.apple.com/?daddr=${row.coords[0]},${row.coords[1]}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors shrink-0"
+                      title="Navigate to this location"
+                    >
+                      <Navigation className="w-4 h-4" />
+                    </a>
+                    <button
+                      onClick={() => handleDeleteArea(r, row.areaIdx)}
+                      className="p-2 text-muted-foreground hover:text-destructive transition-colors shrink-0"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                );
+              }
+
+              // Measurement row
+              const isMeasOnly =
+                (r.track?.length || 0) === 0 && (r.pins?.length || 0) === 0 && (r.areas?.length || 0) === 0;
+              return (
+                <div key={row.key} className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/10 transition-colors">
+                  <button onClick={() => onLoad(r, row.coords)} className="flex-1 flex items-center gap-3 text-left min-w-0">
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-primary/10">
+                      <Ruler className="w-5 h-5 text-primary" />
                     </div>
-                  ))}
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium truncate">{row.label}</p>
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                        {row.distance_km != null && <span>{formatDistance(row.distance_km, isImperial())}</span>}
+                        {r.date && (
+                          <span className="flex items-center gap-0.5">
+                            <Calendar className="w-3 h-3" />
+                            {fmtDate(r.date)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                  <a
+                    href={`https://maps.apple.com/?daddr=${row.coords[0]},${row.coords[1]}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors shrink-0"
+                    title="Navigate to this location"
+                  >
+                    <Navigation className="w-4 h-4" />
+                  </a>
+                  {isMeasOnly && (
+                    <button
+                      onClick={() => handleDelete(r.id)}
+                      className="p-2 text-muted-foreground hover:text-destructive transition-colors shrink-0"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               );
             })
