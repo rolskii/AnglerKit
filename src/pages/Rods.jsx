@@ -9,6 +9,7 @@ import RodDetailDialog from "@/components/rods/RodDetailDialog";
 import ViewToggle from "@/components/ViewToggle";
 import GearThumbnail from "@/components/GearThumbnail";
 import GearEmptyState from "@/components/gear/GearEmptyState";
+import GearFilterChips from "@/components/gear/GearFilterChips";
 import { RodIcon } from "@/components/GearIcons";
 import gearEmptyRods from "@/assets/gear-empty-rods.jpg";
 import { useViewMode } from "@/hooks/useViewMode";
@@ -36,6 +37,7 @@ export default function Rods() {
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("species");
   const [sortDir, setSortDir] = useState("asc");
+  const [filters, setFilters] = useState({ species: null, brand: null });
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [prefill, setPrefill] = useState(null);
@@ -99,9 +101,13 @@ export default function Rods() {
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
-    const result = rods.filter((r) =>
-      !q || [r.name, r.species, r.brand, r.length, r.line_weight, r.type, r.material].some((v) => v && v.toLowerCase().includes(q))
-    );
+    const result = rods.filter((r) => {
+      const matchesSearch = !q || [r.name, r.species, r.brand, r.length, r.line_weight, r.type, r.material].some((v) => v && v.toLowerCase().includes(q));
+      const matchesFilters =
+        (!filters.species || r.species === filters.species) &&
+        (!filters.brand || r.brand === filters.brand);
+      return matchesSearch && matchesFilters;
+    });
     const dir = sortDir === "asc" ? 1 : -1;
     const toNumber = (v) => {
       if (v == null || v === "") return null;
@@ -137,7 +143,7 @@ export default function Rods() {
       if (typeof av === "number" && typeof bv === "number") return (av - bv) * dir;
       return String(av).localeCompare(String(bv)) * dir;
     });
-  }, [rods, search, sortBy, sortDir]);
+  }, [rods, search, sortBy, sortDir, filters]);
 
   const handleSave = async (payload) => {
     setSaving(true);
@@ -211,6 +217,13 @@ export default function Rods() {
         </div>
         <ViewToggle viewMode={viewMode} setViewMode={setViewMode} />
       </div>
+
+      <GearFilterChips
+        items={rods}
+        fields={[{ key: "species", label: "Species" }, { key: "brand", label: "Brand" }]}
+        filters={filters}
+        onChange={setFilters}
+      />
 
       {loading ? (
         <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-muted-foreground" /></div>

@@ -9,6 +9,7 @@ import ReelDetailDialog from "@/components/reels/ReelDetailDialog";
 import ViewToggle from "@/components/ViewToggle";
 import GearThumbnail from "@/components/GearThumbnail";
 import GearEmptyState from "@/components/gear/GearEmptyState";
+import GearFilterChips from "@/components/gear/GearFilterChips";
 import { ReelIcon } from "@/components/GearIcons";
 import gearEmptyReels from "@/assets/gear-empty-reels.jpg";
 import { useViewMode } from "@/hooks/useViewMode";
@@ -36,6 +37,7 @@ export default function Reels() {
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("species");
   const [sortDir, setSortDir] = useState("asc");
+  const [filters, setFilters] = useState({ species: null, brand: null });
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [prefill, setPrefill] = useState(null);
@@ -98,9 +100,13 @@ export default function Reels() {
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
-    const result = reels.filter((r) =>
-      !q || [r.name, r.species, r.brand, r.model, r.size].some((v) => v && v.toLowerCase().includes(q))
-    );
+    const result = reels.filter((r) => {
+      const matchesSearch = !q || [r.name, r.species, r.brand, r.model, r.size].some((v) => v && v.toLowerCase().includes(q));
+      const matchesFilters =
+        (!filters.species || r.species === filters.species) &&
+        (!filters.brand || r.brand === filters.brand);
+      return matchesSearch && matchesFilters;
+    });
     const dir = sortDir === "asc" ? 1 : -1;
     return result.sort((a, b) => {
       const av = a[sortBy];
@@ -110,7 +116,7 @@ export default function Reels() {
       if (bv == null) return -1;
       return String(av).localeCompare(String(bv)) * dir;
     });
-  }, [reels, search, sortBy, sortDir]);
+  }, [reels, search, sortBy, sortDir, filters]);
 
   const handleSave = async (payload) => {
     setSaving(true);
@@ -184,6 +190,13 @@ export default function Reels() {
         </div>
         <ViewToggle viewMode={viewMode} setViewMode={setViewMode} />
       </div>
+
+      <GearFilterChips
+        items={reels}
+        fields={[{ key: "species", label: "Species" }, { key: "brand", label: "Brand" }]}
+        filters={filters}
+        onChange={setFilters}
+      />
 
       {loading ? (
         <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-muted-foreground" /></div>

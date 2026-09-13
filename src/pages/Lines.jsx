@@ -10,6 +10,7 @@ import GearThumbnail from "@/components/GearThumbnail";
 import { useViewMode } from "@/hooks/useViewMode";
 import LineForm from "@/components/lines/LineForm";
 import GearEmptyState from "@/components/gear/GearEmptyState";
+import GearFilterChips from "@/components/gear/GearFilterChips";
 import { LinesIcon } from "@/components/GearIcons";
 import gearEmptyLines from "@/assets/gear-empty-lines.jpg";
 import {
@@ -29,6 +30,7 @@ export default function Lines() {
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("species");
   const [sortDir, setSortDir] = useState("asc");
+  const [filters, setFilters] = useState({ species: null, brand: null });
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [prefill, setPrefill] = useState(null);
@@ -87,7 +89,10 @@ export default function Lines() {
         [l.species, l.brand, l.model, l.type, l.colour, l.reel, l.rod, l.description].some(
           (v) => v && v.toLowerCase().includes(q)
         );
-      return matchesSearch;
+      const matchesFilters =
+        (!filters.species || l.species === filters.species) &&
+        (!filters.brand || l.brand === filters.brand);
+      return matchesSearch && matchesFilters;
     });
     const dir = sortDir === "asc" ? 1 : -1;
     return result.sort((a, b) => {
@@ -99,7 +104,7 @@ export default function Lines() {
       if (typeof av === "number" && typeof bv === "number") return (av - bv) * dir;
       return String(av).localeCompare(String(bv)) * dir;
     });
-  }, [lines, search, sortBy, sortDir]);
+  }, [lines, search, sortBy, sortDir, filters]);
 
   const toggleSort = (field) => {
     if (sortBy === field) {
@@ -172,6 +177,13 @@ export default function Lines() {
         </div>
         <ViewToggle viewMode={viewMode} setViewMode={setViewMode} />
       </div>
+
+      <GearFilterChips
+        items={lines}
+        fields={[{ key: "species", label: "Species" }, { key: "brand", label: "Brand" }]}
+        filters={filters}
+        onChange={setFilters}
+      />
 
       {loading ? (
         <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-muted-foreground" /></div>
