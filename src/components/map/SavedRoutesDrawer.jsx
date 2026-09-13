@@ -3,7 +3,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { MapPin, Route, Trash2, Calendar, Navigation, Ruler, Hexagon } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import FishIcon from '@/components/FishIcon';
-import { formatDistance, isImperial } from '@/lib/sphericalArea';
+import { formatDistance, formatArea, isImperial } from '@/lib/sphericalArea';
 
 // Bounding-box center of an arbitrary list of {lat, lon} points.
 // Returns null if there are no usable points.
@@ -41,6 +41,21 @@ export default function SavedRoutesDrawer({ open, onOpenChange, routes, onLoad, 
       }
     } catch (e) {
       console.error('Failed to delete pin:', e);
+    }
+  };
+
+  const handleDeleteArea = async (route, areaIdx) => {
+    const updatedAreas = (route.areas || []).filter((_, i) => i !== areaIdx);
+    try {
+      if (updatedAreas.length === 0) {
+        await base44.entities.MapCourse.delete(route.id);
+        onDeleted(route.id);
+      } else {
+        await base44.entities.MapCourse.update(route.id, { areas: updatedAreas });
+        if (onRouteUpdated) onRouteUpdated();
+      }
+    } catch (e) {
+      console.error('Failed to delete area:', e);
     }
   };
 
@@ -102,6 +117,50 @@ export default function SavedRoutesDrawer({ open, onOpenChange, routes, onLoad, 
                     </button>
                   </div>
                 ));
+              }
+
+              // Area-only route: one flat row per saved area, just like pins
+              if (!hasTrack && pinCount === 0 && measureCount === 0 && areaCount > 0) {
+                return (r.areas || []).map((area, aIdx) => {
+                  const c = centerOfPoints(area.points);
+                  if (!c) return null;
+                  return (
+                    <div key={`${r.id}-area-${aIdx}`} className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/10 transition-colors">
+                      <button onClick={() => onLoad(r, c)} className="flex-1 flex items-center gap-3 text-left min-w-0">
+                        <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-emerald-500/10">
+                          <Hexagon className="w-5 h-5 text-emerald-500" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium truncate">{r.name}</p>
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                            {area.area_m2 != null && <span>{formatArea(area.area_m2, isImperial())}</span>}
+                            {r.date && (
+                              <span className="flex items-center gap-0.5">
+                                <Calendar className="w-3 h-3" />
+                                {fmtDate(r.date)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </button>
+                      <a
+                        href={`https://maps.apple.com/?daddr=${c[0]},${c[1]}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors shrink-0"
+                        title="Navigate to this location"
+                      >
+                        <Navigation className="w-4 h-4" />
+                      </a>
+                      <button
+                        onClick={() => handleDeleteArea(r, aIdx)}
+                        className="p-2 text-muted-foreground hover:text-destructive transition-colors shrink-0"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  );
+                });
               }
 
               // Any other route: a header row for the whole route, then a
