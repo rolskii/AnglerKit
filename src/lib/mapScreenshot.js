@@ -1,39 +1,133 @@
-// Map image capture for share cards. Both functions return base64 data URLs
-// so the result can be embedded in a self-contained HTML file.
-import html2canvas from 'html2canvas';
+// Map preview images for share cards, returned as base64 data URLs so they can
+// be embedded in a self-contained HTML file.
+//
+// MapKit JS renders Apple's map imagery in a GPU/WebGL layer that html2canvas
+// cannot read (the background comes back blank), so a pixel-perfect in-browser
+// screenshot isn't possible. Instead the share card rebuilds the same view
+// server-side with Apple's Maps Web Snapshots service (same centre, span and
+// map type — satellite / hybrid / standard) and draws the active fishing
+// overlays on top of that image, in the same colors the live map uses.
+import { base44 } from '@/api/base44Client';
 import { fetchAsDataUrl } from './imageDataUrl';
 
-// Captures the live map container (including depth contours and other
-// overlays drawn on top). Returns null when the capture fails or comes back
-// (near-)blank — html2canvas can't read every WebGL map canvas.
-export async function captureMapScreenshot(container) {
-  if (!container) return null;
+// The snapshot image covers centre ± span/2 on both axes, so lat/lon map
+// linearly onto its pixels.
+const project = (p, view, w, h) => [
+  ((p.lon - (view.lon - view.spanLon / 2)) / view.spanLon) * w,
+  (((view.lat + view.spanLat / 2) - p.lat) / view.spanLat) * h,
+];
+
+const loadImage = (src) =>
+  new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+
+const computeSize = (aspectRatio) => {
+  const h = 640;
+  const w = Math.max(50, Math.min(640, Math.round(h * aspectRatio)));
+  return { w, h };
+};
+
+// Fetches a static Apple Maps image of the given view through the applemaps
+// backend function. Returns the PNG data URL, or null on any failure.
+export async function fetchAppleMapSnapshot({ lat, lon, spanLat, spanLon, mapType, aspectRatio }) {
+  const { w, h } = computeSize(aspectRatio);
   try {
-    const canvas = await html2canvas(container, {
-      useCORS: true,
-      logging: false,
-      backgroundColor: null,
-      scale: 1,
+    const res = await base44.functions.invoke('applemaps', {
+      mode: 'snapshot',
+      lat,
+      lon,
+      spanLat,
+      spanLon,
+      sizeW: w,
+      sizeH: h,
+      mapType,
     });
-    // Blank check: sample pixels; a map canvas that couldn't be read renders
-    // (almost) entirely transparent.
+    const image = res?.data?.image;
+    return typeof image === 'string' && image.startsWith('data:image') ? image : null;
+  } catch {
+    return null;
+  }
+}
+
+// The share image: an Apple Maps snapshot of the current view with the active
+// overlays drawn on top — a faithful reproduction of what the user sees.
+// Returns null when the background snapshot can't be fetched.
+export async function buildShareImage({
+  lat,
+  lon,
+  spanLat,
+  spanLon,
+  mapType,
+  aspectRatio = 0.75,
+  lines = [],
+  markers = [],
+}) {
+  const bg = await fetchAppleMapSnapshot({ lat, lon, spanLat, spanLon, mapType, aspectRatio });
+  if (!bg) return null;
+  const { w, h } = computeSize(aspectRatio);
+  const view = { lat, lon, spanLat, spanLon };
+  try {
+    const img = await loadImage(bg);
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
     const ctx = canvas.getContext('2d');
-    const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    let visible = 0;
-    let total = 0;
-    for (let i = 3; i < data.length; i += 64) {
-      total++;
-      if (data[i] > 10) visible++;
-    }
-    if (total === 0 || visible / total < 0.02) return null;
-    return canvas.toDataURL('image/jpeg', 0.85);
+    ctx.drawImage(img, 0, 0, w, h);
+
+    lines.forEach((line) => {
+      if (!line.points || line.points.length < 2) return;
+      ctx.beginPath();
+      line.points.forEach((p, i) => {
+        const [x, y] = project(p, view, w, h);
+        if (i) ctx.lineTo(x, y);
+        else ctx.moveTo(x, y);
+      });
+      if (line.fill) {
+        ctx.fillStyle = line.fill;
+        ctx.fill();
+      }
+      ctx.strokeStyle = line.color || '#dc2626';
+      ctx.lineWidth = line.lineWidth || 2;
+      ctx.setLineDash(line.dash || []);
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      ctx.stroke();
+      ctx.setLineDash([]);
+    });
+
+    // Markers drawn last, on top of the lines.
+    markers.forEach((m) => {
+      const [x, y] = project(m, view, w, h);
+      ctx.beginPath();
+      ctx.arc(x, y, 8, 0, Math.PI * 2);
+      ctx.fillStyle = m.color || '#f59e0b';
+      ctx.fill();
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = '#ffffff';
+      ctx.stroke();
+      if (m.label) {
+        ctx.font = '600 12px -apple-system, system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#ffffff';
+        ctx.strokeText(m.label, x, y - 14);
+        ctx.fillStyle = '#1f2937';
+        ctx.fillText(m.label, x, y - 14);
+      }
+    });
+
+    return canvas.toDataURL('image/png');
   } catch {
     return null;
   }
 }
 
 // Composes an OpenStreetMap preview (2x2 tiles, ~512px) around the given
-// centre into a single embedded image. Used when the live capture isn't
+// centre into a single embedded image. Used when the Apple snapshot isn't
 // available — still fully self-contained, no remote <img> tags.
 const TILE = 256;
 

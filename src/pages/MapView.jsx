@@ -27,7 +27,8 @@ import AraLineDialog from '@/components/map/AraLineDialog';
 import RegulationsPanel from '@/components/map/RegulationsPanel';
 import { parseMapShareParams } from '@/lib/mapShare';
 import { buildMapShareCardHtml } from '@/lib/mapShareCard';
-import { captureMapScreenshot, buildOsmPreviewDataUrl } from '@/lib/mapScreenshot';
+import { buildShareImage, buildOsmPreviewDataUrl } from '@/lib/mapScreenshot';
+import { buildShareOverlays } from '@/lib/shareOverlays';
 import { fetchAsDataUrl } from '@/lib/imageDataUrl';
 
 /* global mapkit */
@@ -935,11 +936,41 @@ export default function MapView() {
     const lonStr = r.center.longitude.toFixed(5);
     setMapShareBusy(true);
     try {
-      // Live screenshot of the map view (includes depth contours and other
-      // active overlays), embedded as base64; falls back to a composed
-      // OpenStreetMap preview if the capture comes back blank. Both render in
-      // file previews that block remote images.
-      const liveShot = await captureMapScreenshot(mapContainerRef.current);
+      // Apple's map imagery renders in a GPU layer no in-browser capture tool
+      // can read, so instead: a server-side Apple Maps image of the same
+      // centre, span and map type, with the active overlays (contours, access
+      // points, tracks, drawings, pins) drawn on top in the same colors as the
+      // live view. Falls back to a composed OpenStreetMap preview. Both render
+      // in file previews that block remote images.
+      const rect = mapContainerRef.current?.getBoundingClientRect();
+      const currentType = mapRef.current?.mapType;
+      const { lines: overlayLines, markers: overlayMarkers } = buildShareOverlays({
+        showBathy,
+        bathyLines,
+        showAraLines,
+        araLines,
+        showAccessPoints,
+        accessPoints,
+        showAllRoutes,
+        savedRoutes,
+        trackPoints,
+        pins,
+        drawings,
+        savedMeasurements,
+        measurePoints,
+        savedAreas,
+        areaPoints,
+      });
+      const liveShot = await buildShareImage({
+        lat: r.center.latitude,
+        lon: r.center.longitude,
+        spanLat: r.span.latitudeDelta,
+        spanLon: r.span.longitudeDelta,
+        mapType: currentType === 'satellite' ? 'satellite' : currentType === 'standard' ? 'standard' : 'hybrid',
+        aspectRatio: rect ? rect.width / rect.height : 0.75,
+        lines: overlayLines,
+        markers: overlayMarkers,
+      });
       const previewImage = liveShot || (await buildOsmPreviewDataUrl({
         lat: r.center.latitude,
         lon: r.center.longitude,
@@ -993,7 +1024,7 @@ export default function MapView() {
     } finally {
       setMapShareBusy(false);
     }
-  }, [showAccessPoints, showAraLines, showBathy, showSeaMap, showAllRoutes, toast, mapShareBusy]);
+  }, [showAccessPoints, showAraLines, showBathy, showSeaMap, showAllRoutes, toast, mapShareBusy, bathyLines, araLines, accessPoints, savedRoutes, trackPoints, pins, drawings, savedMeasurements, measurePoints, savedAreas, areaPoints]);
 
   // Fetch enabled GeoHub layers when the map region changes
   useEffect(() => {

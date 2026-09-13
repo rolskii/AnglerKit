@@ -1,7 +1,8 @@
 // Builds a self-contained HTML card for sharing a map view. All images are
-// embedded as base64 data URLs (a live screenshot of the map, or an
-// OpenStreetMap preview as backup), so the card renders everywhere — even in
-// file previews that block remote images — and the recipient needs no app.
+// embedded as base64 data URLs (an Apple Maps image of the shared view with
+// the active fishing layers drawn in, or an OpenStreetMap preview as backup),
+// so the card renders everywhere — even in file previews that block remote
+// images — and the recipient needs no app.
 // Direct links open the same spot in Apple Maps / Google Maps.
 
 function esc(s) {
@@ -80,9 +81,9 @@ export async function buildMapShareCardHtml({
       </div>
     </div>
     <div class="preview">
-      ${previewImage ? `<img class="shot" src="${esc(previewImage)}" alt="Map view" />` : ''}
-      <div class="marker"></div>
-      <div class="badge-pin"></div>
+      ${previewImage
+        ? `<img class="shot" src="${esc(previewImage)}" alt="Map view" />`
+        : `<div class="marker"></div><div class="badge-pin"></div>`}
     </div>
     ${activeLayers ? `<div class="layers"><div class="layers-title">Fishing layers in this view</div>${activeLayers}</div>` : ''}
     <div class="links">
@@ -90,7 +91,7 @@ export async function buildMapShareCardHtml({
       <a class="a" href="${amapsUrl}" target="_blank" rel="noopener noreferrer">Open in Apple Maps</a>
     </div>
     <div class="attribution">${isScreenshot
-      ? 'Live screenshot of the shared map view, including any active fishing layers.'
+      ? 'Apple Maps image of the shared view, with the active fishing layers drawn in.'
       : 'Map preview &copy; OpenStreetMap contributors — fishing overlays (depth contours, access points) are not shown in this preview.'}</div>
   </div>
   <footer>Shared from AnglerKit</footer>

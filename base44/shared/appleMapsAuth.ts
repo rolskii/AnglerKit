@@ -4,12 +4,11 @@ import { SignJWT } from 'npm:jose@5.9.6';
 
 export const MAPS_BASE = 'https://maps-api.apple.com/v1';
 
-export async function generateMapsJwt(scope, origin) {
-  const teamId = Deno.env.get('APPLE_MAPS_TEAM_ID');
-  const keyId = Deno.env.get('APPLE_MAPS_KEY_ID');
+// Imports the Apple Maps private key (.p8) for ES256 signing.
+export async function importMapsPrivateKey() {
   const privateKeyRaw = Deno.env.get('APPLE_MAPS_PRIVATE_KEY');
 
-  if (!teamId || !keyId || !privateKeyRaw) {
+  if (!privateKeyRaw) {
     throw new Error('Missing Apple Maps credentials. Set APPLE_MAPS_TEAM_ID, APPLE_MAPS_KEY_ID, and APPLE_MAPS_PRIVATE_KEY.');
   }
 
@@ -25,13 +24,24 @@ export async function generateMapsJwt(scope, origin) {
 
   const binaryDer = Uint8Array.from(atob(pemContents), (c) => c.charCodeAt(0));
 
-  const key = await crypto.subtle.importKey(
+  return await crypto.subtle.importKey(
     'pkcs8',
     binaryDer.buffer,
     { name: 'ECDSA', namedCurve: 'P-256' },
     false,
     ['sign']
   );
+}
+
+export async function generateMapsJwt(scope, origin) {
+  const teamId = Deno.env.get('APPLE_MAPS_TEAM_ID');
+  const keyId = Deno.env.get('APPLE_MAPS_KEY_ID');
+
+  if (!teamId || !keyId) {
+    throw new Error('Missing Apple Maps credentials. Set APPLE_MAPS_TEAM_ID, APPLE_MAPS_KEY_ID, and APPLE_MAPS_PRIVATE_KEY.');
+  }
+
+  const key = await importMapsPrivateKey();
 
   const now = Math.floor(Date.now() / 1000);
   const payload = { scope };
