@@ -65,13 +65,6 @@ export default function MapControls({
           <ScrollText className="w-5 h-5" />
         </button>
         <button
-          onClick={onShareMap}
-          className={`${ctrlBase} ${ctrlSize} bg-background/90 text-foreground border border-border`}
-          title="Share this map view"
-        >
-          <Share2 className="w-5 h-5" />
-        </button>
-        <button
           onClick={onOpenRoutes}
           className={`${ctrlBase} ${ctrlSize} bg-background/90 text-foreground border border-border`}
           title="Saved routes"
@@ -121,6 +114,13 @@ export default function MapControls({
           title="Measure area"
         >
           <Hexagon className="w-5 h-5" />
+        </button>
+        <button
+          onClick={onShareMap}
+          className={`${ctrlBase} ${ctrlSize} bg-background/90 text-foreground border border-border`}
+          title="Share this map view"
+        >
+          <Share2 className="w-5 h-5" />
         </button>
       </div>
 
