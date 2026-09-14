@@ -19,6 +19,7 @@ import Settings from '@/pages/Settings';
 import Catches from '@/pages/Catches';
 import CatchDetail from '@/pages/CatchDetail';
 import CatchAssistant from '@/pages/CatchAssistant';
+import RiverAdvisor from '@/pages/RiverAdvisor';
 import Lures from '@/pages/Lures';
 import Misc from '@/pages/Misc';
 import Supplies from '@/pages/Supplies';
@@ -72,6 +73,7 @@ const AuthenticatedApp = () => {
         <Route path="/catches" element={<Catches />} />
         <Route path="/catches/:id" element={<CatchDetail />} />
         <Route path="/catch-assistant" element={<CatchAssistant />} />
+        <Route path="/river-advisor" element={<RiverAdvisor />} />
         <Route path="/lures" element={<Lures />} />
         <Route path="/misc" element={<Misc />} />
         <Route path="/supplies" element={<Supplies />} />

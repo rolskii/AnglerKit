@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Send } from "lucide-react";
 import MessageBubble from "@/components/assistant/MessageBubble";
 
-export default function AgentChat({ conversation }) {
+export default function AgentChat({ conversation, placeholder = "Type a message…" }) {
   const [messages, setMessages] = useState(conversation?.messages || []);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
@@ -59,7 +59,7 @@ export default function AgentChat({ conversation }) {
         <Input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Tell me about your catch…"
+          placeholder={placeholder}
           className="flex-1 rounded-full bg-muted"
         />
         <Button
