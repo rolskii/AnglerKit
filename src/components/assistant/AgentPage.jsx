@@ -32,8 +32,10 @@ export default function AgentPage({
           new Date(b.updated_date || b.created_date) -
           new Date(a.updated_date || a.created_date)
       );
+      // Hide conversations with no messages — e.g. a "New chat" button that
+      // was tapped by accident — unless it's the one currently open.
       setConversations(sorted);
-      setActiveId((current) => current || sorted[0]?.id || null);
+      setActiveId((current) => current || sorted.find((c) => (c.messages?.length ?? 0) > 0)?.id || null);
     } catch (err) {
       setError(err.message || "Could not load conversations");
       setConversations([]);
@@ -73,7 +75,9 @@ export default function AgentPage({
               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
             </div>
           )}
-          {conversations?.map((conv) => (
+          {conversations
+            ?.filter((conv) => conv.id === activeId || (conv.messages?.length ?? 0) > 0)
+            .map((conv) => (
             <button
               key={conv.id}
               type="button"
