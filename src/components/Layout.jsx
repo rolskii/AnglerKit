@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Outlet, NavLink, useNavigate, useLocation, Link } from "react-router-dom";
 import {
   LogOut, Menu, X, ChevronLeft, Sparkles,
-  Home as HomeIcon, Camera, Cloud, Map as MapIcon, Waves,
+  Home as HomeIcon, Camera, Cloud, Map as MapIcon, Waves, MessageSquare,
   Settings as SettingsIcon, Info, Package, Boxes,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,7 @@ const navItems = [
   { to: "/moon", label: "Moon Phase", icon: MoonIcon, tint: CATEGORY_TEXT.moon },
   { to: "/weather", label: "Weather", icon: Cloud, tint: CATEGORY_TEXT.weather },
   { to: "/river", label: "Hydrometric", icon: Waves, tint: CATEGORY_TEXT.hydro },
+  { to: "/river-advisor", label: "River Advisor", icon: MessageSquare },
   { to: "/map", label: "Maps", icon: MapIcon },
   { to: "/catches", label: "Fish Log", icon: Camera, matchPrefix: "/catches" },
   { to: "/settings", label: "Settings", icon: SettingsIcon },
