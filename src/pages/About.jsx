@@ -12,8 +12,8 @@ export default function About() {
         <p>
           Herons are elite stealth predators renowned for their patience, precision, and calculated hunting strategies. The Green Heron specifically is one of the few bird species known to manufacture and use lures to catch fish. Dropping insects, feathers or even bread crumbs on the water's surface to lure prey within striking range, it fishes with a cleverness and patience that's rare in the animal kingdom. That same blend of smarts and stillness inspired this app: a companion that helps you read the water, pick the right gear, and wait for the perfect moment.
         </p>
-        <p>
-          From gear tracking into an indispensable fishing toolbox - pairing detailed equipment management with real-time conditions intelligence, so you always know what's in your kit and what the water and sky are doing before you head out.
+        <p>From gear tracking into an indispensable fishing toolbox - pairing detailed equipment management with real-time conditions intelligence, map so you always know what's in your kit and what the water and sky are doing before you head out.
+
         </p>
         <p>
           Track moon phases and bite windows, check live weather, and follow real-time river levels and historical trends for your favorite waters. Alongside that, manage detailed inventories of every rod, reel, line and lure - condition, details and values - pair gear for a trip, and log your catches with photos. Everything is backed up securely, with full data export whenever you need it. Built with Apple-inspired design for an intuitive, native feel on every device.
@@ -24,8 +24,8 @@ export default function About() {
       <div className="rounded-lg border-0 bg-primary/10 p-4 text-sm text-muted-foreground">
         Built with the Base44 platform.
       </div>
-    </div>
-  );
+    </div>);
+
 }
 
 function FeatureCard({ icon, title, description }) {
@@ -36,6 +36,6 @@ function FeatureCard({ icon, title, description }) {
       </div>
       <h3 className="font-heading font-semibold">{title}</h3>
       <p className="text-sm text-muted-foreground">{description}</p>
-    </div>
-  );
+    </div>);
+
 }
