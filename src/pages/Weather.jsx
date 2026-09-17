@@ -322,7 +322,7 @@ export default function Weather() {
   if (error) {
     return (
       <div className="min-h-screen bg-background p-4 pb-20 flex items-center justify-center">
-        <Card className="max-w-md">
+        <Card className="max-w-md border-primary/20">
           <CardContent className="pt-6 text-center">
             <p className="text-sm text-foreground mb-4">{error}</p>
             <button
@@ -373,7 +373,7 @@ export default function Weather() {
           </div>
         </div>
         {/* Current Weather Card */}
-        <Card>
+        <Card className="border-primary/20">
           <CardContent className="p-3">
             <div className="space-y-2">
               {/* Temperature hero (left) + Date/Location (right, stacked) */}
@@ -549,7 +549,7 @@ export default function Weather() {
           tempUnit={tempUnit}
         />
         {/* 10-Day Forecast */}
-        <Card>
+        <Card className="border-primary/20">
           <CardHeader className="pt-3 pb-2 flex-row items-center justify-between space-y-0">
             <CardTitle className="text-base">5-Day Forecast</CardTitle>
           </CardHeader>

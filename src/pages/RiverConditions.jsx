@@ -293,7 +293,7 @@ export default function RiverConditions() {
           </div>
 
           {error && (
-            <Card>
+            <Card className="border-primary/20">
               <CardContent className="pt-6 text-center">
                 <p className="text-sm text-muted-foreground mb-4">{error}</p>
                 <Button variant="outline" size="sm" onClick={() => fetchConditions(coords.lat, coords.lon)}>Try Again</Button>
@@ -304,7 +304,7 @@ export default function RiverConditions() {
           {data && !error && (
             <>
               {/* Nearest station card */}
-              <Card>
+              <Card className="border-primary/20">
                 <CardContent className="p-3 space-y-3">
                   <div className="space-y-1">
                     <div className="flex items-center gap-1.5">
@@ -350,7 +350,7 @@ export default function RiverConditions() {
               </Card>
 
               {/* Hourly chart + historical overlay */}
-              <Card>
+              <Card className="border-primary/20">
                 <CardHeader className="pt-3 pb-2 px-3">
                   <CardTitle className="text-base">Water Level (Last 24 Hours)</CardTitle>
                 </CardHeader>
@@ -369,7 +369,7 @@ export default function RiverConditions() {
               </Card>
 
               {/* Notes */}
-              <Card>
+              <Card className="border-primary/20">
                 <CardHeader className="pt-3 pb-2 px-3">
                   <CardTitle className="text-base flex items-center gap-1.5">
                     Notes for this location
@@ -411,7 +411,7 @@ export default function RiverConditions() {
 
               {/* Nearby stations */}
               {data.nearbyStations?.length > 0 && (
-                <Card>
+                <Card className="border-primary/20">
                   <CardHeader className="pt-3 pb-2 px-3">
                     <CardTitle className="text-base">Nearby Stations</CardTitle>
                   </CardHeader>

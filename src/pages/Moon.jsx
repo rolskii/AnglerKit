@@ -439,7 +439,7 @@ export default function Moon() {
         </h1>
         </div>
         {/* Day Rating Card */}
-        <Card>
+        <Card className="border-primary/20">
           <CardContent className="pt-3 pb-3">
             <div className="flex items-center gap-3">
               <div className="flex-1">
@@ -526,7 +526,7 @@ export default function Moon() {
           </CardContent>
         </Card>
         {/* Activity Chart */}
-        <Card>
+        <Card className="border-primary/20">
           <CardHeader className="pt-3 pb-0">
             <CardTitle className="text-base">Hourly Fish Activity</CardTitle>
           </CardHeader>
@@ -642,7 +642,7 @@ export default function Moon() {
           </CardContent>
         </Card>
         {/* Sun & Moon Footer */}
-        <Card>
+        <Card className="border-primary/20">
           <CardContent className="pt-3 pb-3">
             <SunMoonFooter
               sunrise={sunData?.sunrise}
@@ -654,7 +654,7 @@ export default function Moon() {
           </CardContent>
         </Card>
         {/* Fishing Tips */}
-        <Card className="bg-secondary/30 border-0 shadow-none">
+        <Card className="bg-secondary/30 border-primary/20 shadow-none">
           <CardHeader className="pt-0 pb-2">
             <CardTitle className="text-base">Fishing Tips for {moonData.phase}</CardTitle>
           </CardHeader>

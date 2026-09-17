@@ -82,7 +82,7 @@ export default function HourlyConditionsCard({ hourly, selectedDate, daily, temp
   };
 
   return (
-    <Card>
+    <Card className="border-primary/20">
       <CardHeader className="pt-3 pb-2 flex-row items-center justify-between space-y-0">
         <CardTitle className="text-base">Hourly Conditions</CardTitle>
         <CardDescription className="text-right">{formatDate(visibleDate)}</CardDescription>
