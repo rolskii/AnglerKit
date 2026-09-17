@@ -10,7 +10,7 @@
     --card-foreground: 168 35% 15%;
     --popover: 0 0% 100%;
     --popover-foreground: 168 35% 15%;
-    --primary: 166 72% 29%;
+    --primary: 0 0% 11%;
     --primary-foreground: 0 0% 100%;
     --secondary: 168 20% 90%;
     --secondary-foreground: 168 35% 20%;
@@ -22,7 +22,7 @@
     --destructive-foreground: 0 0% 100%;
     --border: 168 18% 88%;
     --input: 168 18% 88%;
-    --ring: 166 72% 29%;
+    --ring: 0 0% 11%;
     --chart-1: 166 72% 29%;
     --chart-2: 166 70% 45%;
     --chart-3: 160 65% 40%;
@@ -57,12 +57,12 @@
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     --sidebar-background: 168 20% 93%;
     --sidebar-foreground: 168 35% 15%;
-    --sidebar-primary: 166 72% 29%;
+    --sidebar-primary: 0 0% 11%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 166 65% 38%;
     --sidebar-accent-foreground: 168 35% 15%;
     --sidebar-border: 168 20% 85%;
-    --sidebar-ring: 166 72% 29%;
+    --sidebar-ring: 0 0% 11%;
   }
 
   .dark {
