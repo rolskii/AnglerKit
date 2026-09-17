@@ -294,14 +294,16 @@ export default function Home() {
     <PullToRefresh onRefresh={refreshData}>
     <div className="space-y-3 md:space-y-4 -mt-4 md:-mt-8">
       {/* Hero */}
-      <div className="space-y-0.5 px-1">
+      <div className="px-1">
         <div className="flex items-start justify-between gap-2">
-          <h1 className="text-2xl md:text-[34px] font-heading font-extrabold tracking-tight leading-none">Heron</h1>
+          <div>
+            <h1 className="text-2xl md:text-[34px] font-heading font-extrabold tracking-tight leading-none">Heron</h1>
+            <p className="-mt-1.5 text-sm md:text-[17px] leading-none text-muted-foreground">
+              Your Smart Fishing Companion
+            </p>
+          </div>
           <RadioAccessButton active={radio.current && radio.playing} onClick={() => setRadioOpen(true)} className="mt-1" />
         </div>
-        <p className="-mt-1 text-sm md:text-[17px] leading-none text-muted-foreground">
-          Your Smart Fishing Companion
-        </p>
       </div>
       {/* Status bar */}
       {moonPhase && (
