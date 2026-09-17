@@ -149,7 +149,7 @@ export default function FeaturedImage() {
 
   if (loading) {
     return (
-      <Card className="rounded-2xl border-0 shadow-sm overflow-hidden">
+      <Card className="rounded-2xl border-primary/20 shadow-sm overflow-hidden">
         <div className="h-48 md:h-64 bg-muted animate-pulse" />
       </Card>
     );
@@ -159,7 +159,7 @@ export default function FeaturedImage() {
     if (hasAnyImages) {
       // Photos exist but none are starred yet — prompt the user to star some.
       return (
-        <Card className="rounded-2xl border-0 shadow-sm overflow-hidden">
+        <Card className="rounded-2xl border-primary/20 shadow-sm overflow-hidden">
           <div className="aspect-square flex flex-col items-center justify-center gap-3 bg-muted/40 text-center px-8">
             <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
               <Star className="w-7 h-7 text-primary" strokeWidth={1.75} />
@@ -181,7 +181,7 @@ export default function FeaturedImage() {
           onClick={() => window.dispatchEvent(new Event("open-scan-gear"))}
           className="block w-full text-left"
         >
-          <Card className="rounded-2xl border-0 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200 cursor-pointer">
+          <Card className="rounded-2xl border-primary/20 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200 cursor-pointer">
             <div className="relative aspect-square flex items-end justify-center overflow-hidden">
               <img
                 src={gearEmptyHero}
@@ -220,7 +220,7 @@ export default function FeaturedImage() {
   return (
     <div className="space-y-3">
       <button type="button" onClick={() => loadFeatured(true)} className="block w-full text-left">
-        <Card className="rounded-2xl border-0 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200 cursor-pointer bg-card">
+        <Card className="rounded-2xl border-primary/20 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200 cursor-pointer bg-card">
           <div className="relative aspect-square bg-muted">
             <img
               ref={imgRef}

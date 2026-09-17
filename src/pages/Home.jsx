@@ -307,7 +307,7 @@ export default function Home() {
       </div>
       {/* Status bar */}
       {moonPhase && (
-        <div className="px-4 pt-3 pb-0.5 rounded-2xl bg-card shadow-sm space-y-3">
+        <div className="px-4 pt-3 pb-0.5 rounded-2xl bg-card border border-primary/20 shadow-sm space-y-3">
           <div className="flex items-start justify-between gap-2">
             <div className="flex flex-col gap-1">
               <p className="text-sm font-bold text-foreground">Fish Bite Rating:<span className={`ml-4 ${moonPhase.fishingRating >= 5 ? "text-green-600" : moonPhase.fishingRating <= 3 ? "text-yellow-600" : "text-primary"}`}>{Math.round((moonPhase.fishingRating / 7) * 100)}%</span><span className={`ml-2 text-sm font-bold ${moonPhase.fishingRating >= 5 ? "text-green-600" : moonPhase.fishingRating <= 3 ? "text-yellow-600" : "text-primary"}`}>{moonPhase.fishingRating <= 2 ? "Bad" : moonPhase.fishingRating === 3 ? "Fair" : moonPhase.fishingRating === 4 ? "OK" : moonPhase.fishingRating === 5 ? "Good" : moonPhase.fishingRating === 6 ? "Very Good" : "Excellent"}</span></p>
@@ -435,7 +435,7 @@ export default function Home() {
                   onClick={toggleGear}
                   className="group block w-full h-full text-left"
                 >
-                  <Card className="relative p-1.5 md:p-5 h-full rounded-2xl border-0 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer bg-card">
+                  <Card className="relative p-1.5 md:p-5 h-full rounded-2xl border-primary/20 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer bg-card">
                     {cardInner}
                   </Card>
                 </button>
@@ -475,7 +475,7 @@ export default function Home() {
                   onClick={toggleConditions}
                   className="group block w-full h-full text-left"
                 >
-                  <Card className="relative p-1.5 md:p-5 h-full rounded-2xl border-0 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer bg-card">
+                  <Card className="relative p-1.5 md:p-5 h-full rounded-2xl border-primary/20 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer bg-card">
                     {cardInner}
                   </Card>
                 </button>
@@ -484,7 +484,7 @@ export default function Home() {
           }
           return (
             <Link key={item.key} to={item.to} className="group block h-full">
-              <Card className="relative p-1.5 md:p-5 h-full rounded-2xl border-0 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer bg-card">
+              <Card className="relative p-1.5 md:p-5 h-full rounded-2xl border-primary/20 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer bg-card">
                 {cardInner}
               </Card>
             </Link>

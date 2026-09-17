@@ -9,7 +9,7 @@ export default function GearThumbnail({ item, title, subtitle, details = [], onC
   return (
     <div
       onClick={onClick}
-      className="cursor-pointer rounded-lg overflow-hidden border border-border bg-card hover:shadow-md transition-shadow"
+      className="cursor-pointer rounded-lg overflow-hidden border border-primary/20 bg-card hover:shadow-md transition-shadow"
     >
       <div className="aspect-square bg-muted relative">
         {primaryImage ? (

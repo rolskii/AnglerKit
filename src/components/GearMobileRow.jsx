@@ -14,7 +14,7 @@ export default function GearMobileRow({ title, subtitle, right, condition, onCli
   return (
     <div
       onClick={onClick}
-      className={`flex items-center gap-3 rounded-lg border border-border px-3 py-2.5 cursor-pointer hover:bg-accent/50 transition-colors ${highlight ? "bg-primary/10 border-l-4 border-l-primary" : ""}`}
+      className={`flex items-center gap-3 rounded-lg border border-primary/20 px-3 py-2.5 cursor-pointer hover:bg-accent/50 transition-colors ${highlight ? "bg-primary/10 border-l-4 border-l-primary" : ""}`}
     >
       <div className="min-w-0 flex-1">
         <p className="font-medium text-sm truncate">{title}</p>

@@ -13,7 +13,7 @@ export default function GearMobileCard({ fields, onClick, highlight = false }) {
   return (
     <div
       onClick={onClick}
-      className={`rounded-lg border border-border p-3 cursor-pointer hover:bg-accent/50 transition-colors ${highlight ? "bg-primary/10 border-l-4 border-l-primary" : ""}`}
+      className={`rounded-lg border border-primary/20 p-3 cursor-pointer hover:bg-accent/50 transition-colors ${highlight ? "bg-primary/10 border-l-4 border-l-primary" : ""}`}
     >
       <div className="space-y-1">
         {fields.map((f, i) => (

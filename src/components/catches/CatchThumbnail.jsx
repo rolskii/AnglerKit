@@ -17,7 +17,7 @@ export default function CatchThumbnail({ catchItem }) {
   return (
     <div
       onClick={() => navigate(`/catches/${catchItem.id}`)}
-      className="cursor-pointer rounded-lg overflow-hidden border border-border bg-card hover:shadow-md transition-shadow"
+      className="cursor-pointer rounded-lg overflow-hidden border border-primary/20 bg-card hover:shadow-md transition-shadow"
     >
       <div className="aspect-square bg-muted relative">
         {primaryImage ? (
