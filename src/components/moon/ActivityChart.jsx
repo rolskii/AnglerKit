@@ -104,7 +104,7 @@ const DayGraph = ({ day }) => {
               <div
                 key={peakIdx}
                 className="absolute"
-                style={{ left: `${px}%`, top: `${py}%`, transform: "translate(-50%, calc(-100% + 2px))" }}
+                style={{ left: `${px}%`, top: `${py}%`, transform: "translate(-50%, calc(-100% + 2px))", mixBlendMode: "multiply" }}
               >
                 <FishIcon className="w-6 h-6 text-primary" />
               </div>
