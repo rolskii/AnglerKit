@@ -5,7 +5,7 @@ export default function About() {
     <div className="space-y-8 max-w-3xl">
       <div>
         <h1 className="font-heading text-2xl font-bold">About Heron</h1>
-        <p className="text-muted-foreground text-sm">An Indispensable Fishing Toolbox</p>
+        <p className="text-muted-foreground text-sm">Your Smart Fishing Companion</p>
       </div>
 
       <div className="prose prose-sm max-w-none text-foreground/90 space-y-4">

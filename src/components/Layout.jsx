@@ -129,7 +129,10 @@ export default function Layout() {
       <aside className="hidden md:flex fixed inset-y-0 left-0 w-64 flex-col border-r border-border/60 bg-sidebar/80 backdrop-blur-xl p-4">
         <Link to="/" className="flex items-center gap-3 px-2 py-3 mb-5">
            <AppLogo className="w-10 h-10" />
-          <p className="font-heading font-semibold leading-tight tracking-tight">{appName}</p>
+          <div className="leading-tight">
+            <p className="font-heading font-semibold tracking-tight">{appName}</p>
+            <p className="text-[11px] text-muted-foreground">Your Smart Fishing Companion</p>
+          </div>
         </Link>
         <Button
           className="w-full justify-start gap-3 rounded-xl mb-3"
@@ -159,7 +162,10 @@ export default function Layout() {
         ) : (
           <Link to="/" className="flex items-center gap-2.5">
              <AppLogo className="w-9 h-9" />
-            <span className="font-heading font-semibold tracking-tight">{appName}</span>
+            <span className="leading-tight">
+              <span className="block font-heading font-semibold tracking-tight">{appName}</span>
+              <span className="block text-[10px] text-muted-foreground">Your Smart Fishing Companion</span>
+            </span>
           </Link>
         )}
         <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setOpen(!open)}>
