@@ -12,6 +12,12 @@ export default function About() {
         <p>
           Heron has grown from a gear tracker into an indispensable fishing toolbox - pairing detailed equipment management with real-time conditions intelligence, so you always know what's in your kit and what the water and sky are doing before you head out.
         </p>
+        <div className="rounded-lg border-0 bg-primary/10 p-4 space-y-2">
+          <h3 className="font-heading font-semibold">Why "Heron"?</h3>
+          <p className="text-sm text-muted-foreground">
+            This app is named after the Green Heron - one of the few bird species known to manufacture and use bait to catch fish. Dropping insects, feathers or even bread crumbs on the water's surface to lure prey within striking range, it fishes with a cleverness and patience that's rare in the animal kingdom. That same blend of smarts and stillness inspired this app: a companion that helps you read the water, pick the right gear, and wait for the perfect moment.
+          </p>
+        </div>
         <p>
           Track moon phases and bite windows, check live weather, and follow real-time river levels and historical trends for your favorite waters. Alongside that, manage detailed inventories of every rod, reel, line and lure - condition, details and values - pair gear for a trip, and log your catches with photos. Everything is backed up securely, with full data export whenever you need it. Built with Apple-inspired design for an intuitive, native feel on every device.
         </p>
