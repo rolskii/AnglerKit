@@ -1,49 +1,67 @@
-const STARRED_KEY = "starredPhotos";
+import { base44 } from "@/api/base44Client";
 
-let migrated = false;
+const LEGACY_KEY = "starredPhotos";
+const MIGRATED_KEY = "starredPhotosMigrated";
 
-// One-time migration: the old system stored a single "featured" photo —
-// carry it over so it becomes the first starred photo.
-function migrateLegacy() {
-  if (migrated) return;
-  migrated = true;
+// One-time migration: photos starred in this browser were previously kept in
+// local storage (which is lost on device/browser/address changes). Copy them
+// into the account database once, then stop using local storage.
+async function migrateLegacy() {
   try {
-    const legacy = JSON.parse(localStorage.getItem("featuredImageUser") || "null");
-    if (legacy && legacy.image_url) {
-      const list = getStarredPhotos();
-      if (!list.some((p) => p.image_url === legacy.image_url)) {
-        localStorage.setItem(STARRED_KEY, JSON.stringify([...list, legacy]));
-      }
-      localStorage.removeItem("featuredImageUser");
-      localStorage.removeItem("featuredImageDaily");
+    if (localStorage.getItem(MIGRATED_KEY)) return;
+    const legacy = JSON.parse(localStorage.getItem(LEGACY_KEY) || "[]");
+    if (Array.isArray(legacy) && legacy.length > 0) {
+      const existing = await base44.entities.StarredPhoto.list();
+      const fresh = legacy
+        .filter((p) => p && p.image_url && !existing.some((e) => e.image_url === p.image_url))
+        .map((p) => ({
+          image_url: p.image_url,
+          label: p.label || "",
+          subtitle: p.subtitle || "",
+          link: p.link || "",
+        }));
+      if (fresh.length > 0) await base44.entities.StarredPhoto.bulkCreate(fresh);
     }
+    localStorage.setItem(MIGRATED_KEY, "1");
+    localStorage.removeItem(LEGACY_KEY);
   } catch {}
 }
 
-export function getStarredPhotos() {
-  migrateLegacy();
+// Starred photos live in the database, tied to the signed-in account.
+export async function getStarredPhotos() {
   try {
-    const stored = JSON.parse(localStorage.getItem(STARRED_KEY));
-    if (!Array.isArray(stored)) return [];
-    return stored.filter((p) => p && p.image_url);
+    await migrateLegacy();
+    const records = await base44.entities.StarredPhoto.list("-created_date", 500);
+    return records
+      .filter((p) => p.image_url)
+      .map(({ image_url, label, subtitle, link }) => ({ image_url, label, subtitle, link }));
   } catch {
     return [];
   }
 }
 
-export function isStarredPhoto(url) {
-  return getStarredPhotos().some((p) => p.image_url === url);
+export async function isStarredPhoto(url) {
+  const list = await getStarredPhotos();
+  return list.some((p) => p.image_url === url);
 }
 
 // Adds the photo to the starred group if it isn't starred yet, removes it if
 // it is. Returns true when the photo is starred after the call.
-export function toggleStarredPhoto(imageData) {
+export async function toggleStarredPhoto(imageData) {
   if (!imageData || !imageData.image_url) return false;
-  const list = getStarredPhotos();
-  const idx = list.findIndex((p) => p.image_url === imageData.image_url);
-  const starred = idx < 0;
-  const updated = starred ? [...list, imageData] : list.filter((_, i) => i !== idx);
-  localStorage.setItem(STARRED_KEY, JSON.stringify(updated));
+  await migrateLegacy();
+  const existing = await base44.entities.StarredPhoto.filter({ image_url: imageData.image_url });
+  const starred = existing.length === 0;
+  if (starred) {
+    await base44.entities.StarredPhoto.create({
+      image_url: imageData.image_url,
+      label: imageData.label || "",
+      subtitle: imageData.subtitle || "",
+      link: imageData.link || "",
+    });
+  } else {
+    for (const rec of existing) await base44.entities.StarredPhoto.delete(rec.id);
+  }
   window.dispatchEvent(new Event("featured-image-changed"));
   return starred;
 }

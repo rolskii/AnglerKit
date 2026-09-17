@@ -106,7 +106,7 @@ export default function FeaturedImage() {
   const loadFeatured = async (forceNew = false) => {
     setLoading(true);
     try {
-      const starred = getStarredPhotos();
+      const starred = await getStarredPhotos();
       if (starred.length === 0) {
         // No starred photos — check whether any photos exist at all so the
         // card can tell "star something" apart from "add your first gear".

@@ -1,0 +1,37 @@
+{
+  "name": "StarredPhoto",
+  "type": "object",
+  "properties": {
+    "image_url": {
+      "type": "string",
+      "description": "Photo marked as starred by the user"
+    },
+    "label": {
+      "type": "string",
+      "description": "Display label for the featured photo"
+    },
+    "subtitle": {
+      "type": "string",
+      "description": "Subtitle shown on the featured photo"
+    },
+    "link": {
+      "type": "string",
+      "description": "App route the photo links to"
+    }
+  },
+  "required": [
+    "image_url"
+  ],
+  "rls": {
+    "create": true,
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

@@ -16,20 +16,34 @@ export default function ImageGallery({ images = [], featuredLabel, featuredSubti
   const [starredUrls, setStarredUrls] = useState([]);
   const [lightbox, setLightbox] = useState(false);
   useEffect(() => {
-    const update = () => setStarredUrls(getStarredPhotos().map((p) => p.image_url));
+    let cancelled = false;
+    const update = async () => {
+      const list = await getStarredPhotos();
+      if (!cancelled) setStarredUrls(list.map((p) => p.image_url));
+    };
     update();
     window.addEventListener("featured-image-changed", update);
-    return () => window.removeEventListener("featured-image-changed", update);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("featured-image-changed", update);
+    };
   }, []);
   if (!images || images.length === 0) return null;
 
-  const handleToggleStar = (url) => {
-    toggleStarredPhoto({
-      image_url: url,
-      label: featuredLabel || "Gear",
-      subtitle: featuredSubtitle || "",
-      link: featuredLink || "",
-    });
+  const handleToggleStar = async (url) => {
+    // Optimistic toggle — reverts if the save fails.
+    const wasStarred = starredUrls.includes(url);
+    setStarredUrls(wasStarred ? starredUrls.filter((u) => u !== url) : [...starredUrls, url]);
+    try {
+      await toggleStarredPhoto({
+        image_url: url,
+        label: featuredLabel || "Gear",
+        subtitle: featuredSubtitle || "",
+        link: featuredLink || "",
+      });
+    } catch {
+      setStarredUrls(wasStarred ? [...starredUrls, url] : starredUrls.filter((u) => u !== url));
+    }
   };
 
   const isStarred = (url) => starredUrls.includes(url);
