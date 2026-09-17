@@ -5,12 +5,12 @@
 @layer base {
   :root {
     --background: 210 14% 93%;
-    --foreground: 0 0% 11%;
+    --foreground: 215 45% 22%;
     --card: 210 14% 85%;
-    --card-foreground: 0 0% 11%;
+    --card-foreground: 215 45% 22%;
     --popover: 0 0% 100%;
     --popover-foreground: 215 35% 15%;
-    --primary: 0 0% 11%;
+    --primary: 221 83% 45%;
     --primary-foreground: 0 0% 100%;
     --secondary: 210 20% 90%;
     --secondary-foreground: 215 35% 20%;
@@ -22,7 +22,7 @@
     --destructive-foreground: 0 0% 100%;
     --border: 210 18% 88%;
     --input: 210 18% 88%;
-    --ring: 0 0% 11%;
+    --ring: 221 83% 45%;
     --chart-1: 221 83% 45%;
     --chart-2: 214 90% 52%;
     --chart-3: 199 89% 48%;
@@ -56,13 +56,13 @@
     --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     --sidebar-background: 210 20% 93%;
-    --sidebar-foreground: 215 35% 15%;
-    --sidebar-primary: 0 0% 11%;
+    --sidebar-foreground: 215 45% 22%;
+    --sidebar-primary: 221 83% 40%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 221 70% 40%;
     --sidebar-accent-foreground: 215 35% 15%;
     --sidebar-border: 210 20% 85%;
-    --sidebar-ring: 0 0% 11%;
+    --sidebar-ring: 221 83% 40%;
   }
 
   .dark {
