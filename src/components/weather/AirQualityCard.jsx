@@ -39,14 +39,14 @@ export default function AirQualityCard({ airQuality }) {
       {/* Header with current value + risk */}
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs text-muted-foreground">Air Quality Health Index</p>
+          <p className="text-xs text-foreground">Air Quality Health Index</p>
           <p className="text-2xl font-bold leading-tight" style={{ color: currentColor }}>
             {value % 1 === 0 ? value.toFixed(0) : value.toFixed(1)}
           </p>
         </div>
         <div className="text-right">
           <p className="text-sm font-semibold leading-tight">{risk.label}</p>
-          <p className="text-xs text-muted-foreground leading-tight">({risk.range})</p>
+          <p className="text-xs text-foreground leading-tight">({risk.range})</p>
         </div>
       </div>
 
@@ -85,7 +85,7 @@ export default function AirQualityCard({ airQuality }) {
       </div>
 
       {/* Risk category labels under scale */}
-      <div className="flex text-[10px] font-medium text-muted-foreground">
+      <div className="flex text-[10px] font-medium text-foreground">
         <span className="flex-[3] text-center">Low risk (1 - 3)</span>
         <span className="flex-[3] text-center">Moderate risk (4 - 6)</span>
         <span className="flex-[4] text-center">High risk (7 - 10)</span>

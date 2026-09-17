@@ -324,7 +324,7 @@ export default function Weather() {
       <div className="min-h-screen bg-background p-4 pb-20 flex items-center justify-center">
         <Card className="max-w-md">
           <CardContent className="pt-6 text-center">
-            <p className="text-sm text-muted-foreground mb-4">{error}</p>
+            <p className="text-sm text-foreground mb-4">{error}</p>
             <button
               onClick={() => window.location.reload()}
               className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity text-sm font-medium"
@@ -391,7 +391,7 @@ export default function Weather() {
                           <ExternalLink className="w-3.5 h-3.5 ml-1 mb-1 text-primary/60 opacity-0 group-hover:opacity-100 transition-opacity" />
                         </span>
                       </button>
-                      <p className="text-sm font-medium text-muted-foreground mt-0.5">{getConditionText(current.condition, current.weather_code)}{current.apparent_temperature != null && Math.round(current.apparent_temperature) !== Math.round(current.temperature_2m) ? ` · Feels ${formatTemp(current.apparent_temperature, tempUnit)}°` : ''}</p>
+                      <p className="text-sm font-medium text-foreground mt-0.5">{getConditionText(current.condition, current.weather_code)}{current.apparent_temperature != null && Math.round(current.apparent_temperature) !== Math.round(current.temperature_2m) ? ` · Feels ${formatTemp(current.apparent_temperature, tempUnit)}°` : ''}</p>
                     </div>
                    <WeatherGlyph code={current.weather_code} isNight={isNight()} darkOutline animated className="w-16 h-20 shrink-0" />
                  </div>
@@ -420,7 +420,7 @@ export default function Weather() {
                   </Popover>
                   <button
                     onClick={() => setMapPickerOpen(true)}
-                    className="text-xs text-muted-foreground flex items-center gap-1 hover:text-primary transition-colors"
+                    className="text-xs text-foreground flex items-center gap-1 hover:text-primary transition-colors"
                   >
                     <MapPin className="w-3 h-3" />
                     <span className="max-w-[120px] truncate">{location}</span>
@@ -450,14 +450,14 @@ export default function Weather() {
                     {sunriseTime && (
                       <div className="flex items-center gap-1.5">
                         <Sunrise className="w-3.5 h-3.5 text-amber-500" />
-                        <span className="text-xs text-muted-foreground">Sunrise</span>
+                        <span className="text-xs text-foreground">Sunrise</span>
                         <span className="text-xs font-medium">{formatTime(sunriseTime)}</span>
                       </div>
                     )}
                     {sunsetTime && (
                       <div className="flex items-center gap-1.5">
                         <Sunset className="w-3.5 h-3.5 text-orange-500" />
-                        <span className="text-xs text-muted-foreground">Sunset</span>
+                        <span className="text-xs text-foreground">Sunset</span>
                         <span className="text-xs font-medium">{formatTime(sunsetTime)}</span>
                       </div>
                     )}
@@ -478,63 +478,63 @@ export default function Weather() {
                   {(() => { const Icon = getConditionIcon(current.weather_code, isNight()); return <Icon className="w-7 h-7 shrink-0 text-primary" />; })()}
                   <div className="min-w-0">
                     <p className="text-sm font-semibold leading-tight truncate">{getConditionText(current.condition, current.weather_code)}</p>
-                    <span className="text-xs text-muted-foreground leading-tight">Condition</span>
+                    <span className="text-xs text-foreground leading-tight">Condition</span>
                   </div>
                 </div>
                 <div className="bg-secondary rounded-xl flex items-center gap-2 p-2 overflow-hidden">
                   <Gauge className="w-7 h-7 shrink-0 text-primary" />
                   <div className="min-w-0">
                     <p className="text-sm font-semibold leading-tight">{formatPressure(current.pressure, tempUnit)}</p>
-                    <span className="text-xs text-muted-foreground leading-tight">Pressure</span>
+                    <span className="text-xs text-foreground leading-tight">Pressure</span>
                   </div>
                 </div>
                 <div className="bg-secondary rounded-xl flex items-center gap-2 p-2 overflow-hidden">
                   {current.pressure_tendency === 'rising' ? <TrendingUp className="w-7 h-7 shrink-0 text-primary" /> : current.pressure_tendency === 'falling' ? <TrendingDown className="w-7 h-7 shrink-0 text-primary" /> : <Minus className="w-7 h-7 shrink-0 text-primary" />}
                   <div className="min-w-0">
                     <p className="text-sm font-semibold leading-tight capitalize">{current.pressure_tendency || '—'}</p>
-                    <span className="text-xs text-muted-foreground leading-tight">Tendency</span>
+                    <span className="text-xs text-foreground leading-tight">Tendency</span>
                   </div>
                 </div>
                 <div className="bg-secondary rounded-xl flex items-center gap-2 p-2 overflow-hidden">
                   <Thermometer className="w-7 h-7 shrink-0 text-primary" />
                   <div className="min-w-0">
                     <p className="text-sm font-semibold leading-tight">{formatTemp(current.temperature_2m, tempUnit)}°{tempUnit === 'fahrenheit' ? 'F' : 'C'}</p>
-                    <span className="text-xs text-muted-foreground leading-tight">Temp.</span>
+                    <span className="text-xs text-foreground leading-tight">Temp.</span>
                   </div>
                 </div>
                 <div className="bg-secondary rounded-xl flex items-center gap-2 p-2 overflow-hidden">
                   <Thermometer className="w-7 h-7 shrink-0 text-primary" />
                   <div className="min-w-0">
                     <p className="text-sm font-semibold leading-tight">{formatTemp(current.dewpoint, tempUnit)}°{tempUnit === 'fahrenheit' ? 'F' : 'C'}</p>
-                    <span className="text-xs text-muted-foreground leading-tight">Dew Point</span>
+                    <span className="text-xs text-foreground leading-tight">Dew Point</span>
                   </div>
                 </div>
                 <div className="bg-secondary rounded-xl flex items-center gap-2 p-2 overflow-hidden">
                   <Droplets className="w-7 h-7 shrink-0 text-primary" />
                   <div className="min-w-0">
                     <p className="text-sm font-semibold leading-tight">{current.relative_humidity_2m}%</p>
-                    <span className="text-xs text-muted-foreground leading-tight">Humidity</span>
+                    <span className="text-xs text-foreground leading-tight">Humidity</span>
                   </div>
                 </div>
                 <div className="bg-secondary rounded-xl flex items-center gap-2 p-2 overflow-hidden">
                   <Droplets className="w-7 h-7 shrink-0 text-primary" />
                   <div className="min-w-0">
                     <p className="text-sm font-semibold leading-tight">{displayHumidex != null ? displayHumidex : '—'}</p>
-                    <span className="text-xs text-muted-foreground leading-tight">Humidex</span>
+                    <span className="text-xs text-foreground leading-tight">Humidex</span>
                   </div>
                 </div>
                 <div className="bg-secondary rounded-xl flex items-center gap-2 p-2 overflow-hidden">
                   <Eye className="w-7 h-7 shrink-0 text-primary" />
                   <div className="min-w-0">
                     <p className="text-sm font-semibold leading-tight">{formatVisibility(current.visibility, tempUnit)}</p>
-                    <span className="text-xs text-muted-foreground leading-tight">Visibility</span>
+                    <span className="text-xs text-foreground leading-tight">Visibility</span>
                   </div>
                 </div>
                 <div className="bg-secondary rounded-xl flex items-center gap-2 p-2 overflow-hidden">
                   <Wind className="w-7 h-7 shrink-0 text-primary" />
                   <div className="min-w-0">
                     <p className="text-sm font-semibold leading-tight">{formatWind(current.wind_speed_10m, tempUnit)}</p>
-                    <span className="text-xs text-muted-foreground leading-tight">{current.wind_direction || 'Wind'}</span>
+                    <span className="text-xs text-foreground leading-tight">{current.wind_direction || 'Wind'}</span>
                   </div>
                 </div>
               </div>
@@ -569,7 +569,7 @@ export default function Weather() {
                       <p className="text-sm font-medium text-foreground">
                         {new Date(date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short' })}
                       </p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-foreground">
                         {new Date(date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       </p>
                     </div>
@@ -581,7 +581,7 @@ export default function Weather() {
                       </p>
                     )}
                     <div className="flex items-center gap-2 ml-auto">
-                      <span className="text-sm text-muted-foreground">{formatTemp(daily.temperature_2m_min[idx], tempUnit)}°</span>
+                      <span className="text-sm text-foreground">{formatTemp(daily.temperature_2m_min[idx], tempUnit)}°</span>
                       <div className="w-16 h-1.5 rounded-full bg-muted overflow-hidden">
                         <div
                           className="h-full rounded-full bg-primary"
@@ -598,7 +598,7 @@ export default function Weather() {
         </Card>
       </div>
         {/* Data attribution */}
-        <p className="text-[11px] text-muted-foreground text-center px-4">
+        <p className="text-[11px] text-foreground text-center px-4">
           Canadian weather data is provided by <a href="https://weather.gc.ca/" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">Environment Canada</a> and Apple WeatherKit. U.S. and international weather data is provided by Apple WeatherKit.
         </p>
         </div>

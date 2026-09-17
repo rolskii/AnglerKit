@@ -73,13 +73,13 @@ export default function DayForecastDialog({ open, onOpenChange, dayData, hourly,
               <WeatherGlyph code={daily.weather_code[idx]} className="w-20 h-24 shrink-0" />
               <p className="text-6xl font-bold text-primary leading-none">{formatTemp(daily.temperature_2m_max[idx], tempUnit)}°</p>
               <div className="flex flex-col justify-center">
-                <p className="text-muted-foreground text-sm leading-tight">{getWeatherDescription(daily.weather_code[idx])}</p>
+                <p className="text-foreground text-sm leading-tight">{getWeatherDescription(daily.weather_code[idx])}</p>
                 {midApparent != null && (
-                  <p className="text-xs text-muted-foreground leading-tight">Feels like {formatTemp(midApparent, tempUnit)}°</p>
+                  <p className="text-xs text-foreground leading-tight">Feels like {formatTemp(midApparent, tempUnit)}°</p>
                 )}
-                <p className="text-xs text-muted-foreground leading-tight">H: {formatTemp(daily.temperature_2m_max[idx], tempUnit)}°  L: {formatTemp(daily.temperature_2m_min[idx], tempUnit)}°</p>
+                <p className="text-xs text-foreground leading-tight">H: {formatTemp(daily.temperature_2m_max[idx], tempUnit)}°  L: {formatTemp(daily.temperature_2m_min[idx], tempUnit)}°</p>
                 {location && (
-                  <p className="text-xs text-muted-foreground leading-tight truncate">{location}</p>
+                  <p className="text-xs text-foreground leading-tight truncate">{location}</p>
                 )}
               </div>
             </div>
@@ -88,28 +88,28 @@ export default function DayForecastDialog({ open, onOpenChange, dayData, hourly,
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2 py-1">
                 <WeatherGlyph code={51} className="w-7 h-8 shrink-0" />
-                <span className="text-sm text-muted-foreground">Humidity</span>
+                <span className="text-sm text-foreground">Humidity</span>
                 <p className="text-base font-semibold">{midHumidity != null ? midHumidity + '%' : '—'}</p>
               </div>
               <div className="flex items-center gap-2 py-1">
                 <WeatherGlyph code={45} className="w-7 h-8 shrink-0" />
-                <span className="text-sm text-muted-foreground">Wind</span>
+                <span className="text-sm text-foreground">Wind</span>
                 <p className="text-base font-semibold">{formatWind(daily.wind_speed_10m_max?.[idx] ?? 0, tempUnit)}</p>
               </div>
               <div className="flex items-center gap-2 py-1">
                 <WeatherGlyph code={63} className="w-7 h-8 shrink-0" />
-                <span className="text-sm text-muted-foreground">Precip</span>
+                <span className="text-sm text-foreground">Precip</span>
                 <p className="text-base font-semibold">{formatPrecip(daily.precipitation_sum?.[idx] ?? 0, tempUnit)}</p>
               </div>
               <div className="flex items-center gap-2 py-1">
                 <WeatherGlyph code={3} className="w-7 h-8 shrink-0" />
-                <span className="text-sm text-muted-foreground">Pressure</span>
+                <span className="text-sm text-foreground">Pressure</span>
                 <p className="text-base font-semibold">{midPressure != null ? formatPressure(midPressure, tempUnit) : '—'}</p>
               </div>
             </div>
 
             {/* Daily Summary */}
-            <p className="text-sm text-muted-foreground leading-relaxed pt-1 break-words w-full min-w-0">{getDailySummary()}</p>
+            <p className="text-sm text-foreground leading-relaxed pt-1 break-words w-full min-w-0">{getDailySummary()}</p>
           </div>
 
           {/* Sun times */}
@@ -129,7 +129,7 @@ export default function DayForecastDialog({ open, onOpenChange, dayData, hourly,
           {/* Hourly breakdown */}
           {dayHours.length > 0 && (
             <div>
-              <p className="text-xs font-semibold text-muted-foreground mb-2">Hourly Breakdown</p>
+              <p className="text-xs font-semibold text-foreground mb-2">Hourly Breakdown</p>
               <div className="overflow-x-auto scrollbar-hide-desktop -mx-1 px-1">
                 <div className="flex gap-2 min-w-max pb-1">
                   {dayHours.map(({ hTime, hIdx }) => {
@@ -151,7 +151,7 @@ export default function DayForecastDialog({ open, onOpenChange, dayData, hourly,
                           />
                         )}
                         <div className="relative z-10 flex flex-col items-center gap-1">
-                          <p className="text-[10px] text-muted-foreground">{hourLabel}</p>
+                          <p className="text-[10px] text-foreground">{hourLabel}</p>
                           <WeatherGlyph code={hourly.weather_code[hIdx]} isNight={isNight} className="w-5 h-6" />
                           <p className="text-xs font-semibold">{formatTemp(hourly.temperature_2m[hIdx], tempUnit)}°</p>
                           {hasRain ? (
@@ -160,7 +160,7 @@ export default function DayForecastDialog({ open, onOpenChange, dayData, hourly,
                               {formatPrecip(precipMm, tempUnit)} {precip}%
                             </p>
                           ) : (
-                            <p className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                            <p className="text-[10px] text-foreground flex items-center gap-0.5">
                               <Droplets className="w-2.5 h-2.5" />
                               0%
                             </p>
