@@ -12,7 +12,7 @@ export default function About() {
         <p>
           Herons are elite stealth predators renowned for their patience, precision, and calculated hunting strategies. The Green Heron specifically is one of the few bird species known to manufacture and use lures to catch fish. Dropping insects, feathers or even bread crumbs on the water's surface to lure prey within striking range, it fishes with a cleverness and patience that's rare in the animal kingdom. That same blend of smarts and stillness inspired this app: a companion that helps you read the water, pick the right gear, and wait for the perfect moment.
         </p>
-        <p>From gear tracking into an indispensable fishing toolbox - pairing detailed equipment management with real-time conditions intelligence, maps complete with saved location pins and route recording, with so you always know what's in your kit and what the water and sky are doing before you head out.
+        <p>From gear tracking into an indispensable fishing toolbox - pairing detailed equipment management with real-time conditions intelligence, and maps complete with saved location pins and route recording, so you always know what's in your kit and what the water and sky are doing before you head out.
 
         </p>
         <p>
