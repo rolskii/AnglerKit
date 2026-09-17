@@ -1,8 +1,8 @@
-// Brook-trout silhouette used for bite-rating icons (Home Fish Bite Rating
+// Fish silhouette used for bite-rating icons (Home Fish Bite Rating
 // and the Moon page's main, weekly, and hourly fish icons). The asset is a
 // solid black fish on a transparent background.
 const FISH_IMG_URL =
-  "https://media.base44.com/images/public/6a3f2458eb55a5d860886e35/4c316a39b_brook-trout.png";
+  "https://media.base44.com/images/public/6a3f2458eb55a5d860886e35/2ee9889c3_whitebass.png";
 
 export default function FishIcon({ className = "", ...props }) {
   return (
