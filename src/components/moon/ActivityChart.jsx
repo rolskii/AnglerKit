@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from "react";
-import FishIcon from "@/components/FishIcon";
+import FishIcon from "@/components/BiteFishIcon";
 
 const TOTAL_HOURS = 19; // 5am to 12am
 

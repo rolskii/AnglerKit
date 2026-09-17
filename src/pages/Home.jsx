@@ -5,7 +5,7 @@ import { ChevronRight, Camera, Moon as MoonIcon, Cloud, Bell, MapPin, ChevronDow
 import WeatherGlyph from "@/components/weather/WeatherGlyph";
 import { ReelIcon as ReelDiscIcon, LinesIcon, RodIcon, LureIcon } from "@/components/GearIcons";
 import { CATEGORY_CHIP } from "@/lib/categoryColors";
-import FishIcon from "@/components/FishIcon";
+import FishIcon from "@/components/BiteFishIcon";
 import MoonPhaseSymbol from "@/components/MoonPhaseSymbol";
 import { base44 } from "@/api/base44Client";
 import PullToRefresh from "@/components/PullToRefresh";

@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import FishIcon from '@/components/FishIcon';
+import FishIcon from '@/components/BiteFishIcon';
 import MoonPhaseSymbol from '@/components/MoonPhaseSymbol';
 
 const calculateMoonPhase = (date) => {
