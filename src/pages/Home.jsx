@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { ChevronRight, Camera, Moon as MoonIcon, Cloud, Bell, MapPin, ChevronDown, Map as MapIcon, Waves, Gauge, Package, Boxes, Sparkles } from "lucide-react";
 import WeatherGlyph from "@/components/weather/WeatherGlyph";
 import { ReelIcon as ReelDiscIcon, LinesIcon, RodIcon, LureIcon } from "@/components/GearIcons";
-import { CATEGORY_CHIP, NEUTRAL_CHIP } from "@/lib/categoryColors";
+import { CATEGORY_CHIP } from "@/lib/categoryColors";
 import FishIcon from "@/components/FishIcon";
 import MoonPhaseSymbol from "@/components/MoonPhaseSymbol";
 import { base44 } from "@/api/base44Client";
@@ -372,7 +372,7 @@ export default function Home() {
           const desc = descriptions[item.key];
           const cardInner = (
             <div className="flex flex-col gap-1 md:gap-3">
-              <div className={`flex h-7 w-7 md:h-11 md:w-11 items-center justify-center rounded-xl flex-shrink-0 ${NEUTRAL_CHIP}`}>
+              <div className="flex h-7 w-7 md:h-11 md:w-11 items-center justify-center rounded-xl flex-shrink-0 text-primary">
                 <Icon className={isGear ? "w-5 md:w-10 h-5 md:h-10" : "w-4 md:w-8 h-4 md:h-8"} strokeWidth={2} />
               </div>
               <div className="space-y-0.5 md:space-y-1">
