@@ -549,7 +549,7 @@ export default function Weather() {
           tempUnit={tempUnit}
         />
         {/* 10-Day Forecast */}
-        <Card>
+        <Card className="bg-primary/10">
           <CardHeader className="pt-3 pb-2 flex-row items-center justify-between space-y-0">
             <CardTitle className="text-base">5-Day Forecast</CardTitle>
           </CardHeader>
