@@ -1896,7 +1896,7 @@ export default function MapView() {
       )}
       {/* Measure mode hint */}
       {measureMode && measurePoints.length === 0 && (
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-[500] px-4 py-2 rounded-full bg-blue-500 text-white text-sm font-medium shadow-lg">
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-[500] px-4 py-2 rounded-full bg-primary text-primary-foreground text-sm font-medium shadow-lg">
           Tap the map to add measurement points
         </div>
       )}

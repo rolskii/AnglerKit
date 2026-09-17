@@ -73,7 +73,7 @@ export default function GeoHubLayersPanel({
             Lake Depth Contours
           </p>
           <div className="flex items-start gap-3 px-2 py-2.5 rounded-xl hover:bg-accent/5">
-            <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-white">
+            <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary text-white">
               <Droplets className="w-4 h-4" />
             </div>
             <div className="flex-1 min-w-0">

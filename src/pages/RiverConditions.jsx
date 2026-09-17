@@ -19,7 +19,7 @@ import { useUnits } from '@/lib/unitsContext';
 function TrendIndicator({ trend }) {
   if (!trend) return null;
   const Icon = trend.direction === 'rising' ? TrendingUp : trend.direction === 'falling' ? TrendingDown : Minus;
-  const tone = trend.direction === 'rising' ? 'text-blue-600' : trend.direction === 'falling' ? 'text-amber-600' : 'text-muted-foreground';
+  const tone = trend.direction === 'rising' ? 'text-teal-600' : trend.direction === 'falling' ? 'text-amber-600' : 'text-muted-foreground';
   return (
     <span className={`inline-flex items-center gap-0.5 text-xs font-medium ${tone}`}>
       <Icon className="w-3.5 h-3.5" />

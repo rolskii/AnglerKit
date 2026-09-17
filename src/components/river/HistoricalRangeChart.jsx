@@ -138,7 +138,7 @@ export default function HistoricalRangeChart({ stationId, stationName, field = '
         <p className="text-xs text-foreground leading-snug">
           {comparison.label}: <span className="font-medium">{formatValue(comparison.oldVal, field)}{unitLabel ? ` ${unitLabel}` : ''}</span>
           {' '}vs now <span className="font-medium">{formatValue(currentValue, field)}{unitLabel ? ` ${unitLabel}` : ''}</span>{' '}
-          <span className={comparison.diff > 0 ? 'text-blue-600' : comparison.diff < 0 ? 'text-amber-600' : 'text-muted-foreground'}>
+          <span className={comparison.diff > 0 ? 'text-teal-600' : comparison.diff < 0 ? 'text-amber-600' : 'text-muted-foreground'}>
             ({comparison.diff > 0 ? '+' : ''}{formatValue(comparison.diff, field)}{unitLabel ? ` ${unitLabel}` : ''})
           </span>
         </p>

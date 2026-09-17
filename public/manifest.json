@@ -3,8 +3,8 @@
   "short_name": "Heron",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "hsl(210, 20%, 90%)",
-  "theme_color": "hsl(210, 70%, 28%)",
+  "background_color": "hsl(168, 20%, 90%)",
+  "theme_color": "hsl(166, 72%, 29%)",
   "icons": [
     {
       "src": "https://media.base44.com/images/public/6a3f2458eb55a5d860886e35/2e922b374_GrHeron.jpeg",

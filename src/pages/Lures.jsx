@@ -22,7 +22,7 @@ import { toast } from "sonner";
 const conditionColor = {
   "New": "bg-emerald-100 text-emerald-700",
   "Like New": "bg-emerald-100 text-emerald-700",
-  "Good": "bg-blue-100 text-blue-700",
+  "Good": "bg-teal-100 text-teal-700",
   "Fair": "bg-amber-100 text-amber-700",
   "Poor": "bg-rose-100 text-rose-700",
 };
