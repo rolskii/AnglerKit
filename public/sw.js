@@ -19,8 +19,8 @@ self.addEventListener('push', (event) => {
 
   const options = {
     body: data.body,
-    icon: 'https://media.base44.com/images/public/6a3f2458eb55a5d860886e35/fa5beb574_Untitled-September172026at143043.PNG',
-    badge: 'https://media.base44.com/images/public/6a3f2458eb55a5d860886e35/fa5beb574_Untitled-September172026at143043.PNG',
+    icon: 'https://media.base44.com/images/public/6a3f2458eb55a5d860886e35/569bf3a60_GrHeronRound.png',
+    badge: 'https://media.base44.com/images/public/6a3f2458eb55a5d860886e35/569bf3a60_GrHeronRound.png',
     vibrate: [300, 150, 300, 150, 300, 150, 400],
     requireInteraction: true,
     tag: 'fishing-alarm',

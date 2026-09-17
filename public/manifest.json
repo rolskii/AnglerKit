@@ -7,14 +7,14 @@
   "theme_color": "hsl(221, 83%, 40%)",
   "icons": [
     {
-      "src": "https://media.base44.com/images/public/6a3f2458eb55a5d860886e35/2e922b374_GrHeron.jpeg",
+      "src": "https://media.base44.com/images/public/6a3f2458eb55a5d860886e35/569bf3a60_GrHeronRound.png",
       "sizes": "192x192",
-      "type": "image/jpeg"
+      "type": "image/png"
     },
     {
-      "src": "https://media.base44.com/images/public/6a3f2458eb55a5d860886e35/2e922b374_GrHeron.jpeg",
+      "src": "https://media.base44.com/images/public/6a3f2458eb55a5d860886e35/569bf3a60_GrHeronRound.png",
       "sizes": "512x512",
-      "type": "image/jpeg"
+      "type": "image/png"
     }
   ]
 }
