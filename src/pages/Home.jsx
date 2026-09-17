@@ -296,10 +296,10 @@ export default function Home() {
       {/* Hero */}
       <div className="space-y-0.5 px-1">
         <div className="flex items-start justify-between gap-2">
-          <h1 className="text-2xl md:text-[34px] font-heading font-extrabold tracking-tight leading-tight">Heron</h1>
+          <h1 className="text-2xl md:text-[34px] font-heading font-extrabold tracking-tight leading-none">Heron</h1>
           <RadioAccessButton active={radio.current && radio.playing} onClick={() => setRadioOpen(true)} className="mt-1" />
         </div>
-        <p className="text-sm md:text-[17px] text-muted-foreground">
+        <p className="-mt-0.5 text-sm md:text-[17px] text-muted-foreground">
           Your Smart Fishing Companion
         </p>
       </div>
