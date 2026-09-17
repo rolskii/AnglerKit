@@ -4,7 +4,7 @@
   "start_url": "/",
   "display": "standalone",
   "background_color": "hsl(210, 20%, 90%)",
-  "theme_color": "hsl(221, 83%, 40%)",
+  "theme_color": "hsl(210, 66%, 29%)",
   "icons": [
     {
       "src": "https://media.base44.com/images/public/6a3f2458eb55a5d860886e35/569bf3a60_GrHeronRound.png",

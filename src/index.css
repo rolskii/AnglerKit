@@ -5,32 +5,32 @@
 @layer base {
   :root {
     --background: 210 14% 93%;
-    --foreground: 215 45% 22%;
+    --foreground: 210 58% 15%;
     --card: 210 14% 85%;
-    --card-foreground: 215 45% 22%;
+    --card-foreground: 210 58% 15%;
     --popover: 0 0% 100%;
-    --popover-foreground: 215 35% 15%;
-    --primary: 221 83% 45%;
+    --popover-foreground: 210 58% 15%;
+    --primary: 210 66% 29%;
     --primary-foreground: 0 0% 100%;
     --secondary: 210 20% 90%;
-    --secondary-foreground: 215 35% 20%;
+    --secondary-foreground: 210 58% 15%;
     --muted: 210 20% 94%;
     --muted-foreground: 210 14% 45%;
-    --accent: 221 83% 45%;
+    --accent: 208 37% 48%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 80% 58%;
     --destructive-foreground: 0 0% 100%;
     --border: 210 18% 88%;
     --input: 210 18% 88%;
-    --ring: 221 83% 45%;
+    --ring: 210 66% 29%;
     --chart-1: 221 83% 45%;
     --chart-2: 214 90% 52%;
     --chart-3: 199 89% 48%;
     --chart-4: 217 91% 60%;
     --chart-5: 228 70% 45%;
     --radius: 1rem;
-    --tint-blue: 221 83% 45%;
-    --tint-blue-bg: 221 80% 95%;
+    --tint-blue: 208 37% 48%;
+    --tint-blue-bg: 208 37% 94%;
     /* One color per gear/condition category — used consistently across the
        mobile nav flyouts, the Home dashboard, and the desktop sidebar. */
     --cat-rods: 175 70% 34%;
@@ -56,13 +56,13 @@
     --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     --sidebar-background: 210 20% 93%;
-    --sidebar-foreground: 215 45% 22%;
-    --sidebar-primary: 221 83% 40%;
+    --sidebar-foreground: 210 58% 15%;
+    --sidebar-primary: 210 66% 29%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 221 70% 40%;
-    --sidebar-accent-foreground: 215 35% 15%;
+    --sidebar-accent: 208 37% 48%;
+    --sidebar-accent-foreground: 210 58% 15%;
     --sidebar-border: 210 20% 85%;
-    --sidebar-ring: 221 83% 40%;
+    --sidebar-ring: 210 66% 29%;
   }
 
   .dark {
