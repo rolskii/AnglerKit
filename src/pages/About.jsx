@@ -15,7 +15,7 @@ export default function About() {
         <p>Heron has grown from a simple gear tracker into an indispensable fishing toolbox — pairing detailed equipment management with real-time conditions intelligence, and maps complete with saved location pins and route recording. You'll always know what's in your kit and what the water and sky are doing before you head out. 
 
         </p>
-        <p>Track moon phases and bite windows, check live weather, and follow real-time river levels and historical trends for your favorite waters. Alongside that, manage detailed inventories of every rod, reel, line, and lure — condition, details, and values — pair gear for a trip, and log your catches with photos. Everything is backed up securely, with full data export whenever you need it. Built with Apple-inspired design for an intuitive, native feel on every device.
+        <p>Track moon phases and bite windows, check live weather, and follow real-time river levels and historical trends for your favorite waters. Alongside that, manage detailed inventories of every rod, reel, line, and lure - condition, details, and values - pair gear for a trip, and log your catches with photos. Everything is backed up securely, with full data export whenever you need it. Built with Apple-inspired design for an intuitive, native feel on every device.
 
         </p>
       </div>
