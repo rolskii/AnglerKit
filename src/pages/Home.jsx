@@ -300,7 +300,7 @@ export default function Home() {
           <RadioAccessButton active={radio.current && radio.playing} onClick={() => setRadioOpen(true)} className="mt-1" />
         </div>
         <p className="text-sm md:text-[17px] text-muted-foreground">
-          Track your fishing gear, predict the bite, check the weather and log every catch — all in one place.
+          Your Smart Fishing Companion
         </p>
       </div>
       {/* Status bar */}
