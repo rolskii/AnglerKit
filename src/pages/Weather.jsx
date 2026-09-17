@@ -373,7 +373,7 @@ export default function Weather() {
           </div>
         </div>
         {/* Current Weather Card */}
-        <Card className="bg-primary/10">
+        <Card>
           <CardContent className="p-3">
             <div className="space-y-2">
               {/* Temperature hero (left) + Date/Location (right, stacked) */}
@@ -549,7 +549,7 @@ export default function Weather() {
           tempUnit={tempUnit}
         />
         {/* 10-Day Forecast */}
-        <Card className="bg-primary/10">
+        <Card>
           <CardHeader className="pt-3 pb-2 flex-row items-center justify-between space-y-0">
             <CardTitle className="text-base">5-Day Forecast</CardTitle>
           </CardHeader>

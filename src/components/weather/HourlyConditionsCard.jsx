@@ -82,7 +82,7 @@ export default function HourlyConditionsCard({ hourly, selectedDate, daily, temp
   };
 
   return (
-    <Card className="bg-primary/10">
+    <Card>
       <CardHeader className="pt-3 pb-2 flex-row items-center justify-between space-y-0">
         <CardTitle className="text-base">Hourly Conditions</CardTitle>
         <CardDescription className="text-right">{formatDate(visibleDate)}</CardDescription>
@@ -149,7 +149,7 @@ export default function HourlyConditionsCard({ hourly, selectedDate, daily, temp
             })}
           </div>
           {/* Right edge fade indicator */}
-          <div className="pointer-events-none absolute right-0 top-0 bottom-1 w-8 bg-gradient-to-l from-background to-transparent" />
+          <div className="pointer-events-none absolute right-0 top-0 bottom-1 w-8 bg-gradient-to-l from-card to-transparent" />
         </div>
       </CardContent>
     </Card>
