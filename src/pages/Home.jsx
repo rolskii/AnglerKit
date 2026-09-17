@@ -313,7 +313,7 @@ export default function Home() {
                 {[1, 2, 3, 4, 5, 6, 7].map((n) => (
                   <FishIcon
                     key={n}
-                    className={`w-5 h-5 text-primary transition-opacity ${n <= moonPhase.fishingRating ? "opacity-100" : "opacity-25"}`}
+                    className={`w-6 h-6 text-primary transition-opacity ${n <= moonPhase.fishingRating ? "opacity-100" : "opacity-25"}`}
                   />
                 ))}
               </div>
