@@ -304,7 +304,7 @@ export default function RiverConditions() {
           {data && !error && (
             <>
               {/* Nearest station card */}
-              <Card className="bg-primary/10">
+              <Card>
                 <CardContent className="p-3 space-y-3">
                   <div className="space-y-1">
                     <div className="flex items-center gap-1.5">
