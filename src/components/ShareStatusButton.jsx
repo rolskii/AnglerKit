@@ -20,7 +20,7 @@ function safeFileName(s) {
     .replace(/[\\/:*?"<>|]/g, "")
     .replace(/\s+/g, " ")
     .trim();
-  return cleaned || "AnglerKit";
+  return cleaned || "Heron";
 }
 
 function esc(s) {
@@ -50,7 +50,7 @@ function buildScreenshotHTML(title, imgDataUrl) {
   <div class="card">
     <img src="${imgDataUrl}" alt="${esc(title)}" />
   </div>
-  <footer>Shared from AnglerKit</footer>
+  <footer>Shared from Heron</footer>
 </body>
 </html>`;
 }

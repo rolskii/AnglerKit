@@ -1,6 +1,6 @@
 {
-  "name": "AnglerKit",
-  "short_name": "AnglerKit",
+  "name": "Heron",
+  "short_name": "Heron",
   "start_url": "/",
   "display": "standalone",
   "background_color": "hsl(210, 20%, 90%)",

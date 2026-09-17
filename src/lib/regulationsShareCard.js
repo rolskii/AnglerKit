@@ -79,7 +79,7 @@ export async function buildRegulationsShareCardHtml(regs, logoDataUrl = '') {
 <body>
   <div class="card">
     <div class="head">
-      <div class="badge">${logoDataUrl ? `<img src="${esc(logoDataUrl)}" alt="AnglerKit" />` : '&#9875;'}</div>
+      <div class="badge">${logoDataUrl ? `<img src="${esc(logoDataUrl)}" alt="Heron" />` : '&#9875;'}</div>
       <div>
         <h1>Fishing Regulations</h1>
         <div class="area">${esc(regs.areaLabel || '')}</div>
@@ -93,7 +93,7 @@ export async function buildRegulationsShareCardHtml(regs, logoDataUrl = '') {
       ${linkItems ? `<div><div class="label">Official sources</div><div class="links">${linkItems}</div></div>` : ''}
     </div>
   </div>
-  <footer>Shared from AnglerKit${regs.source === 'ai' ? ' — AI-generated summary' : ''}. Always verify with the official sources before fishing.</footer>
+  <footer>Shared from Heron${regs.source === 'ai' ? ' — AI-generated summary' : ''}. Always verify with the official sources before fishing.</footer>
 </body>
 </html>`;
 }

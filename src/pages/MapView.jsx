@@ -1488,7 +1488,7 @@ export default function MapView() {
       >
         <Link to="/" className="flex items-center gap-2 pl-1 pr-2 rounded-lg hover:bg-accent/10 transition-colors shrink-0">
           <AppLogo className="w-7 h-7" />
-          <span className="font-heading font-semibold tracking-tight text-sm hidden sm:inline">AnglerKit</span>
+          <span className="font-heading font-semibold tracking-tight text-sm hidden sm:inline">Heron</span>
         </Link>
         <MapSearchBar mapRef={mapRef} mapReady={mapReady} onSelect={(name, lat, lon) => setSharedLocation(name, lat, lon)} />
       </div>

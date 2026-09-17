@@ -227,8 +227,8 @@ export default function ImportExportSection() {
         }));
       }
       const date = new Date().toISOString().slice(0, 10);
-      const payload = { app: "AnglerKit", version: 2, exported_at: new Date().toISOString(), data };
-      downloadFile(`anglerkit-backup-${date}.json`, JSON.stringify(payload, null, 2), "application/json");
+      const payload = { app: "Heron", version: 2, exported_at: new Date().toISOString(), data };
+      downloadFile(`heron-backup-${date}.json`, JSON.stringify(payload, null, 2), "application/json");
       toast.success("Backup downloaded");
     } catch (e) {
       toast.error("Backup failed");
