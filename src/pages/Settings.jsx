@@ -232,7 +232,7 @@ export default function Settings() {
           <Switch checked={labelsEnabled} onCheckedChange={setControlLabelsEnabled} />
         </div>
         <p className="text-sm text-muted-foreground">
-          Show short labels beside map controls for a few seconds when the map opens, to help you learn what each button does.
+          Show short labels beside icon controls on each screen for a few seconds when it opens, to help you learn what each button does.
         </p>
       </div>
 

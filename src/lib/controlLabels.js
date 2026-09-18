@@ -25,3 +25,15 @@ export default function useControlLabels() {
   }, []);
   return enabled;
 }
+
+// True only while temporary labels should show: setting on + first 7 seconds
+export function useControlHints() {
+  const enabled = useControlLabels();
+  const [show, setShow] = useState(enabled);
+  useEffect(() => {
+    if (!enabled) return;
+    const t = setTimeout(() => setShow(false), CONTROL_LABEL_DURATION);
+    return () => clearTimeout(t);
+  }, [enabled]);
+  return show && enabled;
+}

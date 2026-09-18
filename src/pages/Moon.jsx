@@ -19,6 +19,8 @@ import { clearFiredAlarms } from '@/lib/alarmService';
 import { ensurePushSubscription, syncAlarmToServer, removeAlarmFromServer } from '@/lib/pushService';
 import PullToRefresh from '@/components/PullToRefresh';
 import { useAutoRefresh } from '@/hooks/useAutoRefresh';
+import ControlHint from '@/components/ControlHint';
+import { useControlHints } from '@/lib/controlLabels';
 const todayStr = () => {
   const now = new Date();
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
@@ -417,6 +419,7 @@ export default function Moon() {
       highlightIndex,
     };
   }), [selectedDate, coords, sunDataByDate, currentSlot]);
+  const showHints = useControlHints();
   if (!moonData) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -557,16 +560,17 @@ export default function Moon() {
                            <p className="text-sm font-medium whitespace-nowrap">{item.time}</p>
                            <button
                              onClick={() => toggleAlarm(alarmTime)}
-                            className={`p-1 rounded-md flex items-center transition-colors ${
+                            className={`relative p-1 rounded-md flex items-center transition-colors ${
                               hasAlarm
                                 ? 'bg-primary text-primary-foreground'
                                 : pendingTime === alarmTime
                                   ? 'bg-accent text-accent-foreground'
                                   : 'bg-primary/20 text-primary hover:bg-primary/30'
                             }`}
-                          >
+                           >
                             {hasAlarm ? <BellOff className="w-3.5 h-3.5" /> : <Bell className="w-3.5 h-3.5" />}
-                          </button>
+                            <ControlHint show={showHints} text="Alarm" className="top-full mt-1 left-1/2 -translate-x-1/2" />
+                           </button>
                         </div>
                         <p className="text-[10px] text-muted-foreground">{item.text}</p>
                       </li>

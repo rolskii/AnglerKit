@@ -1,10 +1,13 @@
 import React from 'react';
 import { Radio } from 'lucide-react';
+import ControlHint from '@/components/ControlHint';
+import { useControlHints } from '@/lib/controlLabels';
 
 /**
  * Forest-green circular access button with a coral status dot when audio is active.
  */
 export default function RadioAccessButton({ active, onClick, className = '' }) {
+  const showHints = useControlHints();
   return (
     <button
       type="button"
@@ -20,6 +23,7 @@ export default function RadioAccessButton({ active, onClick, className = '' }) {
           style={{ backgroundColor: '#FF7D7D' }}
         />
       )}
+      <ControlHint show={showHints} text="Radio" className="right-full mr-2 top-1/2 -translate-y-1/2" />
     </button>
   );
 }
