@@ -1,9 +1,8 @@
 import React from 'react';
 
 /**
- * Temporary onboarding label for an icon-only control.
- * Rendered beside the control while hints are active (first 7 seconds a
- * screen is open and the "Help Labels" setting is on), then it disappears.
+ * Persistent label for an icon-only control.
+ * Rendered beside the control whenever the "Help Labels" setting is on.
  */
 export default function ControlHint({ show, text, className = '' }) {
   if (!show) return null;
