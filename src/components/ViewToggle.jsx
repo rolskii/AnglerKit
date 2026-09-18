@@ -6,8 +6,8 @@ import { useControlHints } from "@/lib/controlLabels";
 export default function ViewToggle({ viewMode, setViewMode }) {
   const showHints = useControlHints();
   return (
-    <div className="relative w-full sm:w-auto shrink-0">
-      <ControlHint show={showHints} text="List view" className="bottom-full mb-1.5 left-0" />
+    <div className="relative w-fit shrink-0">
+      <ControlHint show={showHints} text="List view" className="bottom-full mb-8 left-0 sm:mb-1.5" />
       <ControlHint show={showHints} text="Thumbnails" className="bottom-full mb-1.5 right-0" />
       <div className="flex w-fit rounded-lg border border-border overflow-hidden">
         <button
