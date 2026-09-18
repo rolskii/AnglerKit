@@ -8,7 +8,7 @@ export default function ControlHint({ show, text, className = '' }) {
   if (!show) return null;
   return (
     <span
-      className={`absolute whitespace-nowrap pointer-events-none z-[600] rounded-md bg-foreground/90 text-background text-[10px] font-medium tracking-wide px-2 py-0.5 shadow-sm backdrop-blur-sm ${className}`}
+      className={`absolute whitespace-nowrap pointer-events-none z-[600] italic text-[10px] font-medium text-muted-foreground ${className}`}
     >
       {text}
     </span>
