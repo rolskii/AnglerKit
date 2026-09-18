@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Play, Pause, Square, MapPin, Save, Crosshair, Layers, FolderOpen, Circle, Route, Pencil, Ruler, Hexagon, ScrollText, Share2 } from 'lucide-react';
 import FishIcon from '@/components/FishIcon';
+import useControlLabels from '@/lib/controlLabels';
 
 const ctrlBase = "relative flex items-center justify-center rounded-full shadow-lg backdrop-blur-xl transition-all active:scale-90";
 const ctrlSize = "w-12 h-12";
@@ -48,7 +49,9 @@ export default function MapControls({
   onOpenRegs,
   onShareMap,
 }) {
-  // Temporary icon labels for new users — shown for the first 7 seconds
+  // Temporary icon labels for new users — shown for the first 7 seconds,
+  // only when the "Help Labels" setting is on (Settings → Help Labels)
+  const labelsEnabled = useControlLabels();
   const [showHints, setShowHints] = useState(true);
   useEffect(() => {
     const t = setTimeout(() => setShowHints(false), 7000);
@@ -65,7 +68,7 @@ export default function MapControls({
           title="Toggle map layers"
         >
           <Layers className="w-5 h-5" />
-          <Hint show={showHints} text="Map type" className="right-full mr-2 top-1/2 -translate-y-1/2" />
+          <Hint show={showHints && labelsEnabled} text="Map type" className="right-full mr-2 top-1/2 -translate-y-1/2" />
         </button>
         <button
           onClick={onOpenGeoHub}
@@ -77,7 +80,7 @@ export default function MapControls({
           title="Fishing Data Layers"
         >
           <FishIcon className="w-5 h-5" flip={false} />
-          <Hint show={showHints} text="Fishing layers" className="right-full mr-2 top-1/2 -translate-y-1/2" />
+          <Hint show={showHints && labelsEnabled} text="Fishing layers" className="right-full mr-2 top-1/2 -translate-y-1/2" />
         </button>
         <button
           onClick={() => onOpenRegs()}
@@ -85,7 +88,7 @@ export default function MapControls({
           title="Fishing regulations for this area"
         >
           <ScrollText className="w-5 h-5" />
-          <Hint show={showHints} text="Regulations" className="right-full mr-2 top-1/2 -translate-y-1/2" />
+          <Hint show={showHints && labelsEnabled} text="Regulations" className="right-full mr-2 top-1/2 -translate-y-1/2" />
         </button>
         <button
           onClick={onOpenRoutes}
@@ -93,7 +96,7 @@ export default function MapControls({
           title="Saved routes"
         >
           <FolderOpen className="w-5 h-5" />
-          <Hint show={showHints} text="Saved routes" className="right-full mr-2 top-1/2 -translate-y-1/2" />
+          <Hint show={showHints && labelsEnabled} text="Saved routes" className="right-full mr-2 top-1/2 -translate-y-1/2" />
         </button>
         <button
           onClick={onToggleAllRoutes}
@@ -105,7 +108,7 @@ export default function MapControls({
           title="Show all routes on map"
         >
           <Route className="w-5 h-5" />
-          <Hint show={showHints} text="All routes" className="right-full mr-2 top-1/2 -translate-y-1/2" />
+          <Hint show={showHints && labelsEnabled} text="All routes" className="right-full mr-2 top-1/2 -translate-y-1/2" />
         </button>
         <button
           onClick={onToggleDraw}
@@ -117,7 +120,7 @@ export default function MapControls({
           title="Draw on map"
         >
           <Pencil className="w-5 h-5" />
-          <Hint show={showHints} text="Draw" className="right-full mr-2 top-1/2 -translate-y-1/2" />
+          <Hint show={showHints && labelsEnabled} text="Draw" className="right-full mr-2 top-1/2 -translate-y-1/2" />
         </button>
         <button
           onClick={onToggleMeasure}
@@ -129,7 +132,7 @@ export default function MapControls({
           title="Measure distance"
         >
           <Ruler className="w-5 h-5" />
-          <Hint show={showHints} text="Measure" className="right-full mr-2 top-1/2 -translate-y-1/2" />
+          <Hint show={showHints && labelsEnabled} text="Measure" className="right-full mr-2 top-1/2 -translate-y-1/2" />
         </button>
         <button
           onClick={onToggleArea}
@@ -141,7 +144,7 @@ export default function MapControls({
           title="Measure area"
         >
           <Hexagon className="w-5 h-5" />
-          <Hint show={showHints} text="Area" className="right-full mr-2 top-1/2 -translate-y-1/2" />
+          <Hint show={showHints && labelsEnabled} text="Area" className="right-full mr-2 top-1/2 -translate-y-1/2" />
         </button>
         <button
           onClick={onShareMap}
@@ -149,7 +152,7 @@ export default function MapControls({
           title="Share this map view"
         >
           <Share2 className="w-5 h-5" />
-          <Hint show={showHints} text="Share" className="right-full mr-2 top-1/2 -translate-y-1/2" />
+          <Hint show={showHints && labelsEnabled} text="Share" className="right-full mr-2 top-1/2 -translate-y-1/2" />
         </button>
       </div>
 
@@ -162,7 +165,7 @@ export default function MapControls({
           title="Center on my location"
         >
           <Crosshair className="w-5 h-5" />
-          <Hint show={showHints} text="My location" className="bottom-full mb-2 left-1/2 -translate-x-1/2" />
+          <Hint show={showHints && labelsEnabled} text="My location" className="bottom-full mb-2 left-1/2 -translate-x-1/2" />
         </button>
 
         {/* Start / Pause / Stop */}
@@ -173,7 +176,7 @@ export default function MapControls({
             title="Start recording"
           >
             <Circle className="w-7 h-7" fill="currentColor" />
-            <Hint show={showHints} text="Record" className="bottom-full mb-2 left-1/2 -translate-x-1/2" />
+            <Hint show={showHints && labelsEnabled} text="Record" className="bottom-full mb-2 left-1/2 -translate-x-1/2" />
           </button>
         )}
 
@@ -186,7 +189,7 @@ export default function MapControls({
                 title="Pause"
               >
                 <Pause className="w-5 h-5" fill="currentColor" />
-                <Hint show={showHints} text="Pause" className="bottom-full mb-2 left-1/2 -translate-x-1/2" />
+                <Hint show={showHints && labelsEnabled} text="Pause" className="bottom-full mb-2 left-1/2 -translate-x-1/2" />
               </button>
             )}
             {isPaused && (
@@ -196,7 +199,7 @@ export default function MapControls({
                 title="Resume"
               >
                 <Play className="w-5 h-5" fill="currentColor" />
-                <Hint show={showHints} text="Resume" className="bottom-full mb-2 left-1/2 -translate-x-1/2" />
+                <Hint show={showHints && labelsEnabled} text="Resume" className="bottom-full mb-2 left-1/2 -translate-x-1/2" />
               </button>
             )}
             <button
@@ -205,7 +208,7 @@ export default function MapControls({
               title="Stop & finish"
             >
               <Square className="w-5 h-5" fill="currentColor" />
-              <Hint show={showHints} text="Stop" className="bottom-full mb-2 left-1/2 -translate-x-1/2" />
+              <Hint show={showHints && labelsEnabled} text="Stop" className="bottom-full mb-2 left-1/2 -translate-x-1/2" />
             </button>
           </>
         )}
@@ -221,7 +224,7 @@ export default function MapControls({
           title="Add a point of interest"
         >
           <MapPin className="w-5 h-5" />
-          <Hint show={showHints} text="Add pin" className="bottom-full mb-2 left-1/2 -translate-x-1/2" />
+          <Hint show={showHints && labelsEnabled} text="Add pin" className="bottom-full mb-2 left-1/2 -translate-x-1/2" />
         </button>
 
         {/* Save */}
@@ -232,7 +235,7 @@ export default function MapControls({
             title="Save route"
           >
             <Save className="w-5 h-5" />
-            <Hint show={showHints} text="Save" className="bottom-full mb-2 left-1/2 -translate-x-1/2" />
+            <Hint show={showHints && labelsEnabled} text="Save" className="bottom-full mb-2 left-1/2 -translate-x-1/2" />
           </button>
         )}
       </div>

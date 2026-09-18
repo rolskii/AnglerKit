@@ -6,7 +6,9 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Loader2, Sun, Moon, Monitor, ArrowLeftRight, BellRing, Ruler, Trash2, Sparkles, AlertTriangle } from "lucide-react";
+import { Loader2, Sun, Moon, Monitor, ArrowLeftRight, BellRing, Ruler, Trash2, Sparkles, AlertTriangle, Info } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import useControlLabels, { setControlLabelsEnabled } from "@/lib/controlLabels";
 import { useUnits } from "@/lib/unitsContext";
 import ImportExportSection from "@/components/settings/ImportExportSection";
 import NotificationSetup from "@/components/settings/NotificationSetup";
@@ -19,6 +21,7 @@ export default function Settings() {
   const [loading, setLoading] = useState(true);
   const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "system");
   const { system, setUnitSystem } = useUnits();
+  const labelsEnabled = useControlLabels();
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [deleting, setDeleting] = useState(false);
@@ -218,6 +221,19 @@ export default function Settings() {
             <span className={`text-xs font-medium ${theme === "system" ? "text-primary" : ""}`}>System</span>
           </button>
         </div>
+      </div>
+
+      <div className="rounded-lg border-0 bg-primary/10 p-6 space-y-4">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <Info className="w-5 h-5 text-primary" />
+            <h2 className="font-heading font-semibold">Help Labels</h2>
+          </div>
+          <Switch checked={labelsEnabled} onCheckedChange={setControlLabelsEnabled} />
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Show short labels beside map controls for a few seconds when the map opens, to help you learn what each button does.
+        </p>
       </div>
 
       <div className="rounded-lg border border-border bg-card p-6 space-y-4">
