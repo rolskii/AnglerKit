@@ -382,7 +382,6 @@ export default function RiverConditions() {
                       aria-label="Add note"
                     >
                       <Pen className="w-3.5 h-3.5" />
-                      <ControlHint show={showHints} text="Add note" className="top-full mt-1 left-1/2 -translate-x-1/2" />
                     </button>
                   </CardTitle>
                 </CardHeader>
