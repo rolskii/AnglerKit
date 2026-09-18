@@ -15,8 +15,6 @@ import HistoricalRangeChart from '@/components/river/HistoricalRangeChart';
 import PullToRefresh from '@/components/PullToRefresh';
 import { useAutoRefresh } from '@/hooks/useAutoRefresh';
 import { useUnits } from '@/lib/unitsContext';
-import ControlHint from '@/components/ControlHint';
-import { useControlHints } from '@/lib/controlLabels';
 
 function TrendIndicator({ trend }) {
   if (!trend) return null;
@@ -102,7 +100,6 @@ export default function RiverConditions() {
   const [overlayRange, setOverlayRange] = useState('1d');
   const { isMetric, formatLevel, formatDischarge, levelUnitLabel, convertLevelVal, convertDischargeVal } = useUnits();
   const contentRef = useRef(null);
-  const showHints = useControlHints();
 
   const chartHourly = useMemo(() => {
     if (!data?.hourly || isMetric) return data?.hourly;
@@ -402,7 +399,6 @@ export default function RiverConditions() {
                               aria-label="Delete note"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
-                              <ControlHint show={showHints} text="Delete" className="top-full mt-1 left-1/2 -translate-x-1/2" />
                             </button>
                           </div>
                           <p className="text-sm text-foreground leading-snug">{n.note}</p>
