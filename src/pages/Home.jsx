@@ -299,7 +299,7 @@ export default function Home() {
           <div>
             <h1 className="text-2xl md:text-[34px] font-heading font-extrabold tracking-tight leading-none">HeronWise</h1>
             <p className="mt-0.5 text-sm md:text-[17px] leading-none text-muted-foreground">
-              Your Smart Fishing Companion
+              Fish Like You Mean It
             </p>
           </div>
           <RadioAccessButton active={radio.current && radio.playing} onClick={() => setRadioOpen(true)} className="mt-1" />

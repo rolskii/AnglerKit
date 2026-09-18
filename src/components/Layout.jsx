@@ -131,7 +131,7 @@ export default function Layout() {
            <AppLogo className="w-10 h-10" />
           <div className="leading-tight">
             <p className="font-heading font-semibold tracking-tight">{appName}</p>
-            <p className="text-[11px] text-muted-foreground">Your Smart Fishing Companion</p>
+            <p className="text-[11px] text-muted-foreground">Fish Like You Mean It</p>
           </div>
         </Link>
         <Button
@@ -165,7 +165,7 @@ export default function Layout() {
              <AppLogo className="w-9 h-9" />
             <span className="leading-tight">
               <span className="block font-heading font-semibold tracking-tight">{appName}</span>
-              <span className="block text-[10px] text-muted-foreground">Your Smart Fishing Companion</span>
+              <span className="block text-[10px] text-muted-foreground">Fish Like You Mean It</span>
             </span>
           </Link>
         </div>
