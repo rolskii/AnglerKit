@@ -51,7 +51,8 @@ export default function Settings() {
     setPurging(true);
     try {
       const n = await deleteSampleData();
-      toast.success(`Removed ${n} sample items from your account`);
+      if (n === 0) toast.info("No sample data to delete.");
+      else toast.success(`Removed ${n} sample items from your account`);
       refreshSampleCount();
     } catch (e) {
       toast.error(e.message || "Failed to remove sample data");
@@ -249,12 +250,20 @@ export default function Settings() {
             {seeding ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
             Load sample data
           </Button>
-          {sampleCount > 0 && (
-            <Button variant="outline" onClick={() => setPurgeOpen(true)} disabled={purging}>
-              {purging ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
-              Remove sample data ({sampleCount})
-            </Button>
-          )}
+          <Button
+            variant="outline"
+            disabled={purging}
+            onClick={() => {
+              if (sampleCount === 0) {
+                toast.info("No sample data to delete.");
+                return;
+              }
+              setPurgeOpen(true);
+            }}
+          >
+            {purging ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
+            Remove sample data
+          </Button>
         </div>
         <p className="text-xs text-muted-foreground">
           "Remove sample data" deletes only the items added by "Load sample data" — your own gear and catches are never touched.
