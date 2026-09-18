@@ -152,8 +152,8 @@ export default function Catches() {
           />
         </div>
         <div className="relative w-fit shrink-0">
-          <ControlHint show={showHints} text="List view" className="left-full ml-2 top-1/2 -translate-y-1/2 sm:ml-0 sm:left-0 sm:top-auto sm:bottom-full sm:mb-1.5 sm:translate-y-0" />
-          <ControlHint show={showHints} text="Thumbnails" className="left-full ml-[5.5rem] top-1/2 -translate-y-1/2 sm:ml-0 sm:left-auto sm:right-0 sm:top-auto sm:bottom-full sm:mb-1.5 sm:translate-y-0" />
+          <ControlHint show={showHints} text="List view" className="bottom-full mb-1.5 left-0" />
+          <ControlHint show={showHints} text="Thumbnails" className="top-full mt-1.5 right-0" />
           <div className="flex w-fit rounded-lg border border-border overflow-hidden">
             <button
               onClick={() => setViewMode("list")}
