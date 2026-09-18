@@ -8,6 +8,8 @@ export default function About() {
         <p className="text-muted-foreground text-sm">Fish Like You Mean It</p>
       </div>
 
+      <p className="font-heading text-lg font-semibold text-primary">Fish Smart. Fish Hard. Fish Like You Mean It.</p>
+
       <div className="prose prose-sm max-w-none text-foreground/90 space-y-4">
         <p>
           Herons are elite stealth predators renowned for their patience, precision, and calculated hunting strategies. The Green Heron specifically is one of the few bird species known to manufacture and use lures to catch fish. Dropping insects, feathers or even bread crumbs on the water's surface to lure prey within striking range, it fishes with a cleverness and patience that's rare in the animal kingdom. That same blend of smarts and stillness inspired this app, including its likeness: a companion that helps you read the water, pick the right gear, and wait for the perfect moment.
