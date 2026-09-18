@@ -154,7 +154,7 @@ export default function Layout() {
         </div>
       </aside>
       {/* Mobile header */}
-      <header className="md:hidden sticky top-0 z-30 flex items-center justify-between border-b border-border/60 bg-background/80 backdrop-blur-xl px-4 py-3">
+      <header className="md:hidden sticky top-0 z-30 flex items-center justify-between border-b border-border/60 bg-background px-4 py-3">
         <div className="flex items-center gap-1 min-w-0">
           {isChildScreen() && (
             <Button variant="ghost" size="icon" className="rounded-full -ml-2 shrink-0" onClick={() => navigate(-1)}>
