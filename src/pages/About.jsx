@@ -8,7 +8,7 @@ export default function About() {
         <p className="text-muted-foreground text-sm">Fish Like You Mean It</p>
       </div>
 
-      <p className="font-heading text-lg font-semibold text-primary">Fish Smart. Fish Hard. Fish Like You Mean It.</p>
+      <p className="font-heading text-lg font-semibold text-primary">Fish Hard. Fish Smart. Fish Like You Mean It.</p>
 
       <div className="prose prose-sm max-w-none text-foreground/90 space-y-4">
         <p>
