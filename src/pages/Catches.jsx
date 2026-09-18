@@ -7,8 +7,6 @@ import { Plus, Search, Loader2, Fish, ArrowUp, ArrowDown, ArrowUpDown, List, Lay
 import CatchCard from "@/components/catches/CatchCard";
 import CatchThumbnail from "@/components/catches/CatchThumbnail";
 import { useViewMode } from "@/hooks/useViewMode";
-import ControlHint from "@/components/ControlHint";
-import { useControlHints } from "@/lib/controlLabels";
 import CatchForm from "@/components/catches/CatchForm";
 import PullToRefresh from "@/components/PullToRefresh";
 import {
@@ -32,7 +30,6 @@ export default function Catches() {
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [viewMode, setViewMode] = useViewMode();
-  const showHints = useControlHints();
 
   const load = async () => {
     setLoading(true);
@@ -152,8 +149,6 @@ export default function Catches() {
           />
         </div>
         <div className="relative w-fit shrink-0">
-          <ControlHint show={showHints} text="List view" className="bottom-full mb-0.5 left-0 leading-none" />
-          <ControlHint show={showHints} text="Thumbnails" className="top-full mt-0.5 right-0 leading-none" />
           <div className="flex w-fit rounded-lg border border-border overflow-hidden">
             <button
               onClick={() => setViewMode("list")}
