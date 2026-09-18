@@ -12,7 +12,7 @@ export default function About() {
 
       <div className="prose prose-sm max-w-none text-foreground/90 space-y-4">
         <p>
-          Herons are elite stealth predators renowned for their patience, precision, and calculated hunting strategies. The Green Heron specifically is one of the few bird species known to manufacture and use lures to catch fish. Dropping insects, feathers or even bread crumbs on the water's surface to lure prey within striking range, it fishes with a cleverness and patience that's rare in the animal kingdom. That same blend of smarts and stillness inspired this app, including its likeness: a companion that helps you read the water, pick the right gear, and wait for the perfect moment.
+          Herons are elite stealth predators renowned for their patience, precision, and calculated hunting strategies. The Green Heron specifically is one of the few bird species known to use bait to catch fish. Dropping insects, feathers or even bread crumbs on the water's surface to lure prey within striking range, it fishes with a cleverness and patience that's rare in the animal kingdom. That same blend of smarts and stillness inspired this app, including its likeness: a companion that helps you read the water, pick the right gear, and wait for the perfect moment.
         </p>
         <p>The HeronWise App has grown from a simple gear tracker into an indispensable fishing toolbox — pairing detailed equipment management with real-time conditions intelligence, and maps complete with saved location pins and route recording. You'll always know what's in your kit and what the water and sky are doing before you head out. 
 
