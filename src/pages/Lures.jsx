@@ -151,7 +151,7 @@ export default function Lures() {
         </Button>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3">
+      <div className="flex flex-col sm:flex-row gap-5 sm:gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input placeholder="Search lures & flies..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 bg-card border-0 shadow-sm" />

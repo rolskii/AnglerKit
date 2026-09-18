@@ -7,8 +7,8 @@ export default function ViewToggle({ viewMode, setViewMode }) {
   const showHints = useControlHints();
   return (
     <div className="relative w-fit shrink-0">
-      <ControlHint show={showHints} text="List view" className="bottom-full mb-1.5 left-0" />
-      <ControlHint show={showHints} text="Thumbnails" className="top-full mt-1.5 right-0" />
+      <ControlHint show={showHints} text="List view" className="bottom-full mb-0.5 left-0 leading-none" />
+      <ControlHint show={showHints} text="Thumbnails" className="top-full mt-0.5 right-0 leading-none" />
       <div className="flex w-fit rounded-lg border border-border overflow-hidden">
         <button
           onClick={() => setViewMode("list")}
