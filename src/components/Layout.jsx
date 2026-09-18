@@ -36,7 +36,7 @@ const navItems = [
 export default function Layout() {
   const [open, setOpen] = useState(false);
   const [scanOpen, setScanOpen] = useState(false);
-  const appName = "Heron";
+  const appName = "HeronWise";
   const navigate = useNavigate();
   const location = useLocation();
   const handleLogout = async () => {

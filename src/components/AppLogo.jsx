@@ -6,7 +6,7 @@ export default function AppLogo({ className = "w-10 h-10" }) {
   return (
     <img
       src={APP_LOGO_URL}
-      alt="Heron"
+      alt="HeronWise"
       className={`rounded-full object-cover shrink-0 ${className}`}
     />
   );

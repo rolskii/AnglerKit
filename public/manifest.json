@@ -1,6 +1,6 @@
 {
-  "name": "Heron — Your Smart Fishing Companion",
-  "short_name": "Heron",
+  "name": "HeronWise — Your Smart Fishing Companion",
+  "short_name": "HeronWise",
   "start_url": "/",
   "display": "standalone",
   "background_color": "hsl(210, 20%, 90%)",

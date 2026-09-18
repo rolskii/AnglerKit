@@ -297,7 +297,7 @@ export default function Home() {
       <div className="px-1">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <h1 className="text-2xl md:text-[34px] font-heading font-extrabold tracking-tight leading-none">Heron</h1>
+            <h1 className="text-2xl md:text-[34px] font-heading font-extrabold tracking-tight leading-none">HeronWise</h1>
             <p className="mt-0.5 text-sm md:text-[17px] leading-none text-muted-foreground">
               Your Smart Fishing Companion
             </p>

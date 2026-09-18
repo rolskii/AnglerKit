@@ -74,7 +74,7 @@ export async function buildMapShareCardHtml({
 <body>
   <div class="card">
     <div class="head">
-      <div class="badge">${logoDataUrl ? `<img src="${esc(logoDataUrl)}" alt="Heron" />` : '&#9875;'}</div>
+      <div class="badge">${logoDataUrl ? `<img src="${esc(logoDataUrl)}" alt="HeronWise" />` : '&#9875;'}</div>
       <div>
         <h1>Fishing Map</h1>
         <div class="coords">${latStr}, ${lonStr}</div>
@@ -94,7 +94,7 @@ export async function buildMapShareCardHtml({
       ? 'Apple Maps image of the shared view, with the active fishing layers drawn in.'
       : 'Map preview &copy; OpenStreetMap contributors — fishing overlays (depth contours, access points) are not shown in this preview.'}</div>
   </div>
-  <footer>Shared from Heron</footer>
+  <footer>Shared from HeronWise</footer>
 </body>
 </html>`;
 }
