@@ -96,18 +96,48 @@ function readStoredIds() {
   }
 }
 
-export function getSampleDataCount() {
-  return Object.values(readStoredIds()).reduce((sum, ids) => sum + (ids || []).length, 0);
+// Identifies a sample record in the database by comparing it against the
+// sample definitions above — so samples can be counted and removed even when
+// the browser has no stored IDs (e.g. samples were seeded on another device).
+const isSampleRecord = {
+  Rod: (r) => SAMPLE_DATA.Rod.some((s) => s.name === r.name),
+  Reel: (r) => SAMPLE_DATA.Reel.some((s) => s.name === r.name),
+  FlyLine: (r) => SAMPLE_DATA.FlyLine.some((s) => s.brand === r.brand && s.model === r.model && s.rod === r.rod),
+  Lure: (r) => SAMPLE_DATA.Lure.some((s) => s.name === r.name && s.category === r.category && s.size === r.size),
+  MiscItem: (r) => SAMPLE_DATA.MiscItem.some((s) => s.name === r.name && s.brand === r.brand),
+  Supply: (r) => SAMPLE_DATA.Supply.some((s) => s.name === r.name && s.brand === r.brand && s.model === r.model),
+  Catch: (r) => SAMPLE_DATA.Catch.some((s) => s.species === r.species && s.date === r.date && s.location === r.location),
+};
+
+// Counts sample items that actually exist in the current user's account.
+export async function countSampleDataRecords() {
+  let total = 0;
+  for (const [entity, match] of Object.entries(isSampleRecord)) {
+    try {
+      const records = await base44.entities[entity].list("-created_date", 500);
+      total += records.filter(match).length;
+    } catch {
+      // best-effort — skip entities that fail to load
+    }
+  }
+  return total;
 }
 
-// Removes every record created by seedSampleData on this browser (by exact ID),
-// then clears the store. Safe: never deletes items that weren't seeded by it.
+// Removes every record created by seedSampleData — both the IDs remembered by
+// this browser and any matching sample records still in the user's account.
+// Safe: never deletes items that don't match the sample definitions.
 // Returns the number of records deleted.
 export async function deleteSampleData() {
   const idsByEntity = readStoredIds();
   let deleted = 0;
-  for (const [entity, ids] of Object.entries(idsByEntity)) {
-    if (!ids || !ids.length) continue;
+  for (const entity of Object.keys(SAMPLE_DATA)) {
+    const ids = new Set(idsByEntity[entity] || []);
+    try {
+      const records = await base44.entities[entity].list("-created_date", 500);
+      records.filter(isSampleRecord[entity]).forEach((r) => ids.add(r.id));
+    } catch {
+      // best-effort — fall back to stored IDs only
+    }
     for (const id of ids) {
       try {
         await base44.entities[entity].delete(id);

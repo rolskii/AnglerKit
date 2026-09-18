@@ -14,7 +14,7 @@ import ImportExportSection from "@/components/settings/ImportExportSection";
 import NotificationSetup from "@/components/settings/NotificationSetup";
 import AlarmSoundPicker from "@/components/settings/AlarmSoundPicker";
 import { toast } from "sonner";
-import { seedSampleData, deleteSampleData, getSampleDataCount } from "@/lib/sampleData";
+import { seedSampleData, deleteSampleData, countSampleDataRecords } from "@/lib/sampleData";
 
 export default function Settings() {
   const [user, setUser] = useState(null);
@@ -30,7 +30,7 @@ export default function Settings() {
   const [purgeOpen, setPurgeOpen] = useState(false);
   const [sampleCount, setSampleCount] = useState(0);
 
-  const refreshSampleCount = () => setSampleCount(getSampleDataCount());
+  const refreshSampleCount = async () => setSampleCount(await countSampleDataRecords());
 
   useEffect(() => { refreshSampleCount(); }, []);
 
@@ -257,7 +257,7 @@ export default function Settings() {
           )}
         </div>
         <p className="text-xs text-muted-foreground">
-          "Remove sample data" deletes only the items added by "Load sample data" on this device — your own gear and catches are never touched.
+          "Remove sample data" deletes only the items added by "Load sample data" — your own gear and catches are never touched.
         </p>
       </div>
 
@@ -282,7 +282,7 @@ export default function Settings() {
               Remove sample data?
             </AlertDialogTitle>
             <AlertDialogDescription>
-              This deletes only the {sampleCount} sample items that were added by "Load sample data" on this device. Your own gear and catches are not affected. This cannot be undone.
+              This deletes only the {sampleCount} sample items that were added by "Load sample data". Your own gear and catches are not affected. This cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
